@@ -303,6 +303,42 @@
     <td><sub>1 owner TRUSTEE OR 1 owner STEWARD OR 1 owner TRUST_ANCHOR</sub></td>
     <td><sub>Editing a CLAIM_DEF: INDY-2078 - can not be configured by auth rule; ADD CLAIM_DEF rule is currently used for editing where owner is always true as it's part of the primary key</sub></td>
   </tr>
+    <tr>
+    <td><sub>REVOC_REG_DEF</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 TRUST_ANCHOR</sub></td>
+    <td><sub>Adding a new REVOC_REG_DEF</sub></td>
+  </tr>
+  <tr>
+    <td><sub>REVOC_REG_DEF</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>1 any (*) role owner</sub></td>
+    <td><sub>Editing a REVOC_REG_DEF</sub></td>
+  </tr>
+  <tr>
+    <td><sub>REVOC_REG_ENTRY</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>1 any (*) role owner of the corresponding REVOC_REG_DEF</sub></td>
+    <td><sub>Adding a new REVOC_REG_ENTRY</sub></td>
+  </tr>
+  <tr>
+    <td><sub>REVOC_REG_ENTRY</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>1 any (*) role owner</sub></td>
+    <td><sub>Editing a REVOC_REG_ENTRY</sub></td>
+  </tr>  
   <tr>
     <td><sub>NODE</sub></td>
     <td><sub>ADD</sub></td>
@@ -430,6 +466,24 @@
     <td><sub>Changing an authentification rule</sub></td>
   </tr>
   <tr>
+    <td><sub>TRANSACTION_AUTHOR_AGREEMENT</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>1 TRUSTEE</sub></td>
+    <td><sub>Adding a new Transaction Author Agreement</sub></td>
+  </tr>    
+  <tr>
+    <td><sub>TRANSACTION_AUTHOR_AGREEMENT_AML</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>1 TRUSTEE</sub></td>
+    <td><sub>Adding a new Transaction Author Agreement Mechanism List</sub></td>
+  </tr>      
+  <tr>
     <td><sub>VALIDATOR_INFO</sub></td>
     <td><sub>ADD</sub></td>
     <td><sub><code>*</code></sub></td>
@@ -437,42 +491,6 @@
     <td><sub><code>*</code></sub></td>
     <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 NETWORK_MONITOR</sub></td>
     <td><sub>Getting validator_info from pool</sub></td>
-  </tr>
-    <tr>
-    <td><sub>REVOC_REG_DEF</sub></td>
-    <td><sub>ADD</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 TRUST_ANCHOR</sub></td>
-    <td><sub>Adding a new REVOC_REG_DEF</sub></td>
-  </tr>
-  <tr>
-    <td><sub>REVOC_REG_DEF</sub></td>
-    <td><sub>EDIT</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>1 any (*) role owner</sub></td>
-    <td><sub>Editing a REVOC_REG_DEF</sub></td>
-  </tr>
-  <tr>
-    <td><sub>REVOC_REG_ENTRY</sub></td>
-    <td><sub>ADD</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>1 any (*) role owner of the corresponding REVOC_REG_DEF</sub></td>
-    <td><sub>Adding a new REVOC_REG_ENTRY</sub></td>
-  </tr>
-  <tr>
-    <td><sub>REVOC_REG_ENTRY</sub></td>
-    <td><sub>EDIT</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>1 any (*) role owner</sub></td>
-    <td><sub>Editing a REVOC_REG_ENTRY</sub></td>
   </tr>
 </table>
 
@@ -637,21 +655,10 @@
   </tr>    
 
   <tr>
-    <td><sub>TRANSACTION_AUTHOR_AGREEMENT</sub></td>
-    <td><sub>EDIT</sub></td>
-    <td><sub>N/A</sub></td>
-  </tr>   
-
-  <tr>
     <td><sub>TRANSACTION_AUTHOR_AGREEMENT_AML</sub></td>
     <td><sub>ADD</sub></td>
     <td><sub>N/A</sub></td>
   </tr>    
 
-  <tr>
-    <td><sub>TRANSACTION_AUTHOR_AGREEMENT_AML</sub></td>
-    <td><sub>EDIT</sub></td>
-    <td><sub>N/A</sub></td>
-  </tr>  
         
 </table>  

@@ -9,6 +9,8 @@
     * [ATTRIB](#attrib)
     * [SCHEMA](#schema)
     * [CLAIM_DEF](#claim_def)
+    * [REVOC_REG_DEF](#revoc_reg_def)
+    * [REVOC_REG_ENTRY](#revoc_reg_entry)
 
 * [Pool Ledger](#pool-ledger)
     * [NODE](#node)
@@ -18,6 +20,11 @@
     * [NODE_UPGRADE](#node_upgrade)
     * [POOL_CONFIG](#pool_config)
     * [AUTH_RULE](#auth_rule)
+    * [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)
+    * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)    
+    
+* [Actions](#actions)
+    * [POOL_RESTART](#pool_restart)    
 
 ## General Information
 
@@ -66,7 +73,14 @@ transaction specific data:
 
         "metadata": {
             "reqId": <...>,
-            "from": <...>
+            "from": <...>,
+            "digest": <...>,
+            "payloadDigest": <...>,
+            "taaAcceptance": {
+                "taaDigest": <...>,
+                "mechanism": <...>,
+                "time": <...>
+             }
         },
     },
     "txnMetadata": {
@@ -129,7 +143,22 @@ transaction specific data:
 
         - `reqId` (integer):
             Unique ID number of the request with transaction.
-
+        
+        - `digest` (SHA256 hex digest string):
+            SHA256 hash hex digest of the all fields in the initial requests (including signatures) 
+            
+        - `payloadDigest` (SHA256 hex digest string):
+            SHA256 hash hex digest of the payload fields in the initial requests, that is all fields excluding signatures and plugins-added ones
+            
+        - `taaAcceptance` (dict, optional):
+            If transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
+            
+                - `taaDigest` (SHA256 hex digest string): SHA256 hex digest of the latest Transaction Author Agreement on the ledger
+                
+                - `mechanism` (string): a mechanism used to accept the signature; must be present in the latest list of transaction author agreement acceptane mechanisms on the ledger  
+                
+                - `time` (integer as POSIX timestamp): transaction author agreement acceptance time
+                
     - `txnMetadata` (dict):
 
         Metadata attached to the transaction.
@@ -234,6 +263,13 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }
         },
     },
     "txnMetadata": {
@@ -298,6 +334,13 @@ Adds an attribute to a NYM record
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }            
         },
     },
     "txnMetadata": {
@@ -351,6 +394,13 @@ So, if the Schema needs to be evolved, a new Schema with a new version or new na
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }            
         },
     },
     "txnMetadata": {
@@ -418,6 +468,13 @@ Adds a claim definition (in particular, public key), that Issuer creates and pub
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }                  
         },
     },
     "txnMetadata": {
@@ -483,7 +540,12 @@ It contains public keys, maximum number of credentials the registry may contain,
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
             'digest': '4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453',
-            'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685'
+            'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }                  
         },
     },
     "txnMetadata": {
@@ -502,24 +564,20 @@ It contains public keys, maximum number of credentials the registry may contain,
 ```
 
 #### REVOC_REG_ENTRY
-Adds a Revocation Registry Definition (in particular, a public key), that Issuer creates and publishes for a particular Claim Definition.
+The RevocReg entry containing the new accumulator value and issued/revoked indices. This is just a delta of indices, not the whole list. So, it can be sent each time a new claim is issued/revoked.
 
 - `value` (dict):
 
-     Dictionary with revocation registry definition's data:
+     Dictionary with revocation registry's data:
      
-     - `maxCredNum` (integer): a maximum number of credentials the Revocation Registry can handle
-     - `tailsHash` (string): tails' file digest
-     - `tailsLocation` (string): tails' file location (URL)
-     - `issuanceType` (string enum): defines credentials revocation strategy. Can have the following values:
-        - `ISSUANCE_BY_DEFAULT`: all credentials are assumed to be issued initially, so that Revocation Registry needs to be updated (REVOC_REG_ENTRY txn sent) only when revoking. Revocation Registry stores only revoked credentials indices in this case. Recommended to use if expected number of revocation actions is less than expected number of issuance actions. 
-        - `ISSUANCE_ON_DEMAND`: no credentials are issued initially, so that Revocation Registry needs to be updated (REVOC_REG_ENTRY txn sent) on every issuance and revocation. Revocation Registry stores only issued credentials indices in this case. Recommended to use if expected number of issuance actions is less than expected number of revocation actions.
-     - `publicKeys` (dict): Revocation Registry's public key
+     - `accum` (string): the current accumulator value
+     - `prevAccum` (string): the previous accumulator value; it's compared with the current value, and txn is rejected if they don't match; it's needed to avoid dirty writes and updates of accumulator.
+     - `issued` (list of integers): an array of issued indices (may be absent/empty if the type is ISSUANCE_BY_DEFAULT); this is delta; will be accumulated in state.
+     - `revoked` (list of integers):  an array of revoked indices (delta; will be accumulated in state)    
 
-- `id` (string): Revocation Registry Definition's unique identifier (a key from state trie is currently used)
-- `credDefId` (string): The corresponding Credential Definition's unique identifier (a key from state trie is currently used)
+- `revocRegDefId` (string): The corresponding Revocation Registry Definition's unique identifier (a key from state trie is currently used)
 - `revocDefType` (string enum): Revocation Type. `CL_ACCUM` (Camenisch-Lysyanskaya Accumulator) is the only supported type now.
-- `tag` (string): A unique tag to have multiple Revocation Registry Definitions for the same Credential Definition and type issued by the same DID. 
+
 
 **Example**:
 ```
@@ -545,7 +603,12 @@ Adds a Revocation Registry Definition (in particular, a public key), that Issuer
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
             'digest': '4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453',
-            'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685'
+            'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }                  
         },
     },
     "txnMetadata": {
@@ -621,12 +684,13 @@ There is no need to specify all other fields, and they will remain the same.
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
         },
     },
     "txnMetadata": {
         "txnTime":1513945121,
         "seqNo": 10,
-        "txnId":"Delta",
     },
     "reqSignature": {
         "type": "ED25519",
@@ -714,7 +778,8 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
-            "txnId":"upgrade-13",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
         },
     },
     "txnMetadata": {
@@ -760,12 +825,13 @@ Status of each Node's upgrade (sent by each upgraded Node)
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
         },
     },
     "txnMetadata": {
         "txnTime":1513945121,
         "seqNo": 10,
-        "txnId":"upgrade-13",
     },
     "reqSignature": {
         "type": "ED25519",
@@ -813,12 +879,13 @@ Command to change Pool's configuration
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
         },
     },
     "txnMetadata": {
         "txnTime":1513945121,
         "seqNo": 10,
-        "txnId":"1111",
     },
     "reqSignature": {
         "type": "ED25519",
@@ -923,10 +990,6 @@ AuthConstraint
 **Example:**
 ```
 {  
-   'txnMetadata':{  
-      'txnTime':1551785798,
-      'seqNo':1
-   },
    'txn':{  
       'type':'120',
       'protocolVersion':2,
@@ -947,10 +1010,15 @@ AuthConstraint
       },
       'metadata':{  
          'reqId':252174114,
+         'from':'M9BJDuS24bqbJNvBRsoGg3',
          'digest':'6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c',
-         'from':'M9BJDuS24bqbJNvBRsoGg3'
+         'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
       }
    },
+   'txnMetadata':{  
+      'txnTime':1551785798,
+      'seqNo':1
+   },   
    'reqSignature':{  
       'type':'ED25519',
       'values':[  
@@ -964,8 +1032,129 @@ AuthConstraint
 }
 ```
 
+#### TRANSACTION_AUTHOR_AGREEMENT
 
-## Action Transactions
+Setting (enabling/disabling) a transaction author agreement for the pool.
+If transaction author agreement is set, then all write requests to Domain ledger (transactions) must include additional metadata pointing to the latest transaction author agreement's digest which is signed by the transaction author.
+
+If no transaction author agreement is set, or it's disabled, then no additional metadata is required.
+
+Transaction author agreement can be disabled by setting an agreement with an empty text.
+
+Each transaction author agreement has a unique version.
+
+- `version` (string):
+
+    Unique version of the transaction author agreement
+
+
+- `text` (string):
+
+    Transaction author agreement's text
+
+**Example:**
+```
+{
+    "ver":1,
+    "txn": {
+        "type":4,
+        "protocolVersion":1,
+
+        "data": {
+            "ver":1,
+            "version": "1.0",
+            "text": "Please read carefully before writing anything to the ledger",
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
+#### TRANSACTION_AUTHOR_AGREEMENT_AML
+
+Setting a list of acceptance mechanisms for transaction author agreement.
+
+Each write request for which a transaction author agreement needs to be accepted must point to a  mechanism from the latest list on the ledger. The chosen mechanism is signed by the write request author (together with the transaction author agreement digest). 
+
+
+Each acceptance mechanisms list has a unique version.
+
+- `version` (string):
+
+    Unique version of the transaction author agreement acceptance mechanisms list
+
+
+- `aml` (dict):
+
+    Acceptance mechanisms list data in the form `<acceptance mechanism label>: <acceptance mechanism description>`
+    
+- `amlContext` (string, optional):
+
+    A context information about Acceptance mechanisms list (may be URL to external resource).   
+    
+    
+
+**Example:**
+```
+{
+    "ver":1,
+    "txn": {
+        "type":4,
+        "protocolVersion":1,
+
+        "data": {
+            "ver":1,
+            "version": "1.0",
+            "aml": {
+                "EULA": "Included in the EULA for the product being used",
+                "Service Agreement": "Included in the agreement with the service provider managing the transaction",
+                "Click Agreement": "Agreed through the UI at the time of submission",
+                "Session Agreement": "Agreed at wallet instantiation or login"
+            },
+            "amlContext": "http://aml-context-descr"
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
+## Actions
+
+The actions are not written to the Ledger, so this is not a transaction, just a command.
 
 #### POOL_RESTART
 POOL_RESTART is the command to restart all nodes at the time specified in field "datetime"(sent by Trustee).
