@@ -9,7 +9,7 @@ from indy import pool, wallet, did, ledger
 
 from perf_load.perf_client_msgs import ClientReady, ClientRun, ClientStop, ClientGetStat, ClientSend
 from perf_load.perf_clientstaistic import ClientStatistic
-from perf_load.perf_utils import random_string, logger_init
+from perf_load.perf_utils import random_string, logger_init, ensure_is_reply
 from perf_load.perf_req_gen import NoReqDataAvailableException
 from perf_load.perf_gen_req_parser import ReqTypeParser
 
@@ -18,6 +18,9 @@ class LoadClient:
     SendResp = 0
     SendTime = 1
     SendSync = 2
+
+    TestAcceptanceMechanism = 'test'
+    TestAcceptanceMechanismVersion = 'test_version'
 
     def __init__(self, name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, short_stat,
                  **kwargs):
@@ -34,6 +37,9 @@ class LoadClient:
         self._wallet_handle = None
         self._test_did = None
         self._test_verk = None
+        self._taa_text = None
+        self._taa_version = None
+        self._taa_time = None
         self._load_client_reqs = []
         self._loop.add_reader(self._pipe_conn, self.read_cb)
         self._closing = False
@@ -104,6 +110,67 @@ class LoadClient:
             self._wallet_handle, json.dumps({'seed': seed[0]}))
         self._logger.info("_did_init done")
 
+    async def _taa_init(self, text, version):
+        self._logger.info("_taa_init {} {}".format(text, version))
+
+        if text != "":
+            await self._taa_aml_init()
+
+        while True:
+            # Continuously check for latest TAA
+            get_taa = await ledger.build_get_txn_author_agreement_request(self._test_did, None)
+            reply = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, get_taa)
+            ensure_is_reply(reply)
+            result = json.loads(reply)['result']
+            data = result['data']
+            current_text = data['text'] if data else ""
+            current_version = data['version'] if data else ""
+            current_time = result.get('txnTime', None)
+
+            # Check whether we can reach desired TAA state at all
+            if text == "" and version == "" and current_text != "":
+                raise RuntimeError("Cannot remove TAA from ledger without explicitely setting new version")
+
+            # We reached desired state
+            if current_text == text and current_version == version:
+                self._taa_text = current_text
+                self._taa_version = current_version
+                self._taa_time = current_time + 1  # We are "signing" just 1 second after TAA created
+                break
+
+            # Try to set taa
+            set_taa = await ledger.build_txn_author_agreement_request(self._test_did, text, version)
+            await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, set_taa)
+
+        self._logger.info("_taa_init done")
+
+    async def _taa_aml_init(self):
+        self._logger.info("_taa_aml_init")
+
+        while True:
+            # Continuously check for latest TAA
+            get_aml = await ledger.build_get_acceptance_mechanism_request(self._test_did, None, None)
+            reply = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, get_aml)
+            ensure_is_reply(reply)
+            data = json.loads(reply)['result']['data']
+            current_aml = data.get('aml', {}) if data else {}
+
+            # We reached desired state
+            if self.TestAcceptanceMechanism in current_aml:
+                break
+
+            # Check whether we can reach desired AML state at all
+            if data is not None:
+                raise RuntimeError("There is already incompatible TAA AML written to ledger")
+
+            # Try to set aml
+            set_aml = await ledger.build_acceptance_mechanism_request(self._test_did,
+                                                                      json.dumps({self.TestAcceptanceMechanism: {}}),
+                                                                      self.TestAcceptanceMechanismVersion, None)
+            await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, set_aml)
+
+        self._logger.info("_taa_aml_init done")
+
     async def _pre_init(self):
         pass
 
@@ -113,7 +180,7 @@ class LoadClient:
     def _on_pool_create_ext_params(self):
         return {"max_cred_num": self._batch_size}
 
-    async def run_test(self, genesis_path, seed, w_key):
+    async def run_test(self, genesis_path, seed, w_key, taa_text, taa_version):
         self._logger.info("run_test genesis_path {}, seed {}, w_key {}".format(genesis_path, seed, w_key))
         try:
             await self._pre_init()
@@ -121,6 +188,7 @@ class LoadClient:
             await self._init_pool(genesis_path)
             await self._wallet_init(w_key)
             await self._did_init(seed)
+            await self._taa_init(taa_text, taa_version)
 
             await self._post_init()
 
@@ -178,6 +246,7 @@ class LoadClient:
         self._logger.debug("gen_signed_req")
         if self._closing is True:
             return
+
         try:
             req_data, req = await self._req_generator.generate_request(self._test_did)
         except NoReqDataAvailableException:
@@ -187,6 +256,15 @@ class LoadClient:
             self._logger.exception("generate req error {}".format(e))
             self._loop.stop()
             raise e
+
+        try:
+            req = await ledger.append_txn_author_agreement_acceptance_to_request(
+                req, self._taa_text, self._taa_version, None, self.TestAcceptanceMechanism, self._taa_time)
+        except Exception as e:
+            self._logger.exception("append taa acceptance error {}".format(e))
+            self._loop.stop()
+            raise e
+
         try:
             req_did = self._req_generator.req_did() or self._test_did
             sig_req = await self.ledger_sign_req(self._wallet_handle, req_did, req)
@@ -196,6 +274,7 @@ class LoadClient:
             self._stat.reply(req_data, e)
             self._loop.stop()
             raise e
+
         await self._req_generator.on_request_generated(req_data, sig_req)
 
     def watch_queues(self):
@@ -311,8 +390,8 @@ class LoadClient:
 
     @classmethod
     def run(cls, name, genesis_path, pipe_conn, seed, batch_size, batch_rate,
-            req_kind, buff_req, wallet_key, pool_config, send_mode, mask_sign, ext_set,
-            log_dir, log_lvl, short_stat):
+            req_kind, buff_req, wallet_key, pool_config, send_mode, mask_sign,
+            taa_text, taa_version, ext_set, log_dir, log_lvl, short_stat):
         if mask_sign:
             logger_init(log_dir, "{}.log".format(name), log_lvl)
             signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -330,7 +409,8 @@ class LoadClient:
         cln = cls(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req,
                   pool_config, send_mode, short_stat, **exts)
         try:
-            asyncio.run_coroutine_threadsafe(cln.run_test(genesis_path, seed, wallet_key), loop=cln._loop)
+            asyncio.run_coroutine_threadsafe(cln.run_test(genesis_path, seed, wallet_key, taa_text, taa_version),
+                                             loop=cln._loop)
             cln._loop.run_forever()
         except Exception as e:
             logging.getLogger(name).exception("running error {}".format(e))
