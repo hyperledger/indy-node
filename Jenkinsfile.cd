@@ -210,7 +210,7 @@ def systemTests = { component, releaseVersion ->
                         docker exec -t --user indy indyclient bash -c "\
                             set -o pipefail; \
                             cd /home/indy/system_tests/system && mkdir reports && \
-                            RUST_LOG=trace pytest -v --junit-xml=./reports/$testReportFileNameXml ./indy-node-tests/${testFileName} 2>&1 | \
+                            pytest -v --junit-xml=./reports/$testReportFileNameXml ./indy-node-tests/${testFileName} 2>&1 | \
                             tee ./reports/$testReportFileNamePlain"
                     """
                 }
