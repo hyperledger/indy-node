@@ -1946,9 +1946,333 @@ Gets Claim Definition.
 
 ### GET_REVOC_REG_DEF
 
+Gets a Revocation Registry Definition, that Issuer creates and publishes for a particular Claim Definition.
+
+- `id` (string): Revocation Registry Definition's unique identifier (a key from state trie is currently used)
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '115'
+        'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+    },
+    
+    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '115',
+        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        
+        'seqNo': 10,
+        'txnTime': 1514214795,
+        
+        'data': {
+            'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+            'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
+            'revocDefType': 'CL_ACCUM',
+            'tag': 'tag1',
+            'value': {
+                'maxCredNum': 1000000,
+                'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
+                'tailsLocation': 'http://tails.location.com',
+                'issuanceType': 'ISSUANCE_BY_DEFAULT',
+                'publicKeys': {},
+            },
+        },
+        
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 1, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+
+    }
+}
+```
+
 ### GET_REVOC_REG
 
+Gets a Revocation Registry Accumulator.
+
+- `revocRegDefId` (string): The corresponding Revocation Registry Definition's unique identifier (a key from state trie is currently used)
+
+- `timestamp` (integer as POSIX timestamp):
+
+    The time (from the ledger point of view) for which we want to get the accumulator value.
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '116'
+        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        'timestamp': 1514214800
+    },
+    
+    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '116',
+        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        'timestamp': 1514214800
+        
+        'seqNo': 10,
+        'txnTime': 1514214795,
+        
+        'data': {
+            'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
+            'revocDefType': 'CL_ACCUM',
+            'value': {
+                'accum': 'accum_value',
+            },
+        },
+        
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 1, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+
+    }
+}
+```
+
 ### GET_REVOC_REG_DELTA
+
+Gets a Revocation Registry Delta (accum values, and delta of issues/revoked indices) for the given time interval (`from` and `to`).
+
+If from is not set, then the whole registry (accum and current issues/revoked indices) is returned for the given time (`to`)
+
+- `revocRegDefId` (string): The corresponding Revocation Registry Definition's unique identifier (a key from state trie is currently used)
+
+- `from` (integer as POSIX timestamp, optional):
+
+    The time (from the ledger point of view) we want to return accum and indices after, that is the left bound of the delta interval. Can be absent, which means that all indices and accum needs to be returned till `to`.
+
+- `to` (integer as POSIX timestamp):
+
+    The time (from the ledger point of view) we want to return accum and indices before, that is the right bound of the delta interval. 
+
+
+Please note, that if `from` is set, then addition state proof for `accum_from` value is returned in `stateProofFrom`, while the common state proof is for `accum_to`
+Both state proofs are returned just for accumulator values. The client needs to check that the returned delta is also correct by calculating `accum_to` from the given `accum_from` and delta indices, and making sure that the calculated  `accum_to` is equal to the returned one.
+
+If `from` is not set, then there is just one state proof (as usual) for both `accum` value and the whole indices lists. 
+
+*Request Example when both `from` and `to` present*:
+```
+{
+    'operation': {
+        'type': '117'
+        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        'from': 1514214100
+        'to': 1514214900
+    },
+    
+    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example when both `from` and `to` present*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '117',
+        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        'from': 1514214100
+        'to': 1514214900
+        
+        'seqNo': 18,
+        'txnTime': 1514214795,
+        
+        'data': {
+            'revocDefType': 'CL_ACCUM',
+            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+            'value': {
+               'accum_to': {
+                   'revocDefType': 'CL_ACCUM', 
+                   'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1', 
+                   'txnTime': 1514214795, 
+                   'seqNo': 18,
+                   'value': {
+                      'accum': '9a512a7624'
+                   }
+                },
+                'revoked': [10, 11],
+                'issued': [1, 2, 3], 
+                'accum_from': {
+                    'revocDefType': 'CL_ACCUM',
+                    'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1', 
+                    'txnTime': 1514214105, 
+                    'seqNo': 16, 
+                    'value': {
+                       'accum': 'be080bd74b'
+                    }
+                 }
+            },
+            'stateProofFrom': {
+                'multi_signature': {
+                     'participants': ['Delta', 'Gamma', 'Alpha'],
+                     'signature': 'QpP4oVm2MLQ7SzLVZknuFjneXfqYj6UStn3oQtCdSiKiYuS4n1kxRphKRDMwmS7LGeXgUmy3C8GtcVM5X9SN9qLr2MBApjpPtKE9DkBTwyieh3vN1UMq1Kwx2Jkz7vcSJNH2WzjEKSUnpFLEJk4mpFaibqd1xX2hrwruxzSDUi2uCT', 
+                     'value': {
+                         'state_root_hash': '2sfnQcEKkjw78KYnGJyk5Gw9gtwESvX6NdFFPEiQYQsz', 
+                         'ledger_id': 1,
+                         'pool_state_root_hash': 'JDt3NNrZenx3x41oxsvhWeuSFFerdyqEvQUWyGdHX7gx',
+                         'timestamp': 1514214105, 
+                         'txn_root_hash': 'FCkntnPqfaGx4fCX5tTdWeLr1mXdFuZnTNuEehiet32z'
+                     }
+                },
+                'root_hash': '2sfnQcEKkjw78KYnGJyk5Gw9gtwESvX6NdFFPEiQYQsz',
+                'proof_nodes': '+QLB+QE3uFEgOk1TaktUV2tQTHRZb1BFYVRGMVRVRGI6NDpNU2pLVFdrUEx0WW9QRWFURjFUVURiOjM6Q0w6MTM6c29tZV90YWc6Q0xfQUNDVU06YTk4ZWO44vjguN57ImxzbiI6MTYsImx1dCI6MTU1ODUyNDEzMSwidmFsIjp7InJldm9jRGVmVHlwZSI6IkNMX0FDQ1VNIiwicmV2b2NSZWdEZWZJZCI6Ik1TaktUV2tQTHRZb1BFYVRGMVRVRGI6NDpNU2pLVFdrUEx0WW9QRWFURjFUVURiOjM6Q0w6MTM6c29tZV90YWc6Q0xfQUNDVU06YTk4ZWMiLCJzZXFObyI6MTYsInR4blRpbWUiOjE1NTg1MjQxMzEsInZhbHVlIjp7ImFjY3VtIjoiYmUwODBiZDc0YiJ9fX34UYCAgICAoAgDh8v1CXNEJGFl302RO98x8R6Ozscy0ZFdRpiCobh3oCnaxHyPnZq6E+mbnfU6oC994Wv1nh7sf0pQOp5g93tbgICAgICAgICAgPkBMYCAgKBmZE7e2jSrhTw9usjxZcAb25uSisJV+TzkbXNUypyJvaA/KAFG4RQqB9dAGRfTgly2XjXvPCeVr7vBn6FSkN7sH4CAoBGxQDip9XfEC/CkgimSkkhCeMm9XnkxxwWiMJwzuhAjgKAmh0g8FUI60e7NBwTu7ukdfz6kaON6u9U87kTeTlPcXICgsk2X2G6MlVhEqMEzthWAT4ey6qRaKXpOuMZOA1kMODagQdHobiexMaAwqtI7P5bbfqNkQEoZD79m6z43DEGQGL6gXQfLXgd+xWWXypr1pDxPvjSU8UtHjfWhJ58aiuqAzmKgyee3YL7GFFd+5oxG9b/q4od/mRjFpLdXKR3YG2o/hAygRIVVdoVD0dpqktsN8kSc03UhYiI76nxdCejX+CV4OX6A'
+            }
+        },
+        
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 1, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+
+    }
+}
+```
+
+
+
+*Request Example when there is only `to` present*:
+```
+{
+    'operation': {
+        'type': '117'
+        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        'to': 1514214900
+    },
+    
+    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example when there is only `to` present*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '117',
+        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        'to': 1514214900
+        
+        'seqNo': 18,
+        'txnTime': 1514214795,
+        
+        'data': {
+            'revocDefType': 'CL_ACCUM',
+            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+            'value': {
+               'accum_to': {
+                   'revocDefType': 'CL_ACCUM', 
+                   'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1', 
+                   'txnTime': 1514214795, 
+                   'seqNo': 18,
+                   'value': {
+                      'accum': '9a512a7624'
+                   }
+                },
+                'issued': [],
+                'revoked': [1, 2, 3, 4, 5]
+        },
+        
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 1, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+
+    }
+}
+```
 
 ### GET_AUTH_RULE
 
@@ -2194,7 +2518,7 @@ All input parameters are optional and mutually exclusive.
             'multi_signature': {
                 'value': {
                     'timestamp': 1514308168,
-                    'ledger_id': 1, 
+                    'ledger_id': 2, 
                     'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
                     'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
                     'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
@@ -2274,7 +2598,7 @@ All input parameters are optional and mutually exclusive.
             'multi_signature': {
                 'value': {
                     'timestamp': 1514308168,
-                    'ledger_id': 1, 
+                    'ledger_id': 2, 
                     'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
                     'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
                     'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
