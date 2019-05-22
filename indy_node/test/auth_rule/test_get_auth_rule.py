@@ -151,6 +151,44 @@ def test_get_all_auth_rule_transactions_after_write(looper,
             assert auth_map[key].as_dict == rule[CONSTRAINT]
 
 
+def test_auth_rule_after_get_auth_rule_without_changes(looper,
+                                       sdk_wallet_trustee,
+                                       sdk_pool_handle):
+    # get all auth rules
+    auth_rules = sdk_get_auth_rule_request(looper,
+                                           sdk_wallet_trustee,
+                                           sdk_pool_handle)
+
+    # prepare action key
+    dict_key = dict(auth_rules[0][1][RESULT][DATA][0])
+    dict_key.pop(CONSTRAINT)
+
+    # prepare "operation" to send AUTH_RULE txn
+    op = dict(auth_rules[0][1][RESULT][DATA][0])
+    op[TXN_TYPE] = AUTH_RULE
+
+    # send AUTH_RULE txn
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+    req = sdk_sign_and_submit_req_obj(looper,
+                                      sdk_pool_handle,
+                                      sdk_wallet_trustee,
+                                      req_obj)
+    sdk_get_and_check_replies(looper, [req])
+
+    # send GET_AUTH_RULE
+    get_response = sdk_get_auth_rule_request(looper,
+                                             sdk_wallet_trustee,
+                                             sdk_pool_handle,
+                                             dict_key)
+
+    # check response
+    result = get_response[0][1]["result"][DATA]
+    assert len(result) == 1
+    _check_key(dict_key, result[0])
+    assert auth_rules[0][1][RESULT][DATA][0][CONSTRAINT] == result[0][CONSTRAINT]
+    assert get_response[0][1]["result"][STATE_PROOF]
+
+
 def test_auth_rule_after_get_auth_rule(looper,
                                        sdk_wallet_trustee,
                                        sdk_pool_handle):
