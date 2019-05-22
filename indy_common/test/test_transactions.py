@@ -33,7 +33,7 @@ def testTransactionsAreEncoded():
 
     assert AUTH_RULE == "120"
     assert GET_AUTH_RULE == "121"
-    assert AUTH_RULE == "122"
+    assert AUTH_RULES == "122"
 
 
 def testTransactionEnumDecoded():

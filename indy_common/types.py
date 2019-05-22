@@ -321,14 +321,16 @@ class ConstraintField(FieldBase):
 
     def _specific_validation(self, val):
         if not val:
-            return
-        #     return "Fields {} and {} are required and should not " \
-        #            "be an empty list.".format(AUTH_CONSTRAINTS, CONSTRAINT)
+            return "Fields {} and {} are required and should not " \
+                   "be an empty list.".format(AUTH_CONSTRAINTS, CONSTRAINT)
         if CONSTRAINT_ID not in val:
             return "Field {} is required".format(CONSTRAINT_ID)
-        return self._constraint_entity.validate(val) \
-            if val[CONSTRAINT_ID] == ConstraintsEnum.ROLE_CONSTRAINT_ID \
-            else self._constraint_list.validate(val)
+        if val[CONSTRAINT_ID] == ConstraintsEnum.FORBIDDEN_CONSTRAINT_ID:
+            return
+        elif val[CONSTRAINT_ID] == ConstraintsEnum.ROLE_CONSTRAINT_ID:
+            return self._constraint_entity.validate(val)
+        else:
+            return self._constraint_list.validate(val)
 
 
 class ConstraintEntityField(MessageValidator):

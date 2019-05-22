@@ -325,7 +325,7 @@ class ConfigReqHandler(PConfigReqHandler):
 
     @staticmethod
     def make_get_auth_rule_result(constraint, action_obj):
-        result = {CONSTRAINT: constraint.as_dict if constraint is not None else {},
+        result = {CONSTRAINT: constraint.as_dict,
                   AUTH_TYPE: action_obj.txn_type,
                   AUTH_ACTION: action_obj.prefix,
                   FIELD: action_obj.field,

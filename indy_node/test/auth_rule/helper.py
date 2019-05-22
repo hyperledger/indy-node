@@ -49,9 +49,8 @@ def generate_auth_rule_operation(auth_action=ADD_PREFIX, auth_type=NYM,
 def generate_auth_rule(auth_action=ADD_PREFIX, auth_type=NYM,
                        field=ROLE, new_value=TRUST_ANCHOR,
                        old_value=None, constraint=None):
-    constraint = generate_constraint_entity() \
-        if constraint is None \
-        else constraint
+    if constraint is None:
+        constraint = generate_constraint_entity()
     rule = {TXN_TYPE: AUTH_RULE,
             CONSTRAINT: constraint,
             AUTH_ACTION: auth_action,
@@ -132,7 +131,6 @@ def add_new_nym(looper, sdk_pool_handle, creators_wallets,
         return request_couple
     # waiting for replies
     sdk_get_and_check_replies(looper, [request_couple])
-
 
 
 def sdk_get_auth_rule_request(looper, sdk_wallet_trustee, sdk_pool_handle, key=None):
