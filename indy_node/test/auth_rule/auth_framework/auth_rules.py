@@ -2,10 +2,11 @@ import pytest
 
 from indy_common.authorize.auth_actions import AuthActionEdit, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint
-from indy_common.constants import AUTH_RULES
+from indy_common.constants import AUTH_RULES, RULES
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation, \
-    sdk_send_and_check_auth_rules_request
+    sdk_send_and_check_auth_rules_request, generate_auth_rule
+from plenum.common.constants import TXN_TYPE
 from plenum.common.exceptions import RequestRejectedException
 from plenum.test.helper import sdk_gen_request
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
@@ -54,22 +55,26 @@ class AuthRulesTest(AuthTest):
                                 old_value='*',
                                 new_value='*')
         constraint = auth_map.auth_map.get(action.get_action_id())
-        operation = generate_auth_rule_operation(auth_action=EDIT_PREFIX,
-                                                 auth_type=AUTH_RULES,
-                                                 field='*',
-                                                 old_value='*',
-                                                 new_value='*',
-                                                 constraint=constraint.as_dict)
+        rules = [generate_auth_rule(auth_action=EDIT_PREFIX,
+                                    auth_type=AUTH_RULES,
+                                    field='*',
+                                    old_value='*',
+                                    new_value='*',
+                                    constraint=constraint.as_dict)]
+        operation = {RULES: rules,
+                     TXN_TYPE: AUTH_RULES}
         return sdk_gen_request(operation, identifier=self.new_default_wallet[1])
 
     def get_changed_auth_rules(self):
         constraint = AuthConstraint(role=None,
                                     sig_count=1,
                                     need_to_be_owner=False)
-        operation = generate_auth_rule_operation(auth_action=EDIT_PREFIX,
-                                                 auth_type=AUTH_RULES,
-                                                 field='*',
-                                                 old_value='*',
-                                                 new_value='*',
-                                                 constraint=constraint.as_dict)
+        rules = [generate_auth_rule(auth_action=EDIT_PREFIX,
+                                    auth_type=AUTH_RULES,
+                                    field='*',
+                                    old_value='*',
+                                    new_value='*',
+                                    constraint=constraint.as_dict)]
+        operation = {RULES: rules,
+                     TXN_TYPE: AUTH_RULES}
         return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
