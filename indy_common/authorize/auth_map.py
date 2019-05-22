@@ -289,65 +289,67 @@ auth_map = OrderedDict([
 ])
 
 # Edit Trustee:
-auth_map_trustee = {
-    edit_role_actions[TRUSTEE][TRUSTEE].get_action_id(): owner_constraint,
-    edit_role_actions[TRUSTEE][STEWARD].get_action_id(): one_trustee_constraint,
-    edit_role_actions[TRUSTEE][TRUST_ANCHOR].get_action_id(): one_trustee_constraint,
-    edit_role_actions[TRUSTEE][NETWORK_MONITOR].get_action_id(): one_trustee_constraint,
-    edit_role_actions[TRUSTEE][IDENTITY_OWNER].get_action_id(): one_trustee_constraint,
-}
+auth_map_trustee = OrderedDict([
+    (edit_role_actions[TRUSTEE][TRUSTEE].get_action_id(), owner_constraint),
+    (edit_role_actions[TRUSTEE][STEWARD].get_action_id(), one_trustee_constraint),
+    (edit_role_actions[TRUSTEE][TRUST_ANCHOR].get_action_id(), one_trustee_constraint),
+    (edit_role_actions[TRUSTEE][NETWORK_MONITOR].get_action_id(), one_trustee_constraint),
+    (edit_role_actions[TRUSTEE][IDENTITY_OWNER].get_action_id(), one_trustee_constraint),
+])
 auth_map.update(auth_map_trustee)
 
 # Edit Steward
-auth_map_steward = {
-    edit_role_actions[STEWARD][TRUSTEE].get_action_id(): one_trustee_constraint,
-    edit_role_actions[STEWARD][STEWARD].get_action_id(): owner_constraint,
-    edit_role_actions[STEWARD][TRUST_ANCHOR].get_action_id(): one_trustee_constraint,
-    edit_role_actions[STEWARD][NETWORK_MONITOR].get_action_id(): one_trustee_constraint,
-    edit_role_actions[STEWARD][IDENTITY_OWNER].get_action_id(): one_trustee_constraint,
-}
+auth_map_steward = OrderedDict([
+    (edit_role_actions[STEWARD][TRUSTEE].get_action_id(), one_trustee_constraint),
+    (edit_role_actions[STEWARD][STEWARD].get_action_id(), owner_constraint),
+    (edit_role_actions[STEWARD][TRUST_ANCHOR].get_action_id(), one_trustee_constraint),
+    (edit_role_actions[STEWARD][NETWORK_MONITOR].get_action_id(), one_trustee_constraint),
+    (edit_role_actions[STEWARD][IDENTITY_OWNER].get_action_id(), one_trustee_constraint),
+])
 auth_map.update(auth_map_steward)
 
 # Edit Trust Anchor
-auth_map_trust_anchor = {
-    edit_role_actions[TRUST_ANCHOR][TRUSTEE].get_action_id(): one_trustee_constraint,
-    edit_role_actions[TRUST_ANCHOR][STEWARD].get_action_id(): one_trustee_constraint,
-    edit_role_actions[TRUST_ANCHOR][TRUST_ANCHOR].get_action_id(): owner_constraint,
-    edit_role_actions[TRUST_ANCHOR][NETWORK_MONITOR].get_action_id(): one_trustee_constraint,
-    edit_role_actions[TRUST_ANCHOR][IDENTITY_OWNER].get_action_id(): one_trustee_constraint,
-}
+auth_map_trust_anchor = OrderedDict([
+    (edit_role_actions[TRUST_ANCHOR][TRUSTEE].get_action_id(), one_trustee_constraint),
+    (edit_role_actions[TRUST_ANCHOR][STEWARD].get_action_id(), one_trustee_constraint),
+    (edit_role_actions[TRUST_ANCHOR][TRUST_ANCHOR].get_action_id(), owner_constraint),
+    (edit_role_actions[TRUST_ANCHOR][NETWORK_MONITOR].get_action_id(), one_trustee_constraint),
+    (edit_role_actions[TRUST_ANCHOR][IDENTITY_OWNER].get_action_id(), one_trustee_constraint),
+])
 auth_map.update(auth_map_trust_anchor)
 
 # Edit Network Monitor
-auth_map_network_monitor = {
-    edit_role_actions[NETWORK_MONITOR][TRUSTEE].get_action_id(): one_trustee_constraint,
-    edit_role_actions[NETWORK_MONITOR][STEWARD].get_action_id(): one_trustee_constraint,
-    edit_role_actions[NETWORK_MONITOR][TRUST_ANCHOR].get_action_id(): steward_or_trustee_constraint,
-    edit_role_actions[NETWORK_MONITOR][NETWORK_MONITOR].get_action_id(): owner_constraint,
-    edit_role_actions[NETWORK_MONITOR][IDENTITY_OWNER].get_action_id(): steward_or_trustee_constraint,
-}
+auth_map_network_monitor = OrderedDict([
+    (edit_role_actions[NETWORK_MONITOR][TRUSTEE].get_action_id(), one_trustee_constraint),
+    (edit_role_actions[NETWORK_MONITOR][STEWARD].get_action_id(), one_trustee_constraint),
+    (edit_role_actions[NETWORK_MONITOR][TRUST_ANCHOR].get_action_id(), steward_or_trustee_constraint),
+    (edit_role_actions[NETWORK_MONITOR][NETWORK_MONITOR].get_action_id(), owner_constraint),
+    (edit_role_actions[NETWORK_MONITOR][IDENTITY_OWNER].get_action_id(), steward_or_trustee_constraint),
+])
 auth_map.update(auth_map_network_monitor)
 
 # Edit Identity Owner
-auth_map_identity_owner = {
-    edit_role_actions[IDENTITY_OWNER][TRUSTEE].get_action_id(): one_trustee_constraint,
-    edit_role_actions[IDENTITY_OWNER][STEWARD].get_action_id(): one_trustee_constraint,
-    edit_role_actions[IDENTITY_OWNER][TRUST_ANCHOR].get_action_id(): steward_or_trustee_constraint,
-    edit_role_actions[IDENTITY_OWNER][NETWORK_MONITOR].get_action_id(): steward_or_trustee_constraint,
-    edit_role_actions[IDENTITY_OWNER][IDENTITY_OWNER].get_action_id(): owner_constraint,
-}
+auth_map_identity_owner = OrderedDict([
+    (edit_role_actions[IDENTITY_OWNER][TRUSTEE].get_action_id(), one_trustee_constraint),
+    (edit_role_actions[IDENTITY_OWNER][STEWARD].get_action_id(), one_trustee_constraint),
+    (edit_role_actions[IDENTITY_OWNER][TRUST_ANCHOR].get_action_id(), steward_or_trustee_constraint),
+    (edit_role_actions[IDENTITY_OWNER][NETWORK_MONITOR].get_action_id(), steward_or_trustee_constraint),
+    (edit_role_actions[IDENTITY_OWNER][IDENTITY_OWNER].get_action_id(), owner_constraint),
+])
 auth_map.update(auth_map_identity_owner)
 
 # Special rules, activated when ANYONE_CAN_WRITE set to True
-anyone_can_write_map = {anyone_can_add_nym.get_action_id(): anyone_constraint,
-                        anyone_can_add_schema.get_action_id(): anyone_constraint,
-                        anyone_can_add_claim_def.get_action_id(): owner_constraint,
-                        anyone_can_edit_nym.get_action_id(): anyone_constraint,
-                        anyone_can_add_attrib.get_action_id(): owner_constraint,
-                        anyone_can_edit_attrib.get_action_id(): owner_constraint,
-                        anyone_can_edit_schema.get_action_id(): anyone_constraint,
-                        anyone_can_edit_claim_def.get_action_id(): owner_constraint,
-                        anyone_can_create_revoc_reg_def.get_action_id(): owner_constraint,
-                        anyone_can_create_revoc_reg_entry.get_action_id(): owner_constraint,
-                        anyone_can_edit_revoc_reg_def.get_action_id(): owner_constraint,
-                        anyone_can_create_revoc_reg_entry.get_action_id(): owner_constraint}
+anyone_can_write_map = OrderedDict([
+    (anyone_can_add_nym.get_action_id(), anyone_constraint),
+    (anyone_can_add_schema.get_action_id(), anyone_constraint),
+    (anyone_can_add_claim_def.get_action_id(), owner_constraint),
+    (anyone_can_edit_nym.get_action_id(), anyone_constraint),
+    (anyone_can_add_attrib.get_action_id(), owner_constraint),
+    (anyone_can_edit_attrib.get_action_id(), owner_constraint),
+    (anyone_can_edit_schema.get_action_id(), anyone_constraint),
+    (anyone_can_edit_claim_def.get_action_id(), owner_constraint),
+    (anyone_can_create_revoc_reg_def.get_action_id(), owner_constraint),
+    (anyone_can_create_revoc_reg_entry.get_action_id(), owner_constraint),
+    (anyone_can_edit_revoc_reg_def.get_action_id(), owner_constraint),
+    (anyone_can_create_revoc_reg_entry.get_action_id(), owner_constraint)
+])
