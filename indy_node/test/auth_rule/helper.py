@@ -62,11 +62,35 @@ def create_verkey_did(looper, wh):
         create_and_store_my_did(wh, json.dumps({'seed': seed})))
 
 
+def sdk_send_and_check_auth_rule_invalid_request(looper, sdk_wallet_trustee, sdk_pool_handle,
+                                         auth_action=ADD_PREFIX, auth_type=NYM,
+                                         field=ROLE, new_value=TRUST_ANCHOR,
+                                         old_value=None, constraint=None, no_wait=False):
+    op = generate_auth_rule_operation(auth_action, auth_type,
+                                      field, new_value,
+                                      old_value, constraint)
+
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+    req = sdk_sign_and_submit_req_obj(looper,
+                                      sdk_pool_handle,
+                                      sdk_wallet_trustee,
+                                      req_obj)
+    if no_wait:
+        return req
+    resp = sdk_get_and_check_replies(looper, [req])
+    return resp
+
+
+
 def sdk_send_and_check_auth_rule_request(looper, sdk_wallet_trustee, sdk_pool_handle,
                                          auth_action=ADD_PREFIX, auth_type=NYM,
                                          field=ROLE, new_value=TRUST_ANCHOR,
                                          old_value=None, constraint=None, no_wait=False):
     wallet_h, did = sdk_wallet_trustee
+
+    constraint = (
+        generate_constraint_entity() if constraint is None else constraint
+    )
 
     req_json = looper.loop.run_until_complete(
         build_auth_rule_request(
@@ -76,7 +100,7 @@ def sdk_send_and_check_auth_rule_request(looper, sdk_wallet_trustee, sdk_pool_ha
             field=field,
             old_value=old_value,
             new_value=new_value,
-            constraint=None if constraint is None else json.dumps(constraint)
+            constraint=json.dumps(constraint)
         )
     )
     req = sdk_sign_and_submit_req(sdk_pool_handle,
@@ -110,6 +134,20 @@ def add_new_nym(looper, sdk_pool_handle, creators_wallets,
         return request_couple
     # waiting for replies
     sdk_get_and_check_replies(looper, [request_couple])
+
+
+
+def sdk_get_auth_rule_invalid_request(looper, sdk_wallet, sdk_pool_handle, key=None):
+    op = {TXN_TYPE: GET_AUTH_RULE}
+    if key:
+        op.update(key)
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet[1])
+    req = sdk_sign_and_submit_req_obj(looper,
+                                      sdk_pool_handle,
+                                      sdk_wallet,
+                                      req_obj)
+    resp = sdk_get_and_check_replies(looper, [req])
+    return resp
 
 
 def sdk_get_auth_rule_request(looper, sdk_wallet, sdk_pool_handle, key=None):

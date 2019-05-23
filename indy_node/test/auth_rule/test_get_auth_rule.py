@@ -1,6 +1,8 @@
 import pytest
 
 from plenum.common.types import OPERATION
+from plenum.common.constants import TXN_TYPE, TRUSTEE, STEWARD, DATA, STATE_PROOF
+from plenum.common.exceptions import RequestNackedException
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ROLE
@@ -8,10 +10,10 @@ from indy_common.authorize.auth_map import auth_map
 from indy_common.constants import NYM, TRUST_ANCHOR, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, \
     OLD_VALUE, SCHEMA, CONSTRAINT, AUTH_RULE
 from indy_node.server.config_req_handler import ConfigReqHandler
+
 from indy_node.test.auth_rule.helper import generate_constraint_list, generate_constraint_entity, \
-    sdk_send_and_check_auth_rule_request, generate_key, sdk_get_auth_rule_request
-from plenum.common.constants import TXN_TYPE, TRUSTEE, STEWARD, DATA, STATE_PROOF
-from plenum.common.exceptions import RequestNackedException
+    sdk_send_and_check_auth_rule_request, generate_key, sdk_get_auth_rule_request, \
+    sdk_get_auth_rule_invalid_request
 from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, sdk_get_and_check_replies
 
 RESULT = "result"
@@ -24,14 +26,14 @@ def test_fail_get_auth_rule_with_incorrect_key(looper,
     key[AUTH_TYPE] = "wrong_txn_type"
     with pytest.raises(RequestNackedException, match="Unknown authorization rule: key .* "
                                                      "is not found in authorization map."):
-        sdk_get_auth_rule_request(looper,
+        sdk_get_auth_rule_invalid_request(looper,
                                   sdk_wallet_trustee,
                                   sdk_pool_handle,
                                   key)[0]
 
     del key[AUTH_TYPE]
     with pytest.raises(RequestNackedException, match="Not enough fields to build an auth key."):
-        sdk_get_auth_rule_request(looper,
+        sdk_get_auth_rule_invalid_request(looper,
                                   sdk_wallet_trustee,
                                   sdk_pool_handle,
                                   key)[0]
