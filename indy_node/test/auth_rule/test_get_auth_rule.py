@@ -16,6 +16,7 @@ from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, sdk
 
 RESULT = "result"
 
+
 def test_fail_get_auth_rule_with_incorrect_key(looper,
                                                sdk_wallet_trustee,
                                                sdk_pool_handle):
@@ -84,12 +85,13 @@ def test_get_all_auth_rule_transactions(looper,
                                      sdk_pool_handle)
 
     result = resp[0][1]["result"][DATA]
-    for rule in result:
-        key = ConfigReqHandler.get_auth_key(rule)
-        if auth_map[key] is None:
+    for i, (auth_key, constraint) in enumerate(auth_map.items()):
+        rule = result[i]
+        assert auth_key == ConfigReqHandler.get_auth_key(rule)
+        if constraint is None:
             assert {} == rule[CONSTRAINT]
         else:
-            assert auth_map[key].as_dict == rule[CONSTRAINT]
+            assert constraint.as_dict == rule[CONSTRAINT]
 
 
 def test_get_one_auth_rule_transaction_after_write(looper,
