@@ -189,11 +189,51 @@ class LoadClient:
 
         return result['data']['text'], result['data']['version'], result['txnTime']
 
+    async def _pool_auth_rules_init(self):
+        get_auth_rule_req = await ledger.build_get_auth_rule_request(self._test_did, None, None, None, None, None)
+        get_auth_rule_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, get_auth_rule_req)
+        ensure_is_reply(get_auth_rule_resp)
+
+        get_auth_rule_resp = json.loads(get_auth_rule_resp)
+        data_f = get_auth_rule_resp["result"].get("data", [])
+        if not data_f:
+            self._logger.warning("No auth rules found")
+            return
+
+        for auth_rule in data_f:
+            if not auth_rule['constraint']:
+                # TODO INDY-2077
+                self._logger.warning(
+                    "Skip auth rule setting since constraint is empty: {}"
+                    .format(auth_rule)
+                )
+                continue
+
+            try:
+                auth_rule_req = await ledger.build_auth_rule_request(
+                    self._test_did,
+                    txn_type=auth_rule['auth_type'],
+                    action=auth_rule['auth_action'],
+                    field=auth_rule['field'],
+                    old_value=auth_rule.get('old_value'),
+                    new_value=auth_rule.get('new_value'),
+                    constraint=json.dumps(auth_rule['constraint']),
+                )
+                auth_rule_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, auth_rule_req)
+                ensure_is_reply(auth_rule_resp)
+            except Exception:
+                self._logger.exception(
+                    "Failed to set auth rule with the following parameters: {} "
+                    .format(auth_rule)
+                )
+                raise
+        self._logger.info("_pool_auth_rules_init done")
+
     async def _pre_init(self):
         pass
 
     async def _post_init(self):
-        pass
+        await self._pool_auth_rules_init()
 
     def _on_pool_create_ext_params(self):
         return {"max_cred_num": self._batch_size}
