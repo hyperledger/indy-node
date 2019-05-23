@@ -116,16 +116,33 @@ class LoadClient:
             return
 
         for auth_rule in data_f:
-            auth_rule_req = await ledger.build_auth_rule_request(
-                self._test_did, txn_type=auth_rule['auth_type'],
-                action=auth_rule['auth_action'],
-                field=auth_rule['field'],
-                old_value=auth_rule.get('old_value'),
-                new_value=auth_rule.get('new_value'),
-                constraint=auth_rule['constraint'],
-            )
-            auth_rule_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, auth_rule_req)
-            ensure_is_reply(auth_rule_resp)
+            if not auth_rule['constraint']:
+                # TODO INDY-2077
+                self._logger.warning(
+                    "Skip auth rule setting since constraint is empty: {}"
+                    .format(auth_rule)
+                )
+                continue
+
+            try:
+                auth_rule_req = await ledger.build_auth_rule_request(
+                    self._test_did,
+                    txn_type=auth_rule['auth_type'],
+                    action=auth_rule['auth_action'],
+                    field=auth_rule['field'],
+                    old_value=auth_rule.get('old_value'),
+                    new_value=auth_rule.get('new_value'),
+                    constraint=json.dumps(auth_rule['constraint']),
+                )
+                auth_rule_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, auth_rule_req)
+                ensure_is_reply(auth_rule_resp)
+            except Exception:
+                self._logger.exception(
+                    "Failed to set auth rule with the following parameters: {} "
+                    .format(auth_rule)
+                )
+                raise
+        self._logger.info("_pool_auth_rules_init done")
 
     async def _pre_init(self):
         pass
