@@ -169,7 +169,7 @@ Additional (optional) fields for write requests:
 - `taaAcceptance` (dict, optional):
             If transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
             
-   - `taaDigest` (SHA256 hex digest string): SHA256 hex digest of the latest Transaction Author Agreement on the ledger
+   - `taaDigest` (SHA256 hex digest string): SHA256 hex digest of the latest Transaction Author Agreement on the ledger. The digest is calculated from concatenation of [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)'s `version` and `text`.
                 
    - `mechanism` (string): a mechanism used to accept the signature; must be present in the latest list of transaction author agreement acceptane mechanisms on the ledger  
                 
@@ -2448,7 +2448,7 @@ Each output list element is equal to the input of [AUTH_RULE](#auth_rule), so li
 Gets a transaction author agreement.
 
 - Gets the latest (current) transaction author agreement if no input parameter is set.
-- Gets a transaction author agreement by its digest if `digest` is set.
+- Gets a transaction author agreement by its digest if `digest` is set. The digest is calculated from concatenation of [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)'s `version` and `text`.
 - Gets a transaction author agreement by its version if `version` is set.
 - Gets the latest (current) transaction author agreement at the given time (from ledger point of view) if `timestamp` is set.
 
@@ -2456,11 +2456,11 @@ All input parameters are optional and mutually exclusive.
 
 - `digest` (sha256 digest hex string):
 
-    Transaction's author agreement sha256 hash digest hex string
+    Transaction's author agreement sha256 hash digest hex string calculated from concatenation of [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)'s `version` and `text`.
     
 - `version` (string):
 
-    Unique version of the transaction author agreement
+    Unique version of the transaction author agreement.
     
 - `timestamp` (integer as POSIX timestamp):
 
