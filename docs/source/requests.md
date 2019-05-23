@@ -72,21 +72,37 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
     The request-specific operation json.
     
     - `type`: request type as one of the following values:
-
-        - NODE = "0"
-        - NYM = "1"
-        - ATTRIB = "100"
-        - SCHEMA = "101"
-        - CLAIM_DEF = "102"
-        - POOL_UPGRADE = "109"
-        - NODE_UPGRADE = "110"
-        - POOL_CONFIG = "111"
-        - GET_TXN = "3"
-        - GET_ATTR = "104"
-        - GET_NYM = "105"
-        - GET_SCHEMA = "107"
-        - GET_CLAIM_DEF = "108"
         
+        - write requests (transactions):
+
+            - NODE = "0"
+            - NYM = "1"
+            - TXN_AUTHOR_AGREEMENT = "4"
+            - TXN_AUTHOR_AGREEMENT_AML = "5"
+            - ATTRIB = "100"
+            - SCHEMA = "101"
+            - CLAIM_DEF = "102"
+            - POOL_UPGRADE = "109"
+            - NODE_UPGRADE = "110"
+            - POOL_CONFIG = "111"
+            - REVOC_REG_DEF = "113"
+            - REVOC_REG_DEF = "114"
+            - AUTH_RULE = "120"
+            
+        - read requests:
+        
+            - GET_TXN = "3"
+            - GET_TXN_AUTHOR_AGREEMENT = "6"
+            - GET_TXN_AUTHOR_AGREEMENT_AML = "7"        
+            - GET_ATTR = "104"
+            - GET_NYM = "105"
+            - GET_SCHEMA = "107"
+            - GET_CLAIM_DEF = "108"
+            - GET_REVOC_REG_DEF = "115"
+            - GET_REVOC_REG = "116"
+            - GET_REVOC_REG_DELTA = "117"  
+            - GET_AUTH_RULE = "121"      
+            
     - request-specific data
 
 - `identifier` (base58-encoded string):
@@ -221,14 +237,19 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
     
         Supported transaction type:
         
-        - NODE = 0
-        - NYM = 1
-        - ATTRIB = 100
-        - SCHEMA = 101
-        - CLAIM_DEF = 102
-        - POOL_UPGRADE = 109
-        - NODE_UPGRADE = 110
-        - POOL_CONFIG = 111
+        - NODE = "0"
+        - NYM = "1"
+        - TXN_AUTHOR_AGREEMENT = "4"
+        - TXN_AUTHOR_AGREEMENT_AML = "5"
+        - ATTRIB = "100"
+        - SCHEMA = "101"
+        - CLAIM_DEF = "102"
+        - POOL_UPGRADE = "109"
+        - NODE_UPGRADE = "110"
+        - POOL_CONFIG = "111"
+        - REVOC_REG_DEF = "113"
+        - REVOC_REG_DEF = "114"
+        - AUTH_RULE = "120"
 
     - `protocolVersion` (integer; optional): 
     
@@ -363,10 +384,17 @@ These common metadata values are added to result's JSON at the same level as rea
 
     Supported transaction types:
     
+    - GET_TXN = "3"
+    - GET_TXN_AUTHOR_AGREEMENT = "6"
+    - GET_TXN_AUTHOR_AGREEMENT_AML = "7"        
     - GET_ATTR = "104"
     - GET_NYM = "105"
     - GET_SCHEMA = "107"
     - GET_CLAIM_DEF = "108"
+    - GET_REVOC_REG_DEF = "115"
+    - GET_REVOC_REG = "116"
+    - GET_REVOC_REG_DELTA = "117"  
+    - GET_AUTH_RULE = "121"    
 
 - `identifier` (base58-encoded string):
  
@@ -435,6 +463,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     - "0" (TRUSTEE)
     - "2" (STEWARD)
     - "101" (TRUST_ANCHOR)
+    - "201" (NETWORK_MONITOR)
     
   A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md)).
   
@@ -1274,119 +1303,82 @@ There is a default Auth Constraint for every action (defined in [auth_rules.md](
 The `AUTH_RULE` command allows to change the Auth Constraint.
 So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action.
 
-There are two types of constraints:
-- ConstraintEntity contains `{constraint_id, role, sig_count, need_to_be_owner, metadata}`
-- ConstraintList with format `{constraint_id, auth_constraints}` contains list of constraints.
-That is, the entry 
-```
-'auth_type': '0', 
-'auth_action': 'EDIT',
-'field' :'services',
-'old_value': [VALIDATOR],
-'new_value': []
-'constraint':{
-      'constraint_id': 'OR',
-      'auth_constraints': [{'constraint_id': 'ROLE', 
-                            'role': '0',
-                            'sig_count': 1, 
-                            'need_to_be_owner': False, 
-                            'metadata': {}}, 
-                           
-                           {'constraint_id': 'ROLE', 
-                            'role': '2',
-                            'sig_count': 1, 
-                            'need_to_be_owner': True, 
-                            'metadata': {}}
-                           ]
-}, 
-
-                                                                
-```
-means that changing a value of a NODE transaction's `service` field from `[VALIDATOR]` to `[]` (demotion of a node) can only be done by two TRUSTEEs or one STEWARD who is the owner (the original creator) of this transaction.
-
 Please note, that list elements of `GET_AUTH_RULE` output can be used as an input (with a required changes) for `AUTH_RULE`.
 
-**Action Format:**
+If format of a transaction is incorrect, the client will receive NACK message for the request. 
+A client will receive NACK for 
+- a request with incorrect format;
+- a request with "ADD" action, but with "old_value";
+- a request with "EDIT" action without "old_value";
+- a request with a key that is not in the [auth_rule](auth_rule.md).
 
-- `auth_action` (enum: `ADD` or `EDIT`):
+The following input parameters must match an auth rule from the [auth_rules.md](auth_rules.md):
+- `auth_type` (string enum)
+ 
+     The type of transaction to change the auth constraints to. (Example: "0", "1", ...). See transactions description to find the txn type enum value.
 
-    Action type: add a new entity or edit an existing one.
+- `auth_action` (enum: `ADD` or `EDIT`)
+
+    Whether this is addign of a new transaction, or editting of an existing one.
     
-- `auth_type` (string):
-
-    The type of transaction to change rights for. (Example: "0", "1", ...)
-
-- `field` (string):
-
-    Change the rights for editing (adding) a value of the given transaction field. `*` can be used as `any field`.
-
-- `old_value` (string; optional):
-
-   Old value of a field, which can be changed to a new_value. Makes sense for EDIT actions only.
-
-- `new_value` (string):
-   
-   New value that can be used to fill the field.
-
-**ConstraintType:**
-
-ConstraintList
-
-- `constraint_id` (enum: `AND` or `OR`):
-
-    Type of a constraint class. It's needed to determine a type of constraint for correct deserialization.
-    - `AND` logical conjunction for all constraints from `auth_constraints`
-    - `OR` logical disjunction for all constraints from `auth_constraints`
+- `field` (string)
+ 
+    Set the auth constraint of editing the given specific field. `*` can be used to specify that an auth rule is applied to all fields.
     
-- `auth_constraints` (list of ConstraintType):
+- `old_value` (string; optional)
 
-    List of ConstraintType (ConstraintList or ConstraintEntity) objects
+    Old value of a field, which can be changed to a new_value. Must be present for EDIT `auth_action` only.
+    `*` can be used if it doesn't matter what was the old value.
     
- ```
-{ 'constraint_id': 'AND',
-  'auth_constraints': [<ConstraintEntity>,
-                      <ConstraintEntity>]
-}
-```
+- `new_value` (string)
+
+    New value that can be used to fill the field.
+    `*` can be used if it doesn't matter what was the old value.
+
+The `constraint_id` fields is where one can define the desired auth constraint for the action:
+
+- `constraint` (dict)
+
+    - `constraint_id` (string enum)
     
-ConstraintEntity
-
-- `constraint_id` (enum: `ROLE`):
-
-   Type of a constraint. As of now only ROLE is supported, but plugins can register new ones. It's needed to determine a type of constraint for correct deserialization.
+        Constraint Type. As of now, the following constraint types are supported:
+            
+            - 'ROLE': a constraint defining how many siganatures of a given role are required
+            - 'OR': logical disjunction for all constraints from `auth_constraints` 
+            - 'AND': logical conjunction for all constraints from `auth_constraints`
+            
+    - fields if `'constraint_id': 'OR'` or `'constraint_id': 'AND'`
+    
+        - `auth_constraints` (list)
         
-- `role` (enum number as string; optional):
+            A list of constraints. Any number of nested constraints is supported recursively
+        
+    - fields if `'constraint_id': 'ROLE'`:
+                
+        - `role` (string enum)    
+            
+            Who (what role) can perform the action
+            Please have a look at [NYM](#nym) transaction description for a mapping between role codes and names.
+                
+        - `sig_count` (int):
+        
+            The number of signatures that is needed to do the action
+            
+        - `need_to_be_owner` (boolean):
+        
+            Flag to check if the user must be the owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
+            The notion of the `owner` is different for every auth rule. Please reference to [auth_rules.md](auth_rules.md) for details.
+            
+        - `metadata` (dict; optional):
+        
+            Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
 
-    Role of a user that the NYM record is being created for. One of the following values
-
-    - None (common USER)
-    - 0 (TRUSTEE)
-    - 2 (STEWARD)
-    - 101 (TRUST_ANCHOR)
-    
-- `sig_count` (int):
-
-    The number of signatures that is needed to do the action described in the transaction fields.
-    
-- `need_to_be_owner` (boolean):
-
-    Flag to check if the user must be owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
-    
-- `metadata` (dict; optional):
-
-    Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
-
-```
-{
-    'sig_count': 1, 
-    'need_to_be_owner': False, 
-    'constraint_id': 'ROLE', 
-    'metadata': {}, 
-    'role': '0'
-}
-```
 
 *Request Example*:
+
+Let's consider an example of changing a value of a NODE transaction's `service` field from `[VALIDATOR]` to `[]` (demotion of a node).
+ We are going to set an Auth Constraint, so that the action can be only be done by two TRUSTEE or one STEWARD who is the owner (the original creator) of this transaction.
+ 
 ```
 {
     'operation': {
@@ -1476,12 +1468,7 @@ ConstraintEntity
    }
 ```
 
-If format of a transaction is incorrect, the client will receive NACK message for the request. 
-A client will receive NACK for 
-- a request with incorrect format;
-- a request with "ADD" action, but with "old_value";
-- a request with "EDIT" action without "old_value";
-- a request with a key that is not in the [auth_rule](auth_rule.md).
+
 
 ### TRANSACTION_AUTHOR_AGREEMENT
 
