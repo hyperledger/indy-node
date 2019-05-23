@@ -12,6 +12,7 @@
     * [POOL_UPGRADE](#pool_upgrade)
     * [POOL_CONFIG](#pool_config)
     * [AUTH_RULE](#auth_rule)
+    * [AUTH_RULES](#auth_rules)
 
 * [Read Requests](#read-requests)
 
@@ -1190,12 +1191,8 @@ A client will receive NACK for
 ### AUTH_RULES
 
 A command to set multiple AUTH_RULEs by one transaction. 
-Authentication rules are stored as a key-value dictionary.
-A key is an authenticated action in the format `action--txn_type--field--old_value--new_value`.
-A value is a set of constraints on the execution of this action. The actions (keys) are static and can be found in [auth_rules.md](auth_rules.md). So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action. There are two types of constraints:
-- ConstraintEntity contains `{constraint_id, role, sig_count, need_to_be_owner, metadata}`
-- ConstraintList with format `{constraint_id, auth_constraints}` contains list of constraints.
-
+Transaction AUTH_RULES is not divided into two AUTH_RULE transaction, and is written to the ledger with one transaction with the full set of rules that come in the request.
+If one rule fails validation, the request with all rules will be rejected.
 *Request Example*:
 ```
 {
