@@ -51,8 +51,7 @@ def generate_auth_rule(auth_action=ADD_PREFIX, auth_type=NYM,
                        old_value=None, constraint=None):
     if constraint is None:
         constraint = generate_constraint_entity()
-    rule = {TXN_TYPE: AUTH_RULE,
-            CONSTRAINT: constraint,
+    rule = {CONSTRAINT: constraint,
             AUTH_ACTION: auth_action,
             AUTH_TYPE: auth_type,
             FIELD: field,
