@@ -62,6 +62,7 @@ def test_get_one_auth_rule_transaction(looper,
         assert auth_map.get(str_key).as_dict == resp_rule[CONSTRAINT]
 
 
+# TODO INDY-2077
 def test_get_one_disabled_auth_rule_transaction(looper,
                                                 sdk_wallet_trustee,
                                                 sdk_pool_handle):

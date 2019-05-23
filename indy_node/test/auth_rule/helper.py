@@ -39,6 +39,7 @@ def generate_constraint_list(constraint_id=ConstraintsEnum.AND_CONSTRAINT_ID,
 def generate_auth_rule_operation(auth_action=ADD_PREFIX, auth_type=NYM,
                                  field=ROLE, new_value=TRUST_ANCHOR,
                                  old_value=None, constraint=None):
+    # TODO relates to INDY-2077
     constraint = generate_constraint_entity() \
         if constraint is None \
         else constraint
