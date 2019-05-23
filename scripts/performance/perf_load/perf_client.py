@@ -121,6 +121,13 @@ class LoadClient:
         while True:
             # Continuously check for latest TAA and break when reaching desired state
             current_text, current_version, current_time = await self._get_taa()
+
+            # If we don't need TAA and ledger doesn't have TAA then we don't care about other details
+            if text == "" and current_text == "":
+                self._taa_text = ""
+                break
+
+            # If we need TAA and all details match we're good to go
             if current_text == text and current_version == version:
                 self._taa_text = current_text
                 self._taa_version = current_version
@@ -178,7 +185,7 @@ class LoadClient:
 
         result = json.loads(reply)['result']
         if result['data'] is None:
-            return None, None, None
+            return "", "", None
 
         return result['data']['text'], result['data']['version'], result['txnTime']
 
