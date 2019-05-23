@@ -54,7 +54,7 @@ class AuthRuleTest(AuthTest):
                                 old_value='*',
                                 new_value='*')
         constraint = auth_map.auth_map.get(action.get_action_id())
-        operation = generate_auth_rule_operation(auth_action=EDIT_PREFIX,
+        req_json = generate_auth_rule_operation(auth_action=EDIT_PREFIX,
                                                  auth_type=AUTH_RULE,
                                                  field='*',
                                                  old_value='*',

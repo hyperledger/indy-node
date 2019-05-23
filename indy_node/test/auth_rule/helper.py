@@ -82,19 +82,13 @@ def sdk_send_and_check_auth_rule_invalid_request(looper, sdk_wallet_trustee, sdk
 
 
 
-def sdk_send_and_check_auth_rule_request(looper, sdk_wallet_trustee, sdk_pool_handle,
-                                         auth_action=ADD_PREFIX, auth_type=NYM,
-                                         field=ROLE, new_value=TRUST_ANCHOR,
-                                         old_value=None, constraint=None, no_wait=False):
-    wallet_h, did = sdk_wallet_trustee
-
-    constraint = (
-        generate_constraint_entity() if constraint is None else constraint
-    )
-
-    req_json = looper.loop.run_until_complete(
+def build_auth_rule_request_json(
+    looper, submitter_did,
+    auth_action, auth_type, field, constraint, old_value=None, new_value=None
+):
+    return looper.loop.run_until_complete(
         build_auth_rule_request(
-            submitter_did=did,
+            submitter_did=submitter_did,
             txn_type=auth_type,
             action=auth_action,
             field=field,
@@ -102,6 +96,33 @@ def sdk_send_and_check_auth_rule_request(looper, sdk_wallet_trustee, sdk_pool_ha
             new_value=new_value,
             constraint=json.dumps(constraint)
         )
+    )
+
+
+def sdk_send_and_check_auth_rule_request(
+    looper, sdk_wallet_trustee, sdk_pool_handle,
+    auth_action=ADD_PREFIX,
+    auth_type=NYM,
+    field=ROLE,
+    old_value=None,
+    new_value=TRUST_ANCHOR,
+    constraint=None,
+    no_wait=False
+):
+    wallet_h, did = sdk_wallet_trustee
+
+    constraint = (
+        generate_constraint_entity() if constraint is None else constraint
+    )
+
+    req_json = build_auth_rule_request_json(
+        looper, did,
+        auth_action=auth_action,
+        auth_type=auth_type,
+        field=field,
+        old_value=old_value,
+        new_value=new_value,
+        constraint=constraint
     )
     req = sdk_sign_and_submit_req(sdk_pool_handle,
                                   sdk_wallet_trustee,
@@ -137,10 +158,12 @@ def add_new_nym(looper, sdk_pool_handle, creators_wallets,
 
 
 
-def sdk_send_and_check_get_auth_rule_invalid_request(looper, sdk_wallet, sdk_pool_handle, key=None):
+def sdk_send_and_check_get_auth_rule_invalid_request(
+    looper, sdk_wallet, sdk_pool_handle, **params
+):
     op = {TXN_TYPE: GET_AUTH_RULE}
-    if key:
-        op.update(key)
+    op.update(params)
+
     req_obj = sdk_gen_request(op, identifier=sdk_wallet[1])
     req = sdk_sign_and_submit_req_obj(looper,
                                       sdk_pool_handle,
@@ -150,18 +173,25 @@ def sdk_send_and_check_get_auth_rule_invalid_request(looper, sdk_wallet, sdk_poo
     return resp
 
 
-def sdk_send_and_check_get_auth_rule_request(looper, sdk_wallet, sdk_pool_handle, key=None):
+def sdk_send_and_check_get_auth_rule_request(
+    looper, sdk_wallet, sdk_pool_handle,
+    auth_type=None,
+    auth_action=None,
+    field=None,
+    old_value=None,
+    new_value=None
+
+):
     wallet_h, did = sdk_wallet
-    key = {} if key is None else key
 
     req_json = looper.loop.run_until_complete(
         build_get_auth_rule_request(
             submitter_did=did,
-            txn_type=key.get('auth_type'),
-            action=key.get('auth_action'),
-            field=key.get('field'),
-            old_value=key.get('old_value'),
-            new_value=key.get('new_value')
+            txn_type=auth_type,
+            action=auth_action,
+            field=field,
+            old_value=old_value,
+            new_value=new_value
         )
     )
     req = sdk_sign_and_submit_req(sdk_pool_handle,
