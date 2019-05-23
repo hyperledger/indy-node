@@ -12,8 +12,8 @@ from indy_common.constants import NYM, TRUST_ANCHOR, AUTH_ACTION, AUTH_TYPE, FIE
 from indy_node.server.config_req_handler import ConfigReqHandler
 
 from indy_node.test.auth_rule.helper import generate_constraint_list, generate_constraint_entity, \
-    sdk_send_and_check_auth_rule_request, generate_key, sdk_get_auth_rule_request, \
-    sdk_get_auth_rule_invalid_request
+    sdk_send_and_check_auth_rule_request, generate_key, sdk_send_and_check_get_auth_rule_request, \
+    sdk_send_and_check_get_auth_rule_invalid_request
 from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, sdk_get_and_check_replies
 
 RESULT = "result"
@@ -26,14 +26,14 @@ def test_fail_get_auth_rule_with_incorrect_key(looper,
     key[AUTH_TYPE] = "wrong_txn_type"
     with pytest.raises(RequestNackedException, match="Unknown authorization rule: key .* "
                                                      "is not found in authorization map."):
-        sdk_get_auth_rule_invalid_request(looper,
+        sdk_send_and_check_get_auth_rule_invalid_request(looper,
                                   sdk_wallet_trustee,
                                   sdk_pool_handle,
                                   key)[0]
 
     del key[AUTH_TYPE]
     with pytest.raises(RequestNackedException, match="Not enough fields to build an auth key."):
-        sdk_get_auth_rule_invalid_request(looper,
+        sdk_send_and_check_get_auth_rule_invalid_request(looper,
                                   sdk_wallet_trustee,
                                   sdk_pool_handle,
                                   key)[0]
@@ -55,7 +55,7 @@ def test_get_one_auth_rule_transaction(looper,
                                        sdk_pool_handle):
     key = generate_key()
     str_key = ConfigReqHandler.get_auth_key(key)
-    req, resp = sdk_get_auth_rule_request(looper,
+    req, resp = sdk_send_and_check_get_auth_rule_request(looper,
                                           sdk_wallet_trustee,
                                           sdk_pool_handle,
                                           key)[0]
@@ -69,7 +69,7 @@ def test_get_one_disabled_auth_rule_transaction(looper,
                                                 sdk_pool_handle):
     key = generate_key(auth_action=EDIT_PREFIX, auth_type=SCHEMA,
                        field='*', old_value='*', new_value='*')
-    req, resp = sdk_get_auth_rule_request(looper,
+    req, resp = sdk_send_and_check_get_auth_rule_request(looper,
                                           sdk_wallet_trustee,
                                           sdk_pool_handle,
                                           key)[0]
@@ -82,7 +82,7 @@ def test_get_one_disabled_auth_rule_transaction(looper,
 def test_get_all_auth_rule_transactions(looper,
                                         sdk_wallet_trustee,
                                         sdk_pool_handle):
-    resp = sdk_get_auth_rule_request(looper,
+    resp = sdk_send_and_check_get_auth_rule_request(looper,
                                      sdk_wallet_trustee,
                                      sdk_pool_handle)
 
@@ -113,7 +113,7 @@ def test_get_one_auth_rule_transaction_after_write(looper,
                                                 constraint=constraint)
     dict_auth_key = generate_key(auth_action=auth_action, auth_type=auth_type,
                                  field=field, new_value=new_value)
-    resp = sdk_get_auth_rule_request(looper,
+    resp = sdk_send_and_check_get_auth_rule_request(looper,
                                      sdk_wallet_trustee,
                                      sdk_pool_handle,
                                      dict_auth_key)
@@ -140,7 +140,7 @@ def test_get_all_auth_rule_transactions_after_write(looper,
                                                 field=field, new_value=new_value,
                                                 constraint=constraint)
     str_auth_key = ConfigReqHandler.get_auth_key(resp[0][0][OPERATION])
-    resp = sdk_get_auth_rule_request(looper,
+    resp = sdk_send_and_check_get_auth_rule_request(looper,
                                      sdk_wallet_trustee,
                                      sdk_pool_handle)
 
@@ -159,7 +159,7 @@ def test_auth_rule_after_get_auth_rule_without_changes(looper,
                                        sdk_wallet_trustee,
                                        sdk_pool_handle):
     # get all auth rules
-    auth_rules_resp = sdk_get_auth_rule_request(looper,
+    auth_rules_resp = sdk_send_and_check_get_auth_rule_request(looper,
                                            sdk_wallet_trustee,
                                            sdk_pool_handle)
     auth_rules = auth_rules_resp[0][1][RESULT][DATA]
@@ -182,7 +182,7 @@ def test_auth_rule_after_get_auth_rule_without_changes(looper,
         sdk_get_and_check_replies(looper, [req])
 
         # send GET_AUTH_RULE
-        get_response = sdk_get_auth_rule_request(looper,
+        get_response = sdk_send_and_check_get_auth_rule_request(looper,
                                                  sdk_wallet_trustee,
                                                  sdk_pool_handle,
                                                  dict_key)
@@ -200,7 +200,7 @@ def test_auth_rule_after_get_auth_rule(looper,
     constraint = generate_constraint_list(auth_constraints=[generate_constraint_entity(role=TRUSTEE),
                                                             generate_constraint_entity(role=STEWARD)])
     # get all auth rules
-    auth_rules = sdk_get_auth_rule_request(looper,
+    auth_rules = sdk_send_and_check_get_auth_rule_request(looper,
                                            sdk_wallet_trustee,
                                            sdk_pool_handle)
 
@@ -222,7 +222,7 @@ def test_auth_rule_after_get_auth_rule(looper,
     sdk_get_and_check_replies(looper, [req])
 
     # send GET_AUTH_RULE
-    get_response = sdk_get_auth_rule_request(looper,
+    get_response = sdk_send_and_check_get_auth_rule_request(looper,
                                              sdk_wallet_trustee,
                                              sdk_pool_handle,
                                              dict_key)

@@ -137,7 +137,7 @@ def add_new_nym(looper, sdk_pool_handle, creators_wallets,
 
 
 
-def sdk_get_auth_rule_invalid_request(looper, sdk_wallet, sdk_pool_handle, key=None):
+def sdk_send_and_check_get_auth_rule_invalid_request(looper, sdk_wallet, sdk_pool_handle, key=None):
     op = {TXN_TYPE: GET_AUTH_RULE}
     if key:
         op.update(key)
@@ -150,7 +150,7 @@ def sdk_get_auth_rule_invalid_request(looper, sdk_wallet, sdk_pool_handle, key=N
     return resp
 
 
-def sdk_get_auth_rule_request(looper, sdk_wallet, sdk_pool_handle, key=None):
+def sdk_send_and_check_get_auth_rule_request(looper, sdk_wallet, sdk_pool_handle, key=None):
     wallet_h, did = sdk_wallet
     key = {} if key is None else key
 
