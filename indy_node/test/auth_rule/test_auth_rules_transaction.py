@@ -44,9 +44,9 @@ def test_reject_with_unacceptable_role_in_constraint(looper,
     e.match('Role {} is not acceptable'.format(unacceptable_role))
 
 
-def test_reject_auth_rule_transaction(looper,
-                                      sdk_wallet_steward,
-                                      sdk_pool_handle):
+def test_reject_auth_rules_transaction(looper,
+                                       sdk_wallet_steward,
+                                       sdk_pool_handle):
     with pytest.raises(RequestRejectedException) as e:
         sdk_send_and_check_auth_rules_request(looper,
                                               sdk_wallet_steward,
@@ -54,9 +54,9 @@ def test_reject_auth_rule_transaction(looper,
     e.match('Not enough TRUSTEE signatures')
 
 
-def test_reqnack_auth_rule_transaction_with_wrong_key(looper,
-                                                      sdk_wallet_trustee,
-                                                      sdk_pool_handle):
+def test_reqnack_auth_rules_transaction_with_wrong_key(looper,
+                                                       sdk_wallet_trustee,
+                                                       sdk_pool_handle):
     with pytest.raises(RequestNackedException) as e:
         sdk_send_and_check_auth_rules_request(looper,
                                               sdk_wallet_trustee,
@@ -66,9 +66,9 @@ def test_reqnack_auth_rule_transaction_with_wrong_key(looper,
     e.match("is not found in authorization map")
 
 
-def test_reqnack_auth_rule_edit_transaction_with_wrong_format(looper,
-                                                              sdk_wallet_trustee,
-                                                              sdk_pool_handle):
+def test_reqnack_auth_rules_edit_transaction_with_wrong_format(looper,
+                                                               sdk_wallet_trustee,
+                                                               sdk_pool_handle):
     rule = generate_auth_rule(auth_action=EDIT_PREFIX)
     rule.pop(OLD_VALUE)
     with pytest.raises(RequestNackedException) as e:
@@ -82,9 +82,9 @@ def test_reqnack_auth_rule_edit_transaction_with_wrong_format(looper,
             format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
 
 
-def test_reqnack_auth_rule_add_transaction_with_wrong_format(looper,
-                                                             sdk_wallet_trustee,
-                                                             sdk_pool_handle):
+def test_reqnack_auth_rules_add_transaction_with_wrong_format(looper,
+                                                              sdk_wallet_trustee,
+                                                              sdk_pool_handle):
     with pytest.raises(RequestNackedException) as e:
         sdk_send_and_check_auth_rules_request(looper,
                                               sdk_wallet_trustee,

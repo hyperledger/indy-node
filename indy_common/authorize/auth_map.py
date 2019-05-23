@@ -288,6 +288,7 @@ auth_map = OrderedDict([
     (pool_restart.get_action_id(), one_trustee_constraint),
     (pool_config.get_action_id(), one_trustee_constraint),
     (auth_rule.get_action_id(), one_trustee_constraint),
+    (auth_rules.get_action_id(), one_trustee_constraint),
     (validator_info.get_action_id(), AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                                        AuthConstraint(STEWARD, 1),
                                                        AuthConstraint(NETWORK_MONITOR, 1)])),
