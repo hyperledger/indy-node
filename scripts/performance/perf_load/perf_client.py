@@ -140,7 +140,6 @@ class LoadClient:
             self._trustee_dids.append(self._test_did)
         self._logger.info("_did_init done")
 
-
     async def _taa_init(self, text, version):
         self._logger.info("_taa_init {} {}".format(text, version))
 
@@ -289,7 +288,11 @@ class LoadClient:
         await self._pool_auth_rules_init()
 
     def _on_pool_create_ext_params(self):
-        return {"max_cred_num": self._batch_size}
+        return {"max_cred_num": self._batch_size,
+                "taa_text": self._taa_text,
+                "taa_version": self._taa_version,
+                "taa_mechanism": self.TestAcceptanceMechanism,
+                "taa_time": self._taa_time}
 
     async def run_test(self, genesis_path, seed, w_key, taa_text, taa_version):
         self._logger.info("run_test genesis_path {}, seed {}, w_key {}".format(genesis_path, seed, w_key))
@@ -383,6 +386,9 @@ class LoadClient:
 
     async def append_taa_acceptance(self, req):
         if self._taa_text == "":
+            return req
+
+        if '"type":"10001"' in req:
             return req
 
         return await ledger.append_txn_author_agreement_acceptance_to_request(
