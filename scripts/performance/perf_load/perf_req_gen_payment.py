@@ -17,22 +17,15 @@ class RGBasePayment(RequestGenerator):
         self._payment_method = None
         self._addr_txos = None
         self._payment_fees = 0
-        self._taa_text = None
-        self._taa_version = None
-        self._taa_mechanism = None
-        self._taa_time = None
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs)
         self._pool_handle = pool_handle
         self._wallet_handle = wallet_handle
         self._submitter_did = submitter_did
         self._payment_method = kwargs.get("payment_method", "")
         self._addr_txos = kwargs.get("addr_txos", {})
         self._payment_fees = kwargs.get("pool_fees", {}).get(PUB_XFER_TXN_ID, 0)
-        self._taa_text = kwargs.get("taa_text", "")
-        self._taa_version = kwargs.get("taa_version", "")
-        self._taa_mechanism = kwargs.get("taa_mechanism", "")
-        self._taa_time = kwargs.get("taa_time", 0)
 
         if not self._payment_method or not self._addr_txos:
             raise RuntimeError("Payment init incorrect parameters")
