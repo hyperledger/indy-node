@@ -176,7 +176,8 @@ class OrAuthorizer(AbstractAuthorizer):
                 successes.append(True)
         if len(successes) == 0:
             raise AuthValidationError(
-                "Rule for this action is: {}{}Failed checks: {}".format(auth_constraint,
-                                                                        os.linesep,
-                                                                        os.linesep.join(fails)))
+                os.linesep.join(["Rule for this action is: {}".format(auth_constraint),
+                                 "Failed checks:",
+                                 os.linesep.join(fails)])
+            )
         return True, ""

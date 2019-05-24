@@ -47,6 +47,7 @@ class LoadClient:
         self._closing = False
         self._batch_size = batch_size
         self._batch_rate = batch_rate
+        self._auth_rule_metadata = {}
         self._gen_q = []
         self._send_q = []
         req_class, params = ReqTypeParser.create_req_generator(req_kind)
@@ -210,6 +211,11 @@ class LoadClient:
                 continue
 
             try:
+                metadata_addition = self._auth_rule_metadata.get(auth_rule['auth_type'], None)
+                if metadata_addition:
+                    metadata = auth_rule['constraint'].get('metadata', {})
+                    metadata.update(metadata_addition)
+                    auth_rule['constraint']['metadata'] = metadata
                 auth_rule_req = await ledger.build_auth_rule_request(
                     self._test_did,
                     txn_type=auth_rule['auth_type'],

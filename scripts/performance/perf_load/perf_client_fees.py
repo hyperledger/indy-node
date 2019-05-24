@@ -1,4 +1,6 @@
 import json
+import random
+import string
 from ctypes import CDLL
 
 from indy import payment
@@ -45,7 +47,9 @@ class LoadClientFees(LoadClient):
         self._plugin_lib = kwargs.get("plugin_lib", "")
         self._plugin_init = kwargs.get("plugin_init", "")
         self._req_num_of_trustees = kwargs.get("trustees_num", 4)
-        self._set_fees = kwargs.get("set_fees", {})
+        fees = kwargs.get("set_fees", {})
+        self._auth_rule_metadata = {k: {"fees": random_string()} for k, _ in fees.items()}
+        self._set_fees = {self._auth_rule_metadata.get(k, {}).get('fees', None): v for k, v in fees.items()}
         self._req_addrs = {}
         self._mint_by = kwargs.get("mint_by", self._addr_mint_limit)
         if self._mint_by < 1 or self._mint_by > self._addr_mint_limit:
@@ -201,7 +205,10 @@ class LoadClientFees(LoadClient):
         get_fees_req = await payment.build_get_txn_fees_req(self._wallet_handle, self._test_did, self._payment_method)
         get_fees_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did,
                                                              get_fees_req)
-        self._pool_fees = json.loads(await payment.parse_get_txn_fees_response(self._payment_method, get_fees_resp))
+
+        type_alias_mapping = {v['fees']: k for k, v in self._auth_rule_metadata.items()}
+        fees_set = json.loads(await payment.parse_get_txn_fees_response(self._payment_method, get_fees_resp))
+        self._pool_fees = {type_alias_mapping[k]: v for k, v in fees_set.items()}
         self._logger.info("_pool_fees_init done")
 
     async def _payment_address_init(self):
@@ -220,6 +227,7 @@ class LoadClientFees(LoadClient):
     async def _post_init(self):
         await self._pool_fees_init()
         await self._payment_address_init()
+        await super()._post_init()
         self._logger.info("_post_init done")
 
     def _on_pool_create_ext_params(self):
@@ -229,3 +237,9 @@ class LoadClientFees(LoadClient):
                        "pool_fees": self._pool_fees})
         self._logger.info("_on_pool_create_ext_params done {}".format(params))
         return params
+
+
+def random_string(string_length=10):
+    """Generate a random string of fixed length """
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(string_length))
