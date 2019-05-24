@@ -4,7 +4,6 @@ import os
 import asyncio
 import signal
 import logging
-from datetime import datetime
 from typing import Optional, Tuple
 
 from indy import pool, wallet, did, ledger
@@ -14,6 +13,8 @@ from perf_load.perf_clientstaistic import ClientStatistic
 from perf_load.perf_utils import random_string, logger_init, ensure_is_reply
 from perf_load.perf_req_gen import NoReqDataAvailableException
 from perf_load.perf_gen_req_parser import ReqTypeParser
+
+TRUSTEE_ROLE_CODE = "0"
 
 
 class LoadClient:
@@ -37,6 +38,8 @@ class LoadClient:
         self._pool_handle = None
         self._wallet_name = None
         self._wallet_handle = None
+        self._trustee_dids = []
+        self._req_num_of_trustees = kwargs.get("trustees_num", 1)
         self._test_did = None
         self._test_verk = None
         self._taa_text = None
@@ -107,11 +110,36 @@ class LoadClient:
         self._wallet_handle = await self.wallet_open_wallet(wallet_config, wallet_credential)
         self._logger.info("_wallet_init done")
 
-    async def _did_init(self, seed):
+    async def _did_init(self, seed, taa_text, taa_version):
         self._logger.info("_did_init {}".format(seed))
-        self._test_did, self._test_verk = await self.did_create_my_did(
-            self._wallet_handle, json.dumps({'seed': seed[0]}))
+
+        if len(set(seed)) < self._req_num_of_trustees:
+            raise RuntimeError("Number of trustee seeds must be eq to {}".format(self._req_num_of_trustees))
+        if len(set(seed)) != len(seed):
+            raise RuntimeError("Duplicated seeds not allowed")
+
+        for s in seed:
+            self._test_did, self._test_verk = await self.did_create_my_did(
+                self._wallet_handle, json.dumps({'seed': s}))
+            is_trustee = await self._is_trustee(self._test_did)
+            if is_trustee is False:
+                raise Exception("Submitter role must be TRUSTEE")
+
+            # TODO: This needs serious refactoring
+            if self._taa_text is None:
+                await self._taa_init(taa_text, taa_version)
+
+            if is_trustee is None:
+                assert len(self._trustee_dids) >= 1
+                nym_req = await ledger.build_nym_request(self._trustee_dids[0], self._test_did, self._test_verk, None,
+                                                         "TRUSTEE")
+                nym_req = await self.append_taa_acceptance(nym_req)
+                nym_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle,
+                                                                self._trustee_dids[0], nym_req)
+                ensure_is_reply(nym_resp)
+            self._trustee_dids.append(self._test_did)
         self._logger.info("_did_init done")
+
 
     async def _taa_init(self, text, version):
         self._logger.info("_taa_init {} {}".format(text, version))
@@ -178,6 +206,21 @@ class LoadClient:
 
         self._logger.info("_taa_aml_init done")
 
+    async def _is_trustee(self, checking_did) -> Optional[bool]:
+        """
+        :return: None, if DID is not public, otherwise bool indicating whether this DID have trustee rights
+        """
+        get_nym_req = await ledger.build_get_nym_request(checking_did, checking_did)
+        get_nym_resp = await ledger.sign_and_submit_request(
+            self._pool_handle, self._wallet_handle, checking_did, get_nym_req)
+        get_nym_resp_obj = json.loads(get_nym_resp)
+        ensure_is_reply(get_nym_resp_obj)
+        data_f = get_nym_resp_obj["result"].get("data", None)
+        if data_f is None:
+            return None
+        res_data = json.loads(data_f)
+        return res_data["role"] == TRUSTEE_ROLE_CODE
+
     async def _get_taa(self, version: Optional[str] = None) -> Tuple[Optional[str], Optional[str], Optional[int]]:
         options = json.dumps({'version': version}) if version else None
         request = await ledger.build_get_txn_author_agreement_request(self._test_did, options)
@@ -239,6 +282,10 @@ class LoadClient:
         pass
 
     async def _post_init(self):
+        # This is called here and not in run_test because LoadClientFees needs to do some setup
+        # before pool_auth_rules_init is called.
+        # TODO: Move this into run_test after call to _post_init,
+        #  rename _post_init to _pre_auth_rules_init or _post_did_init?
         await self._pool_auth_rules_init()
 
     def _on_pool_create_ext_params(self):
@@ -251,8 +298,8 @@ class LoadClient:
 
             await self._init_pool(genesis_path)
             await self._wallet_init(w_key)
-            await self._did_init(seed)
-            await self._taa_init(taa_text, taa_version)
+            # TODO: This needs serious refactoring
+            await self._did_init(seed, taa_text, taa_version)
 
             await self._post_init()
 
