@@ -345,7 +345,6 @@ anyone_can_write_map = OrderedDict([
     (anyone_can_edit_nym.get_action_id(), anyone_constraint),
     (anyone_can_add_attrib.get_action_id(), owner_constraint),
     (anyone_can_edit_attrib.get_action_id(), owner_constraint),
-    (anyone_can_edit_schema.get_action_id(), anyone_constraint),
     (anyone_can_edit_claim_def.get_action_id(), owner_constraint),
     (anyone_can_create_revoc_reg_def.get_action_id(), owner_constraint),
     (anyone_can_create_revoc_reg_entry.get_action_id(), owner_constraint),
