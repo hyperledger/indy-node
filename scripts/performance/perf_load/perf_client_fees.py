@@ -11,9 +11,6 @@ from perf_load.perf_utils import ensure_is_reply, divide_sequence_into_chunks,\
     request_get_type, gen_input_output, PUB_XFER_TXN_ID, response_get_type
 
 
-TRUSTEE_ROLE_CODE = "0"
-
-
 class LoadClientFees(LoadClient):
     __initiated_plugins = set()
 
@@ -36,7 +33,6 @@ class LoadClientFees(LoadClient):
                  **kwargs):
         super().__init__(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode,
                          short_stat, **kwargs)
-        self._trustee_dids = []
         self._pool_fees = {}
         self._ignore_fees_txns = [PUB_XFER_TXN_ID]
         self._addr_txos = {}
@@ -118,20 +114,6 @@ class LoadClientFees(LoadClient):
         await self._parse_fees_resp(req, resp)
         return resp
 
-    async def __is_trustee(self, checking_did):
-        get_nym_req = await ledger.build_get_nym_request(checking_did, checking_did)
-        get_nym_resp = await ledger.sign_and_submit_request(
-            self._pool_handle, self._wallet_handle, checking_did, get_nym_req)
-        get_nym_resp_obj = json.loads(get_nym_resp)
-        ensure_is_reply(get_nym_resp_obj)
-        data_f = get_nym_resp_obj["result"].get("data", None)
-        if data_f is None:
-            return None
-        res_data = json.loads(data_f)
-        if res_data["role"] != TRUSTEE_ROLE_CODE:
-            return False
-        return True
-
     async def __create_payment_addresses(self, addrs_cnt):
         ret_addrs = []
         for i in range(addrs_cnt):
@@ -154,6 +136,7 @@ class LoadClientFees(LoadClient):
             for payment_address in payment_addresses:
                 outputs.append({"recipient": payment_address, "amount": mint_val})
             mint_req, _ = await payment.build_mint_req(self._wallet_handle, self._test_did, json.dumps(outputs), None)
+            mint_req = await self.append_taa_acceptance(mint_req)
             mint_req = await self.multisig_req(mint_req)
             mint_resp = await ledger.submit_request(self._pool_handle, mint_req)
             ensure_is_reply(mint_resp)
@@ -169,29 +152,6 @@ class LoadClientFees(LoadClient):
         for source_info in source_infos:
             payment_sources.append((source_info["source"], source_info["amount"]))
         return {pmnt_addr: payment_sources}
-
-    async def _did_init(self, seed):
-        if len(set(seed)) != self._req_num_of_trustees:
-            raise RuntimeError("Number of trustee seeds must be eq to {}".format(self._req_num_of_trustees))
-        if len(set(seed)) != len(seed):
-            raise RuntimeError("Duplicated seeds not allowed")
-
-        for s in seed:
-            self._test_did, self._test_verk = await self.did_create_my_did(
-                self._wallet_handle, json.dumps({'seed': s}))
-            is_trustee = await self.__is_trustee(self._test_did)
-            if is_trustee is False:
-                raise Exception("Submitter role must be TRUSTEE since "
-                                "submitter have to create additional trustees to mint sources.")
-            if is_trustee is None:
-                assert len(self._trustee_dids) >= 1
-                nym_req = await ledger.build_nym_request(self._trustee_dids[0], self._test_did, self._test_verk, None,
-                                                         "TRUSTEE")
-                nym_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle,
-                                                                self._trustee_dids[0], nym_req)
-                ensure_is_reply(nym_resp)
-            self._trustee_dids.append(self._test_did)
-        self._logger.info("_did_init done")
 
     async def _pool_fees_init(self):
         if self._set_fees:
@@ -226,7 +186,7 @@ class LoadClientFees(LoadClient):
     async def _post_init(self):
         await self._pool_fees_init()
         await self._payment_address_init()
-        await super()._post_init()
+        await super()._post_init()  # Actually this is just a call to self._pool_auth_rules_init()
         self._logger.info("_post_init done")
 
     def _on_pool_create_ext_params(self):
