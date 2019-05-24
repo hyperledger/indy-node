@@ -103,9 +103,16 @@ class AuthConstraint(AbstractAuthConstraint):
         elif role == "ALL" and self.need_to_be_owner and self.sig_count > 1:
             error_msg = "{} signatures of any role are required and needs to be owner".format(self.sig_count)
 
-        if self.metadata:
-            return "{} with additional metadata: {}".format(error_msg, self.metadata)
+        metadata_str = self._metadata_str()
+        if metadata_str:
+            return "{} {}".format(error_msg, metadata_str)
         return error_msg
+
+    def _metadata_str(self):
+        if not self.metadata:
+            return ""
+        res = " ".join([str(item) for values in self.metadata.items() for item in values])
+        return "with additional metadata {}".format(res)
 
     @staticmethod
     def from_dict(as_dict):

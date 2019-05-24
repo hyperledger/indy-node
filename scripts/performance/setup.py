@@ -20,7 +20,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'perf_load', '__version__.py'), 'r') as f:
     exec(f.read(), metadata)
 
-tests_require = ['pytest==3.3.1', 'pytest-xdist==1.22.1', 'python3-indy>=1.6.1.dev683']
+tests_require = ['pytest==3.3.1', 'pytest-xdist==1.22.1', 'python3-indy>=1.8.3.dev1103']
 
 setup(
     name=metadata['__title__'],
@@ -36,7 +36,7 @@ setup(
     packages=find_packages(),
     package_data={'': ['*.md']},
     include_package_data=True,
-    install_requires=['python3-indy>=1.6.1.dev683', 'PyYAML>=3.12', 'libnacl==1.6.1', 'base58'],
+    install_requires=['python3-indy>=1.8.3.dev1103', 'PyYAML>=3.12', 'libnacl==1.6.1', 'base58'],
     setup_requires=['pytest-runner'],
     extras_require={'tests': tests_require},
     tests_require=tests_require,

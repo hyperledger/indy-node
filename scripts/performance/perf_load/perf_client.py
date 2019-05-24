@@ -9,7 +9,7 @@ from indy import pool, wallet, did, ledger
 
 from perf_load.perf_client_msgs import ClientReady, ClientRun, ClientStop, ClientGetStat, ClientSend
 from perf_load.perf_clientstaistic import ClientStatistic
-from perf_load.perf_utils import random_string, logger_init
+from perf_load.perf_utils import random_string, logger_init, ensure_is_reply
 from perf_load.perf_req_gen import NoReqDataAvailableException
 from perf_load.perf_gen_req_parser import ReqTypeParser
 
@@ -39,6 +39,7 @@ class LoadClient:
         self._closing = False
         self._batch_size = batch_size
         self._batch_rate = batch_rate
+        self._auth_rule_metadata = {}
         self._gen_q = []
         self._send_q = []
         req_class, params = ReqTypeParser.create_req_generator(req_kind)
@@ -104,11 +105,56 @@ class LoadClient:
             self._wallet_handle, json.dumps({'seed': seed[0]}))
         self._logger.info("_did_init done")
 
+    async def _pool_auth_rules_init(self):
+        get_auth_rule_req = await ledger.build_get_auth_rule_request(self._test_did, None, None, None, None, None)
+        get_auth_rule_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, get_auth_rule_req)
+        ensure_is_reply(get_auth_rule_resp)
+
+        get_auth_rule_resp = json.loads(get_auth_rule_resp)
+        data_f = get_auth_rule_resp["result"].get("data", [])
+        if not data_f:
+            self._logger.warning("No auth rules found")
+            return
+
+        for auth_rule in data_f:
+            if not auth_rule['constraint']:
+                # TODO INDY-2077
+                self._logger.warning(
+                    "Skip auth rule setting since constraint is empty: {}"
+                    .format(auth_rule)
+                )
+                continue
+
+            try:
+                metadata_addition = self._auth_rule_metadata.get(auth_rule['auth_type'], None)
+                if metadata_addition:
+                    metadata = auth_rule['constraint'].get('metadata', {})
+                    metadata.update(metadata_addition)
+                    auth_rule['constraint']['metadata'] = metadata
+                auth_rule_req = await ledger.build_auth_rule_request(
+                    self._test_did,
+                    txn_type=auth_rule['auth_type'],
+                    action=auth_rule['auth_action'],
+                    field=auth_rule['field'],
+                    old_value=auth_rule.get('old_value'),
+                    new_value=auth_rule.get('new_value'),
+                    constraint=json.dumps(auth_rule['constraint']),
+                )
+                auth_rule_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, auth_rule_req)
+                ensure_is_reply(auth_rule_resp)
+            except Exception:
+                self._logger.exception(
+                    "Failed to set auth rule with the following parameters: {} "
+                    .format(auth_rule)
+                )
+                raise
+        self._logger.info("_pool_auth_rules_init done")
+
     async def _pre_init(self):
         pass
 
     async def _post_init(self):
-        pass
+        await self._pool_auth_rules_init()
 
     def _on_pool_create_ext_params(self):
         return {"max_cred_num": self._batch_size}

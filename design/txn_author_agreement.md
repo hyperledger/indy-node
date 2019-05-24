@@ -111,13 +111,18 @@ How does TAA AML stored in state. "3" stands for unique marker of TAA AML txn.
   <tr>
     <td><code>3:latest</code></td>
     <td>
-<pre>{
-  "aml": {
-    "mechanism #1": description #1,
-    "mechanism #2": description #2
-  },
-  "amlContext": context description,
-  "version": version
+<pre>
+{
+  "lsn": &lt;txn sequence number&gt;,,
+  "lut": timestamp,
+  "val": {
+      "aml": {
+        "mechanism #1": description #1,
+        "mechanism #2": description #2
+      },
+      "amlContext": context description,
+      "version": version
+  }
 }</pre>
     </td>
   </tr>
@@ -125,12 +130,16 @@ How does TAA AML stored in state. "3" stands for unique marker of TAA AML txn.
     <td><code>3:v:&lt;version&gt;</code></td>
     <td>
 <pre>{
-  "aml": {
-    "mechanism #1": description #1,
-    "mechanism #2": description #2
-  },
-  "amlContext": context description,
-  "version": version
+  "lsn": &lt;txn sequence number&gt;,,
+  "lut": timestamp,
+  "val": {
+      "aml": {
+        "mechanism #1": description #1,
+        "mechanism #2": description #2
+      },
+      "amlContext": context description,
+      "version": version
+  }
 }</pre>
     </td>
   </tr>
