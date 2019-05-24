@@ -3,7 +3,9 @@ import pytest
 from datetime import datetime, timedelta
 from collections import OrderedDict
 
+from indy_node.test.auth_rule.auth_framework.add_attrib import AddAttribTest
 from indy_node.test.auth_rule.auth_framework.auth_rules import AuthRuleTest
+from indy_node.test.auth_rule.auth_framework.edit_attrib import EditAttribTest
 from indy_node.test.auth_rule.auth_framework.node_services import AddNewNodeTest, AddNewNodeEmptyServiceTest, \
     DemoteNodeTest, PromoteNodeTest
 from indy_node.test.auth_rule.auth_framework.node_properties import EditNodeIpTest, EditNodePortTest, \
@@ -65,6 +67,8 @@ class TestAuthRuleUsing():
         auth_map.add_new_trust_anchor.get_action_id(): AddNewTrustAnchorTest,
         auth_map.add_new_network_monitor.get_action_id(): AddNewNetworkMonitorTest,
         auth_map.add_new_identity_owner.get_action_id(): AddNewIdentityOwnerTest,
+        auth_map.add_attrib.get_action_id(): AddAttribTest,
+        auth_map.edit_attrib.get_action_id(): EditAttribTest,
         auth_map.add_revoc_reg_def.get_action_id(): AddRevocRegDefTest,
         auth_map.edit_revoc_reg_def.get_action_id(): EditRevocRegDefTest,
         auth_map.add_revoc_reg_entry.get_action_id(): AddRevocRegEntryTest,
