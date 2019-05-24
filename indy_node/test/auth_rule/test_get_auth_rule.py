@@ -29,13 +29,13 @@ def test_fail_get_auth_rule_with_incorrect_key(looper,
     with pytest.raises(RequestNackedException, match="Unknown authorization rule: key .* "
                                                      "is not found in authorization map."):
         sdk_send_and_check_get_auth_rule_invalid_request(
-            looper, sdk_wallet_trustee, sdk_pool_handle, **key
+            looper, sdk_pool_handle, sdk_wallet_trustee, **key
         )[0]
 
     del key[AUTH_TYPE]
     with pytest.raises(RequestNackedException, match="Not enough fields to build an auth key."):
         sdk_send_and_check_get_auth_rule_invalid_request(
-            looper, sdk_wallet_trustee, sdk_pool_handle, **key
+            looper, sdk_pool_handle, sdk_wallet_trustee, **key
         )[0]
 
 
@@ -56,7 +56,7 @@ def test_get_one_auth_rule_transaction(looper,
     key = generate_key()
     str_key = ConfigReqHandler.get_auth_key(key)
     req, resp = sdk_send_and_check_get_auth_rule_request(
-        looper, sdk_wallet_trustee, sdk_pool_handle, **key
+        looper, sdk_pool_handle, sdk_wallet_trustee, **key
     )[0]
 
     for resp_rule in resp[RESULT][DATA]:
@@ -64,14 +64,14 @@ def test_get_one_auth_rule_transaction(looper,
         assert auth_map.get(str_key).as_dict == resp_rule[CONSTRAINT]
 
 
-# TODO INDY-2077
+@pytest.mark.skip('INDY-2077')
 def test_get_one_disabled_auth_rule_transaction(looper,
                                                 sdk_wallet_trustee,
                                                 sdk_pool_handle):
     key = generate_key(auth_action=EDIT_PREFIX, auth_type=SCHEMA,
                        field='*', old_value='*', new_value='*')
     req, resp = sdk_send_and_check_get_auth_rule_request(
-        looper, sdk_wallet_trustee, sdk_pool_handle, **key
+        looper, sdk_pool_handle, sdk_wallet_trustee, **key
     )[0]
 
     result = resp["result"][DATA]
@@ -84,7 +84,7 @@ def test_get_all_auth_rule_transactions(looper,
                                         sdk_wallet_trustee,
                                         sdk_pool_handle):
     resp = sdk_send_and_check_get_auth_rule_request(
-        looper, sdk_wallet_trustee, sdk_pool_handle
+        looper, sdk_pool_handle, sdk_wallet_trustee
     )
 
     result = resp[0][1]["result"][DATA]
@@ -107,15 +107,15 @@ def test_get_one_auth_rule_transaction_after_write(looper,
     constraint = generate_constraint_list(auth_constraints=[generate_constraint_entity(role=TRUSTEE),
                                                             generate_constraint_entity(role=STEWARD)])
     resp = sdk_send_and_check_auth_rule_request(looper,
-                                                sdk_wallet_trustee,
                                                 sdk_pool_handle,
+                                                sdk_wallet_trustee,
                                                 auth_action=auth_action, auth_type=auth_type,
                                                 field=field, new_value=new_value,
                                                 constraint=constraint)
     dict_auth_key = generate_key(auth_action=auth_action, auth_type=auth_type,
                                  field=field, new_value=new_value)
     resp = sdk_send_and_check_get_auth_rule_request(
-        looper, sdk_wallet_trustee, sdk_pool_handle, **dict_auth_key
+        looper, sdk_pool_handle, sdk_wallet_trustee, **dict_auth_key
     )
     result = resp[0][1]["result"][DATA]
     assert len(result) == 1
@@ -134,8 +134,8 @@ def test_get_all_auth_rule_transactions_after_write(looper,
     constraint = generate_constraint_list(auth_constraints=[generate_constraint_entity(role=TRUSTEE),
                                                             generate_constraint_entity(role=STEWARD)])
     resp = sdk_send_and_check_auth_rule_request(looper,
-                                                sdk_wallet_trustee,
                                                 sdk_pool_handle,
+                                                sdk_wallet_trustee,
                                                 auth_action=auth_action,
                                                 auth_type=auth_type,
                                                 field=field,
@@ -143,7 +143,7 @@ def test_get_all_auth_rule_transactions_after_write(looper,
                                                 constraint=constraint)
     str_auth_key = ConfigReqHandler.get_auth_key(resp[0][0][OPERATION])
     resp = sdk_send_and_check_get_auth_rule_request(
-        looper, sdk_wallet_trustee, sdk_pool_handle
+        looper, sdk_pool_handle, sdk_wallet_trustee
     )
 
     result = resp[0][1]["result"][DATA]
@@ -158,11 +158,11 @@ def test_get_all_auth_rule_transactions_after_write(looper,
 
 
 def test_auth_rule_after_get_auth_rule_without_changes(
-    looper, sdk_wallet_trustee, sdk_pool_handle
+    looper, sdk_pool_handle, sdk_wallet_trustee
 ):
     # get all auth rules
     auth_rules_resp = sdk_send_and_check_get_auth_rule_request(
-        looper, sdk_wallet_trustee, sdk_pool_handle
+        looper, sdk_pool_handle, sdk_wallet_trustee
     )
     auth_rules = auth_rules_resp[0][1][RESULT][DATA]
 
@@ -184,7 +184,7 @@ def test_auth_rule_after_get_auth_rule_without_changes(
 
         # send GET_AUTH_RULE
         get_response = sdk_send_and_check_get_auth_rule_request(
-            looper, sdk_wallet_trustee, sdk_pool_handle, **dict_key)
+            looper, sdk_pool_handle, sdk_wallet_trustee, **dict_key)
         # check response
         result = get_response[0][1]["result"][DATA]
         assert len(result) == 1
@@ -200,7 +200,7 @@ def test_auth_rule_after_get_auth_rule(looper,
                                                             generate_constraint_entity(role=STEWARD)])
     # get all auth rules
     auth_rules_resp = sdk_send_and_check_get_auth_rule_request(
-        looper, sdk_wallet_trustee, sdk_pool_handle
+        looper, sdk_pool_handle, sdk_wallet_trustee
     )
     auth_rules = auth_rules_resp[0][1][RESULT][DATA]
     rule = auth_rules[0]
@@ -223,7 +223,7 @@ def test_auth_rule_after_get_auth_rule(looper,
 
     # send GET_AUTH_RULE
     get_response = sdk_send_and_check_get_auth_rule_request(
-        looper, sdk_wallet_trustee, sdk_pool_handle, **dict_key
+        looper, sdk_pool_handle, sdk_wallet_trustee, **dict_key
     )
 
     # check response

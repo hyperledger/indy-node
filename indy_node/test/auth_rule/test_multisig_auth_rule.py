@@ -84,8 +84,8 @@ def prepare_auth_map(looper,
                 'newSteward1',
                 STEWARD_STRING,
                 dest=did1, verkey=verkey1)
-    sdk_send_and_check_auth_rule_request(looper, sdk_wallet_trustee,
-                                         sdk_pool_handle, auth_action=ADD_PREFIX,
+    sdk_send_and_check_auth_rule_request(looper, sdk_pool_handle, sdk_wallet_trustee,
+                                         auth_action=ADD_PREFIX,
                                          auth_type=NYM, field=ROLE, new_value=STEWARD, old_value=None,
                                          constraint=auth_constraint.as_dict)
 

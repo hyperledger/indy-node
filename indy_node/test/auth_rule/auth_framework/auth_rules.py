@@ -24,27 +24,27 @@ class AuthRuleTest(AuthTest):
 
     def run(self):
         # Step 1. Check default auth rule
-        sdk_send_and_check_auth_rule_request(self.looper, self.trustee_wallet, self.sdk_pool_handle)
+        sdk_send_and_check_auth_rule_request(self.looper, self.sdk_pool_handle, self.trustee_wallet)
         with pytest.raises(RequestRejectedException):
-            sdk_send_and_check_auth_rule_request(self.looper, self.new_default_wallet, self.sdk_pool_handle)
+            sdk_send_and_check_auth_rule_request(self.looper, self.sdk_pool_handle, self.new_default_wallet)
 
         # Step 2. Change auth rule
         self.send_and_check(self.changed_auth_rule, self.trustee_wallet)
 
         # Step 3. Check, that we cannot send txn the old way
         with pytest.raises(RequestRejectedException):
-            sdk_send_and_check_auth_rule_request(self.looper, self.trustee_wallet, self.sdk_pool_handle)
+            sdk_send_and_check_auth_rule_request(self.looper, self.sdk_pool_handle, self.trustee_wallet)
 
         # Step 4. Check, that new auth rule is used
-        sdk_send_and_check_auth_rule_request(self.looper, self.new_default_wallet, self.sdk_pool_handle)
+        sdk_send_and_check_auth_rule_request(self.looper, self.sdk_pool_handle, self.new_default_wallet)
 
         # Step 5. Return default auth rule
         self.send_and_check(self.default_auth_rule, self.new_default_wallet)
 
         # Step 6. Check, that default auth rule works
-        sdk_send_and_check_auth_rule_request(self.looper, self.trustee_wallet, self.sdk_pool_handle)
+        sdk_send_and_check_auth_rule_request(self.looper, self.sdk_pool_handle, self.trustee_wallet)
         with pytest.raises(RequestRejectedException):
-            sdk_send_and_check_auth_rule_request(self.looper, self.new_default_wallet, self.sdk_pool_handle)
+            sdk_send_and_check_auth_rule_request(self.looper, self.sdk_pool_handle, self.new_default_wallet)
 
     def result(self):
         pass

@@ -73,7 +73,7 @@ def create_verkey_did(looper, wh):
 
 
 def sdk_send_and_check_auth_rule_request(
-    looper, sdk_wallet_trustee, sdk_pool_handle,
+    looper, sdk_pool_handle, sdk_wallet_trustee,
     auth_action=ADD_PREFIX,
     auth_type=NYM,
     field=ROLE,
@@ -86,7 +86,7 @@ def sdk_send_and_check_auth_rule_request(
         generate_constraint_entity() if constraint is None else constraint
     )
     return _sdk_send_and_check_auth_rule_request(
-        looper, sdk_wallet_trustee, sdk_pool_handle,
+        looper, sdk_pool_handle, sdk_wallet_trustee,
         auth_action=auth_action,
         auth_type=auth_type,
         field=field,
@@ -98,15 +98,15 @@ def sdk_send_and_check_auth_rule_request(
 
 
 def sdk_send_and_check_get_auth_rule_request(
-    looper, sdk_wallet, sdk_pool_handle,
+    looper, sdk_pool_handle, sdk_wallet,
     auth_type=None,
     auth_action=None,
     field=None,
     old_value=None,
     new_value=None
 ):
-    return _sdk_send_and_check_auth_rule_request(
-        looper, sdk_wallet, sdk_pool_handle,
+    return _sdk_send_and_check_get_auth_rule_request(
+        looper, sdk_pool_handle, sdk_wallet,
         auth_action=auth_action,
         auth_type=auth_type,
         field=field,
@@ -116,24 +116,24 @@ def sdk_send_and_check_get_auth_rule_request(
 
 
 def sdk_send_and_check_get_auth_rule_invalid_request(
-    looper, sdk_wallet, sdk_pool_handle, **invalid_params
+    looper, sdk_pool_handle, sdk_wallet, **invalid_params
 ):
     op = {TXN_TYPE: GET_AUTH_RULE}
     op.update(**invalid_params)
     req_obj = sdk_gen_request(op, identifier=sdk_wallet[1])
     return sdk_send_and_check_req_json(
-        looper, sdk_wallet, sdk_pool_handle, json.dumps(req_obj.as_dict)
+        looper, sdk_pool_handle, sdk_wallet, json.dumps(req_obj.as_dict)
     )
 
 
 def sdk_send_and_check_auth_rule_invalid_request(
-    looper, sdk_wallet_trustee, sdk_pool_handle, no_wait=False, **invalid_params
+    looper, sdk_pool_handle, sdk_wallet_trustee, no_wait=False, **invalid_params
 ):
     op = generate_auth_rule_operation(**invalid_params)
     req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
     req_json = json.dumps(req_obj.as_dict)
     return sdk_send_and_check_req_json(
-        looper, sdk_wallet_trustee, sdk_pool_handle, req_json, no_wait=no_wait
+        looper, sdk_pool_handle, sdk_wallet_trustee, req_json, no_wait=no_wait
     )
 
 

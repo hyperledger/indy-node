@@ -17,7 +17,7 @@ from plenum.test.txn_author_agreement.helper import sdk_send_txn_author_agreemen
 
 
 @pytest.fixture(scope="module")
-def taa_aml_request_module(looper, sdk_wallet_trustee, sdk_pool_handle):
+def taa_aml_request_module(looper, sdk_pool_handle, sdk_wallet_trustee):
     return looper.loop.run_until_complete(build_acceptance_mechanism_request(
         sdk_wallet_trustee[1],
         json.dumps({
@@ -55,7 +55,7 @@ def test_send_valid_txn_author_agreement_without_enough_privileges_fails(looper,
 
 def test_txn_author_agreement_respects_current_auth_rules(looper, setup_aml, txnPoolNodeSet, sdk_pool_handle,
                                                           sdk_wallet_trustee, sdk_wallet_steward):
-    sdk_send_and_check_auth_rule_request(looper, sdk_wallet_trustee, sdk_pool_handle,
+    sdk_send_and_check_auth_rule_request(looper, sdk_pool_handle, sdk_wallet_trustee,
                                          auth_action=ADD_PREFIX, auth_type=TXN_AUTHOR_AGREEMENT,
                                          field='*', new_value='*',
                                          constraint=steward_or_trustee_constraint.as_dict)

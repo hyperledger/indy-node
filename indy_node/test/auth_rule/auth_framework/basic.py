@@ -116,5 +116,5 @@ class AuthTest(AbstractTest):
 
     def send_and_check(self, req_json, wallet):
         return sdk_send_and_check_req_json(
-            self.looper, wallet, self.sdk_pool_handle, req_json
+            self.looper, self.sdk_pool_handle, wallet, req_json
         )[0]

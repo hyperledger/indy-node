@@ -37,8 +37,8 @@ def test_catching_up_auth_rule_txn(looper,
                         STEWARD_STRING,
                         dest=new_steward_did, verkey=new_steward_verkey)
     with delay_rules_without_processing(delayed_node.nodeIbStasher, cDelay(), pDelay(), ppDelay()):
-        sdk_send_and_check_auth_rule_request(looper, sdk_wallet_trustee,
-                                             sdk_pool_handle, auth_action=ADD_PREFIX,
+        sdk_send_and_check_auth_rule_request(looper, sdk_pool_handle, sdk_wallet_trustee,
+                                             auth_action=ADD_PREFIX,
                                              auth_type=action.txn_type, field=action.field,
                                              new_value=action.value, old_value=None,
                                              constraint=changed_constraint.as_dict)

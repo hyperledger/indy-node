@@ -87,11 +87,9 @@ class TestNode(TempStorage, TestNodeCore, Node):
 
 # TODO makes sense to move plenum
 def sdk_send_and_check_req_json(
-    looper, sdk_wallet_trustee, sdk_pool_handle, req_json, no_wait=False
+    looper, sdk_pool_handle, sdk_wallet, req_json, no_wait=False
 ):
-    req = sdk_sign_and_submit_req(sdk_pool_handle,
-                                  sdk_wallet_trustee,
-                                  req_json)
+    req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, req_json)
     if no_wait:
         return req
     resp = sdk_get_and_check_replies(looper, [req])
@@ -104,20 +102,14 @@ def sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attr
     t_did = dest or s_did
     attrib_req = looper.loop.run_until_complete(
         build_attrib_request(s_did, t_did, xhash, attrib, enc))
-    request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_handle,
-                                                        sdk_pool_handle, attrib_req)
-    rep = sdk_get_and_check_replies(looper, [request_couple])
-    return rep
+    return sdk_send_and_check_req_json(looper, sdk_pool_handle, sdk_wallet_handle, attrib_req)
 
 
 def sdk_get_attribute_and_check(looper, sdk_pool_handle, submitter_wallet, target_did, attrib_name):
     _, submitter_did = submitter_wallet
     req = looper.loop.run_until_complete(
         build_get_attrib_request(submitter_did, target_did, attrib_name, None, None))
-    request_couple = sdk_sign_and_send_prepared_request(looper, submitter_wallet,
-                                                        sdk_pool_handle, req)
-    rep = sdk_get_and_check_replies(looper, [request_couple])
-    return rep
+    return sdk_send_and_check_req_json(looper, sdk_pool_handle, submitter_wallet, req)
 
 
 def sdk_add_raw_attribute(looper, sdk_pool_handle, sdk_wallet_handle, name, value):
@@ -167,7 +159,7 @@ def build_get_auth_rule_request_json(
 
 
 def sdk_send_and_check_auth_rule_request(
-    looper, sdk_wallet, sdk_pool_handle,
+    looper, sdk_pool_handle, sdk_wallet,
     auth_action, auth_type, field, constraint, old_value=None, new_value=None,
     no_wait=False
 ):
@@ -181,12 +173,12 @@ def sdk_send_and_check_auth_rule_request(
         constraint=constraint
     )
     return sdk_send_and_check_req_json(
-        looper, sdk_wallet, sdk_pool_handle, req_json, no_wait=no_wait
+        looper, sdk_pool_handle, sdk_wallet, req_json, no_wait=no_wait
     )
 
 
 def sdk_send_and_check_get_auth_rule_request(
-    looper, sdk_wallet, sdk_pool_handle,
+    looper, sdk_pool_handle, sdk_wallet,
     auth_type=None,
     auth_action=None,
     field=None,
@@ -195,14 +187,14 @@ def sdk_send_and_check_get_auth_rule_request(
 ):
     req_json = build_get_auth_rule_request_json(
         looper, sdk_wallet[1],
-        txn_type=auth_type,
-        action=auth_action,
+        auth_type=auth_type,
+        auth_action=auth_action,
         field=field,
         old_value=old_value,
         new_value=new_value
     )
     return sdk_send_and_check_req_json(
-        looper, sdk_wallet, sdk_pool_handle, req_json
+        looper, sdk_pool_handle, sdk_wallet, req_json
     )
 
 
