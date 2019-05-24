@@ -10,10 +10,12 @@ from indy_common.authorize.auth_constraints import ROLE
 from indy_common.constants import AUTH_ACTION, OLD_VALUE
 
 from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, sdk_get_and_check_replies
+from indy_node.test.auth_rule.helper import sdk_send_and_check_req_json
 from indy_node.test.auth_rule.helper import (
     generate_constraint_entity, generate_constraint_list,
     sdk_send_and_check_auth_rule_request, generate_auth_rule_operation,
-    sdk_send_and_check_req_json
+    generate_key,
+    sdk_send_and_check_auth_rule_invalid_request
 )
 
 
@@ -104,11 +106,12 @@ def test_reqnack_auth_rule_add_transaction_with_wrong_format(looper,
                                                              sdk_wallet_trustee,
                                                              sdk_pool_handle):
     with pytest.raises(RequestNackedException) as e:
-        sdk_send_and_check_auth_rule_request(looper,
-                                             sdk_wallet_trustee,
-                                             sdk_pool_handle,
-                                             old_value="*",
-                                             invalid=True)
+        sdk_send_and_check_auth_rule_invalid_request(
+            looper,
+            sdk_wallet_trustee,
+            sdk_pool_handle,
+            **generate_key(old_value="*")
+        )
     e.match("InvalidClientRequest")
     e.match("Transaction for change authentication "
             "rule for {}={} must not contain field {}".

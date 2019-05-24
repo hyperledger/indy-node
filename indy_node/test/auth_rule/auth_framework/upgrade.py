@@ -11,7 +11,7 @@ from plenum.test.helper import sdk_gen_request
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from indy_common.authorize import auth_map
 
-from indy_node.test.auth_rule.helper import build_auth_rule_request_json
+from indy_node.test.helper import build_auth_rule_request_json
 
 
 class StartUpgradeTest(AuthTest):

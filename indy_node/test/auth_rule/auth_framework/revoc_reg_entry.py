@@ -18,7 +18,7 @@ from plenum.common.util import randomString
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_gen_request, sdk_send_and_check
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
-from indy_node.test.auth_rule.helper import build_auth_rule_request_json
+from indy_node.test.helper import build_auth_rule_request_json
 
 
 class AddRevocRegEntryTest(AuthTest):

@@ -14,7 +14,7 @@ from plenum.test.helper import sdk_gen_request, sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_sign_and_send_prepared_request
 from plenum.test.txn_author_agreement.helper import sdk_send_txn_author_agreement
 
-from indy_node.test.auth_rule.helper import build_auth_rule_request_json
+from indy_node.test.helper import build_auth_rule_request_json
 
 
 class TxnAuthorAgreementTest(AuthTest):

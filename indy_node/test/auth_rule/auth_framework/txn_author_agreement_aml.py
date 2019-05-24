@@ -13,7 +13,7 @@ from plenum.common.exceptions import RequestRejectedException
 from plenum.test.helper import sdk_gen_request, sdk_get_and_check_replies, sdk_sign_and_submit_req_obj
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_sign_and_send_prepared_request
 
-from indy_node.test.auth_rule.helper import build_auth_rule_request_json
+from indy_node.test.helper import build_auth_rule_request_json
 
 
 class TxnAuthorAgreementAMLTest(AuthTest):

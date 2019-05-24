@@ -6,8 +6,9 @@ from indy.ledger import build_acceptance_mechanism_request
 from plenum.test.helper import sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request
 
+from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_common.authorize.auth_map import steward_or_trustee_constraint
-from indy_node.test.auth_rule.helper import sdk_send_and_check_auth_rule_request
+from indy_node.test.helper import sdk_send_and_check_auth_rule_request
 from plenum.common.constants import TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_TEXT, \
     TXN_AUTHOR_AGREEMENT, REPLY
 from plenum.common.exceptions import RequestRejectedException
@@ -55,7 +56,8 @@ def test_send_valid_txn_author_agreement_without_enough_privileges_fails(looper,
 def test_txn_author_agreement_respects_current_auth_rules(looper, setup_aml, txnPoolNodeSet, sdk_pool_handle,
                                                           sdk_wallet_trustee, sdk_wallet_steward):
     sdk_send_and_check_auth_rule_request(looper, sdk_wallet_trustee, sdk_pool_handle,
-                                         auth_type=TXN_AUTHOR_AGREEMENT, field='*', new_value='*',
+                                         auth_action=ADD_PREFIX, auth_type=TXN_AUTHOR_AGREEMENT,
+                                         field='*', new_value='*',
                                          constraint=steward_or_trustee_constraint.as_dict)
 
     sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_steward,

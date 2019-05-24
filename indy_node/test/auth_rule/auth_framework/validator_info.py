@@ -10,7 +10,7 @@ from plenum.test.helper import sdk_gen_request
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.testing_utils import FakeSomething
 
-from indy_node.test.auth_rule.helper import build_auth_rule_request_json
+from indy_node.test.helper import build_auth_rule_request_json
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
 
 

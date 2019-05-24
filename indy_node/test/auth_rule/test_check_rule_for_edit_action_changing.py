@@ -10,9 +10,9 @@ from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
 def test_check_rule_for_edit_action_changing(looper,
-                                            sdk_wallet_trustee,
-                                            sdk_wallet_steward,
-                                            sdk_pool_handle):
+                                             sdk_wallet_trustee,
+                                             sdk_wallet_steward,
+                                             sdk_pool_handle):
     wh, _ = sdk_wallet_trustee
     new_steward_did, new_steward_verkey = create_verkey_did(looper, wh)
     """Adding new steward for old auth rules"""

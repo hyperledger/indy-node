@@ -24,7 +24,7 @@ from plenum.test.helper import sdk_gen_request, sdk_get_and_check_replies, \
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_sign_and_send_prepared_request
 from indy_common.authorize import auth_map
 
-from indy_node.test.auth_rule.helper import build_auth_rule_request_json
+from indy_node.test.helper import build_auth_rule_request_json
 
 
 def get_schema_json(looper, sdk_pool_handle, sdk_wallet_trustee):

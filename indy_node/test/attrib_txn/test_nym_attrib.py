@@ -6,7 +6,7 @@ from common.serializers.serialization import serialize_msg_for_signing
 from indy_common.authorize.auth_actions import EDIT_PREFIX, ADD_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_node.test.attrib_txn.test_send_get_attr import secretBox
-from indy_node.test.auth_rule.helper import sdk_send_and_check_auth_rule_request
+from indy_node.test.helper import sdk_send_and_check_auth_rule_request
 
 from plenum.common.constants import STEWARD_STRING, STEWARD
 from plenum.common.exceptions import RequestRejectedException

@@ -13,7 +13,7 @@ from plenum.test.pool_transactions.helper import (
     prepare_nym_request, prepare_new_node_data, prepare_node_request
 )
 
-from indy_node.test.auth_rule.helper import (
+from indy_node.test.helper import (
     build_auth_rule_request_json, sdk_send_and_check_req_json
 )
 
