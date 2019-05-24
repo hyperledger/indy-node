@@ -38,6 +38,9 @@ def generate_constraint_list(constraint_id=ConstraintsEnum.AND_CONSTRAINT_ID,
             AUTH_CONSTRAINTS: auth_constraints}
 
 
+# Note. The helper is for testing invalid operations/requests only.
+# DO NOT USE it for valid cases, use 'build_auth_rule_request_json'
+# instead.
 def generate_auth_rule_operation(auth_action=ADD_PREFIX, auth_type=NYM,
                                  field=ROLE, new_value=TRUST_ANCHOR,
                                  old_value=None, constraint=None):
@@ -62,24 +65,17 @@ def create_verkey_did(looper, wh):
         create_and_store_my_did(wh, json.dumps({'seed': seed})))
 
 
-def sdk_send_and_check_auth_rule_invalid_request(looper, sdk_wallet_trustee, sdk_pool_handle,
-                                         auth_action=ADD_PREFIX, auth_type=NYM,
-                                         field=ROLE, new_value=TRUST_ANCHOR,
-                                         old_value=None, constraint=None, no_wait=False):
-    op = generate_auth_rule_operation(auth_action, auth_type,
-                                      field, new_value,
-                                      old_value, constraint)
-
-    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
-    req = sdk_sign_and_submit_req_obj(looper,
-                                      sdk_pool_handle,
-                                      sdk_wallet_trustee,
-                                      req_obj)
+# TODO makes sense to move to general helpers location (or even to plenum)
+def sdk_send_and_check_req_json(
+    looper, sdk_wallet_trustee, sdk_pool_handle, req_json, no_wait=False
+):
+    req = sdk_sign_and_submit_req(sdk_pool_handle,
+                                  sdk_wallet_trustee,
+                                  req_json)
     if no_wait:
         return req
     resp = sdk_get_and_check_replies(looper, [req])
     return resp
-
 
 
 def build_auth_rule_request_json(
@@ -107,30 +103,33 @@ def sdk_send_and_check_auth_rule_request(
     old_value=None,
     new_value=TRUST_ANCHOR,
     constraint=None,
-    no_wait=False
+    no_wait=False,
+    invalid=False
 ):
-    wallet_h, did = sdk_wallet_trustee
-
     constraint = (
         generate_constraint_entity() if constraint is None else constraint
     )
 
-    req_json = build_auth_rule_request_json(
-        looper, did,
-        auth_action=auth_action,
-        auth_type=auth_type,
-        field=field,
-        old_value=old_value,
-        new_value=new_value,
-        constraint=constraint
+    if invalid:
+        op = generate_auth_rule_operation(auth_action, auth_type,
+                                          field, new_value,
+                                          old_value, constraint)
+        req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+        req_json = json.dumps(req_obj.as_dict)
+    else:
+        req_json = build_auth_rule_request_json(
+            looper, sdk_wallet_trustee[1],
+            auth_action=auth_action,
+            auth_type=auth_type,
+            field=field,
+            old_value=old_value,
+            new_value=new_value,
+            constraint=constraint
+        )
+
+    return sdk_send_and_check_req_json(
+        looper, sdk_wallet_trustee, sdk_pool_handle, req_json, no_wait=no_wait
     )
-    req = sdk_sign_and_submit_req(sdk_pool_handle,
-                                  sdk_wallet_trustee,
-                                  req_json)
-    if no_wait:
-        return req
-    resp = sdk_get_and_check_replies(looper, [req])
-    return resp
 
 
 def add_new_nym(looper, sdk_pool_handle, creators_wallets,
@@ -155,7 +154,6 @@ def add_new_nym(looper, sdk_pool_handle, creators_wallets,
         return request_couple
     # waiting for replies
     sdk_get_and_check_replies(looper, [request_couple])
-
 
 
 def sdk_send_and_check_get_auth_rule_invalid_request(

@@ -1,4 +1,5 @@
 import pytest
+import json
 
 from plenum.common.constants import TRUSTEE, STEWARD
 from plenum.common.exceptions import RequestRejectedException, \
@@ -9,9 +10,11 @@ from indy_common.authorize.auth_constraints import ROLE
 from indy_common.constants import AUTH_ACTION, OLD_VALUE
 
 from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, sdk_get_and_check_replies
-from indy_node.test.auth_rule.helper import generate_constraint_entity, generate_constraint_list, \
-    sdk_send_and_check_auth_rule_request, generate_auth_rule_operation, \
-    sdk_send_and_check_auth_rule_invalid_request
+from indy_node.test.auth_rule.helper import (
+    generate_constraint_entity, generate_constraint_list,
+    sdk_send_and_check_auth_rule_request, generate_auth_rule_operation,
+    sdk_send_and_check_req_json
+)
 
 
 def test_auth_rule_transaction_for_edit(looper,
@@ -86,13 +89,11 @@ def test_reqnack_auth_rule_edit_transaction_with_wrong_format(looper,
     op.pop(OLD_VALUE)
 
     req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
-    req = sdk_sign_and_submit_req_obj(looper,
-                                      sdk_pool_handle,
-                                      sdk_wallet_trustee,
-                                      req_obj)
+    req_json = json.dumps(req_obj.as_dict)
     with pytest.raises(RequestNackedException) as e:
-
-        sdk_get_and_check_replies(looper, [req])
+        sdk_send_and_check_req_json(
+            looper, sdk_wallet_trustee, sdk_pool_handle, req_json,
+        )
     e.match("InvalidClientRequest")
     e.match("Transaction for change authentication "
             "rule for {}={} must contain field {}".
@@ -103,10 +104,11 @@ def test_reqnack_auth_rule_add_transaction_with_wrong_format(looper,
                                                              sdk_wallet_trustee,
                                                              sdk_pool_handle):
     with pytest.raises(RequestNackedException) as e:
-        sdk_send_and_check_auth_rule_invalid_request(looper,
+        sdk_send_and_check_auth_rule_request(looper,
                                              sdk_wallet_trustee,
                                              sdk_pool_handle,
-                                             old_value="*")
+                                             old_value="*",
+                                             invalid=True)
     e.match("InvalidClientRequest")
     e.match("Transaction for change authentication "
             "rule for {}={} must not contain field {}".
