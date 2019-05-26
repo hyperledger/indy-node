@@ -95,13 +95,20 @@ parser.add_argument('--short_stat', action='store_true', dest='short_stat', help
 parser.add_argument('--test_conn', action='store_true', dest='test_conn',
                     help='Check pool connection with provided genesis file')
 
+parser.add_argument('--taa_text', default="test transaction author agreement text", type=str, required=False,
+                    help='Transaction author agreement text')
+
+parser.add_argument('--taa_version', default="test_taa", type=str, required=False,
+                    help='Transaction author agreement version')
+
 
 class LoadRunner:
     def __init__(self, clients=0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
                  seed=["000000000000000000000000Trustee1"], req_kind="nym", batch_size=10, refresh_rate=10,
                  buff_req=30, out_dir=".", val_sep="|", wallet_key="key", mode="p", pool_config='',
-                 sync_mode="freeflow", load_rate=10, out_file="", load_time=0, ext_set=None,
-                 client_runner=LoadClient.run, log_lvl=logging.INFO, short_stat=False):
+                 sync_mode="freeflow", load_rate=10, out_file="", load_time=0, taa_text="", taa_version="",
+                 ext_set=None, client_runner=LoadClient.run, log_lvl=logging.INFO,
+                 short_stat=False):
         self._client_runner = client_runner
         self._clients = dict()  # key process future; value ClientRunner
         self._loop = asyncio.get_event_loop()
@@ -127,6 +134,8 @@ class LoadRunner:
         self._pool_config = None
         lr = load_rate if load_rate > 0 else 10
         self._batch_rate = 1 / lr
+        self._taa_text = taa_text
+        self._taa_version = taa_version
         self._ext_set = ext_set
         if pool_config:
             try:
@@ -399,8 +408,8 @@ class LoadRunner:
             prc_name = "LoadClient_{}".format(i)
             prc = executor.submit(self._client_runner, prc_name, self._genesis_path, wr, self._seed, self._batch_size,
                                   self._batch_rate, self._req_kind, self._buff_req, self._wallet_key, self._pool_config,
-                                  load_client_mode, self._mode == 'p', self._ext_set, self._out_dir, self._log_lvl,
-                                  self._short_stat)
+                                  load_client_mode, self._mode == 'p', self._taa_text, self._taa_version, self._ext_set,
+                                  self._out_dir, self._log_lvl, self._short_stat)
             prc.add_done_callback(self.client_done)
             self._loop.add_reader(rd, self.read_client_cb, prc)
             self._clients[prc] = ClientRunner(prc_name, rd, self._out_file)
@@ -484,7 +493,7 @@ if __name__ == '__main__':
                     dict_args["batch_size"], dict_args["refresh_rate"], dict_args["buff_req"], out_dir,
                     dict_args["val_sep"], dict_args["wallet_key"], dict_args["mode"], dict_args["pool_config"],
                     dict_args["sync_mode"], dict_args["load_rate"], dict_args["out_file"], dict_args["load_time"],
-                    dict_args["ext_set"],
+                    dict_args["taa_text"], dict_args["taa_version"], dict_args["ext_set"],
                     client_runner=LoadClient.run if not dict_args["ext_set"] else LoadClientFees.run,
                     log_lvl=log_lvl, short_stat=dict_args["short_stat"])
     tr.load_run()
