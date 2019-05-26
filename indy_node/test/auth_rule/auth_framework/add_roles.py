@@ -7,7 +7,6 @@ from indy_common.constants import NYM, ROLE, TRUST_ANCHOR
 from indy_node.test.auth_rule.auth_framework.basic import roles_to_string, AuthTest
 from indy_node.test.auth_rule.helper import create_verkey_did
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request
 
 from indy_node.test.helper import build_auth_rule_request_json
 

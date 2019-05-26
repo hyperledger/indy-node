@@ -9,7 +9,6 @@ from indy_node.test.auth_rule.auth_framework.add_roles import AddNewTrusteeTest,
     AddNewTrustAnchorTest, AddNewIdentityOwnerTest, AddNewNetworkMonitorTest
 from indy_node.test.auth_rule.auth_framework.basic import roles_to_string, AuthTest
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request
 
 from indy_node.test.helper import build_auth_rule_request_json
 

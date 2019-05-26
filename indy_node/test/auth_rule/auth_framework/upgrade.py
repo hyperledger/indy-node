@@ -7,7 +7,6 @@ from indy_common.constants import POOL_UPGRADE, ACTION, CANCEL, JUSTIFICATION, S
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
 from indy_node.test.upgrade.helper import sdk_ensure_upgrade_sent
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from indy_common.authorize import auth_map
 

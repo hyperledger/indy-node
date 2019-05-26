@@ -2,7 +2,6 @@ from copy import deepcopy
 
 from common.serializers.serialization import pool_state_serializer
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
-from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.config_util import getConfig
 from plenum.common.constants import TARGET_NYM, DATA, ALIAS, SERVICES, \

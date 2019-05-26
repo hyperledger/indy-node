@@ -13,7 +13,7 @@ from indy_node.test.claim_def.test_send_claim_def import sdk_send_claim_def
 from plenum.common.constants import DATA
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.types import OPERATION
-from plenum.test.helper import sdk_gen_request, sdk_get_and_check_replies, sdk_sign_and_submit_req, sdk_get_reply, \
+from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_and_submit_req, sdk_get_reply, \
     sdk_sign_and_submit_op
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 

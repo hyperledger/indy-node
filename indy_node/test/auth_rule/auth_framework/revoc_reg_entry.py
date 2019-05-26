@@ -15,7 +15,7 @@ from plenum.common.constants import TXN_TYPE
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.types import f, OPERATION
 from plenum.common.util import randomString
-from plenum.test.helper import sdk_sign_request_from_dict, sdk_gen_request, sdk_send_and_check
+from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 from indy_node.test.helper import build_auth_rule_request_json

@@ -6,7 +6,6 @@ from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER
 from indy_common.constants import VALIDATOR_INFO
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.testing_utils import FakeSomething
 

@@ -10,7 +10,7 @@ from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNE
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
 from plenum.common.constants import TXN_AUTHOR_AGREEMENT_AML
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request, sdk_get_and_check_replies, sdk_sign_and_submit_req_obj
+from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_and_submit_req_obj
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_sign_and_send_prepared_request
 
 from indy_node.test.helper import build_auth_rule_request_json
