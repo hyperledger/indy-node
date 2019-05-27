@@ -1487,7 +1487,7 @@ There is a default Auth Constraint for every action (defined in [auth_rules.md](
 The `AUTH_RULES` command allows to change the Auth Constraints.
 So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action.
 
-Please note, that list elements of `GET_AUTH_RULE` output can be used as an input (with a required changes) for `AUTH_RULE`.
+Please note, that list elements of `GET_AUTH_RULE` output can be used as an input (with a required changes) for the field `rules` in `AUTH_RULES`.
 
 If one rule is incorrect, the client will receive NACK message for the request with all its rules.
 A client will receive NACK for 
