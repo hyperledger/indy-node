@@ -64,6 +64,21 @@ def test_get_one_auth_rule_transaction(looper,
         assert auth_map.get(str_key).as_dict == resp_rule[CONSTRAINT]
 
 
+def test_get_auth_rule_transaction_unique_for_anyone_can_write_map_is_rejected(
+    looper, sdk_wallet_trustee, sdk_pool_handle
+):
+    key = generate_key(auth_action=ADD_PREFIX, auth_type=NYM,
+                       field=ROLE, new_value='*')
+    with pytest.raises(
+        RequestNackedException,
+        match=r"Unknown authorization rule: key '1--ADD--role--\*--\*' "
+              "is not found in authorization map"
+    ):
+        sdk_send_and_check_get_auth_rule_request(
+            looper, sdk_pool_handle, sdk_wallet_trustee, **key
+        )
+
+
 @pytest.mark.skip('INDY-2077')
 def test_get_one_disabled_auth_rule_transaction(looper,
                                                 sdk_wallet_trustee,
