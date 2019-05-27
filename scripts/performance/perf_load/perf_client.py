@@ -235,7 +235,6 @@ class LoadClient:
             await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle,
                                                  self._trustee_dids[0], nym_req)
 
-
     async def _get_taa(self, version: Optional[str] = None) -> Tuple[Optional[str], Optional[str], Optional[int]]:
         options = json.dumps({'version': version}) if version else None
         request = await ledger.build_get_txn_author_agreement_request(self._test_did, options)
