@@ -389,7 +389,7 @@ class ClientAuthRuleOperation(MessageValidator):
 class ClientAuthRulesOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(AUTH_RULES)),
-        (RULES, IterableField(AuthRuleField()))
+        (RULES, IterableField(AuthRuleField(), min_length=1))
     )
 
 

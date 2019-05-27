@@ -472,7 +472,7 @@
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>Changing an authentification rules</sub></td>
+    <td><sub>Changing a number of authentification rules</sub></td>
   </tr>
   <tr>
     <td><sub>TRANSACTION_AUTHOR_AGREEMENT</sub></td>

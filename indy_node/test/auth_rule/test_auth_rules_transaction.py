@@ -67,6 +67,17 @@ def test_reject_all_rules_from_auth_rules_txn(looper,
     assert before_resp["result"][DATA] == after_resp["result"][DATA]
 
 
+def test_reject_with_empty_rules_list(looper,
+                                      sdk_wallet_trustee,
+                                      sdk_pool_handle):
+    with pytest.raises(RequestNackedException,
+                       match="InvalidClientRequest.*length should be at least 1"):
+        sdk_send_and_check_auth_rules_request(looper,
+                                              sdk_wallet_trustee,
+                                              sdk_pool_handle,
+                                              rules=[])
+
+
 def test_reject_with_unacceptable_role_in_constraint(looper,
                                                      sdk_wallet_trustee,
                                                      sdk_pool_handle):

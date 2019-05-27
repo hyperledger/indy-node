@@ -1344,9 +1344,10 @@ The `constraint_id` fields is where one can define the desired auth constraint f
     
         Constraint Type. As of now, the following constraint types are supported:
             
-            - 'ROLE': a constraint defining how many siganatures of a given role are required
+            - 'ROLE': a constraint defining how many signatures of a given role are required
             - 'OR': logical disjunction for all constraints from `auth_constraints` 
             - 'AND': logical conjunction for all constraints from `auth_constraints`
+            - 'FORBIDDEN': a constraint for not allowed actions
             
     - fields if `'constraint_id': 'OR'` or `'constraint_id': 'AND'`
     
@@ -1373,6 +1374,10 @@ The `constraint_id` fields is where one can define the desired auth constraint f
         - `metadata` (dict; optional):
         
             Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
+        
+    - fields if `'constraint_id': 'FORBIDDEN'`:
+    
+        no fields
 
 
 *Request Example*:
@@ -1467,14 +1472,96 @@ Let's consider an example of changing a value of a NODE transaction's `service` 
          'auditPath':['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6']
       }
    }
-
+```
 
 
 ### AUTH_RULES
 
 A command to set multiple AUTH_RULEs by one transaction. 
 Transaction AUTH_RULES is not divided into two AUTH_RULE transaction, and is written to the ledger with one transaction with the full set of rules that come in the request.
-If one rule fails validation, the request with all rules will be rejected.
+Internally authentication rules are stored as a key-value dictionary: `{action} -> {auth_constraint}`.
+
+The list of actions is static and can be found in [auth_rules.md](auth_rules.md).
+There is a default Auth Constraint for every action (defined in [auth_rules.md](auth_rules.md)). 
+
+The `AUTH_RULES` command allows to change the Auth Constraints.
+So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action.
+
+Please note, that list elements of `GET_AUTH_RULE` output can be used as an input (with a required changes) for `AUTH_RULE`.
+
+If one rule is incorrect, the client will receive NACK message for the request with all its rules.
+A client will receive NACK for 
+- a request with incorrect format;
+- a request with a rule with "ADD" action, but with "old_value";
+- a request with a rule with "EDIT" action without "old_value";
+- a request with a rule with a key that is not in the [auth_rule](auth_rule.md).
+
+The following input parameters must match an auth rule from the [auth_rules.md](auth_rules.md):
+- `auth_type` (string enum)
+ 
+     The type of transaction to change the auth constraints to. (Example: "0", "1", ...). See transactions description to find the txn type enum value.
+
+- `auth_action` (enum: `ADD` or `EDIT`)
+
+    Whether this is adding of a new transaction, or editing of an existing one.
+    
+- `field` (string)
+ 
+    Set the auth constraint of editing the given specific field. `*` can be used to specify that an auth rule is applied to all fields.
+    
+- `old_value` (string; optional)
+
+    Old value of a field, which can be changed to a new_value. Must be present for EDIT `auth_action` only.
+    `*` can be used if it doesn't matter what was the old value.
+    
+- `new_value` (string)
+
+    New value that can be used to fill the field.
+    `*` can be used if it doesn't matter what was the old value.
+
+The `constraint_id` fields is where one can define the desired auth constraint for the action:
+
+- `constraint` (dict)
+
+    - `constraint_id` (string enum)
+    
+        Constraint Type. As of now, the following constraint types are supported:
+            
+            - 'ROLE': a constraint defining how many signatures of a given role are required
+            - 'OR': logical disjunction for all constraints from `auth_constraints` 
+            - 'AND': logical conjunction for all constraints from `auth_constraints`
+            - 'FORBIDDEN': a constraint for not allowed actions
+            
+    - fields if `'constraint_id': 'OR'` or `'constraint_id': 'AND'`
+    
+        - `auth_constraints` (list)
+        
+            A list of constraints. Any number of nested constraints is supported recursively
+        
+    - fields if `'constraint_id': 'ROLE'`:
+                
+        - `role` (string enum)    
+            
+            Who (what role) can perform the action
+            Please have a look at [NYM](#nym) transaction description for a mapping between role codes and names.
+                
+        - `sig_count` (int):
+        
+            The number of signatures that is needed to do the action
+            
+        - `need_to_be_owner` (boolean):
+        
+            Flag to check if the user must be the owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
+            The notion of the `owner` is different for every auth rule. Please reference to [auth_rules.md](auth_rules.md) for details.
+            
+        - `metadata` (dict; optional):
+        
+            Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
+        
+    - fields if `'constraint_id': 'FORBIDDEN'`:
+    
+        no fields
+
 *Request Example*:
 ```
 {
@@ -1652,6 +1739,7 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
         'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
     }
 }
+```
 
 ### TRANSACTION_AUTHOR_AGREEMENT_AML
 
