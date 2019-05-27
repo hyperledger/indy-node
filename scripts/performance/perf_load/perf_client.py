@@ -244,14 +244,6 @@ class LoadClient:
             return
 
         for auth_rule in data_f:
-            if not auth_rule['constraint']:
-                # TODO INDY-2077
-                self._logger.warning(
-                    "Skip auth rule setting since constraint is empty: {}"
-                    .format(auth_rule)
-                )
-                continue
-
             try:
                 metadata_addition = self._auth_rule_metadata.get(auth_rule['auth_type'], None)
                 if metadata_addition:
