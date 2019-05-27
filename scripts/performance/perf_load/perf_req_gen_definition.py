@@ -58,17 +58,18 @@ class RGDefinition(RGGetDefinition):
             resp.get('result', {}).get('txnMetadata', {}).get('seqNo', None)
         self._default_schema_json = json.loads(self._default_schema_json)
         self._default_schema_json['seqNo'] = seqno
+        tag = random_string(32)
         self._default_definition_id, self._default_definition_json = \
             await anoncreds.issuer_create_and_store_credential_def(
                 wallet_handle, submitter_did, json.dumps(self._default_schema_json),
-                random_string(32), "CL", json.dumps({"support_revocation": True}))
+                tag, "CL", json.dumps({"support_revocation": True}))
+        self._default_definition_id = self._make_cred_def_id(self._default_schema_json['seqNo'], tag)
         self._default_definition_json = json.loads(self._default_definition_json)
 
     async def _gen_req(self, submit_did, req_data):
         if self._data_file is not None:
             dt = req_data
         else:
-            self._default_definition_id = self._make_cred_def_id(self._default_schema_json['seqNo'], req_data)
             self._default_definition_json["id"] = self._default_definition_id
             self._default_definition_json["schemaId"] = str(self._default_schema_json['seqNo'])
             self._default_definition_json["tag"] = req_data
