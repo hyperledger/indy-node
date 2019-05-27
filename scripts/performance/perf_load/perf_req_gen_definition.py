@@ -53,25 +53,24 @@ class RGDefinition(RGGetDefinition):
         resp = await send_req_f(pool_handle, resp)
         # resp = await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, schema_request)
         resp = json.loads(resp)
-        seqno =\
+        schema_seqno =\
             resp.get('result', {}).get('seqNo', None) or\
             resp.get('result', {}).get('txnMetadata', {}).get('seqNo', None)
         self._default_schema_json = json.loads(self._default_schema_json)
-        self._default_schema_json['seqNo'] = seqno
         tag = random_string(32)
         self._default_definition_id, self._default_definition_json = \
             await anoncreds.issuer_create_and_store_credential_def(
                 wallet_handle, submitter_did, json.dumps(self._default_schema_json),
                 tag, "CL", json.dumps({"support_revocation": True}))
-        self._default_definition_id = self._make_cred_def_id(self._default_schema_json['seqNo'], tag)
+        self._default_definition_id = self._make_cred_def_id(schema_seqno, tag)
         self._default_definition_json = json.loads(self._default_definition_json)
+        self._default_definition_json["id"] = self._default_definition_id
+        self._default_definition_json["schemaId"] = str(schema_seqno)
 
     async def _gen_req(self, submit_did, req_data):
         if self._data_file is not None:
             dt = req_data
         else:
-            self._default_definition_json["id"] = self._default_definition_id
-            self._default_definition_json["schemaId"] = str(self._default_schema_json['seqNo'])
             self._default_definition_json["tag"] = req_data
             dt = json.dumps(self._default_definition_json)
         return await ledger.build_cred_def_request(submit_did, dt)
