@@ -262,9 +262,7 @@ class LoadClient:
             try:
                 metadata_addition = self._auth_rule_metadata.get(auth_rule['auth_type'], None)
                 if metadata_addition:
-                    metadata = auth_rule['constraint'].get('metadata', {})
-                    metadata.update(metadata_addition)
-                    auth_rule['constraint']['metadata'] = metadata
+                    update_constraint(auth_rule['constraint'], metadata_addition)
                 auth_rule_req = await ledger.build_auth_rule_request(
                     self._test_did,
                     txn_type=auth_rule['auth_type'],
@@ -542,3 +540,14 @@ class LoadClient:
 
         logging.getLogger(name).info("stopped")
         return stat
+
+
+def update_constraint(constraint, fee_metadata):
+    id = constraint.get('constraint_id')
+    if id == "ROLE":
+        metadata = constraint.get('metadata', {})
+        metadata.update(fee_metadata)
+        constraint['metadata'] = metadata
+    elif id in ["OR", "AND"]:
+        for constraint in constraint.get("auth_constraints", []):
+            update_constraint(constraint, fee_metadata)
