@@ -6,7 +6,7 @@ from common.serializers.serialization import serialize_msg_for_signing
 from indy_common.authorize.auth_actions import EDIT_PREFIX, ADD_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_node.test.attrib_txn.test_send_get_attr import secretBox
-from indy_node.test.auth_rule.helper import sdk_send_and_check_auth_rule_request
+from indy_node.test.helper import sdk_send_and_check_auth_rule_request
 
 from plenum.common.constants import STEWARD_STRING, STEWARD
 from plenum.common.exceptions import RequestRejectedException
@@ -282,8 +282,8 @@ def testTrustAnchorAddedAttributeCanBeChanged(sdk_added_raw_attribute):
 
 def set_attrib_auth_to_none(looper, sdk_wallet_trustee, sdk_pool_handle):
     sdk_send_and_check_auth_rule_request(looper,
-                                         sdk_wallet_trustee,
                                          sdk_pool_handle,
+                                         sdk_wallet_trustee,
                                          auth_action=ADD_PREFIX,
                                          auth_type=ATTRIB,
                                          field='*',
@@ -292,8 +292,8 @@ def set_attrib_auth_to_none(looper, sdk_wallet_trustee, sdk_pool_handle):
                                                                    need_to_be_owner=True).as_dict)
 
     sdk_send_and_check_auth_rule_request(looper,
-                                         sdk_wallet_trustee,
                                          sdk_pool_handle,
+                                         sdk_wallet_trustee,
                                          auth_action=EDIT_PREFIX,
                                          auth_type=ATTRIB,
                                          field='*',
@@ -319,8 +319,8 @@ def test_auth_rule_for_raw_attrib_works(looper,
     sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
 
     sdk_send_and_check_auth_rule_request(looper,
-                                         sdk_wallet_trustee,
                                          sdk_pool_handle,
+                                         sdk_wallet_trustee,
                                          auth_action=EDIT_PREFIX,
                                          auth_type=ATTRIB,
                                          field='*',
@@ -339,8 +339,8 @@ def test_auth_rule_for_raw_attrib_works(looper,
     e.match('Not enough STEWARD signatures')
 
     sdk_send_and_check_auth_rule_request(looper,
-                                         sdk_wallet_trustee,
                                          sdk_pool_handle,
+                                         sdk_wallet_trustee,
                                          auth_action=ADD_PREFIX,
                                          auth_type=ATTRIB,
                                          field='*',
@@ -375,8 +375,8 @@ def test_auth_rule_for_hash_attrib_works(looper,
     sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, xhash=data)
 
     sdk_send_and_check_auth_rule_request(looper,
-                                         sdk_wallet_trustee,
                                          sdk_pool_handle,
+                                         sdk_wallet_trustee,
                                          auth_action=EDIT_PREFIX,
                                          auth_type=ATTRIB,
                                          field='*',
@@ -394,8 +394,8 @@ def test_auth_rule_for_hash_attrib_works(looper,
     e.match('Not enough STEWARD signatures')
 
     sdk_send_and_check_auth_rule_request(looper,
-                                         sdk_wallet_trustee,
                                          sdk_pool_handle,
+                                         sdk_wallet_trustee,
                                          auth_action=ADD_PREFIX,
                                          auth_type=ATTRIB,
                                          field='*',
@@ -429,8 +429,8 @@ def test_auth_rule_for_enc_attrib_works(looper,
     sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, enc=data)
 
     sdk_send_and_check_auth_rule_request(looper,
-                                         sdk_wallet_trustee,
                                          sdk_pool_handle,
+                                         sdk_wallet_trustee,
                                          auth_action=EDIT_PREFIX,
                                          auth_type=ATTRIB,
                                          field='*',
@@ -448,8 +448,8 @@ def test_auth_rule_for_enc_attrib_works(looper,
     e.match('Not enough STEWARD signatures')
 
     sdk_send_and_check_auth_rule_request(looper,
-                                         sdk_wallet_trustee,
                                          sdk_pool_handle,
+                                         sdk_wallet_trustee,
                                          auth_action=ADD_PREFIX,
                                          auth_type=ATTRIB,
                                          field='*',

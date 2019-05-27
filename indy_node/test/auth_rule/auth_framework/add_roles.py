@@ -5,9 +5,10 @@ from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.authorize import auth_map
 from indy_common.constants import NYM, ROLE, TRUST_ANCHOR
 from indy_node.test.auth_rule.auth_framework.basic import roles_to_string, AuthTest
-from indy_node.test.auth_rule.helper import create_verkey_did, generate_auth_rule_operation
+from indy_node.test.auth_rule.helper import create_verkey_did
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request
+
+from indy_node.test.helper import build_auth_rule_request_json
 
 
 class AddNewRoleTest(AuthTest):
@@ -73,12 +74,14 @@ class AddNewRoleTest(AuthTest):
         constraint = AuthConstraint(role=TRUST_ANCHOR,
                                     sig_count=1,
                                     need_to_be_owner=False)
-        operation = generate_auth_rule_operation(auth_action=ADD_PREFIX,
-                                                 auth_type=NYM,
-                                                 field=ROLE,
-                                                 new_value=self.role,
-                                                 constraint=constraint.as_dict)
-        return sdk_gen_request(operation, identifier=self.creator_wallet[1])
+        return build_auth_rule_request_json(
+            self.looper, self.creator_wallet[1],
+            auth_action=ADD_PREFIX,
+            auth_type=NYM,
+            field=ROLE,
+            new_value=self.role,
+            constraint=constraint.as_dict
+        )
 
 
 class AddNewTrusteeTest(AddNewRoleTest):

@@ -8,9 +8,9 @@ from indy_common.authorize.auth_constraints import accepted_roles, ConstraintsEn
 from indy_node.test.auth_rule.auth_framework.add_roles import AddNewTrusteeTest, AddNewStewardTest, \
     AddNewTrustAnchorTest, AddNewIdentityOwnerTest, AddNewNetworkMonitorTest
 from indy_node.test.auth_rule.auth_framework.basic import roles_to_string, AuthTest
-from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request
+
+from indy_node.test.helper import build_auth_rule_request_json
 
 
 class EditRoleTest(AuthTest):
@@ -119,13 +119,15 @@ class EditRoleTest(AuthTest):
         constraint = AuthConstraint(role=new_role,
                                     sig_count=1,
                                     need_to_be_owner=False)
-        operation = generate_auth_rule_operation(auth_action=self.action.prefix,
-                                                 auth_type=self.action.txn_type,
-                                                 field=self.action.field,
-                                                 old_value=self.action.old_value,
-                                                 new_value=self.action.new_value,
-                                                 constraint=constraint.as_dict)
-        return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+        return build_auth_rule_request_json(
+            self.looper, self.trustee_wallet[1],
+            auth_action=self.action.prefix,
+            auth_type=self.action.txn_type,
+            field=self.action.field,
+            old_value=self.action.old_value,
+            new_value=self.action.new_value,
+            constraint=constraint.as_dict
+        )
 
 
 class EditTrusteeToStewardTest(EditRoleTest):

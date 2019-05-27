@@ -9,14 +9,15 @@ from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNE
 from indy_common.constants import CLAIM_DEF
 from indy_node.test.api.helper import sdk_write_schema
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
-from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from indy_node.test.claim_def.test_send_claim_def import sdk_send_claim_def
 from plenum.common.constants import DATA
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.types import OPERATION
-from plenum.test.helper import sdk_gen_request, sdk_get_and_check_replies, sdk_sign_and_submit_req, sdk_get_reply, \
+from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_and_submit_req, sdk_get_reply, \
     sdk_sign_and_submit_op
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
+
+from indy_node.test.helper import build_auth_rule_request_json
 
 
 def get_schema_json(looper, sdk_pool_handle, sdk_wallet_trustee):
@@ -65,12 +66,14 @@ class AddClaimDefTest(AuthTest):
         constraint = AuthConstraint(role=IDENTITY_OWNER,
                                     sig_count=1,
                                     need_to_be_owner=False)
-        operation = generate_auth_rule_operation(auth_action=ADD_PREFIX,
-                                                 auth_type=CLAIM_DEF,
-                                                 field='*',
-                                                 new_value='*',
-                                                 constraint=constraint.as_dict)
-        return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+        return build_auth_rule_request_json(
+            self.looper, self.trustee_wallet[1],
+            auth_action=ADD_PREFIX,
+            auth_type=CLAIM_DEF,
+            field='*',
+            new_value='*',
+            constraint=constraint.as_dict
+        )
 
 
 class EditClaimDefTest(AuthTest):
@@ -118,10 +121,12 @@ class EditClaimDefTest(AuthTest):
         constraint = AuthConstraint(role=IDENTITY_OWNER,
                                     sig_count=1,
                                     need_to_be_owner=False)
-        operation = generate_auth_rule_operation(auth_action=EDIT_PREFIX,
-                                                 auth_type=CLAIM_DEF,
-                                                 field='*',
-                                                 old_value='*',
-                                                 new_value='*',
-                                                 constraint=constraint.as_dict)
-        return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+        return build_auth_rule_request_json(
+            self.looper, self.trustee_wallet[1],
+            auth_action=EDIT_PREFIX,
+            auth_type=CLAIM_DEF,
+            field='*',
+            old_value='*',
+            new_value='*',
+            constraint=constraint.as_dict
+        )

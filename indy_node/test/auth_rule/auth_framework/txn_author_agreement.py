@@ -8,12 +8,13 @@ from plenum.common.util import randomString
 from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
-from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from plenum.common.constants import TXN_AUTHOR_AGREEMENT
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request, sdk_get_and_check_replies
+from plenum.test.helper import sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_sign_and_send_prepared_request
 from plenum.test.txn_author_agreement.helper import sdk_send_txn_author_agreement
+
+from indy_node.test.helper import build_auth_rule_request_json
 
 
 class TxnAuthorAgreementTest(AuthTest):
@@ -58,12 +59,14 @@ class TxnAuthorAgreementTest(AuthTest):
         constraint = AuthConstraint(role=IDENTITY_OWNER,
                                     sig_count=1,
                                     need_to_be_owner=False)
-        operation = generate_auth_rule_operation(auth_action=ADD_PREFIX,
-                                                 auth_type=TXN_AUTHOR_AGREEMENT,
-                                                 field='*',
-                                                 new_value='*',
-                                                 constraint=constraint.as_dict)
-        return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+        return build_auth_rule_request_json(
+            self.looper, self.trustee_wallet[1],
+            auth_action=ADD_PREFIX,
+            auth_type=TXN_AUTHOR_AGREEMENT,
+            field='*',
+            new_value='*',
+            constraint=constraint.as_dict
+        )
 
     def taa_aml_request(self):
         return self.looper.loop.run_until_complete(build_acceptance_mechanism_request(

@@ -1,11 +1,11 @@
 import functools
 import pytest
 import time
+import json
 
 from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_actions import AuthActionAdd
 from indy_common.authorize.auth_constraints import AuthConstraint, ConstraintsSerializer
-from indy_common.constants import AUTH_RULE
 from indy_common.state import config
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.node import Node
@@ -15,10 +15,12 @@ from plenum.common.constants import TXN_TYPE, NYM, ROLE, TRUSTEE, STEWARD, CONFI
 from plenum.common.ledger import Ledger
 from plenum.common.txn_util import reqToTxn, get_payload_data
 from plenum.server.replica import Replica
-from plenum.test.helper import sdk_gen_request
+from plenum.common.request import Request
 from plenum.test.testing_utils import FakeSomething
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
+
+from indy_node.test.helper import build_auth_rule_request_json
 
 
 @pytest.fixture
@@ -66,21 +68,23 @@ def config_req_handler(config_state,
 
 
 @pytest.fixture
-def prepare_request(sdk_wallet_trustee):
+def prepare_request(looper, sdk_wallet_trustee):
     constraint = AuthConstraint(TRUSTEE,
                                 1)
     action = AuthActionAdd(txn_type=NYM,
                            field=ROLE,
                            value=STEWARD)
-    op = {TXN_TYPE: AUTH_RULE,
-          "constraint": constraint.as_dict,
-          "auth_action": "ADD",
-          "auth_type": NYM,
-          'field': ROLE,
-          "new_value": STEWARD
-          }
-    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
-    return action, constraint, req_obj
+    auth_params = {
+        "constraint": constraint.as_dict,
+        "auth_action": "ADD",
+        "auth_type": NYM,
+        'field': ROLE,
+        "new_value": STEWARD
+    }
+    req_json = build_auth_rule_request_json(
+        looper, sdk_wallet_trustee[1], **auth_params
+    )
+    return action, constraint, Request(**json.loads(req_json))
 
 
 def test_update_state(config_req_handler,

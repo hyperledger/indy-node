@@ -34,8 +34,8 @@ def test_revert_auth_rule_changing(looper,
                            field=ROLE,
                            value=STEWARD)
     with delay_rules_without_processing(node_stashers, pDelay(), cDelay()):
-        sdk_send_and_check_auth_rule_request(looper, sdk_wallet_trustee,
-                                             sdk_pool_handle, auth_action=ADD_PREFIX,
+        sdk_send_and_check_auth_rule_request(looper, sdk_pool_handle, sdk_wallet_trustee,
+                                             auth_action=ADD_PREFIX,
                                              auth_type=action.txn_type,
                                              field=action.field,
                                              new_value=action.value,
