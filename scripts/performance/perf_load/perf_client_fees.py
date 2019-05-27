@@ -89,7 +89,7 @@ class LoadClientFees(LoadClient):
             return None, req
 
         address, inputs, outputs = gen_input_output(self._addr_txos, fees_val)
-        if inputs and outputs:
+        if inputs:
             req_fees, _ = await payment.add_request_fees(wallet_h, did, req, json.dumps(inputs),
                                                          json.dumps(outputs), None)
             return address, req_fees
