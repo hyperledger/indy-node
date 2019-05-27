@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('SovrinHelpers@v2.0.5') _
+@Library('SovrinHelpers@v2.1.0') _
 
 String name = 'indy-node'
 String pkgName = name

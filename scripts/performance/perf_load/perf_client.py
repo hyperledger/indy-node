@@ -121,23 +121,12 @@ class LoadClient:
         for s in seed:
             self._test_did, self._test_verk = await self.did_create_my_did(
                 self._wallet_handle, json.dumps({'seed': s}))
-            is_trustee = await self._is_trustee(self._test_did)
-            if is_trustee is False:
-                raise Exception("Submitter role must be TRUSTEE")
+            await self._ensure_trustee(self._test_did)
 
             # TODO: This needs serious refactoring
             if self._taa_text is None:
                 await self._taa_init(taa_text, taa_version)
 
-            if is_trustee is None:
-                assert len(self._trustee_dids) >= 1
-                nym_req = await ledger.build_nym_request(self._trustee_dids[0], self._test_did, self._test_verk, None,
-                                                         "TRUSTEE")
-                nym_req = await self.append_taa_acceptance(nym_req)
-                nym_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle,
-                                                                self._trustee_dids[0], nym_req)
-                ensure_is_reply(nym_resp)
-            self._trustee_dids.append(self._test_did)
         self._logger.info("_did_init done")
 
     async def _taa_init(self, text, version):
@@ -205,13 +194,13 @@ class LoadClient:
 
         self._logger.info("_taa_aml_init done")
 
-    async def _is_trustee(self, checking_did) -> Optional[bool]:
+    async def _is_trustee(self, did) -> Optional[bool]:
         """
         :return: None, if DID is not public, otherwise bool indicating whether this DID have trustee rights
         """
-        get_nym_req = await ledger.build_get_nym_request(checking_did, checking_did)
+        get_nym_req = await ledger.build_get_nym_request(did, did)
         get_nym_resp = await ledger.sign_and_submit_request(
-            self._pool_handle, self._wallet_handle, checking_did, get_nym_req)
+            self._pool_handle, self._wallet_handle, did, get_nym_req)
         get_nym_resp_obj = json.loads(get_nym_resp)
         ensure_is_reply(get_nym_resp_obj)
         data_f = get_nym_resp_obj["result"].get("data", None)
@@ -219,6 +208,32 @@ class LoadClient:
             return None
         res_data = json.loads(data_f)
         return res_data["role"] == TRUSTEE_ROLE_CODE
+
+    async def _ensure_trustee(self, did):
+        while True:
+            # Continuously check for trustee status and break when reaching desired status
+            is_trustee = await self._is_trustee(did)
+
+            # If we are trustee we're good to go
+            if is_trustee:
+                self._trustee_dids.append(did)
+                return
+
+            # If we are not trustee then we're in trouble
+            if is_trustee is False:
+                raise Exception("Submitter role must be TRUSTEE")
+
+            # Now we need to create a trustee, but need another one to do so
+            if len(self._trustee_dids) < 1:
+                raise Exception("Cannot create new trustees without initial one")
+
+            # Fire and forget create trustee, will check status on next loop iteration
+            nym_req = await ledger.build_nym_request(self._trustee_dids[0],
+                                                     self._test_did, self._test_verk,
+                                                     None, "TRUSTEE")
+            nym_req = await self.append_taa_acceptance(nym_req)
+            await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle,
+                                                 self._trustee_dids[0], nym_req)
 
     async def _get_taa(self, version: Optional[str] = None) -> Tuple[Optional[str], Optional[str], Optional[int]]:
         options = json.dumps({'version': version}) if version else None
@@ -244,20 +259,10 @@ class LoadClient:
             return
 
         for auth_rule in data_f:
-            if not auth_rule['constraint']:
-                # TODO INDY-2077
-                self._logger.warning(
-                    "Skip auth rule setting since constraint is empty: {}"
-                    .format(auth_rule)
-                )
-                continue
-
             try:
                 metadata_addition = self._auth_rule_metadata.get(auth_rule['auth_type'], None)
                 if metadata_addition:
-                    metadata = auth_rule['constraint'].get('metadata', {})
-                    metadata.update(metadata_addition)
-                    auth_rule['constraint']['metadata'] = metadata
+                    update_constraint(auth_rule['constraint'], metadata_addition)
                 auth_rule_req = await ledger.build_auth_rule_request(
                     self._test_did,
                     txn_type=auth_rule['auth_type'],
@@ -535,3 +540,14 @@ class LoadClient:
 
         logging.getLogger(name).info("stopped")
         return stat
+
+
+def update_constraint(constraint, fee_metadata):
+    id = constraint.get('constraint_id')
+    if id == "ROLE":
+        metadata = constraint.get('metadata', {})
+        metadata.update(fee_metadata)
+        constraint['metadata'] = metadata
+    elif id in ["OR", "AND"]:
+        for constraint in constraint.get("auth_constraints", []):
+            update_constraint(constraint, fee_metadata)
