@@ -1,31 +1,44 @@
+import json
+
 import pytest
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ROLE, SIG_COUNT
-from indy_common.constants import AUTH_ACTION, OLD_VALUE, CONSTRAINT, NEW_VALUE, NYM, TRUST_ANCHOR
+from indy_common.constants import AUTH_ACTION, OLD_VALUE, CONSTRAINT, NEW_VALUE, NYM, TRUST_ANCHOR, GET_AUTH_RULE
 from indy_node.test.auth_rule.helper import generate_constraint_entity, generate_constraint_list, \
     sdk_send_and_check_auth_rules_request, generate_auth_rule_operation, sdk_send_and_check_auth_rules_request, \
-    sdk_get_auth_rule_request, generate_auth_rule
-from plenum.common.constants import TRUSTEE, STEWARD, DATA
+    sdk_send_and_check_get_auth_rule_request, generate_auth_rule
+from indy_node.test.helper import sdk_send_and_check_req_json
+from plenum.common.constants import TRUSTEE, STEWARD, DATA, TXN_TYPE
 from plenum.common.exceptions import RequestRejectedException, \
     RequestNackedException
+from plenum.test.helper import sdk_gen_request
 
 RESULT = "result"
+
+
+def _send_and_check_get_auth_rule(looper, sdk_pool_handle, sdk_wallet, key):
+    op = {TXN_TYPE: GET_AUTH_RULE,
+          **key}
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet[1])
+    return sdk_send_and_check_req_json(
+        looper, sdk_pool_handle, sdk_wallet, json.dumps(req_obj.as_dict)
+    )
 
 
 def test_auth_rules_transaction_without_changes(looper,
                                                 sdk_wallet_trustee,
                                                 sdk_pool_handle):
-    before_resp = sdk_get_auth_rule_request(looper,
-                                            sdk_wallet_trustee,
-                                            sdk_pool_handle)
+    before_resp = sdk_send_and_check_get_auth_rule_request(looper,
+                                                           sdk_pool_handle,
+                                                           sdk_wallet_trustee)
     sdk_send_and_check_auth_rules_request(looper,
                                           sdk_wallet_trustee,
                                           sdk_pool_handle,
                                           rules=before_resp[0][1][RESULT][DATA])
-    after_resp = sdk_get_auth_rule_request(looper,
-                                           sdk_wallet_trustee,
-                                           sdk_pool_handle)
+    after_resp = sdk_send_and_check_get_auth_rule_request(looper,
+                                                          sdk_pool_handle,
+                                                          sdk_wallet_trustee)
     assert before_resp[0][1]["result"][DATA] == after_resp[0][1]["result"][DATA]
 
 
@@ -39,19 +52,19 @@ def test_auth_rules_transaction(looper,
                                           sdk_wallet_trustee,
                                           sdk_pool_handle,
                                           rules=[rule])
-    after_resp = sdk_get_auth_rule_request(looper,
-                                           sdk_wallet_trustee,
-                                           sdk_pool_handle,
-                                           key)
+    after_resp = _send_and_check_get_auth_rule(looper,
+                                               sdk_pool_handle,
+                                               sdk_wallet_trustee,
+                                               key)
     assert [rule] == after_resp[0][1]["result"][DATA]
 
 
 def test_reject_all_rules_from_auth_rules_txn(looper,
                                               sdk_wallet_trustee,
                                               sdk_pool_handle):
-    _, before_resp = sdk_get_auth_rule_request(looper,
-                                               sdk_wallet_trustee,
-                                               sdk_pool_handle)[0]
+    _, before_resp = sdk_send_and_check_get_auth_rule_request(looper,
+                                                              sdk_pool_handle,
+                                                              sdk_wallet_trustee)[0]
     rules = [generate_auth_rule(ADD_PREFIX, NYM,
                                 ROLE, "wrong_new_value"),
              generate_auth_rule(EDIT_PREFIX, NYM,
@@ -61,9 +74,9 @@ def test_reject_all_rules_from_auth_rules_txn(looper,
                                               sdk_wallet_trustee,
                                               sdk_pool_handle,
                                               rules=rules)
-    _, after_resp = sdk_get_auth_rule_request(looper,
-                                              sdk_wallet_trustee,
-                                              sdk_pool_handle)[0]
+    _, after_resp = sdk_send_and_check_get_auth_rule_request(looper,
+                                                             sdk_pool_handle,
+                                                             sdk_wallet_trustee)[0]
     assert before_resp["result"][DATA] == after_resp["result"][DATA]
 
 
