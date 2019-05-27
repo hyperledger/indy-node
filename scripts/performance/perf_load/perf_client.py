@@ -540,7 +540,7 @@ def update_constraint(constraint, fee_metadata):
     if id == "ROLE":
         metadata = constraint.get('metadata', {})
         metadata.update(fee_metadata)
-        constraint['constraint']['metadata'] = metadata
+        constraint['metadata'] = metadata
     elif id in ["OR", "AND"]:
         for constraint in constraint.get("auth_constraints", []):
             update_constraint(constraint, fee_metadata)
