@@ -13,7 +13,8 @@ from indy_common.constants import NYM, TRUST_ANCHOR, AUTH_ACTION, AUTH_TYPE, FIE
     OLD_VALUE, SCHEMA, CONSTRAINT, AUTH_RULE
 from indy_node.server.config_req_handler import ConfigReqHandler
 
-from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req, sdk_get_and_check_replies
+from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req, sdk_get_and_check_replies, \
+    sdk_sign_and_submit_req_obj
 from indy_node.test.helper import build_auth_rule_request_json
 from indy_node.test.auth_rule.helper import generate_constraint_list, generate_constraint_entity, \
     sdk_send_and_check_auth_rule_request, generate_key, sdk_send_and_check_get_auth_rule_request, \
@@ -171,15 +172,16 @@ def test_auth_rule_after_get_auth_rule_without_changes(
         dict_key = dict(rule)
         dict_key.pop(CONSTRAINT)
 
-        # prepare AUTH_RULE request
-        req_json = build_auth_rule_request_json(
-            looper, sdk_wallet_trustee[1], **rule
-        )
+        # prepare "operation" to send AUTH_RULE txn
+        op = dict(rule)
+        op[TXN_TYPE] = AUTH_RULE
 
         # send AUTH_RULE txn
-        req = sdk_sign_and_submit_req(sdk_pool_handle,
-                                      sdk_wallet_trustee,
-                                      req_json)
+        req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+        req = sdk_sign_and_submit_req_obj(looper,
+                                          sdk_pool_handle,
+                                          sdk_wallet_trustee,
+                                          req_obj)
         sdk_get_and_check_replies(looper, [req])
 
         # send GET_AUTH_RULE

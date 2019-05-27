@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from indy_common.authorize.auth_actions import AuthActionEdit, EDIT_PREFIX
@@ -63,7 +65,8 @@ class AuthRulesTest(AuthTest):
                                     constraint=constraint.as_dict)]
         operation = {RULES: rules,
                      TXN_TYPE: AUTH_RULES}
-        return sdk_gen_request(operation, identifier=self.new_default_wallet[1])
+        request = sdk_gen_request(operation, identifier=self.new_default_wallet[1])
+        return json.dumps(request.as_dict)
 
     def get_changed_auth_rules(self):
         constraint = AuthConstraint(role=None,
@@ -77,4 +80,5 @@ class AuthRulesTest(AuthTest):
                                     constraint=constraint.as_dict)]
         operation = {RULES: rules,
                      TXN_TYPE: AUTH_RULES}
-        return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+        request = sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+        return json.dumps(request.as_dict)

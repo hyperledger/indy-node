@@ -68,7 +68,7 @@ def test_auth_map_schema_for_omitted():
 
     for (rule, rule_str) in rules:
         assert rule.get_action_id() == rule_str
-        assert rule_str not in auth_map.auth_map.keys()
+        assert rule_str in auth_map.auth_map.keys()
 
 
 def test_auth_map_claim_def():
