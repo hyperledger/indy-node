@@ -262,7 +262,6 @@ auth_map = OrderedDict([
     (add_attrib.get_action_id(), owner_constraint),
     (edit_attrib.get_action_id(), owner_constraint),
     (add_schema.get_action_id(), trust_anchor_or_steward_or_trustee_constraint),
-    (edit_schema.get_action_id(), None),  # TODO INDY-2077
     (add_claim_def.get_action_id(), trust_anchor_or_steward_or_trustee_constraint),
     (edit_claim_def.get_action_id(), owner_constraint),
     (adding_new_node.get_action_id(), steward_owner_constraint),
@@ -346,7 +345,6 @@ anyone_can_write_map = OrderedDict([
     (anyone_can_edit_nym.get_action_id(), anyone_constraint),
     (anyone_can_add_attrib.get_action_id(), owner_constraint),
     (anyone_can_edit_attrib.get_action_id(), owner_constraint),
-    (anyone_can_edit_schema.get_action_id(), anyone_constraint),
     (anyone_can_edit_claim_def.get_action_id(), owner_constraint),
     (anyone_can_create_revoc_reg_def.get_action_id(), owner_constraint),
     (anyone_can_create_revoc_reg_entry.get_action_id(), owner_constraint),

@@ -11,13 +11,14 @@ from indy_common.constants import REVOC_REG_ENTRY, PREV_ACCUM, VALUE, CRED_DEF_I
 from indy_common.state import domain
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
 from indy_node.test.auth_rule.auth_framework.revoc_reg_def import AddRevocRegDefTest
-from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from plenum.common.constants import TXN_TYPE
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.types import f, OPERATION
 from plenum.common.util import randomString
-from plenum.test.helper import sdk_sign_request_from_dict, sdk_gen_request, sdk_send_and_check
+from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
+
+from indy_node.test.helper import build_auth_rule_request_json
 
 
 class AddRevocRegEntryTest(AuthTest):
@@ -105,12 +106,14 @@ class AddRevocRegEntryTest(AuthTest):
         constraint = AuthConstraint(role=IDENTITY_OWNER,
                                     sig_count=1,
                                     need_to_be_owner=False)
-        operation = generate_auth_rule_operation(auth_action=ADD_PREFIX,
-                                                 auth_type=REVOC_REG_ENTRY,
-                                                 field='*',
-                                                 new_value='*',
-                                                 constraint=constraint.as_dict)
-        return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+        return build_auth_rule_request_json(
+            self.looper, self.trustee_wallet[1],
+            auth_action=ADD_PREFIX,
+            auth_type=REVOC_REG_ENTRY,
+            field='*',
+            new_value='*',
+            constraint=constraint.as_dict
+        )
 
 
 class EditRevocRegEntryTest(AuthTest):
@@ -120,7 +123,6 @@ class EditRevocRegEntryTest(AuthTest):
         self.claim_def_req = None
         self.first_edit = None
         self.second_edit = None
-
 
     def prepare(self):
         self.default_auth_rule = self.get_default_auth_rule()
@@ -166,10 +168,12 @@ class EditRevocRegEntryTest(AuthTest):
         constraint = AuthConstraint(role=IDENTITY_OWNER,
                                     sig_count=1,
                                     need_to_be_owner=False)
-        operation = generate_auth_rule_operation(auth_action=EDIT_PREFIX,
-                                                 auth_type=REVOC_REG_ENTRY,
-                                                 field='*',
-                                                 old_value='*',
-                                                 new_value='*',
-                                                 constraint=constraint.as_dict)
-        return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+        return build_auth_rule_request_json(
+            self.looper, self.trustee_wallet[1],
+            auth_action=EDIT_PREFIX,
+            auth_type=REVOC_REG_ENTRY,
+            field='*',
+            old_value='*',
+            new_value='*',
+            constraint=constraint.as_dict
+        )

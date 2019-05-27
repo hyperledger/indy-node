@@ -4,7 +4,6 @@ import pytest
 from indy.ledger import build_get_schema_request, parse_get_schema_response
 
 from indy_common.state.domain import make_state_path_for_claim_def
-from indy_node.test.auth_rule.auth_framework.helper import send_and_check
 from plenum.common.types import OPERATION
 from plenum.common.util import randomString
 
@@ -16,15 +15,16 @@ from indy_common.constants import CLAIM_DEF, ID, REVOC_TYPE, TAG, CRED_DEF_ID, V
 from indy_node.test.anon_creds.conftest import send_revoc_reg_def_by_default
 from indy_node.test.api.helper import sdk_write_schema
 from indy_node.test.auth_rule.auth_framework.basic import AbstractTest, AuthTest
-from indy_node.test.auth_rule.helper import create_verkey_did, generate_auth_rule_operation
 from indy_node.test.claim_def.test_send_claim_def import sdk_send_claim_def
 from plenum.common.constants import TRUSTEE, TXN_TYPE
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request, sdk_get_and_check_replies, \
+from plenum.test.helper import sdk_get_and_check_replies, \
     sdk_multi_sign_request_objects, sdk_send_signed_requests, sdk_sign_and_submit_req, sdk_get_reply, \
     sdk_sign_request_from_dict, sdk_send_and_check, sdk_sign_and_submit_op
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_sign_and_send_prepared_request
 from indy_common.authorize import auth_map
+
+from indy_node.test.helper import build_auth_rule_request_json
 
 
 def get_schema_json(looper, sdk_pool_handle, sdk_wallet_trustee):
@@ -111,12 +111,14 @@ class AddRevocRegDefTest(AuthTest):
         constraint = AuthConstraint(role=IDENTITY_OWNER,
                                     sig_count=1,
                                     need_to_be_owner=False)
-        operation = generate_auth_rule_operation(auth_action=ADD_PREFIX,
-                                                 auth_type=REVOC_REG_DEF,
-                                                 field='*',
-                                                 new_value='*',
-                                                 constraint=constraint.as_dict)
-        return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+        return build_auth_rule_request_json(
+            self.looper, self.trustee_wallet[1],
+            auth_action=ADD_PREFIX,
+            auth_type=REVOC_REG_DEF,
+            field='*',
+            new_value='*',
+            constraint=constraint.as_dict
+        )
 
 
 class EditRevocRegDefTest(AuthTest):
@@ -169,10 +171,12 @@ class EditRevocRegDefTest(AuthTest):
         constraint = AuthConstraint(role=IDENTITY_OWNER,
                                     sig_count=1,
                                     need_to_be_owner=False)
-        operation = generate_auth_rule_operation(auth_action=EDIT_PREFIX,
-                                                 auth_type=REVOC_REG_DEF,
-                                                 field='*',
-                                                 old_value='*',
-                                                 new_value='*',
-                                                 constraint=constraint.as_dict)
-        return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+        return build_auth_rule_request_json(
+            self.looper, self.trustee_wallet[1],
+            auth_action=EDIT_PREFIX,
+            auth_type=REVOC_REG_DEF,
+            field='*',
+            old_value='*',
+            new_value='*',
+            constraint=constraint.as_dict
+        )

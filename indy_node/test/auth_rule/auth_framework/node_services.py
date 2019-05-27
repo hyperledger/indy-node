@@ -1,13 +1,14 @@
 import pytest
+from abc import abstractmethod
 
 from indy_common.authorize.auth_actions import split_action_id
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
-from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from plenum.common.constants import STEWARD_STRING, TRUSTEE, TRUSTEE_STRING, VALIDATOR
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
+
+from indy_node.test.helper import build_auth_rule_request_json
 
 
 class NodeAuthTest(AuthTest):
@@ -51,8 +52,10 @@ class NodeAuthTest(AuthTest):
         constraint = AuthConstraint(role=TRUSTEE,
                                     sig_count=1,
                                     need_to_be_owner=False)
-        operation = self._generate_operation(constraint)
-        return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+        params = self._generate_auth_rule_params(constraint)
+        return build_auth_rule_request_json(
+            self.looper, self.trustee_wallet[1], **params
+        )
 
     def _create_steward(self):
         return sdk_add_new_nym(self.looper, self.sdk_pool_handle,
@@ -85,7 +88,8 @@ class NodeAuthTest(AuthTest):
                                                             node_data=node_data)
             self.send_and_check(req1, wallet)
 
-    def _generate_operation(self, constraint):
+    @abstractmethod
+    def _generate_auth_rule_params(self, constraint):
         pass
 
 
@@ -107,12 +111,14 @@ class AddNodeTest(NodeAuthTest):
         req, node_data, node_name, wallet = self._add_node(steward_wallet)
         return req, wallet
 
-    def _generate_operation(self, constraint):
-        return generate_auth_rule_operation(auth_action=self.action.prefix,
-                                            auth_type=self.action.txn_type,
-                                            field=self.action.field,
-                                            new_value=self.action.new_value,
-                                            constraint=constraint.as_dict)
+    def _generate_auth_rule_params(self, constraint):
+        return dict(
+            auth_action=self.action.prefix,
+            auth_type=self.action.txn_type,
+            field=self.action.field,
+            new_value=self.action.new_value,
+            constraint=constraint.as_dict
+        )
 
 
 class EditNodeTest(NodeAuthTest):
@@ -120,13 +126,15 @@ class EditNodeTest(NodeAuthTest):
         super().__init__(env,
                          action_id=action_id)
 
-    def _generate_operation(self, constraint):
-        return generate_auth_rule_operation(auth_action=self.action.prefix,
-                                            auth_type=self.action.txn_type,
-                                            field=self.action.field,
-                                            new_value=self.action.new_value,
-                                            old_value=self.action.old_value,
-                                            constraint=constraint.as_dict)
+    def _generate_auth_rule_params(self, constraint):
+        return dict(
+            auth_action=self.action.prefix,
+            auth_type=self.action.txn_type,
+            field=self.action.field,
+            new_value=self.action.new_value,
+            old_value=self.action.old_value,
+            constraint=constraint.as_dict
+        )
 
 
 class EditNodeServicesTest(EditNodeTest):

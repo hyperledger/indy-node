@@ -5,13 +5,12 @@ from indy_common.authorize.auth_actions import ADD_PREFIX, AuthActionEdit, EDIT_
 from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER
 from indy_common.constants import POOL_UPGRADE, ACTION, CANCEL, JUSTIFICATION, SCHEDULE, CONFIG_LEDGER_ID
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
-from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from indy_node.test.upgrade.helper import sdk_ensure_upgrade_sent
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from indy_common.authorize import auth_map
 
+from indy_node.test.helper import build_auth_rule_request_json
 
 
 class StartUpgradeTest(AuthTest):
@@ -54,12 +53,14 @@ class StartUpgradeTest(AuthTest):
         constraint = AuthConstraint(role=IDENTITY_OWNER,
                                     sig_count=1,
                                     need_to_be_owner=False)
-        operation = generate_auth_rule_operation(auth_action=ADD_PREFIX,
-                                                 auth_type=POOL_UPGRADE,
-                                                 field='action',
-                                                 new_value='start',
-                                                 constraint=constraint.as_dict)
-        return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+        return build_auth_rule_request_json(
+            self.looper, self.trustee_wallet[1],
+            auth_action=ADD_PREFIX,
+            auth_type=POOL_UPGRADE,
+            field='action',
+            new_value='start',
+            constraint=constraint.as_dict
+        )
 
 
 class CancelUpgradeTest(AuthTest):
@@ -105,13 +106,15 @@ class CancelUpgradeTest(AuthTest):
         constraint = AuthConstraint(role=IDENTITY_OWNER,
                                     sig_count=1,
                                     need_to_be_owner=False)
-        operation = generate_auth_rule_operation(auth_action=EDIT_PREFIX,
-                                                 auth_type=POOL_UPGRADE,
-                                                 field='action',
-                                                 old_value='start',
-                                                 new_value='cancel',
-                                                 constraint=constraint.as_dict)
-        return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+        return build_auth_rule_request_json(
+            self.looper, self.trustee_wallet[1],
+            auth_action=EDIT_PREFIX,
+            auth_type=POOL_UPGRADE,
+            field='action',
+            old_value='start',
+            new_value='cancel',
+            constraint=constraint.as_dict
+        )
 
     def cancel_upgrade(self, upgrade, sdk_wallet):
         valid_upgrade_copy = deepcopy(upgrade)
