@@ -111,13 +111,18 @@ How does TAA AML stored in state. "3" stands for unique marker of TAA AML txn.
   <tr>
     <td><code>3:latest</code></td>
     <td>
-<pre>{
-  "aml": {
-    "mechanism #1": description #1,
-    "mechanism #2": description #2
-  },
-  "amlContext": context description,
-  "version": version
+<pre>
+{
+  "lsn": &lt;txn sequence number&gt;,,
+  "lut": timestamp,
+  "val": {
+      "aml": {
+        "mechanism #1": description #1,
+        "mechanism #2": description #2
+      },
+      "amlContext": context description,
+      "version": version
+  }
 }</pre>
     </td>
   </tr>
@@ -125,12 +130,16 @@ How does TAA AML stored in state. "3" stands for unique marker of TAA AML txn.
     <td><code>3:v:&lt;version&gt;</code></td>
     <td>
 <pre>{
-  "aml": {
-    "mechanism #1": description #1,
-    "mechanism #2": description #2
-  },
-  "amlContext": context description,
-  "version": version
+  "lsn": &lt;txn sequence number&gt;,,
+  "lut": timestamp,
+  "val": {
+      "aml": {
+        "mechanism #1": description #1,
+        "mechanism #2": description #2
+      },
+      "amlContext": context description,
+      "version": version
+  }
 }</pre>
     </td>
   </tr>
@@ -272,6 +281,40 @@ pub extern fn indy_build_get_acceptance_mechanism_request(command_handle: Comman
                                                           cb: Option<extern fn(command_handle_: CommandHandle,
                                                                                err: ErrorCode,
                                                                                request_json: *const c_char)>) -> ErrorCode
+
+
+/// Append payment extra JSON with TAA acceptance data
+///
+/// This function may calculate digest by itself or consume it as a parameter.
+/// If all text, version and taa_digest parameters are specified, a check integrity of them will be done.
+///
+/// #Params
+/// command_handle: command handle to map callback to caller context.
+/// extra_json: (optional) original extra json.
+/// text and version - (optional) raw data about TAA from ledger.
+///     These parameters should be passed together.
+///     These parameters are required if taa_digest parameter is omitted.
+/// taa_digest - (optional) digest on text and version. This parameter is required if text and version parameters are omitted.
+/// mechanism - mechanism how user has accepted the TAA
+/// time - UTC timestamp when user has accepted the TAA
+/// cb: Callback that takes command result as parameter.
+///
+/// #Returns
+/// Updated request result as json.
+///
+/// #Errors
+/// Common*
+#[no_mangle]
+pub extern fn indy_prepare_payment_extra_with_acceptance_data(command_handle: CommandHandle,
+                                                              extra_json: *const c_char,
+                                                              text: *const c_char,
+                                                              version: *const c_char,
+                                                              taa_digest: *const c_char,
+                                                              mechanism: *const c_char,
+                                                              time: u64,
+                                                              cb: Option<extern fn(command_handle_: CommandHandle,
+                                                                                   err: ErrorCode,
+                                                                                   extra_with_acceptance: *const c_char)>) -> ErrorCode
 ```
 
 ### Indy CLI
@@ -322,12 +365,8 @@ An application will show to the user the TAA according the AML. It's up to appli
     ```
 1. Payment request without DID-based signature
     ```rust=
-    payment_request = indy_build_payment_req(..., extra = {
-                                                    "taaAcceptance": {
-                                                        "taaDigest": "SHA-256 hash string", //may be text + version instead of digest
-                                                        "mechanism": "label of type",
-                                                        "time": <integer UTC TS>
-                                                    }})
+    extra_with_taa_for_payment_request = indy_prepare_payment_extra_with_acceptance_data(original_extra, ...)
+    payment_request = indy_build_payment_req(..., extra_with_taa_for_payment_request)
     indy_submit_request(..., payment_request)
     ```
 
