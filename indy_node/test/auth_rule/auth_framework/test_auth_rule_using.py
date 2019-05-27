@@ -5,8 +5,8 @@ from collections import OrderedDict
 
 from indy_node.test.auth_rule.auth_framework.add_attrib import AddAttribTest
 from indy_node.test.auth_rule.auth_framework.edit_attrib import EditAttribTest
-from indy_node.test.auth_rule.auth_framework.auth_rules import AuthRulesTest
-from indy_node.test.auth_rule.auth_framework.auth_rule import AuthRuleTest
+from indy_node.test.auth_rule.auth_framework.edit_auth_rules import AuthRulesTest
+from indy_node.test.auth_rule.auth_framework.edit_auth_rule import AuthRuleTest
 from indy_node.test.auth_rule.auth_framework.node_services import AddNewNodeTest, AddNewNodeEmptyServiceTest, \
     DemoteNodeTest, PromoteNodeTest
 from indy_node.test.auth_rule.auth_framework.node_properties import EditNodeIpTest, EditNodePortTest, \
