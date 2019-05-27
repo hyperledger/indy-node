@@ -40,6 +40,8 @@ class ConfigReqHandler(PConfigReqHandler):
         self._add_query_handler(GET_AUTH_RULE, self.handle_get_auth_rule)
 
     def doStaticValidation(self, request: Request):
+        super().doStaticValidation(request)
+
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
         if operation[TXN_TYPE] == POOL_UPGRADE:
             self._doStaticValidationPoolUpgrade(identifier, req_id, operation)
