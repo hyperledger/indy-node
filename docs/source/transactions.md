@@ -978,7 +978,10 @@ The `constraint_id` fields is where one can define the desired auth constraint f
         - `metadata` (dict; optional):
         
             Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
+        
+    - fields if `'constraint_id': 'FORBIDDEN'`:
     
+        no fields
 
 
 **Example:**
