@@ -195,8 +195,8 @@ class LoadClientFees(LoadClient):
         # _pool_fees: txn_type -> amount
         # _auth_rule_metadata: txn_type -> {fees: alias} metadata
         self._pool_fees = await self.__set_fees_once(self._wallet_handle, self._set_fees,
-                                                                               self._test_did, self._payment_method,
-                                                                               self._trustee_dids, self._pool_handle)
+                                                     self._test_did, self._payment_method,
+                                                     self._trustee_dids, self._pool_handle)
         self._logger.info("_pool_fees_init done")
 
     async def _payment_address_init(self):
