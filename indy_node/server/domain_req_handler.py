@@ -720,7 +720,7 @@ class DomainReqHandler(PHandler):
 
                 }
                 """If we got "from" timestamp, then add state proof into "data" section of reply"""
-                if req_ts_from and accum_from.value:
+                if req_ts_from:
                     reply[STATE_PROOF_FROM] = accum_from.proof
                     reply[VALUE][ACCUM_FROM] = accum_from.value
 
