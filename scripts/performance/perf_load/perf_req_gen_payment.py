@@ -82,11 +82,15 @@ class RGPayment(RGBasePayment):
                 return
 
             try:
-                receipt_infos_json = await payment.parse_payment_response(self._payment_method, resp_or_exp)
+                reply = json.loads(resp_or_exp)
+                if reply['result']['txn']['type'] == PUB_XFER_TXN_ID:
+                    receipt_infos_json = await payment.parse_payment_response(self._payment_method, resp_or_exp)
+                else:
+                    receipt_infos_json = await payment.parse_response_with_fees(self._payment_method, resp_or_exp)
                 receipt_infos = json.loads(receipt_infos_json) if receipt_infos_json else []
                 for ri in receipt_infos:
                     self._addr_txos[ri["recipient"]].append((ri["receipt"], ri["amount"]))
-            except Exception:
+            except Exception as e:
                 pass
 
 
