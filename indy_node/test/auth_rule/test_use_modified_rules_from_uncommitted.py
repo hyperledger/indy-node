@@ -20,10 +20,10 @@ def test_use_modified_rules_from_uncommitted(looper,
     changed_constraint = AuthConstraint(role=STEWARD,
                                         sig_count=1)
     with delay_rules(node_stashers, cDelay()):
-        r_auth = sdk_send_and_check_auth_rule_request(looper, sdk_wallet_trustee,
-                                                        sdk_pool_handle, auth_action=ADD_PREFIX,
-                                                        auth_type=NYM, field=ROLE, new_value=STEWARD, old_value=None,
-                                                        constraint=changed_constraint.as_dict, no_wait=True)
+        r_auth = sdk_send_and_check_auth_rule_request(looper, sdk_pool_handle, sdk_wallet_trustee,
+                                                      auth_action=ADD_PREFIX,
+                                                      auth_type=NYM, field=ROLE, new_value=STEWARD, old_value=None,
+                                                      constraint=changed_constraint.as_dict, no_wait=True)
         looper.runFor(waits.expectedPrePrepareTime(len(txnPoolNodeSet)))
         r_add_steward = sdk_add_new_nym(looper,
                                         sdk_pool_handle,

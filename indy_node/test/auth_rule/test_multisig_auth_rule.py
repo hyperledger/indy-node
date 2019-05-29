@@ -27,14 +27,18 @@ auth_constraint = AuthConstraintOr(auth_constraints=[AuthConstraintAnd(auth_cons
 
 @pytest.fixture(scope='module', params=[(2, 0), (3, 0), (1, 2), (1, 3), (2, 1)])
 def wallets_for_success(request, sdk_wallet_steward_list, sdk_wallet_trustee_list):
-    return sdk_wallet_trustee_list[:request.param[0]] + \
-           sdk_wallet_steward_list[:request.param[1]]
+    return (
+        sdk_wallet_trustee_list[:request.param[0]] +
+        sdk_wallet_steward_list[:request.param[1]]
+    )
 
 
 @pytest.fixture(scope='module', params=[(0, 3), (1, 0), (1, 1)])
 def wallets_for_fail(request, sdk_wallet_steward_list, sdk_wallet_trustee_list):
-    return sdk_wallet_trustee_list[:request.param[0]] + \
-           sdk_wallet_steward_list[:request.param[1]]
+    return (
+        sdk_wallet_trustee_list[:request.param[0]] +
+        sdk_wallet_steward_list[:request.param[1]]
+    )
 
 
 @pytest.fixture(scope='module')
@@ -80,8 +84,8 @@ def prepare_auth_map(looper,
                 'newSteward1',
                 STEWARD_STRING,
                 dest=did1, verkey=verkey1)
-    sdk_send_and_check_auth_rule_request(looper, sdk_wallet_trustee,
-                                         sdk_pool_handle, auth_action=ADD_PREFIX,
+    sdk_send_and_check_auth_rule_request(looper, sdk_pool_handle, sdk_wallet_trustee,
+                                         auth_action=ADD_PREFIX,
                                          auth_type=NYM, field=ROLE, new_value=STEWARD, old_value=None,
                                          constraint=auth_constraint.as_dict)
 
@@ -138,7 +142,7 @@ def test_reject_request_with_multi_sig_auth_rule(looper,
                     STEWARD_STRING)
 
 
-def test_validate_by_auth_rule_without_signatures(looper,
+def test_validate_by_auth_rule_without_signatures(looper,  # noqa: F811
                                                   sdk_wallet_client,
                                                   sdk_pool_handle,
                                                   prepare_auth_map):

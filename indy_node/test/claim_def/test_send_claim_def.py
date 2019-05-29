@@ -13,6 +13,16 @@ from plenum.common.types import OPERATION
 from plenum.test.helper import sdk_sign_and_submit_req, sdk_get_and_check_replies, sdk_get_reply, max_3pc_batch_limits
 
 
+def sdk_send_claim_def(looper, sdk_pool_handle, sdk_wallet, tag, schema_json):
+    wallet_handle, identifier = sdk_wallet
+
+    _, definition_json = looper.loop.run_until_complete(issuer_create_and_store_credential_def(
+        wallet_handle, identifier, schema_json, tag, "CL", json.dumps({"support_revocation": True})))
+    request = looper.loop.run_until_complete(build_cred_def_request(identifier, definition_json))
+    reply = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, request)])
+    return reply
+
+
 @pytest.fixture(scope="module")
 def schema_json(looper, sdk_pool_handle, sdk_wallet_trustee):
     wallet_handle, identifier = sdk_wallet_trustee

@@ -1,6 +1,8 @@
 from abc import ABCMeta
 from logging import getLogger
 
+import os
+
 from indy_common.authorize.auth_actions import AbstractAuthAction
 from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AuthConstraint, \
     AuthConstraintAnd, ConstraintsEnum
@@ -44,6 +46,8 @@ class RolesAuthorizer(AbstractAuthorizer):
         by this function means that corresponding DID is not stored in a ledger.
         """
         idr = request.identifier
+        if idr is None:
+            return None
         return self._get_role(idr)
 
     def get_sig_count(self, request: Request, role: str="*"):
@@ -92,10 +96,11 @@ class RolesAuthorizer(AbstractAuthorizer):
                   request: Request,
                   auth_constraint: AuthConstraint,
                   auth_action: AbstractAuthAction=None):
-        if self.get_role(request) is None:
+        if auth_constraint.sig_count > 0 and self.get_role(request) is None:
             return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
         if not self.is_sig_count_accepted(request, auth_constraint):
-                return False, "Not enough {} signatures".format(Roles(auth_constraint.role).name)
+            role = Roles(auth_constraint.role).name if auth_constraint.role != '*' else '*'
+            return False, "Not enough {} signatures".format(role)
         if not self.is_owner_accepted(auth_constraint, auth_action):
             if auth_action.field != '*':
                 return False, "{} can not touch {} field since only the owner can modify it".\
@@ -158,6 +163,7 @@ class OrAuthorizer(AbstractAuthorizer):
                   auth_constraint: AuthConstraintAnd,
                   auth_action: AbstractAuthAction):
         successes = []
+        fails = []
         for constraint in auth_constraint.auth_constraints:
             try:
                 self.parent.authorize(request=request,
@@ -165,8 +171,13 @@ class OrAuthorizer(AbstractAuthorizer):
                                       auth_action=auth_action)
             except AuthValidationError as e:
                 logger.trace(e)
+                fails.append("Constraint: {}, Error: {}".format(constraint, e.reason))
             else:
                 successes.append(True)
         if len(successes) == 0:
-            raise AuthValidationError("Rule for this action is: {}".format(auth_constraint))
+            raise AuthValidationError(
+                os.linesep.join(["Rule for this action is: {}".format(auth_constraint),
+                                 "Failed checks:",
+                                 os.linesep.join(fails)])
+            )
         return True, ""
