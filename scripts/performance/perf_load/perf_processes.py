@@ -95,17 +95,24 @@ parser.add_argument('--short_stat', action='store_true', dest='short_stat', help
 parser.add_argument('--test_conn', action='store_true', dest='test_conn',
                     help='Check pool connection with provided genesis file')
 
+parser.add_argument('--taa_text', default="test transaction author agreement text", type=str, required=False,
+                    help='Transaction author agreement text')
+
+parser.add_argument('--taa_version', default="test_taa", type=str, required=False,
+                    help='Transaction author agreement version')
+
 
 class LoadRunner:
     def __init__(self, clients=0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
                  seed=["000000000000000000000000Trustee1"], req_kind="nym", batch_size=10, refresh_rate=10,
                  buff_req=30, out_dir=".", val_sep="|", wallet_key="key", mode="p", pool_config='',
-                 sync_mode="freeflow", load_rate=10, out_file="", load_time=0, ext_set=None,
-                 client_runner=LoadClient.run, log_lvl=logging.INFO, short_stat=False):
+                 sync_mode="freeflow", load_rate=10, out_file="", load_time=0, taa_text="", taa_version="",
+                 ext_set=None, client_runner=LoadClient.run, log_lvl=logging.INFO,
+                 short_stat=False):
         self._client_runner = client_runner
         self._clients = dict()  # key process future; value ClientRunner
         self._loop = asyncio.get_event_loop()
-        self._out_dir = ""
+        self._out_dir = out_dir
         self._succ_f = None
         self._failed_f = None
         self._total_f = None
@@ -127,6 +134,8 @@ class LoadRunner:
         self._pool_config = None
         lr = load_rate if load_rate > 0 else 10
         self._batch_rate = 1 / lr
+        self._taa_text = taa_text
+        self._taa_version = taa_version
         self._ext_set = ext_set
         if pool_config:
             try:
@@ -134,12 +143,9 @@ class LoadRunner:
             except Exception as ex:
                 raise RuntimeError("pool_config param is ill-formed JSON: {}".format(ex))
 
-        test_name = "load_test_{}".format(datetime.now().strftime("%Y%m%d_%H%M%S"))
-        self._log_dir = os.path.join(out_dir, test_name)
         self._log_lvl = log_lvl
-        logger_init(self._log_dir, "{}.log".format(test_name), self._log_lvl)
         self._logger = logging.getLogger(__name__)
-        self._out_file = self.prepare_fs(out_dir, test_name, out_file)
+        self._out_file = self.prepare_fs(out_file)
         self._short_stat = short_stat
 
     def process_reqs(self, stat, name: str = ""):
@@ -301,12 +307,9 @@ class LoadRunner:
             total_sent, total_succ, total_failed, total_nack, total_reject)
         return print_str
 
-    def prepare_fs(self, out_dir, test_dir_name, out_file):
-        self._logger.debug("prepare_fs out_dir {}, test_dir_name {}, out_file {}".
-                           format(out_dir, test_dir_name, out_file))
-        self._out_dir = os.path.expanduser(os.path.join(out_dir, test_dir_name))
-        if not os.path.exists(self._out_dir):
-            os.makedirs(self._out_dir)
+    def prepare_fs(self, out_file):
+        self._logger.debug("prepare_fs out_dir {}, out_file {}".
+                           format(self._out_dir, out_file))
 
         with open(os.path.join(self._out_dir, "args"), "w") as f:
             f.writelines([" ".join(sys.argv)])
@@ -405,8 +408,8 @@ class LoadRunner:
             prc_name = "LoadClient_{}".format(i)
             prc = executor.submit(self._client_runner, prc_name, self._genesis_path, wr, self._seed, self._batch_size,
                                   self._batch_rate, self._req_kind, self._buff_req, self._wallet_key, self._pool_config,
-                                  load_client_mode, self._mode == 'p', self._ext_set, self._log_dir, self._log_lvl,
-                                  self._short_stat)
+                                  load_client_mode, self._mode == 'p', self._taa_text, self._taa_version, self._ext_set,
+                                  self._out_dir, self._log_lvl, self._short_stat)
             prc.add_done_callback(self.client_done)
             self._loop.add_reader(rd, self.read_client_cb, prc)
             self._clients[prc] = ClientRunner(prc_name, rd, self._out_file)
@@ -451,7 +454,7 @@ if __name__ == '__main__':
     dict_args = vars(args)
 
     if len(extra) > 1:
-        raise argparse.ArgumentTypeError("Only path to config file expected, but found {} arguments".format(len(extra)))
+        raise argparse.ArgumentTypeError("Only path to config file expected, but found extra arguments: {}".format(extra))
 
     conf_vals = {}
     try:
@@ -470,16 +473,27 @@ if __name__ == '__main__':
     dict_args["genesis_path"] = check_fs(False, dict_args["genesis_path"])
     dict_args["out_dir"] = check_fs(True, dict_args["out_dir"])
 
+    # Prepare output directory
+    out_dir = dict_args["out_dir"]
+    test_name = "load_test_{}".format(datetime.now().strftime("%Y%m%d_%H%M%S"))
+    out_dir = os.path.expanduser(os.path.join(out_dir, test_name))
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
+    # Initialize logger
+    log_lvl = dict_args["log_lvl"]
+    logger_init(out_dir, "{}.log".format(test_name), log_lvl)
+
     check_genesis(dict_args["genesis_path"])
 
     if dict_args["test_conn"]:
         exit(0)
 
     tr = LoadRunner(dict_args["clients"], dict_args["genesis_path"], dict_args["seed"], dict_args["req_kind"],
-                    dict_args["batch_size"], dict_args["refresh_rate"], dict_args["buff_req"], dict_args["out_dir"],
+                    dict_args["batch_size"], dict_args["refresh_rate"], dict_args["buff_req"], out_dir,
                     dict_args["val_sep"], dict_args["wallet_key"], dict_args["mode"], dict_args["pool_config"],
                     dict_args["sync_mode"], dict_args["load_rate"], dict_args["out_file"], dict_args["load_time"],
-                    dict_args["ext_set"],
+                    dict_args["taa_text"], dict_args["taa_version"], dict_args["ext_set"],
                     client_runner=LoadClient.run if not dict_args["ext_set"] else LoadClientFees.run,
-                    log_lvl=dict_args["log_lvl"], short_stat=dict_args["short_stat"])
+                    log_lvl=log_lvl, short_stat=dict_args["short_stat"])
     tr.load_run()

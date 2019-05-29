@@ -8,10 +8,14 @@
     * [ATTRIB](#attrib)    
     * [SCHEMA](#schema)
     * [CLAIM_DEF](#claim_def)
+    * [REVOC_REG_DEF](#revoc_reg_def)
+    * [REVOC_REG_ENTRY](#revoc_reg_entry)
     * [NODE](#node)
     * [POOL_UPGRADE](#pool_upgrade)
     * [POOL_CONFIG](#pool_config)
     * [AUTH_RULE](#auth_rule)
+    * [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)
+    * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)    
 
 * [Read Requests](#read-requests)
 
@@ -19,12 +23,17 @@
     * [GET_ATTRIB](#get_attrib)    
     * [GET_SCHEMA](#get_schema)
     * [GET_CLAIM_DEF](#get_claim_def)
-    * [GET_TXN](#get_txn)
+    * [GET_REVOC_REG_DEF](#get_revoc_reg_def)
+    * [GET_REVOC_REG](#get_revoc_reg)
+    * [GET_REVOC_REG_DELTA](#get_revoc_reg_delta)    
     * [GET_AUTH_RULE](#get_auth_rule)
+    * [GET_TRANSACTION_AUTHOR_AGREEMENT](#get_transaction_author_agreement)
+    * [GET_TRANSACTION_AUTHOR_AGREEMENT_AML](#get_transaction_author_agreement_aml)
+    * [GET_TXN](#get_txn)
 
 * [Action Requests](#action-requests)
 
-    * [POOL_RESTART](#pool_restrt)
+    * [POOL_RESTART](#pool_restart)
     * [VALIDATOR_INFO](#validator_info)
     
 This doc is about supported client's Request (both write and read ones).
@@ -42,14 +51,19 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
 ```
 {
     'operation': {
-        'type': '1',
+        'type': <request type>,
         <request-specific fields>
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514215425836443,
-    'protocolVersion': 1,
-    'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd'
+    'identifier': <sender/author DID>,
+    'reqId': <req_id unique integer>,
+    'protocolVersion': 2,
+    'signature': <signature_value>,
+    # 'signatures': {
+    #      `did1`: <sig1>,
+    #      `did2`: <sig2>,
+    #  }    
+           
 }
 ```
 
@@ -58,21 +72,37 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
     The request-specific operation json.
     
     - `type`: request type as one of the following values:
-
-        - NODE = "0"
-        - NYM = "1"
-        - ATTRIB = "100"
-        - SCHEMA = "101"
-        - CLAIM_DEF = "102"
-        - POOL_UPGRADE = "109"
-        - NODE_UPGRADE = "110"
-        - POOL_CONFIG = "111"
-        - GET_TXN = "3"
-        - GET_ATTR = "104"
-        - GET_NYM = "105"
-        - GET_SCHEMA = "107"
-        - GET_CLAIM_DEF = "108"
         
+        - write requests (transactions):
+
+            - NODE = "0"
+            - NYM = "1"
+            - TXN_AUTHOR_AGREEMENT = "4"
+            - TXN_AUTHOR_AGREEMENT_AML = "5"
+            - ATTRIB = "100"
+            - SCHEMA = "101"
+            - CLAIM_DEF = "102"
+            - POOL_UPGRADE = "109"
+            - NODE_UPGRADE = "110"
+            - POOL_CONFIG = "111"
+            - REVOC_REG_DEF = "113"
+            - REVOC_REG_DEF = "114"
+            - AUTH_RULE = "120"
+            
+        - read requests:
+        
+            - GET_TXN = "3"
+            - GET_TXN_AUTHOR_AGREEMENT = "6"
+            - GET_TXN_AUTHOR_AGREEMENT_AML = "7"        
+            - GET_ATTR = "104"
+            - GET_NYM = "105"
+            - GET_SCHEMA = "107"
+            - GET_CLAIM_DEF = "108"
+            - GET_REVOC_REG_DEF = "115"
+            - GET_REVOC_REG = "116"
+            - GET_REVOC_REG_DELTA = "117"  
+            - GET_AUTH_RULE = "121"      
+            
     - request-specific data
 
 - `identifier` (base58-encoded string):
@@ -106,6 +136,45 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
 
 Please find the format of each request-specific data for each type of request below.
 
+## Common Write Request Structure
+
+Write requests to Domain and added-by-plugins ledgers may have additional Transaction Author Agreement acceptance fields:
+
+```
+{
+    'operation': {
+        'type': <request type>,
+        <request-specific fields>
+    },
+    
+    'identifier': <sender/author DID>,
+    'reqId': <req_id unique integer>,
+    'taaAcceptance': {
+        'taaDigest': <digest hex string>,
+        'mechanism': <mechaism string>,
+        'time': <time integer>
+     }
+    'protocolVersion': 2,
+    'signature': <signature_value>,
+    # 'signatures': {
+    #      `did1`: <sig1>,
+    #      `did2`: <sig2>,
+    #  }    
+           
+}
+```
+
+Additional (optional) fields for write requests:
+
+- `taaAcceptance` (dict, optional):
+            If transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
+            
+   - `taaDigest` (SHA256 hex digest string): SHA256 hex digest of the latest Transaction Author Agreement on the ledger. The digest is calculated from concatenation of [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)'s `version` and `text`.
+                
+   - `mechanism` (string): a mechanism used to accept the signature; must be present in the latest list of transaction author agreement acceptane mechanisms on the ledger  
+                
+   - `time` (integer as POSIX timestamp): transaction author agreement acceptance time
+                
 ## Reply Structure for Write Requests
 
 Each Reply to write requests has a number of common metadata fields. Most of these fields are actually metadata fields 
@@ -127,7 +196,14 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
             
             "metadata": {
                 "reqId": <...>,
-                "from": <...>
+                "from": <...>,
+                "digest": <...>,
+                "payloadDigest": <...>,
+                "taaAcceptance": {
+                    "taaDigest": <...>,
+                    "mechanism": <...>,
+                    "time": <...>
+                 }
             },
         },
         "txnMetadata": {
@@ -161,14 +237,19 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
     
         Supported transaction type:
         
-        - NODE = 0
-        - NYM = 1
-        - ATTRIB = 100
-        - SCHEMA = 101
-        - CLAIM_DEF = 102
-        - POOL_UPGRADE = 109
-        - NODE_UPGRADE = 110
-        - POOL_CONFIG = 111
+        - NODE = "0"
+        - NYM = "1"
+        - TXN_AUTHOR_AGREEMENT = "4"
+        - TXN_AUTHOR_AGREEMENT_AML = "5"
+        - ATTRIB = "100"
+        - SCHEMA = "101"
+        - CLAIM_DEF = "102"
+        - POOL_UPGRADE = "109"
+        - NODE_UPGRADE = "110"
+        - POOL_CONFIG = "111"
+        - REVOC_REG_DEF = "113"
+        - REVOC_REG_DEF = "114"
+        - AUTH_RULE = "120"
 
     - `protocolVersion` (integer; optional): 
     
@@ -194,6 +275,22 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
              
         - `reqId` (integer): 
             Unique ID number of the request with transaction.
+  
+        - `digest` (SHA256 hex digest string):
+            SHA256 hash hex digest of all fields in the initial requests (including signatures) 
+            
+        - `payloadDigest` (SHA256 hex digest string):
+            SHA256 hash hex digest of the payload fields in the initial requests, that is all fields excluding signatures and plugins-added ones
+            
+        - `taaAcceptance` (dict, optional):
+            If transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
+            
+                - `taaDigest` (SHA256 hex digest string): SHA256 hex digest of the latest Transaction Author Agreement on the ledger
+                
+                - `mechanism` (string): a mechanism used to accept the signature; must be present in the latest list of transaction author agreement acceptane mechanisms on the ledger  
+                
+                - `time` (integer as POSIX timestamp): transaction author agreement acceptance time
+                  
   
 - `txnMetadata` (dict):
 
@@ -287,10 +384,17 @@ These common metadata values are added to result's JSON at the same level as rea
 
     Supported transaction types:
     
+    - GET_TXN = "3"
+    - GET_TXN_AUTHOR_AGREEMENT = "6"
+    - GET_TXN_AUTHOR_AGREEMENT_AML = "7"        
     - GET_ATTR = "104"
     - GET_NYM = "105"
     - GET_SCHEMA = "107"
     - GET_CLAIM_DEF = "108"
+    - GET_REVOC_REG_DEF = "115"
+    - GET_REVOC_REG = "116"
+    - GET_REVOC_REG_DELTA = "117"  
+    - GET_AUTH_RULE = "121"    
 
 - `identifier` (base58-encoded string):
  
@@ -359,6 +463,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     - "0" (TRUSTEE)
     - "2" (STEWARD)
     - "101" (TRUST_ANCHOR)
+    - "201" (NETWORK_MONITOR)
     
   A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md)).
   
@@ -396,7 +501,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514213797569745,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba',
 }
 ```
@@ -409,7 +514,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
         "ver": 1,
         "txn": {
             "type":"1",
-            "protocolVersion":1,
+            "protocolVersion":2,
             
             "data": {
                 "ver": 1,
@@ -421,6 +526,8 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
             "metadata": {
                 "reqId":1514213797569745,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
         },
         "txnMetadata": {
@@ -480,7 +587,7 @@ Adds attribute to a NYM record.
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514213797569745,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba',
 }
 ```
@@ -493,7 +600,7 @@ Adds attribute to a NYM record.
         "ver": 1,
         "txn": {
             "type":"100",
-            "protocolVersion":1,
+            "protocolVersion":2,
             
             "data": {
                 "ver":1,
@@ -504,6 +611,8 @@ Adds attribute to a NYM record.
             "metadata": {
                 "reqId":1514213797569745,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
         },
         "txnMetadata": {
@@ -554,7 +663,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514280215504647,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
 }
 ```
@@ -567,7 +676,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
         "ver": 1,
         "txn": {
             "type":"101",
-            "protocolVersion":1,
+            "protocolVersion":2,
             
             "data": {
                 "ver":1,
@@ -581,6 +690,8 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
             "metadata": {
                 "reqId":1514280215504647,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
         },
         "txnMetadata": {
@@ -647,7 +758,7 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514280215504647,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
 }
 ```
@@ -660,7 +771,7 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
         "ver": 1,
         "txn": {
             "type":"102",
-            "protocolVersion":1,
+            "protocolVersion":2,
             
             "data": {
                 "ver":1,
@@ -676,6 +787,8 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
             "metadata": {
                 "reqId":1514280215504647,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
         },
         "txnMetadata": {
@@ -689,7 +802,195 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
                 "from": "L5AD5g65TDQr1PPHHRoiGf",
                 "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
             }]
-        }
+        },
+        
+        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
+        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        
+    }
+}
+```
+
+### REVOC_REG_DEF
+Adds a Revocation Registry Definition, that Issuer creates and publishes for a particular Claim Definition.
+It contains public keys, maximum number of credentials the registry may contain, reference to the Claim Def, plus some revocation registry specific data.
+
+- `value` (dict):
+
+     Dictionary with revocation registry definition's data:
+     
+     - `maxCredNum` (integer): a maximum number of credentials the Revocation Registry can handle
+     - `tailsHash` (string): tails' file digest
+     - `tailsLocation` (string): tails' file location (URL)
+     - `issuanceType` (string enum): defines credentials revocation strategy. Can have the following values:
+        - `ISSUANCE_BY_DEFAULT`: all credentials are assumed to be issued initially, so that Revocation Registry needs to be updated (REVOC_REG_ENTRY txn sent) only when revoking. Revocation Registry stores only revoked credentials indices in this case. Recommended to use if expected number of revocation actions is less than expected number of issuance actions. 
+        - `ISSUANCE_ON_DEMAND`: no credentials are issued initially, so that Revocation Registry needs to be updated (REVOC_REG_ENTRY txn sent) on every issuance and revocation. Revocation Registry stores only issued credentials indices in this case. Recommended to use if expected number of issuance actions is less than expected number of revocation actions.
+     - `publicKeys` (dict): Revocation Registry's public key
+
+- `id` (string): Revocation Registry Definition's unique identifier (a key from state trie is currently used)
+- `credDefId` (string): The corresponding Credential Definition's unique identifier (a key from state trie is currently used)
+- `revocDefType` (string enum): Revocation Type. `CL_ACCUM` (Camenisch-Lysyanskaya Accumulator) is the only supported type now.
+- `tag` (string): A unique tag to have multiple Revocation Registry Definitions for the same Credential Definition and type issued by the same DID. 
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '113',
+        'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
+        'revocDefType': 'CL_ACCUM',
+        'tag': 'tag1',
+        'value': {
+            'maxCredNum': 1000000,
+            'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
+            'tailsLocation': 'http://tails.location.com',
+            'issuanceType': 'ISSUANCE_BY_DEFAULT',
+            'publicKeys': {},
+        },
+    },
+    
+    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514280215504647,
+    'protocolVersion': 2,
+    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        "ver": 1,
+        "txn": {
+            "type":"113",
+            "protocolVersion":2,
+            
+            "data": {
+                "ver":1,
+                'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+                'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
+                'revocDefType': 'CL_ACCUM',
+                'tag': 'tag1',
+                'value': {
+                    'maxCredNum': 1000000,
+                    'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
+                    'tailsLocation': 'http://tails.location.com',
+                    'issuanceType': 'ISSUANCE_BY_DEFAULT',
+                    'publicKeys': {},
+                },
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        },
+        
+        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
+        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        
+    }
+}
+```
+
+### REVOC_REG_ENTRY
+The RevocReg entry containing the new accumulator value and issued/revoked indices. This is just a delta of indices, not the whole list. So, it can be sent each time a new claim is issued/revoked.
+
+- `value` (dict):
+
+     Dictionary with revocation registry's data:
+     
+     - `accum` (string): the current accumulator value
+     - `prevAccum` (string): the previous accumulator value; it's compared with the current value, and txn is rejected if they don't match; it's needed to avoid dirty writes and updates of accumulator.
+     - `issued` (list of integers): an array of issued indices (may be absent/empty if the type is ISSUANCE_BY_DEFAULT); this is delta; will be accumulated in state.
+     - `revoked` (list of integers):  an array of revoked indices (delta; will be accumulated in state)    
+
+- `revocRegDefId` (string): The corresponding Revocation Registry Definition's unique identifier (a key from state trie is currently used)
+- `revocDefType` (string enum): Revocation Type. `CL_ACCUM` (Camenisch-Lysyanskaya Accumulator) is the only supported type now.
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '114',
+            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
+            'revocDefType': 'CL_ACCUM',
+            'value': {
+                'accum': 'accum_value',
+                'prevAccum': 'prev_acuum_value',
+                'issued': [],
+                'revoked': [10, 36, 3478],
+            },
+    },
+    
+    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514280215504647,
+    'protocolVersion': 2,
+    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        "ver": 1,
+        "txn": {
+            "type":"114",
+            "protocolVersion":2,
+            
+            "data": {
+                "ver":1,
+                'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
+                'revocDefType': 'CL_ACCUM',
+                'value': {
+                    'accum': 'accum_value',
+                    'prevAccum': 'prev_acuum_value',
+                    'issued': [],
+                    'revoked': [10, 36, 3478],
+                },
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"5:L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        },
+        
+        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
+        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        
     }
 }
 ```
@@ -742,7 +1043,7 @@ There is no need to specify all other fields in `data`, and they will remain the
     
     'identifier': '21BPzYYrFzbuECcBV3M1FH',
     'reqId': 1514304094738044,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
 }
 ```
@@ -755,7 +1056,7 @@ There is no need to specify all other fields in `data`, and they will remain the
         "ver": 1,
         "txn": {
             "type":0,
-            "protocolVersion":1,
+            "protocolVersion":2,
             
             "data": {
                 "ver":1,
@@ -774,12 +1075,13 @@ There is no need to specify all other fields in `data`, and they will remain the
             "metadata": {
                 "reqId":1514304094738044,
                 "from":"21BPzYYrFzbuECcBV3M1FH",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
         },
         "txnMetadata": {
             "txnTime":1513945121,
             "seqNo": 10,  
-            "txnId":"Delta",
         },
         "reqSignature": {
             "type": "ED25519",
@@ -861,7 +1163,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     
     'identifier': '21BPzYYrFzbuECcBV3M1FH',
     'reqId': 1514304094738044,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
 }
 ```
@@ -874,7 +1176,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
         "ver": 1,
         "txn": {
             "type":109,
-            "protocolVersion":1,
+            "protocolVersion":2,
             
             "data": {
                 "ver":1,
@@ -892,7 +1194,8 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
             "metadata": {
                 "reqId":1514304094738044,
                 "from":"21BPzYYrFzbuECcBV3M1FH",
-                "txnId":"upgrade-13",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
         },
         "txnMetadata": {
@@ -905,7 +1208,10 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
                 "from": "21BPzYYrFzbuECcBV3M1FH",
                 "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
             }]
-        }
+        },
+        
+        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
+        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
     }
 }
 ```
@@ -940,7 +1246,7 @@ Command to change Pool's configuration
     
     'identifier': '21BPzYYrFzbuECcBV3M1FH',
     'reqId': 1514304094738044,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
 }
 ```
@@ -953,7 +1259,7 @@ Command to change Pool's configuration
         "ver":1,
         "txn": {
             "type":111,
-            "protocolVersion":1,
+            "protocolVersion":2,
             
             "data": {
                 "ver":1,
@@ -964,12 +1270,13 @@ Command to change Pool's configuration
             "metadata": {
                 "reqId":1514304094738044,
                 "from":"21BPzYYrFzbuECcBV3M1FH",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
         },
         "txnMetadata": {
             "txnTime":1513945121,
             "seqNo": 10,  
-            "txnId":"1111",
         },
         "reqSignature": {
             "type": "ED25519",
@@ -977,7 +1284,10 @@ Command to change Pool's configuration
                 "from": "21BPzYYrFzbuECcBV3M1FH",
                 "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
             }]
-        }
+        },
+        
+        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
+        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
     }
 }
 ```
@@ -985,138 +1295,119 @@ Command to change Pool's configuration
 ### AUTH_RULE
 
 A command to change authentication rules. 
-Authentication rules are stored as a key-value dictionary.
-A key is an authenticated action in the format `action--txn_type--field--old_value--new_value`.
-A value is a set of constraints on the execution of this action. The actions (keys) are static and can be found in [auth_rules.md](auth_rules.md). So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action. There are two types of constraints:
-- ConstraintEntity contains `{constraint_id, role, sig_count, need_to_be_owner, metadata}`
-- ConstraintList with format `{constraint_id, auth_constraints}` contains list of constraints.
-That is, the entry 
-```
-"EDIT--NODE--services--[VALIDATOR]--[]" -> {constraint_id: OR,
-                                            auth_constraints: [{constraint_id: ROLE,
-                                                                role: STEWARD, 
-                                                                sig_count: 1, 
-                                                                need_to_be_owner: True},
-                                                               {constraint_id: ROLE,
-                                                                role: TRUSTEE, 
-                                                                sig_count: 1, 
-                                                                need_to_be_owner: False}
-                                                               ]
-                                           }
-                                                                 
-```
-means that changing a value of a NODE transaction's `service` field from `[VALIDATOR]` to `[]` (demotion of a node) can only be done by one TRUSTEE or one STEWARD, and this Trustee or Steward needs to be the owner (the original creator) of this transaction.
+Internally authentication rules are stored as a key-value dictionary: `{action} -> {auth_constraint}`.
 
-**Action Format:**
+The list of actions is static and can be found in [auth_rules.md](auth_rules.md).
+There is a default Auth Constraint for every action (defined in [auth_rules.md](auth_rules.md)). 
 
-- `auth_action` (enum: `ADD` or `EDIT`):
+The `AUTH_RULE` command allows to change the Auth Constraint.
+So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action.
 
-    Action type: add a new entity or edit an existing one.
+Please note, that list elements of `GET_AUTH_RULE` output can be used as an input (with a required changes) for `AUTH_RULE`.
+
+If format of a transaction is incorrect, the client will receive NACK message for the request. 
+A client will receive NACK for 
+- a request with incorrect format;
+- a request with "ADD" action, but with "old_value";
+- a request with "EDIT" action without "old_value";
+- a request with a key that is not in the [auth_rule](auth_rule.md).
+
+The following input parameters must match an auth rule from the [auth_rules.md](auth_rules.md):
+- `auth_type` (string enum)
+ 
+     The type of transaction to change the auth constraints to. (Example: "0", "1", ...). See transactions description to find the txn type enum value.
+
+- `auth_action` (enum: `ADD` or `EDIT`)
+
+    Whether this is addign of a new transaction, or editting of an existing one.
     
-- `auth_type` (string):
-
-    The type of transaction to change rights for. (Example: "0", "1", ...)
-
-- `field` (string):
-
-    Change the rights for editing (adding) a value of the given transaction field. `*` can be used as `any field`.
-
-- `old_value` (string; optional):
-
-   Old value of a field, which can be changed to a new_value. Makes sense for EDIT actions only.
-
-- `new_value` (string):
-   
-   New value that can be used to fill the field.
-
-**ConstraintType:**
-
-ConstraintList
-
-- `constraint_id` (enum: `AND` or `OR`):
-
-    Type of a constraint class. It's needed to determine a type of constraint for correct deserialization.
-    - `AND` logical conjunction for all constraints from `auth_constraints`
-    - `OR` logical disjunction for all constraints from `auth_constraints`
+- `field` (string)
+ 
+    Set the auth constraint of editing the given specific field. `*` can be used to specify that an auth rule is applied to all fields.
     
-- `auth_constraints` (list of ConstraintType):
+- `old_value` (string; optional)
 
-    List of ConstraintType (ConstraintList or ConstraintEntity) objects
+    Old value of a field, which can be changed to a new_value. Must be present for EDIT `auth_action` only.
+    `*` can be used if it doesn't matter what was the old value.
     
- ```
-{ 'constraint_id': 'AND',
-  'auth_constraints': [<ConstraintEntity>,
-                      <ConstraintEntity>]
-}
-```
+- `new_value` (string)
+
+    New value that can be used to fill the field.
+    `*` can be used if it doesn't matter what was the old value.
+
+The `constraint_id` fields is where one can define the desired auth constraint for the action:
+
+- `constraint` (dict)
+
+    - `constraint_id` (string enum)
     
-ConstraintEntity
-
-- `constraint_id` (enum: `ROLE`):
-
-   Type of a constraint. As of now only ROLE is supported, but plugins can register new ones. It's needed to determine a type of constraint for correct deserialization.
+        Constraint Type. As of now, the following constraint types are supported:
+            
+            - 'ROLE': a constraint defining how many siganatures of a given role are required
+            - 'OR': logical disjunction for all constraints from `auth_constraints` 
+            - 'AND': logical conjunction for all constraints from `auth_constraints`
+            
+    - fields if `'constraint_id': 'OR'` or `'constraint_id': 'AND'`
+    
+        - `auth_constraints` (list)
         
-- `role` (enum number as string; optional):
+            A list of constraints. Any number of nested constraints is supported recursively
+        
+    - fields if `'constraint_id': 'ROLE'`:
+                
+        - `role` (string enum)    
+            
+            Who (what role) can perform the action
+            Please have a look at [NYM](#nym) transaction description for a mapping between role codes and names.
+                
+        - `sig_count` (int):
+        
+            The number of signatures that is needed to do the action
+            
+        - `need_to_be_owner` (boolean):
+        
+            Flag to check if the user must be the owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
+            The notion of the `owner` is different for every auth rule. Please reference to [auth_rules.md](auth_rules.md) for details.
+            
+        - `metadata` (dict; optional):
+        
+            Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
 
-    Role of a user that the NYM record is being created for. One of the following values
-
-    - None (common USER)
-    - 0 (TRUSTEE)
-    - 2 (STEWARD)
-    - 101 (TRUST_ANCHOR)
-    
-- `sig_count` (int):
-
-    The number of signatures that is needed to do the action described in the transaction fields.
-    
-- `need_to_be_owner` (boolean):
-
-    Flag to check if the user must be owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
-    
-- `metadata` (dict; optional):
-
-    Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
-
-```
-{
-    'sig_count': 1, 
-    'need_to_be_owner': False, 
-    'constraint_id': 'ROLE', 
-    'metadata': {}, 
-    'role': '0'
-}
-```
 
 *Request Example*:
+
+Let's consider an example of changing a value of a NODE transaction's `service` field from `[VALIDATOR]` to `[]` (demotion of a node).
+ We are going to set an Auth Constraint, so that the action can be only be done by two TRUSTEE or one STEWARD who is the owner (the original creator) of this transaction.
+ 
 ```
 {
     'operation': {
-           'type':'120',
-           'constraint':{  
-                      'constraint_id': 'OR',
-                      'auth_constraints': [{'constraint_id': 'ROLE', 
-                                            'role': '0',
-                                            'sig_count': 1, 
-                                            'need_to_be_owner': False, 
-                                            'metadata': {}}, 
-                                           
-                                           {'constraint_id': 'ROLE', 
-                                            'role': '2',
-                                            'sig_count': 1, 
-                                            'need_to_be_owner': True, 
-                                            'metadata': {}}
-                                           ]
-           }, 
-           'field' :'services',
-           'auth_type': '0', 
-           'auth_action': 'EDIT',
-           'old_value': [VALIDATOR],
-           'new_value': []
+        'type':'120',
+        'auth_type': '0', 
+        'auth_action': 'EDIT',
+        'field' :'services',
+        'old_value': [VALIDATOR],
+        'new_value': []
+        'constraint':{
+              'constraint_id': 'OR',
+              'auth_constraints': [{'constraint_id': 'ROLE', 
+                                    'role': '0',
+                                    'sig_count': 2, 
+                                    'need_to_be_owner': False, 
+                                    'metadata': {}}, 
+                                   
+                                   {'constraint_id': 'ROLE', 
+                                    'role': '2',
+                                    'sig_count': 1, 
+                                    'need_to_be_owner': True, 
+                                    'metadata': {}}
+                                   ]
+        }, 
     },
     
     'identifier': '21BPzYYrFzbuECcBV3M1FH',
     'reqId': 1514304094738044,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj'
 }
 ```
@@ -1140,11 +1431,16 @@ ConstraintEntity
          },
          'txn':{  
             'data':{  
-               'constraint':{  
+                'auth_type': '0', 
+                'auth_action': 'EDIT',
+                'field' :'services',
+                'old_value': [VALIDATOR],
+                'new_value': []            
+                'constraint':{  
                           'constraint_id': 'OR',
                           'auth_constraints': [{'constraint_id': 'ROLE', 
                                                 'role': '0',
-                                                'sig_count': 1, 
+                                                'sig_count': 2, 
                                                 'need_to_be_owner': False, 
                                                 'metadata': {}}, 
                                                
@@ -1154,37 +1450,195 @@ ConstraintEntity
                                                 'need_to_be_owner': True, 
                                                 'metadata': {}}
                                                ]
-               }, 
-               'field' :'services',
-               'auth_type': '0', 
-               'auth_action': 'EDIT',
-               'old_value': [VALIDATOR],
-               'new_value': []
-               }
+                }, 
             },
             'protocolVersion':2,
             'metadata':{  
                'from':'M9BJDuS24bqbJNvBRsoGg3',
                'digest':'ea13f0a310c7f4494d2828bccbc8ff0bd8b77d0c0bfb1ed9a84104bf55ad0436',
+               'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
                'reqId':711182024
             },
             'type':'120'
          },
          'ver':'1',
          'rootHash':'GJNfknLWDAb8R93cgAX3Bw6CYDo23HBhiwZnzb4fHtyi',
-         'auditPath':[  
-
-         ]
+         'auditPath':['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6']
       }
    }
 ```
 
-If format of a transaction is incorrect, the client will receive NACK message for the request. 
-A client will receive NACK for 
-- a request with incorrect format;
-- a request with "ADD" action, but with "old_value";
-- a request with "EDIT" action without "old_value";
-- a request with a key that is not in the [auth_rule](auth_rule.md).
+
+
+### TRANSACTION_AUTHOR_AGREEMENT
+
+Setting (enabling/disabling) a transaction author agreement for the pool.
+If transaction author agreement is set, then all write requests to Domain ledger (transactions) must include additional metadata pointing to the latest transaction author agreement's digest which is signed by the transaction author.
+
+If no transaction author agreement is set, or it's disabled, then no additional metadata is required.
+
+Transaction author agreement can be disabled by setting an agreement with an empty text.
+
+Each transaction author agreement has a unique version.
+
+At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_aml) must be set on the ledger before submitting TRANSACTION_AUTHOR_AGREEMENT txn.
+
+- `version` (string):
+
+    Unique version of the transaction author agreement
+
+
+- `text` (string):
+
+    Transaction author agreement's text
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '4'
+        'version': '1.0',
+        'text': 'Please read carefully before writing anything to the ledger',
+    },
+    
+    'identifier': '21BPzYYrFzbuECcBV3M1FH',
+    'reqId': 1514304094738044,
+    'protocolVersion': 2,
+    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        "ver":1,
+        "txn": {
+            "type":4,
+            "protocolVersion":2,
+            
+            "data": {
+                "ver":1,
+                'version': '1.0',
+                'text': 'Please read carefully before writing anything to the ledger',
+            },
+            
+            "metadata": {
+                "reqId":1514304094738044,
+                "from":"21BPzYYrFzbuECcBV3M1FH",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "21BPzYYrFzbuECcBV3M1FH",
+                "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
+            }]
+        },
+        
+        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
+        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+    }
+}
+```
+
+### TRANSACTION_AUTHOR_AGREEMENT_AML
+
+Setting a list of acceptance mechanisms for transaction author agreement.
+
+Each write request for which a transaction author agreement needs to be accepted must point to a  mechanism from the latest list on the ledger. The chosen mechanism is signed by the write request author (together with the transaction author agreement digest). 
+
+
+Each acceptance mechanisms list has a unique version.
+
+- `version` (string):
+
+    Unique version of the transaction author agreement acceptance mechanisms list
+
+
+- `aml` (dict):
+
+    Acceptance mechanisms list data in the form `<acceptance mechanism label>: <acceptance mechanism description>`
+    
+- `amlContext` (string, optional):
+
+    A context information about Acceptance mechanisms list (may be URL to external resource).   
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '5'
+        "version": "1.0",
+        "aml": {
+            "EULA": "Included in the EULA for the product being used",
+            "Service Agreement": "Included in the agreement with the service provider managing the transaction",
+            "Click Agreement": "Agreed through the UI at the time of submission",
+            "Session Agreement": "Agreed at wallet instantiation or login"
+        },
+        "amlContext": "http://aml-context-descr"
+    },
+    
+    'identifier': '21BPzYYrFzbuECcBV3M1FH',
+    'reqId': 1514304094738044,
+    'protocolVersion': 2,
+    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        "ver":1,
+        "txn": {
+            "type":5,
+            "protocolVersion":2,
+            
+            "data": {
+                "ver":1,
+                "version": "1.0",
+                "aml": {
+                    "EULA": "Included in the EULA for the product being used",
+                    "Service Agreement": "Included in the agreement with the service provider managing the transaction",
+                    "Click Agreement": "Agreed through the UI at the time of submission",
+                    "Session Agreement": "Agreed at wallet instantiation or login"
+                },
+                "amlContext": "http://aml-context-descr"
+            },
+            
+            "metadata": {
+                "reqId":1514304094738044,
+                "from":"21BPzYYrFzbuECcBV3M1FH",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "21BPzYYrFzbuECcBV3M1FH",
+                "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
+            }]
+        },
+        
+        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
+        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+    }
+}
+```
 
 
 ## Read Requests
@@ -1209,7 +1663,7 @@ Gets information about a DID (NYM).
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514308188474704,
-    'protocolVersion': 1
+    'protocolVersion': 2
 }
 ```
 
@@ -1284,7 +1738,7 @@ i.e. reply data contains requested value only.
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514308188474704,
-    'protocolVersion': 1
+    'protocolVersion': 2
 }
 ```
 
@@ -1356,7 +1810,7 @@ Gets Claim's Schema.
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514308188474704,
-    'protocolVersion': 1
+    'protocolVersion': 2
 }
 ```
 
@@ -1433,7 +1887,7 @@ Gets Claim Definition.
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514308188474704,
-    'protocolVersion': 1
+    'protocolVersion': 2
 }
 ```
 
@@ -1447,6 +1901,7 @@ Gets Claim Definition.
         'reqId': 1514308188474704,
         
         'seqNo': 10,
+        'txnTime': 1514214795,
 
         'state_proof': {
             'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
@@ -1477,6 +1932,675 @@ Gets Claim Definition.
 }
 ```
 
+### GET_REVOC_REG_DEF
+
+Gets a Revocation Registry Definition, that Issuer creates and publishes for a particular Claim Definition.
+
+- `id` (string): Revocation Registry Definition's unique identifier (a key from state trie is currently used)
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '115'
+        'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+    },
+    
+    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '115',
+        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        
+        'seqNo': 10,
+        'txnTime': 1514214795,
+        
+        'data': {
+            'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+            'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
+            'revocDefType': 'CL_ACCUM',
+            'tag': 'tag1',
+            'value': {
+                'maxCredNum': 1000000,
+                'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
+                'tailsLocation': 'http://tails.location.com',
+                'issuanceType': 'ISSUANCE_BY_DEFAULT',
+                'publicKeys': {},
+            },
+        },
+        
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 1, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+
+    }
+}
+```
+
+### GET_REVOC_REG
+
+Gets a Revocation Registry Accumulator.
+
+- `revocRegDefId` (string): The corresponding Revocation Registry Definition's unique identifier (a key from state trie is currently used)
+
+- `timestamp` (integer as POSIX timestamp):
+
+    The time (from the ledger point of view) for which we want to get the accumulator value.
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '116'
+        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        'timestamp': 1514214800
+    },
+    
+    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '116',
+        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        'timestamp': 1514214800
+        
+        'seqNo': 10,
+        'txnTime': 1514214795,
+        
+        'data': {
+            'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
+            'revocDefType': 'CL_ACCUM',
+            'value': {
+                'accum': 'accum_value',
+            },
+        },
+        
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 1, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+
+    }
+}
+```
+
+### GET_REVOC_REG_DELTA
+
+Gets a Revocation Registry Delta (accum values, and delta of issues/revoked indices) for the given time interval (`from` and `to`).
+
+If from is not set, then the whole registry (accum and current issues/revoked indices) is returned for the given time (`to`)
+
+- `revocRegDefId` (string): The corresponding Revocation Registry Definition's unique identifier (a key from state trie is currently used)
+
+- `from` (integer as POSIX timestamp, optional):
+
+    The time (from the ledger point of view) we want to return accum and indices after, that is the left bound of the delta interval. Can be absent, which means that all indices and accum needs to be returned till `to`.
+
+- `to` (integer as POSIX timestamp):
+
+    The time (from the ledger point of view) we want to return accum and indices before, that is the right bound of the delta interval. 
+
+
+Please note, that if `from` is set, then addition state proof for `accum_from` value is returned in `stateProofFrom`, while the common state proof is for `accum_to`
+Both state proofs are returned just for accumulator values. The client needs to check that the returned delta is also correct by calculating `accum_to` from the given `accum_from` and delta indices, and making sure that the calculated  `accum_to` is equal to the returned one.
+
+If `from` is not set, then there is just one state proof (as usual) for both `accum` value and the whole indices lists. 
+
+*Request Example when both `from` and `to` present*:
+```
+{
+    'operation': {
+        'type': '117'
+        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        'from': 1514214100
+        'to': 1514214900
+    },
+    
+    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example when both `from` and `to` present*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '117',
+        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        'from': 1514214100
+        'to': 1514214900
+        
+        'seqNo': 18,
+        'txnTime': 1514214795,
+        
+        'data': {
+            'revocDefType': 'CL_ACCUM',
+            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+            'value': {
+               'accum_to': {
+                   'revocDefType': 'CL_ACCUM', 
+                   'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1', 
+                   'txnTime': 1514214795, 
+                   'seqNo': 18,
+                   'value': {
+                      'accum': '9a512a7624'
+                   }
+                },
+                'revoked': [10, 11],
+                'issued': [1, 2, 3], 
+                'accum_from': {
+                    'revocDefType': 'CL_ACCUM',
+                    'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1', 
+                    'txnTime': 1514214105, 
+                    'seqNo': 16, 
+                    'value': {
+                       'accum': 'be080bd74b'
+                    }
+                 }
+            },
+            'stateProofFrom': {
+                'multi_signature': {
+                     'participants': ['Delta', 'Gamma', 'Alpha'],
+                     'signature': 'QpP4oVm2MLQ7SzLVZknuFjneXfqYj6UStn3oQtCdSiKiYuS4n1kxRphKRDMwmS7LGeXgUmy3C8GtcVM5X9SN9qLr2MBApjpPtKE9DkBTwyieh3vN1UMq1Kwx2Jkz7vcSJNH2WzjEKSUnpFLEJk4mpFaibqd1xX2hrwruxzSDUi2uCT', 
+                     'value': {
+                         'state_root_hash': '2sfnQcEKkjw78KYnGJyk5Gw9gtwESvX6NdFFPEiQYQsz', 
+                         'ledger_id': 1,
+                         'pool_state_root_hash': 'JDt3NNrZenx3x41oxsvhWeuSFFerdyqEvQUWyGdHX7gx',
+                         'timestamp': 1514214105, 
+                         'txn_root_hash': 'FCkntnPqfaGx4fCX5tTdWeLr1mXdFuZnTNuEehiet32z'
+                     }
+                },
+                'root_hash': '2sfnQcEKkjw78KYnGJyk5Gw9gtwESvX6NdFFPEiQYQsz',
+                'proof_nodes': '+QLB+QE3uFEgOk1TaktUV2tQTHRZb1BFYVRGMVRVRGI6NDpNU2pLVFdrUEx0WW9QRWFURjFUVURiOjM6Q0w6MTM6c29tZV90YWc6Q0xfQUNDVU06YTk4ZWO44vjguN57ImxzbiI6MTYsImx1dCI6MTU1ODUyNDEzMSwidmFsIjp7InJldm9jRGVmVHlwZSI6IkNMX0FDQ1VNIiwicmV2b2NSZWdEZWZJZCI6Ik1TaktUV2tQTHRZb1BFYVRGMVRVRGI6NDpNU2pLVFdrUEx0WW9QRWFURjFUVURiOjM6Q0w6MTM6c29tZV90YWc6Q0xfQUNDVU06YTk4ZWMiLCJzZXFObyI6MTYsInR4blRpbWUiOjE1NTg1MjQxMzEsInZhbHVlIjp7ImFjY3VtIjoiYmUwODBiZDc0YiJ9fX34UYCAgICAoAgDh8v1CXNEJGFl302RO98x8R6Ozscy0ZFdRpiCobh3oCnaxHyPnZq6E+mbnfU6oC994Wv1nh7sf0pQOp5g93tbgICAgICAgICAgPkBMYCAgKBmZE7e2jSrhTw9usjxZcAb25uSisJV+TzkbXNUypyJvaA/KAFG4RQqB9dAGRfTgly2XjXvPCeVr7vBn6FSkN7sH4CAoBGxQDip9XfEC/CkgimSkkhCeMm9XnkxxwWiMJwzuhAjgKAmh0g8FUI60e7NBwTu7ukdfz6kaON6u9U87kTeTlPcXICgsk2X2G6MlVhEqMEzthWAT4ey6qRaKXpOuMZOA1kMODagQdHobiexMaAwqtI7P5bbfqNkQEoZD79m6z43DEGQGL6gXQfLXgd+xWWXypr1pDxPvjSU8UtHjfWhJ58aiuqAzmKgyee3YL7GFFd+5oxG9b/q4od/mRjFpLdXKR3YG2o/hAygRIVVdoVD0dpqktsN8kSc03UhYiI76nxdCejX+CV4OX6A'
+            }
+        },
+        
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 1, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+
+    }
+}
+```
+
+
+
+*Request Example when there is only `to` present*:
+```
+{
+    'operation': {
+        'type': '117'
+        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        'to': 1514214900
+    },
+    
+    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example when there is only `to` present*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '117',
+        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        'to': 1514214900
+        
+        'seqNo': 18,
+        'txnTime': 1514214795,
+        
+        'data': {
+            'revocDefType': 'CL_ACCUM',
+            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+            'value': {
+               'accum_to': {
+                   'revocDefType': 'CL_ACCUM', 
+                   'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1', 
+                   'txnTime': 1514214795, 
+                   'seqNo': 18,
+                   'value': {
+                      'accum': '9a512a7624'
+                   }
+                },
+                'issued': [],
+                'revoked': [1, 2, 3, 4, 5]
+        },
+        
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 1, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+
+    }
+}
+```
+
+### GET_AUTH_RULE
+
+A request to get an auth constraint for an authentication rule or a full list of rules from Ledger. The constraint format is described in [AUTH_RULE transaction](#auth_rule).
+
+The set of Auth Rules is static and can be found in [auth_rules.md](auth_rules.md). This is the constraint part that may be changed and edited. 
+
+Two options are possible in a request builder:
+- If the request has a full list of parameters (probably without `old_value` as it's not required for ADD actions), then the reply will contain one constraint for this key.
+- If the request does not contain fields other than txn_type, the response will contain a full list of authentication rules.
+
+A reply is a list of Auth Rules with constraints. This will be a one-element list in case of GET_AUTH_RULE with params, that is GET_AUTH_RULE for specific action.
+
+Each output list element is equal to the input of [AUTH_RULE](#auth_rule), so list elements of `GET_AUTH_RULE` output can be used as an input (with a required changes) for `AUTH_RULE`.
+
+
+- `auth_action` (enum: `ADD` or `EDIT`; optional):
+
+    Action type: add a new entity or edit an existing one.
+    
+- `auth_type` (string; optional):
+
+    The type of transaction to change rights for. (Example: "0", "1", ...)
+
+- `field` (string; optional):
+
+    Change the rights for editing (adding) a value of the given transaction field. `*` can be used as `any field`.
+
+- `old_value` (string; optional):
+
+   Old value of a field, which can be changed to a new_value. Makes sense for EDIT actions only.
+
+- `new_value` (string; optional):
+   
+   New value that can be used to fill the field.
+
+*Request Example (for getting one rule)*:
+```
+  {  
+      'reqId':572495653,
+      'signature':'366f89ehxLuxPySGcHppxbURWRcmXVdkHeHrjtPKNYSRKnvaxzUXF8CEUWy9KU251u5bmnRL3TKvQiZgjwouTJYH',
+      'identifier':'M9BJDuS24bqbJNvBRsoGg3',
+      'operation':{  
+            'auth_type': '0', 
+            'auth_action': 'EDIT',
+            'field' :'services',
+            'old_value': [VALIDATOR],
+            'new_value': []
+      },
+      'protocolVersion':2
+   }
+```
+
+*Reply Example (for getting one rule)*:
+```
+{  
+      'op':'REPLY',
+      'result':{  
+         'type':'121',
+         'auth_type': '0', 
+         'auth_action': 'EDIT',
+         'field' :'services',
+         'old_value': [VALIDATOR],
+         'new_value': []
+         
+         'reqId':441933878,
+         'identifier':'M9BJDuS24bqbJNvBRsoGg3',
+         
+         'data':[  
+              {
+                'auth_type': '0', 
+                'auth_action': 'EDIT',
+                'field' :'services',
+                'old_value': [VALIDATOR],
+                'new_value': []
+                'constraint':{
+                      'constraint_id': 'OR',
+                      'auth_constraints': [{'constraint_id': 'ROLE', 
+                                            'role': '0',
+                                            'sig_count': 2, 
+                                            'need_to_be_owner': False, 
+                                            'metadata': {}}, 
+                                           
+                                           {'constraint_id': 'ROLE', 
+                                            'role': '2',
+                                            'sig_count': 1, 
+                                            'need_to_be_owner': True, 
+                                            'metadata': {}}
+                                           ]
+                }, 
+              }
+         ],
+
+         'state_proof':{  
+            'proof_nodes':'+Pz4+pUgQURELS0xLS1yb2xlLS0qLS0xMDG44vjguN57ImF1dGhfY29uc3RyYWludHMiOlt7ImNvbnN0cmFpbnRfaWQiOiJST0xFIiwibWV0YWRhdGEiOnt9LCJuZWVkX3RvX2JlX293bmVyIjpmYWxzZSwicm9sZSI6IjAiLCJzaWdfY291bnQiOjF9LHsiY29uc3RyYWludF9pZCI6IlJPTEUiLCJtZXRhZGF0YSI6e30sIm5lZWRfdG9fYmVfb3duZXIiOmZhbHNlLCJyb2xlIjoiMiIsInNpZ19jb3VudCI6MX1dLCJjb25zdHJhaW50X2lkIjoiQU5EIn0=',
+            'root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
+            'multi_signature':{  
+               'signature':'RNsPhUuPwwtA7NEf4VySCg1Fb2NpwapXrY8d64TLsRHR9rQ5ecGhRd89NTHabh8qEQ8Fs1XWawHjbSZ95RUYsJwx8PEXQcFEDGN3jc5VY31Q5rGg3aeBdFFxgYo11cZjrk6H7Md7N8fjHrKRdxo6TzDKSszJTNM1EAPLzyC6kKCnF9',
+               'value':{  
+                  'state_root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
+                  'pool_state_root_hash':'9L5CbxzhsNrZeGSJGVVpsC56JpuS5DGdUqfsFsR1RsFQ',
+                  'timestamp':1552395470,
+                  'txn_root_hash':'4CowHvnk2Axy2HWcYmT8b88A1Sgk45x7yHAzNnxowN9h',
+                  'ledger_id':2
+               },
+               'participants':[  
+                  'Beta',
+                  'Gamma',
+                  'Delta'
+               ]
+            }
+         },
+      }
+}
+```
+
+*Request Example (for getting all rules)*:
+```
+  {  
+      'reqId':575407732,
+      'signature':'4AheMmtrfoHuAEtg5VsFPGe1j2w1UYxAvShRmfsCTSHnBDoA5EbmCa2xZzZVQjQGUFbYr65uznu1iUQhW22RNb1X',
+      'identifier':'M9BJDuS24bqbJNvBRsoGg3',
+      'operation':{  
+         'type':'121'
+      },
+      'protocolVersion':2
+  }
+```
+
+*Reply Example (for getting all rules)*:
+```
+{  
+      'op':'REPLY',
+      'result':{
+         'type':'121',
+           
+         'reqId':575407732,
+         'identifier':'M9BJDuS24bqbJNvBRsoGg3'
+
+         'data':[  
+              {
+                'auth_type': '0', 
+                'auth_action': 'EDIT',
+                'field' :'services',
+                'old_value': [VALIDATOR],
+                'new_value': []
+                'constraint':{
+                      'constraint_id': 'OR',
+                      'auth_constraints': [{'constraint_id': 'ROLE', 
+                                            'role': '0',
+                                            'sig_count': 2, 
+                                            'need_to_be_owner': False, 
+                                            'metadata': {}}, 
+                                           
+                                           {'constraint_id': 'ROLE', 
+                                            'role': '2',
+                                            'sig_count': 1, 
+                                            'need_to_be_owner': True, 
+                                            'metadata': {}}
+                                           ]
+                }, 
+              },
+              {
+                'auth_type': '102', 
+                'auth_action': 'ADD',
+                'field' :'*',
+                'new_value': '*'
+                'constraint':{
+                    'constraint_id': 'ROLE', 
+                    'role': '2',
+                    'sig_count': 1, 
+                    'need_to_be_owner': False, 
+                    'metadata': {}
+                }, 
+              },
+              ........
+         ],
+
+      }
+   }
+```
+
+### GET_TRANSACTION_AUTHOR_AGREEMENT
+
+Gets a transaction author agreement.
+
+- Gets the latest (current) transaction author agreement if no input parameter is set.
+- Gets a transaction author agreement by its digest if `digest` is set. The digest is calculated from concatenation of [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)'s `version` and `text`.
+- Gets a transaction author agreement by its version if `version` is set.
+- Gets the latest (current) transaction author agreement at the given time (from ledger point of view) if `timestamp` is set.
+
+All input parameters are optional and mutually exclusive. 
+
+- `digest` (sha256 digest hex string):
+
+    Transaction's author agreement sha256 hash digest hex string calculated from concatenation of [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)'s `version` and `text`.
+    
+- `version` (string):
+
+    Unique version of the transaction author agreement.
+    
+- `timestamp` (integer as POSIX timestamp):
+
+    The time when transaction author agreement has been ordered (written to the ledger).
+
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '6'
+        'version': '1.0',
+    },
+    
+    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '6',
+        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'version': '1.0',
+        
+        'seqNo': 10,
+        'txnTime': 1514214795,
+
+        'data': {
+            "version": "1.0",
+            "text": "Please read carefully before writing anything to the ledger",
+        },
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 2, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+       
+    }
+}
+```
+
+### GET_TRANSACTION_AUTHOR_AGREEMENT_AML
+
+Gets a transaction author agreement acceptance mechanisms list.
+
+- Gets the latest (current) transaction author agreement acceptance mechanisms list if no input parameter is set.
+- Gets a transaction author agreement acceptance mechanisms list by its version if `version` is set.
+- Gets the latest (current) transaction author agreement acceptance mechanisms list at the given time (from ledger point of view) if `timestamp` is set.
+
+All input parameters are optional and mutually exclusive. 
+
+   
+- `version` (string):
+
+    Unique version of the transaction author agreement acceptance mechanisms list
+    
+- `timestamp` (integer as POSIX timestamp):
+
+    The time when transaction author agreement acceptance mechanisms list has been ordered (written to the ledger).
+
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '7'
+        'version': '1.0',
+    },
+    
+    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '7',
+        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'version': '1.0',
+        
+        'seqNo': 10,
+        'txnTime': 1514214795,
+
+        'data': {
+            "version": "1.0",
+            "aml": {
+                "EULA": "Included in the EULA for the product being used",
+                "Service Agreement": "Included in the agreement with the service provider managing the transaction",
+                "Click Agreement": "Agreed through the UI at the time of submission",
+                "Session Agreement": "Agreed at wallet instantiation or login"
+            },
+            "amlContext": "http://aml-context-descr"
+        },
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 2, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+       
+    }
+}
+```
+
 ### GET_TXN
 
 A generic request to get a transaction from Ledger by its sequence number.
@@ -1500,7 +2624,7 @@ A generic request to get a transaction from Ledger by its sequence number.
     
     'identifier': 'MSjKTWkPLtYoPEaTF1TUDb',
     'reqId': 1514311281279625,
-    'protocolVersion': 1
+    'protocolVersion': 2
 }
 ```
 
@@ -1536,160 +2660,6 @@ A generic request to get a transaction from Ledger by its sequence number.
     }
 }
 ```
-
-### GET_AUTH_RULE
-
-A request to get a constraint for an authentication rule or a full list of rules from Ledger by the auth key parameters.
-Two options are possible in a request build:
-- If the request has a full list of parameters (or without `old_value`), then the reply will contain one constraint for this key.
-- If the request does not contain fields other than txn_type, the response will contain a full list of authentication rules.
-A key is an authenticated action in the format `action--auth_type--field--old_value--new_value`.
-A reply value for one rule is a set of constraints on the execution of this action. The actions (keys) are static and can be found in [auth_rules.md](auth_rules.md).
-A reply with all rules are key-value dictionary where value is a constraint. The constraint format is described in [AUTH_RULE transaction](#auth_rule)
-
-- `auth_action` (enum: `ADD` or `EDIT`; optional):
-
-    Action type: add a new entity or edit an existing one.
-    
-- `auth_type` (string; optional):
-
-    The type of transaction to change rights for. (Example: "0", "1", ...)
-
-- `field` (string; optional):
-
-    Change the rights for editing (adding) a value of the given transaction field. `*` can be used as `any field`.
-
-- `old_value` (string; optional):
-
-   Old value of a field, which can be changed to a new_value. Makes sense for EDIT actions only.
-
-- `new_value` (string; optional):
-   
-   New value that can be used to fill the field.
-
-*Request Example (for getting one rule)*:
-```
-  {  
-      'reqId':572495653,
-      'signature':'366f89ehxLuxPySGcHppxbURWRcmXVdkHeHrjtPKNYSRKnvaxzUXF8CEUWy9KU251u5bmnRL3TKvQiZgjwouTJYH',
-      'identifier':'M9BJDuS24bqbJNvBRsoGg3',
-      'operation':{  
-         'field':'role',
-         'new_value':'101',
-         'type':'121',
-         'auth_type':'1',
-         'auth_action':'ADD'
-      },
-      'protocolVersion':2
-   }
-```
-
-*Reply Example (for getting one rule)*:
-```
-{  
-      'op':'REPLY',
-      'result':{  
-         'type':'121',
-         'auth_type':'1',
-         'reqId':441933878,
-         'identifier':'M9BJDuS24bqbJNvBRsoGg3',
-         'new_value':'101',
-         'data':{  
-            'ADD--1--role--*--101':{  
-               'auth_constraints':[  
-                  {  
-                     'sig_count':1,
-                     'role':'0',
-                     'constraint_id':'ROLE',
-                     'need_to_be_owner':False,
-                     'metadata':{  
-
-                     }
-                  },
-                  {  
-                     'sig_count':1,
-                     'role':'2',
-                     'constraint_id':'ROLE',
-                     'need_to_be_owner':False,
-                     'metadata':{  
-
-                     }
-                  }
-               ],
-               'constraint_id':'AND'
-            }
-         },
-         'field':'role',
-         'state_proof':{  
-            'proof_nodes':'+Pz4+pUgQURELS0xLS1yb2xlLS0qLS0xMDG44vjguN57ImF1dGhfY29uc3RyYWludHMiOlt7ImNvbnN0cmFpbnRfaWQiOiJST0xFIiwibWV0YWRhdGEiOnt9LCJuZWVkX3RvX2JlX293bmVyIjpmYWxzZSwicm9sZSI6IjAiLCJzaWdfY291bnQiOjF9LHsiY29uc3RyYWludF9pZCI6IlJPTEUiLCJtZXRhZGF0YSI6e30sIm5lZWRfdG9fYmVfb3duZXIiOmZhbHNlLCJyb2xlIjoiMiIsInNpZ19jb3VudCI6MX1dLCJjb25zdHJhaW50X2lkIjoiQU5EIn0=',
-            'root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
-            'multi_signature':{  
-               'signature':'RNsPhUuPwwtA7NEf4VySCg1Fb2NpwapXrY8d64TLsRHR9rQ5ecGhRd89NTHabh8qEQ8Fs1XWawHjbSZ95RUYsJwx8PEXQcFEDGN3jc5VY31Q5rGg3aeBdFFxgYo11cZjrk6H7Md7N8fjHrKRdxo6TzDKSszJTNM1EAPLzyC6kKCnF9',
-               'value':{  
-                  'state_root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
-                  'pool_state_root_hash':'9L5CbxzhsNrZeGSJGVVpsC56JpuS5DGdUqfsFsR1RsFQ',
-                  'timestamp':1552395470,
-                  'txn_root_hash':'4CowHvnk2Axy2HWcYmT8b88A1Sgk45x7yHAzNnxowN9h',
-                  'ledger_id':2
-               },
-               'participants':[  
-                  'Beta',
-                  'Gamma',
-                  'Delta'
-               ]
-            }
-         },
-         'auth_action':'ADD'
-      }
-}
-```
-
-*Request Example (for getting all rules)*:
-```
-  {  
-      'reqId':575407732,
-      'signature':'4AheMmtrfoHuAEtg5VsFPGe1j2w1UYxAvShRmfsCTSHnBDoA5EbmCa2xZzZVQjQGUFbYr65uznu1iUQhW22RNb1X',
-      'identifier':'M9BJDuS24bqbJNvBRsoGg3',
-      'operation':{  
-         'type':'121'
-      },
-      'protocolVersion':2
-  }
-```
-
-*Reply Example (for getting all rules)*:
-```
-{  
-      'op':'REPLY',
-      'result':{  
-         'reqId':575407732,
-         'type':'121',
-         'data':{  
-            'ADD--118--action--*--*':{  
-               'constraint_id':'ROLE',
-               'sig_count':1,
-               'metadata':{  
-
-               },
-               'need_to_be_owner':False,
-               'role':'0'
-            },
-            'EDIT--1--role--0--':{  
-               'constraint_id':'ROLE',
-               'sig_count':1,
-               'metadata':{  
-
-               },
-               'need_to_be_owner':False,
-               'role':'0'
-            },
-            ...
-         },
-         'identifier':'M9BJDuS24bqbJNvBRsoGg3'
-      }
-   }
-```
-
 
 ## Action Requests
 
@@ -1742,7 +2712,7 @@ Command provide info from all the connected nodes without need of consensus.
 *Request Example*:
 ```
 {
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'reqId': 83193,
     'identifier': 'M9BJDuS24bqbJNvBRsoGg3',
     'operation': {

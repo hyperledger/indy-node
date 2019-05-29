@@ -1,6 +1,10 @@
+import json
+
 import pytest
 
 from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
+from indy_common.constants import SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES
+from indy_common.types import SchemaField
 from indy_node.test.api.helper import validate_write_reply, sdk_write_schema_and_check
 from plenum.common.exceptions import RequestRejectedException, RequestNackedException
 from plenum.common.util import randomString
@@ -68,20 +72,16 @@ def test_schema_maximum_attrib(looper, sdk_pool_handle,
     )
 
 
-def test_schema_over_maximum_attrib(looper, sdk_pool_handle,
-                                    sdk_wallet_trust_anchor):
+def test_schema_over_maximum_attrib():
     attribs = []
     for i in range(SCHEMA_ATTRIBUTES_LIMIT + 1):
         attribs.append('attrib' + str(i))
 
-    with pytest.raises(RequestNackedException) as ex_info:
-        sdk_write_schema_and_check(
-            looper, sdk_pool_handle,
-            sdk_wallet_trust_anchor,
-            attribs,
-            "business2",
-            "2.0"
-        )
+    schema = SchemaField()
+    with pytest.raises(Exception) as ex_info:
+        schema.validate({SCHEMA_NAME: "business2",
+                         SCHEMA_VERSION: "2.0",
+                         SCHEMA_ATTR_NAMES: attribs})
     ex_info.match(
         "length should be at most {}".format(SCHEMA_ATTRIBUTES_LIMIT)
     )

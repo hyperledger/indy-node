@@ -1,4 +1,6 @@
 import json
+import random
+import string
 from ctypes import CDLL
 
 from indy import payment
@@ -9,11 +11,12 @@ from perf_load.perf_utils import ensure_is_reply, divide_sequence_into_chunks,\
     request_get_type, gen_input_output, PUB_XFER_TXN_ID, response_get_type
 
 
-TRUSTEE_ROLE_CODE = "0"
-
-
 class LoadClientFees(LoadClient):
     __initiated_plugins = set()
+    __pool_fees = []
+    __auth_rule_metadata = []
+
+    FEES_ALIAS_PREFIX = "_fees_alias_prefix"
 
     @classmethod
     def __init_plugin_once(cls, plugin_lib_name, init_func_name):
@@ -30,28 +33,61 @@ class LoadClientFees(LoadClient):
                 print("Payment plugin initialization failed: {}".format(repr(ex)))
                 raise ex
 
+    @classmethod
+    async def __set_fees_once(cls, wallet_handle, set_fees, test_did, payment_method, trustee_dids, pool_handle, auth_rule_metadata):
+        if not (len(cls.__pool_fees) or len(cls.__auth_rule_metadata)):
+            if set_fees:
+                fees_req = await payment.build_set_txn_fees_req(
+                    wallet_handle, test_did, payment_method, json.dumps(set_fees))
+                for d in trustee_dids:
+                    fees_req = await ledger.multi_sign_request(wallet_handle, d, fees_req)
+                fees_resp = await ledger.submit_request(pool_handle, fees_req)
+                ensure_is_reply(fees_resp)
+
+            get_fees_req = await payment.build_get_txn_fees_req(wallet_handle, test_did, payment_method)
+            get_fees_resp = await ledger.sign_and_submit_request(pool_handle, wallet_handle, test_did, get_fees_req)
+
+            alias_to_type_mapping = {metadata['fees']: txn_type for txn_type, metadata in auth_rule_metadata.items()}
+            fees_set = json.loads(await payment.parse_get_txn_fees_response(payment_method, get_fees_resp))
+            cls.__pool_fees = {alias_to_type_mapping[alias]: fees_amount for alias, fees_amount in fees_set.items() if alias in alias_to_type_mapping}
+            cls.__auth_rule_metadata = auth_rule_metadata
+
+        return cls.__pool_fees, cls.__auth_rule_metadata
+
     def __init__(self, name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, short_stat,
                  **kwargs):
         super().__init__(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode,
                          short_stat, **kwargs)
-        self._trustee_dids = []
         self._pool_fees = {}
         self._ignore_fees_txns = [PUB_XFER_TXN_ID]
         self._addr_txos = {}
         self._payment_addrs_count = kwargs.get("payment_addrs_count", 100)
+        self._mint_addrs_count = kwargs.get("mint_addrs_count", self._payment_addrs_count)
         self._addr_mint_limit = kwargs.get("addr_mint_limit", 1000)
         self._payment_method = kwargs.get("payment_method", "")
         self._plugin_lib = kwargs.get("plugin_lib", "")
         self._plugin_init = kwargs.get("plugin_init", "")
         self._req_num_of_trustees = kwargs.get("trustees_num", 4)
-        self._set_fees = kwargs.get("set_fees", {})
+        self._init_fees_params(kwargs.get("set_fees", {}))
         self._req_addrs = {}
         self._mint_by = kwargs.get("mint_by", self._addr_mint_limit)
         if self._mint_by < 1 or self._mint_by > self._addr_mint_limit:
             self._mint_by = self._addr_mint_limit
+        self._mint_addrs_count = min(self._mint_addrs_count, self._payment_addrs_count)
 
         if not self._payment_method or not self._plugin_lib or not self._plugin_init:
             raise RuntimeError("Plugin cannot be initialized. Some required param missed")
+
+    def _init_fees_params(self, set_fees_param):
+        # txn_type -> {fees: alias} metadata
+        self._auth_rule_metadata = {txn_type: {"fees": self._create_alias(txn_type)} for txn_type, _ in set_fees_param.items()}
+
+        # alias -> amount
+        self._set_fees = {self._create_alias(txn_type): fees_amount for txn_type, fees_amount in set_fees_param.items()}
+
+    @staticmethod
+    def _create_alias(txn_type):
+        return txn_type + LoadClientFees.FEES_ALIAS_PREFIX
 
     async def _add_fees(self, wallet_h, did, req):
         req_type = request_get_type(req)
@@ -64,7 +100,7 @@ class LoadClientFees(LoadClient):
             return None, req
 
         address, inputs, outputs = gen_input_output(self._addr_txos, fees_val)
-        if inputs and outputs:
+        if inputs:
             req_fees, _ = await payment.add_request_fees(wallet_h, did, req, json.dumps(inputs),
                                                          json.dumps(outputs), None)
             return address, req_fees
@@ -112,20 +148,6 @@ class LoadClientFees(LoadClient):
         await self._parse_fees_resp(req, resp)
         return resp
 
-    async def __is_trustee(self, checking_did):
-        get_nym_req = await ledger.build_get_nym_request(checking_did, checking_did)
-        get_nym_resp = await ledger.sign_and_submit_request(
-            self._pool_handle, self._wallet_handle, checking_did, get_nym_req)
-        get_nym_resp_obj = json.loads(get_nym_resp)
-        ensure_is_reply(get_nym_resp_obj)
-        data_f = get_nym_resp_obj["result"].get("data", None)
-        if data_f is None:
-            return None
-        res_data = json.loads(data_f)
-        if res_data["role"] != TRUSTEE_ROLE_CODE:
-            return False
-        return True
-
     async def __create_payment_addresses(self, addrs_cnt):
         ret_addrs = []
         for i in range(addrs_cnt):
@@ -148,6 +170,7 @@ class LoadClientFees(LoadClient):
             for payment_address in payment_addresses:
                 outputs.append({"recipient": payment_address, "amount": mint_val})
             mint_req, _ = await payment.build_mint_req(self._wallet_handle, self._test_did, json.dumps(outputs), None)
+            mint_req = await self.append_taa_acceptance(mint_req)
             mint_req = await self.multisig_req(mint_req)
             mint_resp = await ledger.submit_request(self._pool_handle, mint_req)
             ensure_is_reply(mint_resp)
@@ -164,46 +187,19 @@ class LoadClientFees(LoadClient):
             payment_sources.append((source_info["source"], source_info["amount"]))
         return {pmnt_addr: payment_sources}
 
-    async def _did_init(self, seed):
-        if len(set(seed)) != self._req_num_of_trustees:
-            raise RuntimeError("Number of trustee seeds must be eq to {}".format(self._req_num_of_trustees))
-        if len(set(seed)) != len(seed):
-            raise RuntimeError("Duplicated seeds not allowed")
-
-        for s in seed:
-            self._test_did, self._test_verk = await self.did_create_my_did(
-                self._wallet_handle, json.dumps({'seed': s}))
-            is_trustee = await self.__is_trustee(self._test_did)
-            if is_trustee is False:
-                raise Exception("Submitter role must be TRUSTEE since "
-                                "submitter have to create additional trustees to mint sources.")
-            if is_trustee is None:
-                assert len(self._trustee_dids) >= 1
-                nym_req = await ledger.build_nym_request(self._trustee_dids[0], self._test_did, self._test_verk, None,
-                                                         "TRUSTEE")
-                nym_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle,
-                                                                self._trustee_dids[0], nym_req)
-                ensure_is_reply(nym_resp)
-            self._trustee_dids.append(self._test_did)
-        self._logger.info("_did_init done")
-
     async def _pool_fees_init(self):
-        if self._set_fees:
-            fees_req = await payment.build_set_txn_fees_req(
-                self._wallet_handle, self._test_did, self._payment_method, json.dumps(self._set_fees))
-            fees_req = await self.multisig_req(fees_req)
-            fees_resp = await ledger.submit_request(self._pool_handle, fees_req)
-            ensure_is_reply(fees_resp)
-
-        get_fees_req = await payment.build_get_txn_fees_req(self._wallet_handle, self._test_did, self._payment_method)
-        get_fees_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did,
-                                                             get_fees_req)
-        self._pool_fees = json.loads(await payment.parse_get_txn_fees_response(self._payment_method, get_fees_resp))
+        # _pool_fees: txn_type -> amount
+        # _auth_rule_metadata: txn_type -> {fees: alias} metadata
+        self._pool_fees, self._auth_rule_metadata = await self.__set_fees_once(self._wallet_handle, self._set_fees,
+                                                                               self._test_did, self._payment_method,
+                                                                               self._trustee_dids, self._pool_handle,
+                                                                               self._auth_rule_metadata)
         self._logger.info("_pool_fees_init done")
 
     async def _payment_address_init(self):
         pmt_addrs = await self.__create_payment_addresses(self._payment_addrs_count)
-        for payment_addrs_chunk in divide_sequence_into_chunks(pmt_addrs, 500):
+        mint_addrs = pmt_addrs[:self._mint_addrs_count]
+        for payment_addrs_chunk in divide_sequence_into_chunks(mint_addrs, 500):
             await self.__mint_sources(payment_addrs_chunk, self._addr_mint_limit, self._mint_by)
         for pa in pmt_addrs:
             self._addr_txos.update(await self._get_payment_sources(pa))
@@ -216,6 +212,7 @@ class LoadClientFees(LoadClient):
     async def _post_init(self):
         await self._pool_fees_init()
         await self._payment_address_init()
+        await super()._post_init()  # Actually this is just a call to self._pool_auth_rules_init()
         self._logger.info("_post_init done")
 
     def _on_pool_create_ext_params(self):
@@ -225,3 +222,9 @@ class LoadClientFees(LoadClient):
                        "pool_fees": self._pool_fees})
         self._logger.info("_on_pool_create_ext_params done {}".format(params))
         return params
+
+
+def random_string(string_length=10):
+    """Generate a random string of fixed length """
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(string_length))

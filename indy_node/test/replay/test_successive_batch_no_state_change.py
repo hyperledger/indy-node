@@ -26,14 +26,17 @@ def tconf(tconf, request):
     old_freq = tconf.PerfCheckFreq
     old_bt = tconf.Max3PCBatchWait
     old_bs = tconf.Max3PCBatchSize
+    old_bf = tconf.Max3PCBatchesInFlight
     tconf.PerfCheckFreq = 50
     tconf.Max3PCBatchWait = .01
     tconf.Max3PCBatchSize = 1
+    tconf.Max3PCBatchesInFlight = 5
 
     def reset():
         tconf.PerfCheckFreq = old_freq
         tconf.Max3PCBatchWait = old_bt
         tconf.Max3PCBatchSize = old_bs
+        tconf.Max3PCBatchesInFlight = old_bf
 
     request.addfinalizer(reset)
     return tconf

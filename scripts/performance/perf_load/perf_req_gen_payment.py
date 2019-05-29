@@ -19,6 +19,7 @@ class RGBasePayment(RequestGenerator):
         self._payment_fees = 0
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs)
         self._pool_handle = pool_handle
         self._wallet_handle = wallet_handle
         self._submitter_did = submitter_did
@@ -62,8 +63,12 @@ class RGPayment(RGBasePayment):
 
     async def _gen_req(self, submit_did, req_data):
         inputs, outputs = req_data
+        extra = None
+        if self._taa_text:
+            extra = await payment.prepare_payment_extra_with_acceptance_data(
+                None, self._taa_text, self._taa_version, None, self._taa_mechanism, self._taa_time)
         req, _ = await payment.build_payment_req(
-            self._wallet_handle, self._submitter_did, json.dumps(inputs), json.dumps(outputs), None)
+            self._wallet_handle, self._submitter_did, json.dumps(inputs), json.dumps(outputs), extra)
         return req
 
     async def on_request_generated(self, req_data, gen_req):
@@ -101,8 +106,12 @@ class RGVerifyPayment(RGBasePayment):
             except NoReqDataAvailableException:
                 break
 
+            extra = None
+            if self._taa_text:
+                extra = await payment.prepare_payment_extra_with_acceptance_data(
+                    None, self._taa_text, self._taa_version, None, self._taa_mechanism, self._taa_time)
             req, _ = await payment.build_payment_req(
-                self._wallet_handle, self._submitter_did, json.dumps(inputs), json.dumps(outputs), None)
+                self._wallet_handle, self._submitter_did, json.dumps(inputs), json.dumps(outputs), extra)
 
             resp = await ledger.sign_and_submit_request(
                 self._pool_handle, self._wallet_handle, self._submitter_did, req)
