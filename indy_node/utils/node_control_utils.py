@@ -309,9 +309,16 @@ class NodeControlUtil:
                 versions = []
 
                 for v in output.split('\n'):
-                    dv = DebianVersion(v.split()[1], upstream_cls=upstream_cls)
-                    if not upstream or (dv.upstream == upstream):
-                        versions.append(dv)
+                    try:
+                        dv = DebianVersion(v.split()[1], upstream_cls=upstream_cls)
+                    except InvalidVersionError as exc:
+                        logger.warning(
+                            "ignoring invalid version from output {} for upstream class {}: {}"
+                            .format(v.split()[1], upstream_cls, exc)
+                        )
+                    else:
+                        if not upstream or (dv.upstream == upstream):
+                            versions.append(dv)
 
                 try:
                     return sorted(versions)[-1]
