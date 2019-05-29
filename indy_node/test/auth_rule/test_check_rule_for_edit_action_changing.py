@@ -10,9 +10,9 @@ from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
 def test_check_rule_for_edit_action_changing(looper,
-                                            sdk_wallet_trustee,
-                                            sdk_wallet_steward,
-                                            sdk_pool_handle):
+                                             sdk_wallet_trustee,
+                                             sdk_wallet_steward,
+                                             sdk_pool_handle):
     wh, _ = sdk_wallet_trustee
     new_steward_did, new_steward_verkey = create_verkey_did(looper, wh)
     """Adding new steward for old auth rules"""
@@ -26,8 +26,8 @@ def test_check_rule_for_edit_action_changing(looper,
     constraint = AuthConstraint(role=STEWARD,
                                 sig_count=1)
     """Change role from steward to '' (blacklisting STEWARD) can only STEWARD"""
-    sdk_send_and_check_auth_rule_request(looper, sdk_wallet_trustee,
-                                         sdk_pool_handle, auth_action=EDIT_PREFIX,
+    sdk_send_and_check_auth_rule_request(looper, sdk_pool_handle, sdk_wallet_trustee,
+                                         auth_action=EDIT_PREFIX,
                                          auth_type=NYM, field=ROLE, new_value='', old_value=STEWARD,
                                          constraint=constraint.as_dict)
     op = {'type': '1',

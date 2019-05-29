@@ -1,7 +1,7 @@
 from typing import NamedTuple
 
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, ORIGIN, DATA, RAW, \
-    ENC, HASH, NAME, VERSION, TYPE, POOL_TXN_TYPES, ALIAS, VERKEY, FORCE
+    ENC, HASH, NAME, VERSION, ALIAS, VERKEY, FORCE
 from indy_common.roles import Roles
 from indy_common.transactions import IndyTransactions
 
@@ -167,24 +167,6 @@ VALIDATOR_INFO = IndyTransactions.VALIDATOR_INFO.value
 POOL_CONFIG = IndyTransactions.POOL_CONFIG.value
 AUTH_RULE = IndyTransactions.AUTH_RULE.value
 GET_AUTH_RULE = IndyTransactions.GET_AUTH_RULE.value
-
-CONFIG_TXN_TYPES = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG,
-                    POOL_RESTART, AUTH_RULE, GET_AUTH_RULE}
-IDENTITY_TXN_TYPES = {NYM,
-                      ATTRIB,
-                      DISCLO,
-                      GET_ATTR,
-                      GET_NYM,
-                      GET_TXNS,
-                      SCHEMA,
-                      GET_SCHEMA,
-                      CLAIM_DEF,
-                      GET_CLAIM_DEF}
-
-validTxnTypes = set()
-validTxnTypes.update(POOL_TXN_TYPES)
-validTxnTypes.update(IDENTITY_TXN_TYPES)
-validTxnTypes.update(CONFIG_TXN_TYPES)
 
 CONFIG_LEDGER_ID = 2
 JUSTIFICATION_MAX_SIZE = 1000

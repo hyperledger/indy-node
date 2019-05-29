@@ -18,8 +18,18 @@ from plenum.test.testing_utils import FakeSomething
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
 
-
+OTHER_ROLE = "OtherRole"
 OTHER_IDENTIFIER = "some_other_identifier"
+
+IDENTIFIERS = {TRUSTEE: ["trustee_identifier", "trustee_identifier2", "trustee_identifier3", "trustee_identifier4"],
+               STEWARD: ["steward_identifier", "steward_identifier2", "steward_identifier3", "steward_identifier4"],
+               TRUST_ANCHOR: ["trust_anchor_identifier", "trust_anchor_identifier2", "trust_anchor_identifier3",
+                              "trust_anchor_identifier4"],
+               NETWORK_MONITOR: ["network_monitor_identifier"],
+               None: ["identity_owner_identifier", "identity_owner_identifier2", "identity_owner_identifier3",
+                      "identity_owner_identifier4"],
+               OTHER_ROLE: [OTHER_IDENTIFIER, "some_other_identifier2", "some_other_identifier3",
+                            "some_other_identifier4"]}
 
 
 @pytest.fixture(scope='function', params=[True, False])
@@ -46,16 +56,38 @@ def action_edit():
 def idr_cache():
     cache = IdrCache("Cache",
                      KeyValueStorageInMemory())
-    cache.set("trustee_identifier", 1, int(time.time()), role=TRUSTEE,
-              verkey="trustee_identifier_verkey", isCommitted=False)
-    cache.set("steward_identifier", 2, int(time.time()), role=STEWARD,
-              verkey="steward_identifier_verkey", isCommitted=False)
-    cache.set("trust_anchor_identifier", 3, int(time.time()), role=TRUST_ANCHOR,
-              verkey="trust_anchor_identifier_verkey", isCommitted=False)
-    cache.set("network_monitor_identifier", 4, int(time.time()), role=NETWORK_MONITOR,
-              verkey="network_monitor_identifier_verkey", isCommitted=False)
-    cache.set(OTHER_IDENTIFIER, 5, int(time.time()), role='OtherRole',
-              verkey="other_verkey", isCommitted=False)
+    i = 0
+
+    for id in IDENTIFIERS[TRUSTEE]:
+        i += 1
+        cache.set(id, i, int(time.time()), role=TRUSTEE,
+                  verkey="trustee_identifier_verkey", isCommitted=False)
+
+    for id in IDENTIFIERS[STEWARD]:
+        i += 1
+        cache.set(id, i, int(time.time()), role=STEWARD,
+                  verkey="steward_identifier_verkey", isCommitted=False)
+
+    for id in IDENTIFIERS[TRUST_ANCHOR]:
+        i += 1
+        cache.set(id, i, int(time.time()), role=TRUST_ANCHOR,
+                  verkey="trust_anchor_identifier_verkey", isCommitted=False)
+
+    for id in IDENTIFIERS[NETWORK_MONITOR]:
+        i += 1
+        cache.set(id, i, int(time.time()), role=NETWORK_MONITOR,
+                  verkey="network_monitor_identifier_verkey", isCommitted=False)
+
+    for id in IDENTIFIERS["OtherRole"]:
+        i += 1
+        cache.set(id, i, int(time.time()), role='OtherRole',
+                  verkey="other_verkey", isCommitted=False)
+
+    for id in IDENTIFIERS[None]:
+        i += 1
+        cache.set(id, i, int(time.time()), role=None,
+                  verkey="identity_owner_verkey", isCommitted=False)
+
     return cache
 
 
@@ -90,9 +122,7 @@ def write_auth_req_validator(idr_cache,
     return validator
 
 
-@pytest.fixture(scope='module', params=["trustee_identifier", "steward_identifier",
-                                        "trust_anchor_identifier", "network_monitor_identifier",
-                                        OTHER_IDENTIFIER])
+@pytest.fixture(scope='module', params=[v[0] for v in IDENTIFIERS.values()])
 def identifier(request):
     return request.param
 
@@ -112,4 +142,5 @@ def write_request_validation(write_auth_req_validator):
         except UnauthorizedClientRequest:
             return False
         return True
+
     return wrapped

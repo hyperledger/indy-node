@@ -9,6 +9,8 @@
     * [ATTRIB](#attrib)
     * [SCHEMA](#schema)
     * [CLAIM_DEF](#claim_def)
+    * [REVOC_REG_DEF](#revoc_reg_def)
+    * [REVOC_REG_ENTRY](#revoc_reg_entry)
 
 * [Pool Ledger](#pool-ledger)
     * [NODE](#node)
@@ -18,6 +20,11 @@
     * [NODE_UPGRADE](#node_upgrade)
     * [POOL_CONFIG](#pool_config)
     * [AUTH_RULE](#auth_rule)
+    * [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)
+    * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)    
+    
+* [Actions](#actions)
+    * [POOL_RESTART](#pool_restart)    
 
 ## General Information
 
@@ -66,7 +73,14 @@ transaction specific data:
 
         "metadata": {
             "reqId": <...>,
-            "from": <...>
+            "from": <...>,
+            "digest": <...>,
+            "payloadDigest": <...>,
+            "taaAcceptance": {
+                "taaDigest": <...>,
+                "mechanism": <...>,
+                "time": <...>
+             }
         },
     },
     "txnMetadata": {
@@ -96,14 +110,19 @@ transaction specific data:
 
         Supported transaction types:
 
-        - NODE = 0
-        - NYM = 1
-        - ATTRIB = 100
-        - SCHEMA = 101
-        - CLAIM_DEF = 102
-        - POOL_UPGRADE = 109
-        - NODE_UPGRADE = 110
-        - POOL_CONFIG = 111
+        - NODE = "0"
+        - NYM = "1"
+        - TXN_AUTHOR_AGREEMENT = "4"
+        - TXN_AUTHOR_AGREEMENT_AML = "5"
+        - ATTRIB = "100"
+        - SCHEMA = "101"
+        - CLAIM_DEF = "102"
+        - POOL_UPGRADE = "109"
+        - NODE_UPGRADE = "110"
+        - POOL_CONFIG = "111"
+        - REVOC_REG_DEF = "113"
+        - REVOC_REG_DEF = "114"
+        - AUTH_RULE = "120"
 
     - `protocolVersion` (integer; optional):
 
@@ -129,7 +148,22 @@ transaction specific data:
 
         - `reqId` (integer):
             Unique ID number of the request with transaction.
-
+        
+        - `digest` (SHA256 hex digest string):
+            SHA256 hash hex digest of all fields in the initial requests (including signatures) 
+            
+        - `payloadDigest` (SHA256 hex digest string):
+            SHA256 hash hex digest of the payload fields in the initial requests, that is all fields excluding signatures and plugins-added ones
+            
+        - `taaAcceptance` (dict, optional):
+            If transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
+            
+            - `taaDigest` (SHA256 hex digest string): SHA256 hex digest of the latest Transaction Author Agreement on the ledger. The digest is calculated from concatenation of [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)'s `version` and `text`.
+            
+            - `mechanism` (string): a mechanism used to accept the signature; must be present in the latest list of transaction author agreement acceptane mechanisms on the ledger  
+            
+            - `time` (integer as POSIX timestamp): transaction author agreement acceptance time
+                
     - `txnMetadata` (dict):
 
         Metadata attached to the transaction.
@@ -144,8 +178,8 @@ transaction specific data:
         - `seqNo` (integer):
             A unique sequence number of the transaction on Ledger
 
-        - `txnId` (string):
-            Txn ID as State Trie key (address or descriptive data). It must be unique within the ledger.
+        - `txnId` (string, optional):
+            Txn ID as State Trie key (address or descriptive data). It must be unique within the ledger. Usually present for Domain transactions only.
 
 
 - `reqSignature` (dict):
@@ -188,10 +222,11 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     Role of a user that the NYM record is being created for. One of the following values
 
     - None (common USER)
-    - 0 (TRUSTEE)
-    - 2 (STEWARD)
-    - 101 (TRUST_ANCHOR)
-
+    - "0" (TRUSTEE)
+    - "2" (STEWARD)
+    - "101" (TRUST_ANCHOR)
+    - "201" (NETWORK_MONITOR)
+    
   A TRUSTEE can change any Nym's role to None, thus stopping it from making any further writes (see [roles](auth_rules.md)).
 
 - `verkey` (base58-encoded string, possibly starting with "~"; optional):
@@ -222,7 +257,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
     "ver": 1,
     "txn": {
         "type":"1",
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver": 1,
@@ -234,6 +269,13 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }
         },
     },
     "txnMetadata": {
@@ -287,7 +329,7 @@ Adds an attribute to a NYM record
     "ver": 1,
     "txn": {
         "type":"100",
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -298,6 +340,13 @@ Adds an attribute to a NYM record
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }            
         },
     },
     "txnMetadata": {
@@ -337,7 +386,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or new na
     "ver": 1,
     "txn": {
         "type":101,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -351,6 +400,13 @@ So, if the Schema needs to be evolved, a new Schema with a new version or new na
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }            
         },
     },
     "txnMetadata": {
@@ -371,9 +427,6 @@ So, if the Schema needs to be evolved, a new Schema with a new version or new na
 
 #### CLAIM_DEF
 Adds a claim definition (in particular, public key), that Issuer creates and publishes for a particular claim schema.
-
-It's not possible to update `data` in an existing claim definition.
-Therefore if an existing claim definition needs to be evolved (for example, a key needs to be rotated), a new claim definition needs to be created for a new Issuer DID (`did`).
 
 - `data` (dict):
 
@@ -401,7 +454,7 @@ Therefore if an existing claim definition needs to be evolved (for example, a ke
     "ver": 1,
     "txn": {
         "type":102,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -421,6 +474,13 @@ Therefore if an existing claim definition needs to be evolved (for example, a ke
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }                  
         },
     },
     "txnMetadata": {
@@ -437,6 +497,141 @@ Therefore if an existing claim definition needs to be evolved (for example, a ke
     }
 }
 ```
+
+#### REVOC_REG_DEF
+Adds a Revocation Registry Definition, that Issuer creates and publishes for a particular Claim Definition.
+It contains public keys, maximum number of credentials the registry may contain, reference to the Claim Def, plus some revocation registry specific data.
+
+- `value` (dict):
+
+     Dictionary with revocation registry definition's data:
+     
+     - `maxCredNum` (integer): a maximum number of credentials the Revocation Registry can handle
+     - `tailsHash` (string): tails' file digest
+     - `tailsLocation` (string): tails' file location (URL)
+     - `issuanceType` (string enum): defines credentials revocation strategy. Can have the following values:
+        - `ISSUANCE_BY_DEFAULT`: all credentials are assumed to be issued initially, so that Revocation Registry needs to be updated (REVOC_REG_ENTRY txn sent) only when revoking. Revocation Registry stores only revoked credentials indices in this case. Recommended to use if expected number of revocation actions is less than expected number of issuance actions. 
+        - `ISSUANCE_ON_DEMAND`: no credentials are issued initially, so that Revocation Registry needs to be updated (REVOC_REG_ENTRY txn sent) on every issuance and revocation. Revocation Registry stores only issued credentials indices in this case. Recommended to use if expected number of issuance actions is less than expected number of revocation actions.
+     - `publicKeys` (dict): Revocation Registry's public key
+
+- `id` (string): Revocation Registry Definition's unique identifier (a key from state trie is currently used)
+- `credDefId` (string): The corresponding Credential Definition's unique identifier (a key from state trie is currently used)
+- `revocDefType` (string enum): Revocation Type. `CL_ACCUM` (Camenisch-Lysyanskaya Accumulator) is the only supported type now.
+- `tag` (string): A unique tag to have multiple Revocation Registry Definitions for the same Credential Definition and type issued by the same DID. 
+
+**Example**:
+```
+{
+    "ver": 1,
+    "txn": {
+        "type":113,
+        "protocolVersion":2,
+
+        "data": {
+            "ver":1,
+            'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+            'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
+            'revocDefType': 'CL_ACCUM',
+            'tag': 'tag1',
+            'value': {
+                'maxCredNum': 1000000,
+                'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
+                'tailsLocation': 'http://tails.location.com',
+                'issuanceType': 'ISSUANCE_BY_DEFAULT',
+                'publicKeys': {},
+            },
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            'digest': '4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453',
+            'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }                  
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+        "txnId":"L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
+#### REVOC_REG_ENTRY
+The RevocReg entry containing the new accumulator value and issued/revoked indices. This is just a delta of indices, not the whole list. So, it can be sent each time a new claim is issued/revoked.
+
+- `value` (dict):
+
+     Dictionary with revocation registry's data:
+     
+     - `accum` (string): the current accumulator value
+     - `prevAccum` (string): the previous accumulator value; it's compared with the current value, and txn is rejected if they don't match; it's needed to avoid dirty writes and updates of accumulator.
+     - `issued` (list of integers): an array of issued indices (may be absent/empty if the type is ISSUANCE_BY_DEFAULT); this is delta; will be accumulated in state.
+     - `revoked` (list of integers):  an array of revoked indices (delta; will be accumulated in state)    
+
+- `revocRegDefId` (string): The corresponding Revocation Registry Definition's unique identifier (a key from state trie is currently used)
+- `revocDefType` (string enum): Revocation Type. `CL_ACCUM` (Camenisch-Lysyanskaya Accumulator) is the only supported type now.
+
+
+**Example**:
+```
+{
+    "ver": 1,
+    "txn": {
+        "type":114,
+        "protocolVersion":2,
+
+        "data": {
+            "ver":1,
+            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
+            'revocDefType': 'CL_ACCUM',
+            'value': {
+                'accum': 'accum_value',
+                'prevAccum': 'prev_acuum_value',
+                'issued': [],
+                'revoked': [10, 36, 3478],
+            },
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            'digest': '4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453',
+            'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }                  
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+        "txnId":"5:L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
 
 ## Pool Ledger
 
@@ -477,7 +672,7 @@ There is no need to specify all other fields, and they will remain the same.
     "ver": 1,
     "txn": {
         "type":0,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "data": {
@@ -495,12 +690,13 @@ There is no need to specify all other fields, and they will remain the same.
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
         },
     },
     "txnMetadata": {
         "txnTime":1513945121,
         "seqNo": 10,
-        "txnId":"Delta",
     },
     "reqSignature": {
         "type": "ED25519",
@@ -570,7 +766,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     "ver": 1,
     "txn": {
         "type":109,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -588,7 +784,8 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
-            "txnId":"upgrade-13",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
         },
     },
     "txnMetadata": {
@@ -623,7 +820,7 @@ Status of each Node's upgrade (sent by each upgraded Node)
     "ver":1,
     "txn": {
         "type":110,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -634,12 +831,13 @@ Status of each Node's upgrade (sent by each upgraded Node)
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
         },
     },
     "txnMetadata": {
         "txnTime":1513945121,
         "seqNo": 10,
-        "txnId":"upgrade-13",
     },
     "reqSignature": {
         "type": "ED25519",
@@ -676,7 +874,7 @@ Command to change Pool's configuration
     "ver":1,
     "txn": {
         "type":111,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -687,12 +885,13 @@ Command to change Pool's configuration
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
         },
     },
     "txnMetadata": {
         "txnTime":1513945121,
         "seqNo": 10,
-        "txnId":"1111",
     },
     "reqSignature": {
         "type": "ED25519",
@@ -706,125 +905,123 @@ Command to change Pool's configuration
 
 #### AUTH_RULE
 
-Transaction to change authentication rules. 
-Authentication rules are stored in the State as key - value dictionary. This coincides with the storage structure in (auth_map)[auth_rule.md]. 
-If config ledger does not have a transaction for a given key, then a default rule defined in code is used.
-Key - some action in the format `prefix--txn_type--field--old_value--new_value`
-- `prefix` (enum: `ADD` or `EDIT`)
-- `txn_type` (string) - The type of transaction to change rights to. (Example: "0", "1", ...)
-- `field` (string) Change the rights to edit(add) some values from field.
-- `old_value` (string; optional) Old value of field, which can be changed to a new_value.
-- `new_value` (string) New value that can be used to fill the field.
-Value is a set of constraints on the execution of this action. There are two types of constraints:
-- AuthConstraint with `constraint_id = ROLE_CONSTRAINT_ID` and format `{constraint_id, role, sig_count, need_to_be_owner, metadata}`;
-- AuthConstraintOr with `constraint_id = OR_CONSTRAINT_ID` and `auth_constraints` - list of constraints;
-- AuthConstraintAnd with `constraint_id = AND_CONSTRAINT_ID` and `auth_constraints` - list of constraints;
-That is, the entry 
-```
-"EDIT--NODE--services--[VALIDATOR]--[]" -> {constraint_id: OR,
-                                            auth_constraints: [{constraint_id: ROLE,
-                                                                role: STEWARD, 
-                                                                sig_count: 1, 
-                                                                need_to_be_owner: True},
-                                                               {constraint_id: ROLE,
-                                                                role: TRUSTEE, 
-                                                                sig_count: 1, 
-                                                                need_to_be_owner: False}
-                                                               ]
-                                           }
-                                                                 
-```
-means that change the value of node services from [VALIDATOR] to [] (demotion of node) can only TRUSTEE or STEWARD if it is owner of this transaction.
+A command to change authentication rules. 
+Internally authentication rules are stored as a key-value dictionary: `{action} -> {auth_constraint}`.
 
-**AbstractAuthConstraint:**
+The list of actions is static and can be found in [auth_rules.md](auth_rules.md).
+There is a default Auth Constraint for every action (defined in [auth_rules.md](auth_rules.md)). 
 
-AuthConstraintAnd, AuthConstraintOr
+The `AUTH_RULE` command allows to change the Auth Constraint.
+So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action.
 
-- `constraint_id` (enum: `AND` or `OR`):
+Please note, that list elements of `GET_AUTH_RULE` output can be used as an input (with a required changes) for `AUTH_RULE`.
 
-    Type of a constraint class. It's needed to determine a type of constraint for correct deserialization.
-    - `AND` logical conjunction for all constraints from `auth_constraints` - AuthConstraintAnd
-    - `OR` logical disjunction for all constraints from `auth_constraints` - AuthConstraintOr
+The following input parameters must match an auth rule from the [auth_rules.md](auth_rules.md):
+- `auth_type` (string enum)
+ 
+     The type of transaction to change the auth constraints to. (Example: "0", "1", ...). See transactions description to find the txn type enum value.
+
+- `auth_action` (enum: `ADD` or `EDIT`)
+
+    Whether this is addign of a new transaction, or editting of an existing one.
     
-- `auth_constraints` (list of ConstraintType):
-
-    List of ConstraintType (ConstraintList or ConstraintEntity) objects
+- `field` (string)
+ 
+    Set the auth constraint of editing the given specific field. `*` can be used to specify that an auth rule is applied to all fields.
     
- ```
-{ 'constraint_id': 'AND',
-  'auth_constraints': [<ConstraintEntity>,
-                      <ConstraintEntity>]
-}
-```
+- `old_value` (string; optional)
+
+    Old value of a field, which can be changed to a new_value. Must be present for EDIT `auth_action` only.
+    `*` can be used if it doesn't matter what was the old value.
     
-AuthConstraint
+- `new_value` (string)
 
-- `constraint_id` (enum: `ROLE`):
+    New value that can be used to fill the field.
+    `*` can be used if it doesn't matter what was the old value.
 
-      Type of a constraint. As of now only ROLE is supported, but plugins can register new ones. It's needed to determine a type of constraint for correct deserialization.
+The `constraint_id` fields is where one can define the desired auth constraint for the action:
+
+- `constraint` (dict)
+
+    - `constraint_id` (string enum)
+    
+        Constraint Type. As of now, the following constraint types are supported:
+            
+            - 'ROLE': a constraint defining how many siganatures of a given role are required
+            - 'OR': logical disjunction for all constraints from `auth_constraints` 
+            - 'AND': logical conjunction for all constraints from `auth_constraints`
+            
+    - fields if `'constraint_id': 'OR'` or `'constraint_id': 'AND'`
+    
+        - `auth_constraints` (list)
         
-- `role` (enum number as string; optional):
-
-    Role of a user that the NYM record is being created for. One of the following values
-
-    - None (common USER)
-    - 0 (TRUSTEE)
-    - 2 (STEWARD)
-    - 101 (TRUST_ANCHOR)
-   
-- `sig_count` (int):
-
-    The number of signatures that is needed to do the action described in the transaction fields.
+            A list of constraints. Any number of nested constraints is supported recursively
+        
+    - fields if `'constraint_id': 'ROLE'`:
+                
+        - `role` (string enum)    
+            
+            Who (what role) can perform the action
+            Please have a look at [NYM](#nym) transaction description for a mapping between role codes and names.
+                
+        - `sig_count` (int):
+        
+            The number of signatures that is needed to do the action
+            
+        - `need_to_be_owner` (boolean):
+        
+            Flag to check if the user must be the owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
+            The notion of the `owner` is different for every auth rule. Please reference to [auth_rules.md](auth_rules.md) for details.
+            
+        - `metadata` (dict; optional):
+        
+            Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
     
-- `need_to_be_owner` (boolean):
 
-    Flag to check if the user must be owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
-    
-- `metadata` (dict; optional):
-
-    Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
-
-```
-{
-    'sig_count': 1, 
-    'need_to_be_owner': False, 
-    'constraint_id': 'ROLE', 
-    'metadata': {}, 
-    'role': '0'
-}
-```
 
 **Example:**
+
+Let's consider an example of changing a value of a NODE transaction's `service` field from `[VALIDATOR]` to `[]` (demotion of a node).
+ We are going to set an Auth Constraint, so that the action can be only be done by two TRUSTEE or one STEWARD who is the owner (the original creator) of this transaction.
+
 ```
 {  
-   'txnMetadata':{  
-      'txnTime':1551785798,
-      'seqNo':1
-   },
    'txn':{  
       'type':'120',
       'protocolVersion':2,
       'data':{  
-         'constraint':{  
-            'constraint_id':'ROLE',
-            'need_to_be_owner':False,
-            'role':'0',
-            'sig_count':1,
-            'metadata':{  
-
-            }
-         },
-         'auth_type':'1',
-         'new_value':'101',
-         'field':'role',
-         'auth_action':'ADD'
+        'auth_type': '0', 
+        'auth_action': 'EDIT',
+        'field' :'services',
+        'old_value': [VALIDATOR],
+        'new_value': []
+        'constraint':{
+              'constraint_id': 'OR',
+              'auth_constraints': [{'constraint_id': 'ROLE', 
+                                    'role': '0',
+                                    'sig_count': 2, 
+                                    'need_to_be_owner': False, 
+                                    'metadata': {}}, 
+                                   
+                                   {'constraint_id': 'ROLE', 
+                                    'role': '2',
+                                    'sig_count': 1, 
+                                    'need_to_be_owner': True, 
+                                    'metadata': {}}
+                                   ]
+        }, 
       },
       'metadata':{  
          'reqId':252174114,
+         'from':'M9BJDuS24bqbJNvBRsoGg3',
          'digest':'6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c',
-         'from':'M9BJDuS24bqbJNvBRsoGg3'
+         'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
       }
    },
+   'txnMetadata':{  
+      'txnTime':1551785798,
+      'seqNo':1
+   },   
    'reqSignature':{  
       'type':'ED25519',
       'values':[  
@@ -838,8 +1035,131 @@ AuthConstraint
 }
 ```
 
+#### TRANSACTION_AUTHOR_AGREEMENT
 
-## Action Transactions
+Setting (enabling/disabling) a transaction author agreement for the pool.
+If transaction author agreement is set, then all write requests to Domain ledger (transactions) must include additional metadata pointing to the latest transaction author agreement's digest which is signed by the transaction author.
+
+If no transaction author agreement is set, or it's disabled, then no additional metadata is required.
+
+Transaction author agreement can be disabled by setting an agreement with an empty text.
+
+Each transaction author agreement has a unique version.
+
+At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_aml) must be set on the ledger before submitting TRANSACTION_AUTHOR_AGREEMENT txn.
+
+- `version` (string):
+
+    Unique version of the transaction author agreement
+
+
+- `text` (string):
+
+    Transaction author agreement's text
+
+**Example:**
+```
+{
+    "ver":1,
+    "txn": {
+        "type":4,
+        "protocolVersion":2,
+
+        "data": {
+            "ver":1,
+            "version": "1.0",
+            "text": "Please read carefully before writing anything to the ledger",
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
+#### TRANSACTION_AUTHOR_AGREEMENT_AML
+
+Setting a list of acceptance mechanisms for transaction author agreement.
+
+Each write request for which a transaction author agreement needs to be accepted must point to a  mechanism from the latest list on the ledger. The chosen mechanism is signed by the write request author (together with the transaction author agreement digest). 
+
+
+Each acceptance mechanisms list has a unique version.
+
+- `version` (string):
+
+    Unique version of the transaction author agreement acceptance mechanisms list
+
+
+- `aml` (dict):
+
+    Acceptance mechanisms list data in the form `<acceptance mechanism label>: <acceptance mechanism description>`
+    
+- `amlContext` (string, optional):
+
+    A context information about Acceptance mechanisms list (may be URL to external resource).   
+    
+    
+
+**Example:**
+```
+{
+    "ver":1,
+    "txn": {
+        "type":5,
+        "protocolVersion":2,
+
+        "data": {
+            "ver":1,
+            "version": "1.0",
+            "aml": {
+                "EULA": "Included in the EULA for the product being used",
+                "Service Agreement": "Included in the agreement with the service provider managing the transaction",
+                "Click Agreement": "Agreed through the UI at the time of submission",
+                "Session Agreement": "Agreed at wallet instantiation or login"
+            },
+            "amlContext": "http://aml-context-descr"
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
+## Actions
+
+The actions are not written to the Ledger, so this is not a transaction, just a command.
 
 #### POOL_RESTART
 POOL_RESTART is the command to restart all nodes at the time specified in field "datetime"(sent by Trustee).
