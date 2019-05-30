@@ -733,7 +733,7 @@ class DomainReqHandler(PHandler):
             update_time = accum_to.update_time if entry_from.value else entry_to.update_time
             proof = accum_to.proof if entry_from.value else entry_to.proof
             if reply is None and req_ts_from is not None:
-                #TODO: change this according to INDY-2115
+                # TODO: change this according to INDY-2115
                 reply = {}
                 accum_from = self._get_reg_entry_accum_by_timestamp(req_ts_from, path_to_reg_entry_accum)
                 reply[STATE_PROOF_FROM] = accum_from.proof
