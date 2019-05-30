@@ -670,6 +670,10 @@ class DomainReqHandler(PHandler):
         """
         req_ts_from = request.operation.get(FROM, None)
         req_ts_to = request.operation.get(TO)
+        if req_ts_from is not None and req_ts_from > req_ts_to:
+            raise InvalidClientRequest(request.identifier, request.reqId,
+                                       '"from" timestamp must be less than "to" timestamp')
+
         revoc_reg_def_id = request.operation.get(REVOC_REG_DEF_ID)
         reply = None
         """
@@ -728,6 +732,13 @@ class DomainReqHandler(PHandler):
             seq_no = accum_to.seq_no if entry_from.value else entry_to.seq_no
             update_time = accum_to.update_time if entry_from.value else entry_to.update_time
             proof = accum_to.proof if entry_from.value else entry_to.proof
+            if reply is None and req_ts_from is not None:
+                #TODO: change this according to INDY-2115
+                reply = {}
+                accum_from = self._get_reg_entry_accum_by_timestamp(req_ts_from, path_to_reg_entry_accum)
+                reply[STATE_PROOF_FROM] = accum_from.proof
+                reply[VALUE] = {}
+                reply[VALUE][ACCUM_FROM] = None
         else:
             seq_no = None
             update_time = None

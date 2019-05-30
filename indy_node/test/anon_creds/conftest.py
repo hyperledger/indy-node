@@ -34,21 +34,14 @@ def claim_def(looper, sdk_wallet_handle, sdk_wallet_steward, send_schema_req):
     schema = json.loads(send_schema_req[0])
     tag = 'some_tag'
     schema_seq_no = send_schema_req[1]['result']['txnMetadata']['seqNo']
-
     schema['seqNo'] = schema_seq_no
 
     definition_id, definition_json = \
         looper.loop.run_until_complete(issuer_create_and_store_credential_def(
             sdk_wallet_handle, sdk_wallet_steward[1], json.dumps(schema),
             tag, "CL", json.dumps({"support_revocation": True})))
-    definition_json = json.loads(definition_json)
-
-    definition_json["id"] = get_cred_def_id(sdk_wallet_steward[1], schema_seq_no, tag)
-    definition_json["schemaId"] = str(schema_seq_no)
-    definition_json["tag"] = tag
-    definition_json = json.dumps(definition_json)
     cred_def = looper.loop.run_until_complete(build_cred_def_request(sdk_wallet_steward[1], definition_json))
-    return cred_def, definition_id
+    return json.loads(cred_def)['operation']
 
 
 @pytest.fixture(scope="module")
@@ -57,13 +50,13 @@ def send_claim_def(looper,
                    sdk_wallet_steward,
                    sdk_pool_handle,
                    claim_def):
-    req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, claim_def[0])
-    rep = sdk_get_and_check_replies(looper, [req])[0]
+    req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, claim_def)
+    rep = sdk_send_and_check([json.dumps(req)], looper, txnPoolNodeSet, sdk_pool_handle)[0]
     return rep
 
 
 @pytest.fixture(scope="module")
-def send_revoc_reg_def(looper, sdk_wallet_handle, sdk_pool_handle, sdk_wallet_steward, send_claim_def, claim_def):
+def send_revoc_reg_def(looper, sdk_wallet_handle, sdk_pool_handle, sdk_wallet_steward, send_claim_def):
     revoc_reg = create_revoc_reg(looper, sdk_wallet_handle, sdk_wallet_steward[1], randomString(5),
                                  get_cred_def_id(send_claim_def[0][f.IDENTIFIER.nm],
                                                  send_claim_def[0]['operation']['ref'],
@@ -75,7 +68,7 @@ def send_revoc_reg_def(looper, sdk_wallet_handle, sdk_pool_handle, sdk_wallet_st
 
 
 @pytest.fixture(scope="module")
-def send_revoc_reg_entry(looper, sdk_wallet_handle, sdk_pool_handle, sdk_wallet_steward, send_claim_def, claim_def):
+def send_revoc_reg_entry(looper, sdk_wallet_handle, sdk_pool_handle, sdk_wallet_steward, send_claim_def):
     revoc_reg, revoc_entry = create_revoc_reg_entry(looper, sdk_wallet_handle, sdk_wallet_steward[1], randomString(5),
                                                     get_cred_def_id(send_claim_def[0][f.IDENTIFIER.nm],
                                                                     send_claim_def[0]['operation']['ref'],

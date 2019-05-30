@@ -28,7 +28,12 @@ def send_schema_seq_no(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
 
 @pytest.fixture(scope="module")
 def send_schema_req(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
-    schema_json, reply = sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_trustee)
+    schema_json, reply = sdk_write_schema(
+        looper, sdk_pool_handle,
+        sdk_wallet_trustee,
+        ["attrib1", "attrib2"],
+        "some_name_ajf",
+        "1.0")
     return schema_json, reply
 
 
