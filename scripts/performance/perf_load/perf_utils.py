@@ -97,7 +97,7 @@ def response_get_type(req):
     return txn_type
 
 
-def log_addr_txos_update(context: str, addr_txos: Dict[str,List], amount: int = 0):
+def log_addr_txos_update(context: str, addr_txos: Dict[str, List], amount: int = 0):
     total = sum(len(txos) for txos in addr_txos.values())
     if amount > 0:
         logger.info("{}: added {} txos, {} total in addr_txos".format(context, amount, total))
