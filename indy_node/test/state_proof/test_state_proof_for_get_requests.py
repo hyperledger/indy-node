@@ -269,25 +269,28 @@ def test_state_proof_returned_for_get_revoc_reg_delta(looper,
     revoc_reg_entry_data = send_revoc_reg_entry[1][0]['operation']
     timestamp = send_revoc_reg_entry[1][1]['result']['txnMetadata']['txnTime']
 
-    check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, None, timestamp + 1,
-                    sdk_pool_handle, revoc_reg_entry_data)
-
-    check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, None, timestamp - 1,
-                    sdk_pool_handle, revoc_reg_entry_data, False)
+    # TODO: Uncomment when libindy version updated
+    # check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, None, timestamp + 1,
+    #                 sdk_pool_handle, revoc_reg_entry_data)
+    #
+    # check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, None, timestamp - 1,
+    #                 sdk_pool_handle, revoc_reg_entry_data, False)
 
     # TODO: INDY-2115
     # check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, timestamp - 2, timestamp - 1,
     #                 sdk_pool_handle, revoc_reg_entry_data, False)
 
-    check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, timestamp - 1, timestamp + 1,
-                    sdk_pool_handle, revoc_reg_entry_data)
+    # TODO: Uncomment when libindy version updated
+    # check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, timestamp - 1, timestamp + 1,
+    #                 sdk_pool_handle, revoc_reg_entry_data)
 
-    check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, timestamp + 1, timestamp + 2,
-                    sdk_pool_handle, revoc_reg_entry_data)
+    # check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, timestamp + 1, timestamp + 2,
+    #                 sdk_pool_handle, revoc_reg_entry_data)
 
     # TODO: INDY-2115
     # check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, None, timestamp - 999,
     #                 sdk_pool_handle, revoc_reg_entry_data)
 
+    # TODO: Uncomment when libindy version updated
     # check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, timestamp - 1000, timestamp - 999,
     #                 sdk_pool_handle, revoc_reg_entry_data)
