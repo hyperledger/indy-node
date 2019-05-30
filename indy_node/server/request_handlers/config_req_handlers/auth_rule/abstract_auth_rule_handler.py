@@ -31,20 +31,6 @@ class AbstractAuthRuleHandler(WriteRequestHandler, metaclass=ABCMeta):
             raise InvalidClientRequest(identifier,
                                        req_id,
                                        exp)
-
-        action = operation.get(AUTH_ACTION, None)
-
-        if OLD_VALUE not in operation and action == EDIT_PREFIX:
-            raise InvalidClientRequest(identifier, req_id,
-                                       "Transaction for change authentication "
-                                       "rule for {}={} must contain field {}".
-                                       format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
-
-        if OLD_VALUE in operation and action == ADD_PREFIX:
-            raise InvalidClientRequest(identifier, req_id,
-                                       "Transaction for change authentication "
-                                       "rule for {}={} must not contain field {}".
-                                       format(AUTH_ACTION, ADD_PREFIX, OLD_VALUE))
         StaticAuthRuleHelper.check_auth_key(operation, identifier, req_id, self.write_req_validator.auth_map)
 
     def _update_auth_constraint(self, auth_key: str, constraint):

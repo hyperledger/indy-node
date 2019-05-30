@@ -1,4 +1,5 @@
-from common.serializers.serialization import state_roots_serializer
+from common.serializers.serialization import state_roots_serializer, domain_state_serializer
+from indy_common.authorize.auth_constraints import ConstraintsSerializer
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.state import config
 from indy_common.types import ClientGetAuthRuleOperation
@@ -8,7 +9,7 @@ from plenum.server.request_handlers.handler_interfaces.read_request_handler impo
 
 from indy_common.authorize.auth_actions import AuthActionEdit, EDIT_PREFIX, AuthActionAdd, split_action_id
 from indy_common.constants import CONFIG_LEDGER_ID, AUTH_RULE, AUTH_ACTION, OLD_VALUE, \
-    NEW_VALUE, AUTH_TYPE, FIELD, CONSTRAINT
+    NEW_VALUE, AUTH_TYPE, FIELD, CONSTRAINT, GET_AUTH_RULE
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.server.database_manager import DatabaseManager
@@ -16,13 +17,11 @@ from plenum.server.database_manager import DatabaseManager
 
 class GetAuthRuleHandler(ReadRequestHandler):
 
-    def dynamic_validation(self, request: Request):
-        pass
-
     def __init__(self, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator):
         self.write_req_validator = write_req_validator
-        super().__init__(database_manager, AUTH_RULE, CONFIG_LEDGER_ID)
+        self.constraint_serializer = ConstraintsSerializer(domain_state_serializer)
+        super().__init__(database_manager, GET_AUTH_RULE, CONFIG_LEDGER_ID)
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
@@ -52,37 +51,32 @@ class GetAuthRuleHandler(ReadRequestHandler):
         return result
 
     def _get_auth_rule(self, key):
-        multi_sig = None
-        if self._bls_store:
-            root_hash = self.state.committedHeadHash
-            encoded_root_hash = state_roots_serializer.serialize(bytes(root_hash))
-            multi_sig = self._bls_store.get(encoded_root_hash)
         path = config.make_state_path_for_auth_rule(key)
-        map_data, proof = self.get_value_from_state(path, with_proof=True, multi_sig=multi_sig)
+        map_data, proof = self._get_value_from_state(path, with_proof=True)
 
         if map_data:
             data = self.constraint_serializer.deserialize(map_data)
         else:
             data = self.write_req_validator.auth_map[key]
         action_obj = split_action_id(key)
-        return [self.make_get_auth_rule_result(data, action_obj)], proof
+        return [self.make_auth_rule_data(data, action_obj)], proof
 
     def _get_all_auth_rules(self):
         data = self.write_req_validator.auth_map.copy()
         result = []
         for key in self.write_req_validator.auth_map:
             path = config.make_state_path_for_auth_rule(key)
-            state_constraint, _ = self.get_value_from_state(path)
+            state_constraint, _ = self._get_value_from_state(path)
             if state_constraint:
                 value = self.constraint_serializer.deserialize(state_constraint)
             else:
                 value = data[key]
             action_obj = split_action_id(key)
-            result.append(self.make_get_auth_rule_result(value, action_obj))
+            result.append(self.make_auth_rule_data(value, action_obj))
         return result
 
     @staticmethod
-    def make_get_auth_rule_result(constraint, action_obj):
+    def make_auth_rule_data(constraint, action_obj):
         result = {CONSTRAINT: constraint.as_dict if constraint is not None else {},
                   AUTH_TYPE: action_obj.txn_type,
                   AUTH_ACTION: action_obj.prefix,

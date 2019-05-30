@@ -48,7 +48,7 @@ class SchemaHandler(WriteRequestHandler):
                                                              field='*',
                                                              value='*')])
 
-    def gen_state_key(self, txn):
+    def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
         path = domain.prepare_schema_for_state(txn, path_only=True)
         return path.decode()
