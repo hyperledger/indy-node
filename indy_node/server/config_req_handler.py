@@ -40,6 +40,8 @@ class ConfigReqHandler(PConfigReqHandler):
         self._add_query_handler(GET_AUTH_RULE, self.handle_get_auth_rule)
 
     def doStaticValidation(self, request: Request):
+        super().doStaticValidation(request)
+
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
         if operation[TXN_TYPE] == POOL_UPGRADE:
             self._doStaticValidationPoolUpgrade(identifier, req_id, operation)
@@ -295,8 +297,10 @@ class ConfigReqHandler(PConfigReqHandler):
     def _check_auth_key(self, operation, identifier, req_id):
         auth_key = self.get_auth_key(operation)
 
-        if auth_key not in self.write_req_validator.auth_map and \
-                auth_key not in self.write_req_validator.anyone_can_write_map:
+        # review in scope of INDY-1956
+        # if auth_key not in self.write_req_validator.auth_map and \
+        #        auth_key not in self.write_req_validator.anyone_can_write_map:
+        if auth_key not in self.write_req_validator.auth_map:
             raise InvalidClientRequest(identifier, req_id,
                                        "Unknown authorization rule: key '{}' is not "
                                        "found in authorization map.".format(auth_key))
