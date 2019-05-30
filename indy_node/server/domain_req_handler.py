@@ -670,10 +670,6 @@ class DomainReqHandler(PHandler):
         """
         req_ts_from = request.operation.get(FROM, None)
         req_ts_to = request.operation.get(TO)
-        if req_ts_from is not None and req_ts_from > req_ts_to:
-            raise InvalidClientRequest(request.identifier, request.reqId,
-                                       '"from" timestamp must be less than "to" timestamp')
-
         revoc_reg_def_id = request.operation.get(REVOC_REG_DEF_ID)
         reply = None
         """
