@@ -1,7 +1,8 @@
 import copy
 import json
 
-from indy_common.constants import REVOC_REG_DEF_ID, TO, CRED_DEF_ID, REVOC_TYPE, TAG, VALUE
+from indy_common.constants import REVOC_REG_DEF_ID, TO, CRED_DEF_ID, REVOC_TYPE, TAG, VALUE, STATE_PROOF_FROM, \
+    ACCUM_FROM
 from indy_common.state import domain
 from plenum.common.constants import DATA, STATE_PROOF
 from plenum.common.types import f, OPERATION
@@ -25,6 +26,7 @@ def test_send_reg_def_and_get_delta_then(
     sdk_reply = sdk_send_and_check([json.dumps(get_revoc_reg_delta)], looper, txnPoolNodeSet, sdk_pool_handle)
     reply = sdk_reply[0][1]
     assert DATA in reply['result']
-    assert reply['result'][DATA] is None
+    assert reply['result'][DATA][STATE_PROOF_FROM] is None
+    assert reply['result'][DATA][VALUE][ACCUM_FROM] is None
     assert STATE_PROOF in reply['result']
     assert reply['result'][STATE_PROOF] is not None
