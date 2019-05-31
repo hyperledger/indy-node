@@ -1,14 +1,19 @@
+from _sha256 import sha256
+
+from indy_common.serialization import attrib_raw_data_serializer
 from indy_common.state import domain
 
 from indy_common.constants import ATTRIB
+from indy_common.state.domain import ALL_ATR_KEYS
 from indy_node.server.request_handlers.utils import validate_attrib_keys
 from plenum.common.constants import DOMAIN_LEDGER_ID, RAW, ENC, HASH, TARGET_NYM
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 
 from plenum.common.request import Request
-from plenum.common.txn_util import get_type, get_request_data
+from plenum.common.txn_util import get_type, get_request_data, get_payload_data, get_seq_no, get_txn_time
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
+from plenum.server.request_handlers.utils import encode_state_value
 
 
 class AttributeHandler(WriteRequestHandler):
@@ -48,7 +53,7 @@ class AttributeHandler(WriteRequestHandler):
 
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
-        path = domain.prepare_attr_for_state(txn, path_only=True)
+        path = self.prepare_attr_for_state(txn, path_only=True)
         return path.decode()
 
     def update_state(self, txn, prev_result, is_committed=True) -> None:
@@ -60,10 +65,70 @@ class AttributeHandler(WriteRequestHandler):
         the trie stores a blank value for the key did+hash
         """
         self._validate_txn_type(txn)
-        attr_type, path, value, hashed_value, value_bytes = domain.prepare_attr_for_state(txn)
+        attr_type, path, value, hashed_value, value_bytes = self.prepare_attr_for_state(txn)
         self.state.set(path, value_bytes)
         if attr_type != HASH:
             self.database_manager.attribute_store.set(hashed_value, value)
 
     def __has_nym(self, nym, is_committed: bool = True):
         return self.database_manager.idr_cache.hasNym(nym, isCommitted=is_committed)
+
+    @staticmethod
+    def prepare_attr_for_state(txn, path_only=False):
+        """
+        Make key(path)-value pair for state from ATTRIB or GET_ATTR
+        :return: state path, state value, value for attribute store
+        """
+        assert get_type(txn) == ATTRIB
+        txn_data = get_payload_data(txn)
+        nym = txn_data[TARGET_NYM]
+        attr_type, attr_key, value = AttributeHandler.parse_attr_txn(txn_data)
+        path = AttributeHandler.make_state_path_for_attr(nym, attr_key, attr_type == HASH)
+        if path_only:
+            return path
+        hashed_value = domain.hash_of(value) if value else ''
+        seq_no = get_seq_no(txn)
+        txn_time = get_txn_time(txn)
+        value_bytes = encode_state_value(hashed_value, seq_no, txn_time)
+        return attr_type, path, value, hashed_value, value_bytes
+
+    @staticmethod
+    def parse_attr_txn(txn_data):
+        attr_type, attr = AttributeHandler._extract_attr_typed_value(txn_data)
+
+        if attr_type == RAW:
+            data = attrib_raw_data_serializer.deserialize(attr)
+            # To exclude user-side formatting issues
+            re_raw = attrib_raw_data_serializer.serialize(data,
+                                                          toBytes=False)
+            key, _ = data.popitem()
+            return attr_type, key, re_raw
+        if attr_type == ENC:
+            return attr_type, attr, attr
+        if attr_type == HASH:
+            return attr_type, attr, None
+
+    @staticmethod
+    def _extract_attr_typed_value(txn_data):
+        """
+        ATTR and GET_ATTR can have one of 'raw', 'enc' and 'hash' fields.
+        This method checks which of them presents and return it's name
+        and value in it.
+        """
+        existing_keys = [key for key in ALL_ATR_KEYS if key in txn_data]
+        if len(existing_keys) == 0:
+            raise ValueError("ATTR should have one of the following fields: {}"
+                             .format(ALL_ATR_KEYS))
+        if len(existing_keys) > 1:
+            raise ValueError("ATTR should have only one of the following fields: {}"
+                             .format(ALL_ATR_KEYS))
+        existing_key = existing_keys[0]
+        return existing_key, txn_data[existing_key]
+
+    @staticmethod
+    def make_state_path_for_attr(did, attr_name, attr_is_hash=False) -> bytes:
+        nameHash = sha256(attr_name.encode()).hexdigest() if not attr_is_hash else attr_name
+        return "{DID}:{MARKER}:{ATTR_NAME}" \
+            .format(DID=did,
+                    MARKER=domain.MARKER_ATTR,
+                    ATTR_NAME=nameHash).encode()

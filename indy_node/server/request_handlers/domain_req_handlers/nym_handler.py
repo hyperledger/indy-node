@@ -14,16 +14,17 @@ from plenum.common.request import Request
 from plenum.common.txn_util import get_payload_data, get_seq_no, get_txn_time, get_request_data, get_from
 from plenum.common.types import f
 from plenum.server.database_manager import DatabaseManager
+from plenum.server.request_handlers.nym_handler import NymHandler as PNymHandler
 from plenum.server.request_handlers.utils import nym_to_state_key, get_nym_details
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 
 
-class NymHandler(WriteRequestHandler):
+class NymHandler(PNymHandler):
     state_serializer = domain_state_serializer
 
     def __init__(self, database_manager: DatabaseManager,
                  write_request_validator: WriteRequestValidator):
-        super().__init__(database_manager, NYM, DOMAIN_LEDGER_ID)
+        super().__init__(database_manager, NYM)
         self.write_request_validator = write_request_validator
 
     def static_validation(self, request: Request):
@@ -56,7 +57,7 @@ class NymHandler(WriteRequestHandler):
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
         nym = get_payload_data(txn).get(TARGET_NYM)
-        binary_digest = domain.make_state_path_for_nym(nym)
+        binary_digest = self.make_state_path_for_nym(nym)
         return hexlify(binary_digest).decode()
 
     def update_state(self, txn, prev_result, is_committed=False):

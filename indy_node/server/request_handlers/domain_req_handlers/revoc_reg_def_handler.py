@@ -5,10 +5,11 @@ from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_def_handl
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
-from plenum.common.txn_util import get_type, get_request_data
+from plenum.common.txn_util import get_type, get_request_data, get_seq_no, get_txn_time, get_from, get_payload_data
 
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
+from plenum.server.request_handlers.utils import encode_state_value
 
 
 class RevocRegDefHandler(WriteRequestHandler):
@@ -44,10 +45,45 @@ class RevocRegDefHandler(WriteRequestHandler):
 
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
-        path = domain.prepare_revoc_def_for_state(txn, path_only=True)
+        path = RevocRegDefHandler.prepare_revoc_def_for_state(txn, path_only=True)
         return path.decode()
 
     def update_state(self, txn, prev_result, is_committed=False):
         self._validate_txn_type(txn)
-        path, value_bytes = domain.prepare_revoc_def_for_state(txn)
+        path, value_bytes = RevocRegDefHandler.prepare_revoc_def_for_state(txn)
         self.state.set(path, value_bytes)
+
+    @staticmethod
+    def prepare_revoc_def_for_state(txn, path_only=False):
+        author_did = get_from(txn)
+        txn_data = get_payload_data(txn)
+        cred_def_id = txn_data.get(CRED_DEF_ID)
+        revoc_def_type = txn_data.get(REVOC_TYPE)
+        revoc_def_tag = txn_data.get(TAG)
+        assert author_did
+        assert cred_def_id
+        assert revoc_def_type
+        assert revoc_def_tag
+        path = RevocRegDefHandler.make_state_path_for_revoc_def(author_did,
+                                             cred_def_id,
+                                             revoc_def_type,
+                                             revoc_def_tag)
+        if path_only:
+            return path
+        seq_no = get_seq_no(txn)
+        txn_time = get_txn_time(txn)
+        assert seq_no
+        assert txn_time
+        value_bytes = encode_state_value(txn_data, seq_no, txn_time)
+        return path, value_bytes
+
+    @staticmethod
+    def make_state_path_for_revoc_def(authors_did, cred_def_id, revoc_def_type, revoc_def_tag) -> bytes:
+        return "{DID}:{MARKER}:{CRED_DEF_ID}:{REVOC_DEF_TYPE}:{REVOC_DEF_TAG}" \
+            .format(DID=authors_did,
+                    MARKER=MARKER_REVOC_DEF,
+                    CRED_DEF_ID=cred_def_id,
+                    REVOC_DEF_TYPE=revoc_def_type,
+                    REVOC_DEF_TAG=revoc_def_tag).encode()
+
+

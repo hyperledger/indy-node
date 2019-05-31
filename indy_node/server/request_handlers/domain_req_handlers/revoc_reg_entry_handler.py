@@ -1,12 +1,15 @@
+from copy import deepcopy
 from typing import Dict, Callable
 
 from indy_common.state import domain
 
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, VALUE, ISSUANCE_TYPE
+from indy_common.state.domain import encode_state_value, MARKER_REVOC_REG_ENTRY
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_handler import GetRevocRegHandler
-from plenum.common.constants import DOMAIN_LEDGER_ID
+from plenum.common.constants import DOMAIN_LEDGER_ID, TXN_TIME
 from plenum.common.request import Request
-from plenum.common.txn_util import get_from, get_payload_data, get_req_id, get_request_data
+from plenum.common.txn_util import get_from, get_payload_data, get_req_id, get_request_data, get_txn_time, get_seq_no
+from plenum.common.types import f
 
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
@@ -38,7 +41,7 @@ class RevocRegEntryHandler(WriteRequestHandler):
 
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
-        path = domain.prepare_revoc_reg_entry_for_state(txn, path_only=True)
+        path = RevocRegEntryHandler.prepare_revoc_reg_entry_for_state(txn, path_only=True)
         return path.decode()
 
     def update_state(self, txn, prev_result, is_committed=False):
@@ -52,3 +55,34 @@ class RevocRegEntryHandler(WriteRequestHandler):
             revoc_def[VALUE][ISSUANCE_TYPE])
         writer = writer_cls(self.state)
         writer.write(current_entry, txn)
+
+    @staticmethod
+    def prepare_revoc_reg_entry_for_state(txn, path_only=False):
+        author_did = get_from(txn)
+        txn_data = get_payload_data(txn)
+        revoc_reg_def_id = txn_data.get(REVOC_REG_DEF_ID)
+        assert author_did
+        assert revoc_reg_def_id
+        path = RevocRegEntryHandler.make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
+        if path_only:
+            return path
+
+        seq_no = get_seq_no(txn)
+        txn_time = get_txn_time(txn)
+        assert seq_no
+        assert txn_time
+        # TODO: do not duplicate seqNo here
+        # doing this now just for backward-compatibility
+        txn_data = deepcopy(txn_data)
+        txn_data[f.SEQ_NO.nm] = seq_no
+        txn_data[TXN_TIME] = txn_time
+        value_bytes = encode_state_value(txn_data, seq_no, txn_time)
+        return path, value_bytes
+
+    @staticmethod
+    def make_state_path_for_revoc_reg_entry(revoc_reg_def_id) -> bytes:
+        return "{MARKER}:{REVOC_REG_DEF_ID}" \
+            .format(MARKER=MARKER_REVOC_REG_ENTRY,
+                    REVOC_REG_DEF_ID=revoc_reg_def_id).encode()
+
+

@@ -2,17 +2,20 @@ from indy_common.authorize.auth_actions import AuthActionAdd
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.state import domain
 
-from indy_common.constants import SCHEMA
+from indy_common.constants import SCHEMA, SCHEMA_ATTR_NAMES
 
-from indy_common.req_utils import get_write_schema_name, get_write_schema_version
+from indy_common.req_utils import get_write_schema_name, get_write_schema_version, get_txn_schema_name, \
+    get_txn_schema_version, get_txn_schema_attr_names
+from indy_common.state.domain import MARKER_SCHEMA
 from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 
 from plenum.common.request import Request
-from plenum.common.txn_util import get_request_data
+from plenum.common.txn_util import get_request_data, get_from, get_seq_no, get_txn_time
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
+from plenum.server.request_handlers.utils import encode_state_value
 
 
 class SchemaHandler(WriteRequestHandler):
@@ -50,10 +53,34 @@ class SchemaHandler(WriteRequestHandler):
 
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
-        path = domain.prepare_schema_for_state(txn, path_only=True)
+        path = SchemaHandler.prepare_schema_for_state(txn, path_only=True)
         return path.decode()
 
     def update_state(self, txn, prev_result, is_committed=False) -> None:
         self._validate_txn_type(txn)
-        path, value_bytes = domain.prepare_schema_for_state(txn)
+        path, value_bytes = SchemaHandler.prepare_schema_for_state(txn)
         self.state.set(path, value_bytes)
+
+    @staticmethod
+    def prepare_schema_for_state(txn, path_only=False):
+        origin = get_from(txn)
+        schema_name = get_txn_schema_name(txn)
+        schema_version = get_txn_schema_version(txn)
+        value = {
+            SCHEMA_ATTR_NAMES: get_txn_schema_attr_names(txn)
+        }
+        path = SchemaHandler.make_state_path_for_schema(origin, schema_name, schema_version)
+        if path_only:
+            return path
+        seq_no = get_seq_no(txn)
+        txn_time = get_txn_time(txn)
+        value_bytes = encode_state_value(value, seq_no, txn_time)
+        return path, value_bytes
+
+    @staticmethod
+    def make_state_path_for_schema(authors_did, schema_name, schema_version) -> bytes:
+        return "{DID}:{MARKER}:{SCHEMA_NAME}:{SCHEMA_VERSION}" \
+            .format(DID=authors_did,
+                    MARKER=MARKER_SCHEMA,
+                    SCHEMA_NAME=schema_name,
+                    SCHEMA_VERSION=schema_version).encode()
