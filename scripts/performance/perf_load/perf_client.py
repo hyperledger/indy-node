@@ -386,8 +386,9 @@ class LoadClient:
         try:
             req_did = self._req_generator.req_did() or self._test_did
             sig_req = await self.ledger_sign_req(self._wallet_handle, req_did, req)
-            self._stat.signed(req_data)
-            self._load_client_reqs.append((req_data, sig_req))
+            if sig_req:
+                self._stat.signed(req_data)
+                self._load_client_reqs.append((req_data, sig_req))
         except Exception as e:
             self._stat.reply(req_data, e)
             self._loop.stop()

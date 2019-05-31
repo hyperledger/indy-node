@@ -8,7 +8,7 @@ from indy import ledger
 
 from perf_load.perf_client import LoadClient
 from perf_load.perf_utils import ensure_is_reply, divide_sequence_into_chunks, \
-    request_get_type, gen_input_output, PUB_XFER_TXN_ID, response_get_type
+    request_get_type, gen_input_output, PUB_XFER_TXN_ID, response_get_type, log_addr_txos_update
 
 
 class LoadClientFees(LoadClient):
@@ -67,6 +67,7 @@ class LoadClientFees(LoadClient):
         self._plugin_init = kwargs.get("plugin_init", "")
         self._req_num_of_trustees = kwargs.get("trustees_num", 4)
         self._init_fees_params(kwargs.get("set_fees", {}))
+        self._allow_invalid_txns = kwargs.get("allow_invalid_txns", 0)
         self._req_addrs = {}
         self._mint_by = kwargs.get("mint_by", self._addr_mint_limit)
         if self._mint_by < 1 or self._mint_by > self._addr_mint_limit:
@@ -103,15 +104,19 @@ class LoadClientFees(LoadClient):
             return None, req
 
         address, inputs, outputs = gen_input_output(self._addr_txos, fees_val)
-        if inputs:
-            req_fees, _ = await payment.add_request_fees(wallet_h, did, req, json.dumps(inputs),
-                                                         json.dumps(outputs), None)
-            return address, req_fees
+        if not inputs:
+            self._logger.warning("Failed to add fees to txn, insufficient txos")
+            return None, req if self._allow_invalid_txns else None
 
-        return None, req
+        log_addr_txos_update('FEES', self._addr_txos, -len(inputs))
+        req_fees, _ = await payment.add_request_fees(wallet_h, did, req, json.dumps(inputs),
+                                                     json.dumps(outputs), None)
+        return address, req_fees
 
     async def ledger_sign_req(self, wallet_h, did, req):
         addr, fees_req = await self._add_fees(wallet_h, did, req)
+        if fees_req is None:
+            return None
         req = await ledger.sign_request(wallet_h, did, fees_req)
         if addr is not None:
             self._req_addrs[req] = addr
@@ -121,9 +126,11 @@ class LoadClientFees(LoadClient):
         fees_to_restore = self._req_addrs.pop(req, {})
         for addr, txos in fees_to_restore.items():
             self._addr_txos[addr].extend(txos)
+            log_addr_txos_update('RESTORE', self._addr_txos, len(txos))
 
     async def _parse_fees_resp(self, req, resp_or_exp):
         if isinstance(resp_or_exp, Exception):
+            self._logger.warning("Pool responded with error, UTXOs are lost: {}".format(self._req_addrs.get(req)))
             self._req_addrs.pop(req, {})
             return
 
@@ -137,6 +144,7 @@ class LoadClientFees(LoadClient):
                 receipt_infos = json.loads(receipt_infos_json) if receipt_infos_json else []
                 for ri in receipt_infos:
                     self._addr_txos[ri["recipient"]].append((ri["receipt"], ri["amount"]))
+                log_addr_txos_update('FEES', self._addr_txos, len(receipt_infos))
             else:
                 self._restore_fees_from_req(req)
         except Exception as e:
@@ -206,6 +214,7 @@ class LoadClientFees(LoadClient):
             await self.__mint_sources(payment_addrs_chunk, self._addr_mint_limit, self._mint_by)
         for pa in pmt_addrs:
             self._addr_txos.update(await self._get_payment_sources(pa))
+        log_addr_txos_update('MINT', self._addr_txos)
         self._logger.info("_payment_address_init done")
 
     async def _pre_init(self):
