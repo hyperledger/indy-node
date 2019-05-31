@@ -36,4 +36,3 @@ class AbstractAuthRuleHandler(WriteRequestHandler, metaclass=ABCMeta):
     def _update_auth_constraint(self, auth_key: str, constraint):
         self.state.set(config.make_state_path_for_auth_rule(auth_key),
                        self.constraint_serializer.serialize(constraint))
-

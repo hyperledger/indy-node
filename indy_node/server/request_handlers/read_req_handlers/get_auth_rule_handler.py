@@ -86,4 +86,3 @@ class GetAuthRuleHandler(ReadRequestHandler):
         if action_obj.prefix == EDIT_PREFIX:
             result[OLD_VALUE] = action_obj.old_value
         return result
-

@@ -5,6 +5,7 @@ from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.txn_author_agreement_handler import TxnAuthorAgreementHandler \
     as PTxnAuthorAgreementHandler
 
+
 class TxnAuthorAgreementHandler(PTxnAuthorAgreementHandler):
 
     def __init__(self, database_manager: DatabaseManager, bls_crypto_verifier,
