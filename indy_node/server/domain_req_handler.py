@@ -734,7 +734,8 @@ class DomainReqHandler(PHandler):
                 accum_from = self._get_reg_entry_accum_by_timestamp(req_ts_from, path_to_reg_entry_accum)
                 reply[STATE_PROOF_FROM] = accum_from.proof
                 reply[VALUE] = {}
-                reply[VALUE][ACCUM_FROM] = None
+                reply[VALUE][ACCUM_TO] = None
+                reply[VALUE][ACCUM_FROM] = accum_from.value
         else:
             seq_no = None
             update_time = None
