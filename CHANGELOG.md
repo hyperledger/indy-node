@@ -51,6 +51,7 @@ Although every attempt has been made to make this information as accurate as pos
 | sovrin | 1.1.45 |
 
 ### Additional Information:
+**Payment transaction can return NACK from the pool but in fact it will be eventually ordered (see more details below).**
 **There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
 **Pool upgrade to sovrin 1.1.32 and above should be performed simultaneously for all nodes due to txn format changes.**
 **Pool upgrade to indy-node 1.8.0 should be performed simultaneously for all nodes due to audit ledger.**
