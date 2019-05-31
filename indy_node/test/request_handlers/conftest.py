@@ -3,7 +3,7 @@ from indy_common.constants import SCHEMA
 
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
-from indy_node.test.request_handlers.helper import get_fake_ledger
+from indy_node.test.request_handlers.helper import get_fake_ledger, add_to_idr
 from indy_node.test.request_handlers.test_schema_handler import make_schema_exist
 from plenum.common.constants import KeyValueStorageType, DOMAIN_LEDGER_ID
 from plenum.common.request import Request
@@ -46,3 +46,12 @@ def schema_handler(db_manager):
     f = FakeSomething()
     make_schema_exist(f, False)
     return SchemaHandler(db_manager, f)
+
+
+@pytest.fixture(scope="module")
+def creator(db_manager):
+    identifier = randomString()
+    idr = db_manager.idr_cache
+    add_to_idr(idr, identifier, None)
+    return identifier
+
