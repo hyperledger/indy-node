@@ -48,7 +48,7 @@ Although every attempt has been made to make this information as accurate as pos
 | --- | --- |
 | indy-plenum | 1.8.0 |
 | indy-node | 1.8.0 |
-| sovrin | 1.1.44 |
+| sovrin | 1.1.45 |
 
 ### Additional Information:
 **There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
