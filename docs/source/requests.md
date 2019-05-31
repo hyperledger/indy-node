@@ -1302,7 +1302,7 @@ The list of actions is static and can be found in [auth_rules.md](auth_rules.md)
 There is a default Auth Constraint for every action (defined in [auth_rules.md](auth_rules.md)). 
 
 The `AUTH_RULE` command allows to change the Auth Constraint.
-So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action.
+So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for the given action.
 
 Please note, that list elements of `GET_AUTH_RULE` output can be used as an input (with a required changes) for `AUTH_RULE`.
 
@@ -1478,14 +1478,14 @@ Let's consider an example of changing a value of a NODE transaction's `service` 
 ### AUTH_RULES
 
 A command to set multiple AUTH_RULEs by one transaction. 
-Transaction AUTH_RULES is not divided into two AUTH_RULE transaction, and is written to the ledger with one transaction with the full set of rules that come in the request.
+Transaction AUTH_RULES is not divided into a few AUTH_RULE transactions, and is written to the ledger with one transaction with the full set of rules that come in the request.
 Internally authentication rules are stored as a key-value dictionary: `{action} -> {auth_constraint}`.
 
 The list of actions is static and can be found in [auth_rules.md](auth_rules.md).
 There is a default Auth Constraint for every action (defined in [auth_rules.md](auth_rules.md)). 
 
 The `AUTH_RULES` command allows to change the Auth Constraints.
-So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action.
+So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for the given action.
 
 Please note, that list elements of `GET_AUTH_RULE` output can be used as an input (with a required changes) for the field `rules` in `AUTH_RULES`.
 
@@ -1496,32 +1496,33 @@ A client will receive NACK for
 - a request with a rule with "EDIT" action without "old_value";
 - a request with a rule with a key that is not in the [auth_rule](auth_rule.md).
 
-The following input parameters must match an auth rule from the [auth_rules.md](auth_rules.md):
-- `auth_type` (string enum)
+- The `rules` field contains a list of auth rules. One rule has the following list of parameters which must match an auth rule from the [auth_rules.md](auth_rules.md):
+
+  - `auth_type` (string enum)
  
      The type of transaction to change the auth constraints to. (Example: "0", "1", ...). See transactions description to find the txn type enum value.
 
-- `auth_action` (enum: `ADD` or `EDIT`)
+  - `auth_action` (enum: `ADD` or `EDIT`)
 
     Whether this is adding of a new transaction, or editing of an existing one.
     
-- `field` (string)
+  - `field` (string)
  
     Set the auth constraint of editing the given specific field. `*` can be used to specify that an auth rule is applied to all fields.
     
-- `old_value` (string; optional)
+  - `old_value` (string; optional)
 
     Old value of a field, which can be changed to a new_value. Must be present for EDIT `auth_action` only.
     `*` can be used if it doesn't matter what was the old value.
     
-- `new_value` (string)
+  - `new_value` (string)
 
     New value that can be used to fill the field.
     `*` can be used if it doesn't matter what was the old value.
 
-The `constraint_id` fields is where one can define the desired auth constraint for the action:
+  The `constraint_id` fields is where one can define the desired auth constraint for the action:
 
-- `constraint` (dict)
+  - `constraint` (dict)
 
     - `constraint_id` (string enum)
     
