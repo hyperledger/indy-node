@@ -69,6 +69,7 @@ class LoadClientFees(LoadClient):
         self._plugin_init = kwargs.get("plugin_init", "")
         self._req_num_of_trustees = kwargs.get("trustees_num", 4)
         self._init_fees_params(kwargs.get("set_fees", {}))
+        self._allow_invalid_txns = kwargs.get("allow_invalid_txns", 0)
         self._req_addrs = {}
         self._mint_by = kwargs.get("mint_by", self._addr_mint_limit)
         if self._mint_by < 1 or self._mint_by > self._addr_mint_limit:
@@ -102,7 +103,7 @@ class LoadClientFees(LoadClient):
         address, inputs, outputs = gen_input_output(self._addr_txos, fees_val)
         if not inputs:
             self._logger.warning("Failed to add fees to txn, insufficient txos")
-            return None, None
+            return None, req if self._allow_invalid_txns else None
 
         log_addr_txos_update('FEES', self._addr_txos, -len(inputs))
         req_fees, _ = await payment.add_request_fees(wallet_h, did, req, json.dumps(inputs),
@@ -126,6 +127,7 @@ class LoadClientFees(LoadClient):
 
     async def _parse_fees_resp(self, req, resp_or_exp):
         if isinstance(resp_or_exp, Exception):
+            self._logger.warning("Pool responded with error, UTXOs are lost: {}".format(self._req_addrs.get(req)))
             self._req_addrs.pop(req, {})
             return
 
