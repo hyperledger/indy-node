@@ -1,23 +1,19 @@
 import pytest
-from indy_common.auth import Authoriser
 from indy_common.authorize.auth_actions import EDIT_PREFIX, ADD_PREFIX
-from indy_common.authorize.auth_constraints import AuthConstraintOr
 from indy_common.authorize.auth_map import auth_map
 
-from indy_common.constants import NYM, AUTH_RULE, OLD_VALUE, AUTH_TYPE, ROLE, TRUST_ANCHOR, CONSTRAINT, AUTH_ACTION
+from indy_common.constants import OLD_VALUE, AUTH_TYPE, ROLE, TRUST_ANCHOR, AUTH_ACTION, \
+    AUTH_RULES, RULES
 
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rule_handler import AuthRuleHandler
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rules_handler import AuthRulesHandler
-from indy_node.test.auth_rule.helper import generate_auth_rule_operation
-from indy_common.test.auth.conftest import write_auth_req_validator
+from indy_node.test.auth_rule.helper import generate_auth_rule_operation, generate_auth_rule
 from indy_node.test.request_handlers.helper import add_to_idr, get_exception
-from plenum.common.constants import STEWARD, TRUSTEE, TXN_TYPE
+from plenum.common.constants import TRUSTEE, TXN_TYPE
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
 from plenum.common.util import randomString
 from plenum.test.testing_utils import FakeSomething
-
-RULES = "rules"
 
 
 @pytest.fixture(scope="module")
@@ -33,7 +29,7 @@ def auth_rule_request(creator):
     return Request(identifier=creator,
                    reqId=5,
                    operation={TXN_TYPE: AUTH_RULES,
-                              RULES: generate_auth_rule_operation()})
+                              RULES: [generate_auth_rule()]})
 
 
 @pytest.fixture(scope="module")

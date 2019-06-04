@@ -1,21 +1,18 @@
-from common.serializers.serialization import domain_state_serializer
-from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer
-
-from indy_common.authorize.auth_actions import AuthActionEdit, EDIT_PREFIX, AuthActionAdd
+from indy_common.authorize.auth_actions import AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.constants import CONFIG_LEDGER_ID, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, \
-    NEW_VALUE, AUTH_TYPE, FIELD
+from indy_common.constants import AUTH_RULE
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.abstract_auth_rule_handler import \
     AbstractAuthRuleHandler
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.static_auth_rule_helper import StaticAuthRuleHelper
-from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import get_payload_data
 from plenum.server.database_manager import DatabaseManager
-from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 
 
 class AuthRuleHandler(AbstractAuthRuleHandler):
+
+    def __init__(self, database_manager: DatabaseManager, write_req_validator: WriteRequestValidator):
+        super().__init__(database_manager, write_req_validator, AUTH_RULE)
 
     def static_validation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
