@@ -4,7 +4,7 @@ from indy_common.authorize.auth_cons_strategies import LocalAuthStrategy, Config
 from indy_common.authorize.auth_actions import AbstractAuthAction
 from indy_common.authorize.auth_constraints import ConstraintsEnum, AbstractConstraintSerializer
 from indy_common.authorize.authorizer import AbstractAuthorizer, CompositeAuthorizer, RolesAuthorizer, AndAuthorizer, \
-    OrAuthorizer, AuthValidationError
+    OrAuthorizer, AuthValidationError, ForbiddenAuthorizer
 from indy_common.constants import LOCAL_AUTH_POLICY, CONFIG_LEDGER_AUTH_POLICY
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
@@ -50,6 +50,7 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
         self.register_authorizer(RolesAuthorizer(cache=self.cache), auth_constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID)
         self.register_authorizer(AndAuthorizer(), auth_constraint_id=ConstraintsEnum.AND_CONSTRAINT_ID)
         self.register_authorizer(OrAuthorizer(), auth_constraint_id=ConstraintsEnum.OR_CONSTRAINT_ID)
+        self.register_authorizer(ForbiddenAuthorizer(), auth_constraint_id=ConstraintsEnum.FORBIDDEN_CONSTRAINT_ID)
 
     def validate(self, request: Request, action_list: [AbstractAuthAction]):
         for action in action_list:

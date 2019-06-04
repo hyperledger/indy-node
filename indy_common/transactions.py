@@ -36,6 +36,7 @@ class IndyTransactions(Transactions):
 
     AUTH_RULE = "120"
     GET_AUTH_RULE = "121"
+    AUTH_RULES = "122"
 
     @staticmethod
     def get_name_from_code(code: str):
