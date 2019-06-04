@@ -7,14 +7,16 @@ from indy import payment
 from indy import ledger
 
 from perf_load.perf_client import LoadClient
-from perf_load.perf_utils import ensure_is_reply, divide_sequence_into_chunks,\
-    request_get_type, gen_input_output, PUB_XFER_TXN_ID, response_get_type
+from perf_load.perf_utils import ensure_is_reply, divide_sequence_into_chunks, \
+    request_get_type, gen_input_output, PUB_XFER_TXN_ID, response_get_type, log_addr_txos_update
 
 
 class LoadClientFees(LoadClient):
     __initiated_plugins = set()
     __pool_fees = []
     __auth_rule_metadata = []
+
+    FEES_ALIAS_PREFIX = "_fees_alias_prefix"
 
     @classmethod
     def __init_plugin_once(cls, plugin_lib_name, init_func_name):
@@ -45,9 +47,9 @@ class LoadClientFees(LoadClient):
             get_fees_req = await payment.build_get_txn_fees_req(wallet_handle, test_did, payment_method)
             get_fees_resp = await ledger.sign_and_submit_request(pool_handle, wallet_handle, test_did, get_fees_req)
 
-            type_alias_mapping = {v['fees']: k for k, v in auth_rule_metadata.items()}
+            alias_to_type_mapping = {metadata['fees']: txn_type for txn_type, metadata in auth_rule_metadata.items()}
             fees_set = json.loads(await payment.parse_get_txn_fees_response(payment_method, get_fees_resp))
-            cls.__pool_fees = {type_alias_mapping[k]: v for k, v in fees_set.items() if k in type_alias_mapping}
+            cls.__pool_fees = {alias_to_type_mapping[alias]: fees_amount for alias, fees_amount in fees_set.items() if alias in alias_to_type_mapping}
             cls.__auth_rule_metadata = auth_rule_metadata
 
         return cls.__pool_fees, cls.__auth_rule_metadata
@@ -66,9 +68,8 @@ class LoadClientFees(LoadClient):
         self._plugin_lib = kwargs.get("plugin_lib", "")
         self._plugin_init = kwargs.get("plugin_init", "")
         self._req_num_of_trustees = kwargs.get("trustees_num", 4)
-        fees = kwargs.get("set_fees", {})
-        self._auth_rule_metadata = {k: {"fees": random_string()} for k, _ in fees.items()}
-        self._set_fees = {self._auth_rule_metadata.get(k, {}).get('fees', None): v for k, v in fees.items()}
+        self._init_fees_params(kwargs.get("set_fees", {}))
+        self._allow_invalid_txns = kwargs.get("allow_invalid_txns", 0)
         self._req_addrs = {}
         self._mint_by = kwargs.get("mint_by", self._addr_mint_limit)
         if self._mint_by < 1 or self._mint_by > self._addr_mint_limit:
@@ -77,6 +78,17 @@ class LoadClientFees(LoadClient):
 
         if not self._payment_method or not self._plugin_lib or not self._plugin_init:
             raise RuntimeError("Plugin cannot be initialized. Some required param missed")
+
+    def _init_fees_params(self, set_fees_param):
+        # txn_type -> {fees: alias} metadata
+        self._auth_rule_metadata = {txn_type: {"fees": self._create_alias(txn_type)} for txn_type, _ in set_fees_param.items()}
+
+        # alias -> amount
+        self._set_fees = {self._create_alias(txn_type): fees_amount for txn_type, fees_amount in set_fees_param.items()}
+
+    @staticmethod
+    def _create_alias(txn_type):
+        return txn_type + LoadClientFees.FEES_ALIAS_PREFIX
 
     async def _add_fees(self, wallet_h, did, req):
         req_type = request_get_type(req)
@@ -89,15 +101,19 @@ class LoadClientFees(LoadClient):
             return None, req
 
         address, inputs, outputs = gen_input_output(self._addr_txos, fees_val)
-        if inputs and outputs:
-            req_fees, _ = await payment.add_request_fees(wallet_h, did, req, json.dumps(inputs),
-                                                         json.dumps(outputs), None)
-            return address, req_fees
+        if not inputs:
+            self._logger.warning("Failed to add fees to txn, insufficient txos")
+            return None, req if self._allow_invalid_txns else None
 
-        return None, req
+        log_addr_txos_update('FEES', self._addr_txos, -len(inputs))
+        req_fees, _ = await payment.add_request_fees(wallet_h, did, req, json.dumps(inputs),
+                                                     json.dumps(outputs), None)
+        return address, req_fees
 
     async def ledger_sign_req(self, wallet_h, did, req):
         addr, fees_req = await self._add_fees(wallet_h, did, req)
+        if fees_req is None:
+            return None
         req = await ledger.sign_request(wallet_h, did, fees_req)
         if addr is not None:
             self._req_addrs[req] = addr
@@ -107,9 +123,11 @@ class LoadClientFees(LoadClient):
         fees_to_restore = self._req_addrs.pop(req, {})
         for addr, txos in fees_to_restore.items():
             self._addr_txos[addr].extend(txos)
+            log_addr_txos_update('RESTORE', self._addr_txos, len(txos))
 
     async def _parse_fees_resp(self, req, resp_or_exp):
         if isinstance(resp_or_exp, Exception):
+            self._logger.warning("Pool responded with error, UTXOs are lost: {}".format(self._req_addrs.get(req)))
             self._req_addrs.pop(req, {})
             return
 
@@ -123,6 +141,7 @@ class LoadClientFees(LoadClient):
                 receipt_infos = json.loads(receipt_infos_json) if receipt_infos_json else []
                 for ri in receipt_infos:
                     self._addr_txos[ri["recipient"]].append((ri["receipt"], ri["amount"]))
+                log_addr_txos_update('FEES', self._addr_txos, len(receipt_infos))
             else:
                 self._restore_fees_from_req(req)
         except Exception as e:
@@ -177,6 +196,8 @@ class LoadClientFees(LoadClient):
         return {pmnt_addr: payment_sources}
 
     async def _pool_fees_init(self):
+        # _pool_fees: txn_type -> amount
+        # _auth_rule_metadata: txn_type -> {fees: alias} metadata
         self._pool_fees, self._auth_rule_metadata = await self.__set_fees_once(self._wallet_handle, self._set_fees,
                                                                                self._test_did, self._payment_method,
                                                                                self._trustee_dids, self._pool_handle,
@@ -190,6 +211,7 @@ class LoadClientFees(LoadClient):
             await self.__mint_sources(payment_addrs_chunk, self._addr_mint_limit, self._mint_by)
         for pa in pmt_addrs:
             self._addr_txos.update(await self._get_payment_sources(pa))
+        log_addr_txos_update('MINT', self._addr_txos)
         self._logger.info("_payment_address_init done")
 
     async def _pre_init(self):
