@@ -15,9 +15,9 @@ from plenum.server.request_handlers.handler_interfaces.write_request_handler imp
 class AuthRuleHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
-                 write_req_validator: WriteRequestValidator):
+                 write_request_validator: WriteRequestValidator):
         super().__init__(database_manager, AUTH_RULE, CONFIG_LEDGER_ID)
-        self.write_req_validator = write_req_validator
+        self.write_request_validator = write_request_validator
         self.constraint_serializer = ConstraintsSerializer(domain_state_serializer)
 
     def static_validation(self, request: Request):
@@ -44,14 +44,14 @@ class AuthRuleHandler(WriteRequestHandler):
             AuthActionAdd(txn_type=auth_type,
                           field=field,
                           value=new_value).get_action_id()
-        if auth_key not in self.write_req_validator.auth_map:
+        if auth_key not in self.write_request_validator.auth_map:
             raise InvalidClientRequest(identifier, req_id,
                                        "Key '{}' is not contained in the "
                                        "authorization map".format(auth_key))
 
     def dynamic_validation(self, request: Request):
         self._validate_request_type(request)
-        self.write_req_validator.validate(request,
+        self.write_request_validator.validate(request,
                                           [AuthActionEdit(txn_type=AUTH_RULE,
                                                           field="*",
                                                           old_value="*",

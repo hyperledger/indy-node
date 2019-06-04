@@ -17,10 +17,10 @@ logger = getlogger()
 class PoolRestartHandler(ActionRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
-                 write_req_validator: WriteRequestValidator,
+                 write_request_validator: WriteRequestValidator,
                  restarter: Restarter):
         super().__init__(database_manager, POOL_RESTART, None)
-        self.write_req_validator = write_req_validator
+        self.write_request_validator = write_request_validator
         self.restarter = restarter
 
     def static_validation(self, request: Request):
@@ -29,7 +29,7 @@ class PoolRestartHandler(ActionRequestHandler):
     def dynamic_validation(self, request: Request):
         self._validate_request_type(request)
         action = request.operation.get(ACTION)
-        self.write_req_validator.validate(request,
+        self.write_request_validator.validate(request,
                                           [AuthActionAdd(txn_type=POOL_RESTART,
                                                          field=ACTION,
                                                          value=action)])
