@@ -1,12 +1,11 @@
 from indy_common.authorize.auth_actions import AuthActionAdd
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.state import domain
 
 from indy_common.constants import SCHEMA, SCHEMA_ATTR_NAMES
 
 from indy_common.req_utils import get_write_schema_name, get_write_schema_version, get_txn_schema_name, \
     get_txn_schema_version, get_txn_schema_attr_names
-from indy_common.state.domain import MARKER_SCHEMA
+from indy_common.state.state_constants import MARKER_SCHEMA
 from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest

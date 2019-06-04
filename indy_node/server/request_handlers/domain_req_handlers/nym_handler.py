@@ -3,12 +3,11 @@ from binascii import hexlify
 from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.state import domain
 from indy_common.constants import NYM
 from indy_common.auth import Authoriser
 from ledger.util import F
 
-from plenum.common.constants import ROLE, TARGET_NYM, VERKEY, DOMAIN_LEDGER_ID, TXN_TIME
+from plenum.common.constants import ROLE, TARGET_NYM, VERKEY, TXN_TIME
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import get_payload_data, get_seq_no, get_txn_time, get_request_data, get_from
@@ -16,7 +15,6 @@ from plenum.common.types import f
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.nym_handler import NymHandler as PNymHandler
 from plenum.server.request_handlers.utils import nym_to_state_key, get_nym_details
-from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 
 
 class NymHandler(PNymHandler):

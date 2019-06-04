@@ -4,7 +4,7 @@ from indy_common.serialization import attrib_raw_data_serializer
 from indy_common.state import domain
 
 from indy_common.constants import ATTRIB
-from indy_common.state.domain import ALL_ATR_KEYS
+from indy_common.state.state_constants import ALL_ATR_KEYS, MARKER_ATTR
 from indy_node.server.request_handlers.utils import validate_attrib_keys
 from plenum.common.constants import DOMAIN_LEDGER_ID, RAW, ENC, HASH, TARGET_NYM
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
@@ -130,5 +130,5 @@ class AttributeHandler(WriteRequestHandler):
         nameHash = sha256(attr_name.encode()).hexdigest() if not attr_is_hash else attr_name
         return "{DID}:{MARKER}:{ATTR_NAME}" \
             .format(DID=did,
-                    MARKER=domain.MARKER_ATTR,
+                    MARKER=MARKER_ATTR,
                     ATTR_NAME=nameHash).encode()

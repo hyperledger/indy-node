@@ -2,16 +2,11 @@ from abc import ABCMeta
 
 from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer
-
-from indy_common.authorize.auth_actions import AuthActionEdit, EDIT_PREFIX, AuthActionAdd, ADD_PREFIX
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.constants import CONFIG_LEDGER_ID, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, \
-    NEW_VALUE, AUTH_TYPE, FIELD
-from indy_common.state import config
+from indy_common.constants import CONFIG_LEDGER_ID, AUTH_RULE, CONSTRAINT
+from indy_common.state.state_constants import MARKER_AUTH_RULE
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.static_auth_rule_helper import StaticAuthRuleHelper
 from plenum.common.exceptions import InvalidClientRequest
-from plenum.common.request import Request
-from plenum.common.txn_util import get_payload_data
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 
@@ -34,5 +29,12 @@ class AbstractAuthRuleHandler(WriteRequestHandler, metaclass=ABCMeta):
         StaticAuthRuleHelper.check_auth_key(operation, identifier, req_id, self.write_req_validator.auth_map)
 
     def _update_auth_constraint(self, auth_key: str, constraint):
-        self.state.set(config.make_state_path_for_auth_rule(auth_key),
+        self.state.set(AbstractAuthRuleHandler.make_state_path_for_auth_rule(auth_key),
                        self.constraint_serializer.serialize(constraint))
+
+    @staticmethod
+    def make_state_path_for_auth_rule(action_id) -> bytes:
+        return "{MARKER}:{ACTION_ID}" \
+            .format(MARKER=MARKER_AUTH_RULE,
+                    ACTION_ID=action_id).encode()
+

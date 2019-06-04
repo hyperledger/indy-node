@@ -4,7 +4,7 @@ from indy_common.req_utils import get_txn_claim_def_schema_ref, get_txn_claim_de
     get_txn_claim_def_public_keys
 
 from indy_common.constants import CLAIM_DEF, REF, SCHEMA, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_SCHEMA_REF
-from indy_common.state.domain import MARKER_CLAIM_DEF
+from indy_common.state.state_constants import MARKER_CLAIM_DEF
 
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest

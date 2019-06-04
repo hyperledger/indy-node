@@ -1,10 +1,9 @@
 from copy import deepcopy
 from typing import Dict, Callable
 
-from indy_common.state import domain
 
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, VALUE, ISSUANCE_TYPE
-from indy_common.state.domain import encode_state_value, MARKER_REVOC_REG_ENTRY
+from indy_common.state.state_constants import MARKER_REVOC_REG_ENTRY, MARKER_REVOC_REG_ENTRY_ACCUM
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_handler import GetRevocRegHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID, TXN_TIME
 from plenum.common.request import Request
@@ -13,6 +12,7 @@ from plenum.common.types import f
 
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
+from plenum.server.request_handlers.utils import encode_state_value
 
 
 class RevocRegEntryHandler(WriteRequestHandler):
@@ -78,6 +78,12 @@ class RevocRegEntryHandler(WriteRequestHandler):
         txn_data[TXN_TIME] = txn_time
         value_bytes = encode_state_value(txn_data, seq_no, txn_time)
         return path, value_bytes
+
+    @staticmethod
+    def make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id) -> bytes:
+        return "{MARKER}:{REVOC_REG_DEF_ID}" \
+            .format(MARKER=MARKER_REVOC_REG_ENTRY_ACCUM,
+                    REVOC_REG_DEF_ID=revoc_reg_def_id).encode()
 
     @staticmethod
     def make_state_path_for_revoc_reg_entry(revoc_reg_def_id) -> bytes:

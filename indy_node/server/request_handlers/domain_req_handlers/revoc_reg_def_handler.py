@@ -1,11 +1,10 @@
-from indy_common.state import domain
-
 from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG
+from indy_common.state.state_constants import MARKER_REVOC_DEF
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_def_handler import GetRevocRegDefHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
-from plenum.common.txn_util import get_type, get_request_data, get_seq_no, get_txn_time, get_from, get_payload_data
+from plenum.common.txn_util import get_request_data, get_seq_no, get_txn_time, get_from, get_payload_data
 
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
