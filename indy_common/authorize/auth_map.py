@@ -2,9 +2,10 @@ from collections import OrderedDict
 from typing import Dict
 
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
-from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr, accepted_roles, IDENTITY_OWNER
+from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr, accepted_roles, IDENTITY_OWNER, \
+    AuthConstraintForbidden
 from indy_common.constants import TRUST_ANCHOR, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
-    CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF, ATTRIB
+    CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF, ATTRIB, AUTH_RULES
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML
 
 edit_role_actions = {}  # type: Dict[str, Dict[str, AuthActionEdit]]
@@ -142,6 +143,11 @@ auth_rule = AuthActionEdit(txn_type=AUTH_RULE,
                            old_value='*',
                            new_value='*')
 
+auth_rules = AuthActionEdit(txn_type=AUTH_RULES,
+                            field='*',
+                            old_value='*',
+                            new_value='*')
+
 validator_info = AuthActionAdd(txn_type=VALIDATOR_INFO,
                                field='*',
                                value='*')
@@ -222,6 +228,9 @@ anyone_can_edit_revoc_reg_entry = AuthActionEdit(txn_type=REVOC_REG_ENTRY,
 anyone_constraint = AuthConstraint(role='*',
                                    sig_count=1)
 
+# No one constraint
+no_one_constraint = AuthConstraintForbidden()
+
 # Owner constraint
 owner_constraint = AuthConstraint(role='*',
                                   sig_count=1,
@@ -262,6 +271,7 @@ auth_map = OrderedDict([
     (add_attrib.get_action_id(), owner_constraint),
     (edit_attrib.get_action_id(), owner_constraint),
     (add_schema.get_action_id(), trust_anchor_or_steward_or_trustee_constraint),
+    (edit_schema.get_action_id(), no_one_constraint),
     (add_claim_def.get_action_id(), trust_anchor_or_steward_or_trustee_constraint),
     (edit_claim_def.get_action_id(), owner_constraint),
     (adding_new_node.get_action_id(), steward_owner_constraint),
@@ -278,6 +288,7 @@ auth_map = OrderedDict([
     (pool_restart.get_action_id(), one_trustee_constraint),
     (pool_config.get_action_id(), one_trustee_constraint),
     (auth_rule.get_action_id(), one_trustee_constraint),
+    (auth_rules.get_action_id(), one_trustee_constraint),
     (validator_info.get_action_id(), AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                                        AuthConstraint(STEWARD, 1),
                                                        AuthConstraint(NETWORK_MONITOR, 1)])),

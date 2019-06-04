@@ -1,4 +1,5 @@
-from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER, AuthConstraintOr, AuthConstraintAnd
+from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER, AuthConstraintOr, AuthConstraintAnd, \
+    AuthConstraintForbidden
 from indy_common.constants import TRUST_ANCHOR
 from indy_common.test.auth.metadata.helper import validate, PLUGIN_FIELD
 from plenum.common.constants import TRUSTEE, STEWARD
@@ -231,6 +232,40 @@ def test_plugin_complex(write_auth_req_validator, write_request_validation,
             ({TRUSTEE: 3, IDENTITY_OWNER: 2}, True, 2),
             ({TRUSTEE: 3, IDENTITY_OWNER: 3}, True, 2),
 
+        ],
+        all_signatures=signatures, is_owner=is_owner, amount=amount,
+        write_auth_req_validator=write_auth_req_validator,
+        write_request_validation=write_request_validation
+    )
+
+
+def test_plugin_complex_with_and_rule_with_not_allowed(write_auth_req_validator, write_request_validation,
+                                                       signatures, is_owner, amount):
+    validate(
+        auth_constraint=AuthConstraintAnd(auth_constraints=[
+            AuthConstraintForbidden(),
+            AuthConstraint(role="*", sig_count=1, need_to_be_owner=False,
+                           metadata={PLUGIN_FIELD: 2})
+        ]),
+        valid_actions=[],
+        all_signatures=signatures, is_owner=is_owner, amount=amount,
+        write_auth_req_validator=write_auth_req_validator,
+        write_request_validation=write_request_validation
+    )
+
+
+def test_plugin_complex_with_or_rule_with_not_allowed(write_auth_req_validator, write_request_validation,
+                                                      signatures, is_owner, amount):
+    validate(
+        auth_constraint=AuthConstraintOr(auth_constraints=[
+            AuthConstraintForbidden(),
+            AuthConstraint(role="*", sig_count=1, need_to_be_owner=False,
+                           metadata={PLUGIN_FIELD: 2})
+        ]),
+        valid_actions=[
+            (signature, owner, 2)
+            for signature in signatures if signature
+            for owner in [True, False]
         ],
         all_signatures=signatures, is_owner=is_owner, amount=amount,
         write_auth_req_validator=write_auth_req_validator,
