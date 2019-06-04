@@ -91,7 +91,7 @@ class LoadClientFees(LoadClient):
 
     @staticmethod
     def _get_txn_type_by_alis(alias):
-        return alias[-len(LoadClientFees.FEES_ALIAS_PREFIX)]
+        return alias[:-len(LoadClientFees.FEES_ALIAS_PREFIX)]
 
     async def _add_fees(self, wallet_h, did, req):
         req_type = request_get_type(req)
