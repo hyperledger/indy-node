@@ -34,8 +34,8 @@ class LoadClientFees(LoadClient):
                 raise ex
 
     @classmethod
-    async def __set_fees_once(cls, wallet_handle, set_fees, test_did, payment_method, trustee_dids, pool_handle, auth_rule_metadata):
-        if not (len(cls.__pool_fees) or len(cls.__auth_rule_metadata)):
+    async def __set_fees_once(cls, wallet_handle, set_fees, test_did, payment_method, trustee_dids, pool_handle):
+        if not len(cls.__pool_fees):
             if set_fees:
                 fees_req = await payment.build_set_txn_fees_req(
                     wallet_handle, test_did, payment_method, json.dumps(set_fees))
@@ -47,12 +47,10 @@ class LoadClientFees(LoadClient):
             get_fees_req = await payment.build_get_txn_fees_req(wallet_handle, test_did, payment_method)
             get_fees_resp = await ledger.sign_and_submit_request(pool_handle, wallet_handle, test_did, get_fees_req)
 
-            alias_to_type_mapping = {metadata['fees']: txn_type for txn_type, metadata in auth_rule_metadata.items()}
             fees_set = json.loads(await payment.parse_get_txn_fees_response(payment_method, get_fees_resp))
-            cls.__pool_fees = {alias_to_type_mapping[alias]: fees_amount for alias, fees_amount in fees_set.items() if alias in alias_to_type_mapping}
-            cls.__auth_rule_metadata = auth_rule_metadata
+            cls.__pool_fees = {cls._get_txn_type_by_alis(alias): fees_amount for alias, fees_amount in fees_set.items()}
 
-        return cls.__pool_fees, cls.__auth_rule_metadata
+        return cls.__pool_fees
 
     def __init__(self, name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, short_stat,
                  **kwargs):
@@ -81,7 +79,8 @@ class LoadClientFees(LoadClient):
 
     def _init_fees_params(self, set_fees_param):
         # txn_type -> {fees: alias} metadata
-        self._auth_rule_metadata = {txn_type: {"fees": self._create_alias(txn_type)} for txn_type, _ in set_fees_param.items()}
+        self._auth_rule_metadata = {txn_type: {"fees": self._create_alias(txn_type)} for txn_type, _ in
+                                    set_fees_param.items()}
 
         # alias -> amount
         self._set_fees = {self._create_alias(txn_type): fees_amount for txn_type, fees_amount in set_fees_param.items()}
@@ -89,6 +88,10 @@ class LoadClientFees(LoadClient):
     @staticmethod
     def _create_alias(txn_type):
         return txn_type + LoadClientFees.FEES_ALIAS_PREFIX
+
+    @staticmethod
+    def _get_txn_type_by_alis(alias):
+        return alias[:-len(LoadClientFees.FEES_ALIAS_PREFIX)]
 
     async def _add_fees(self, wallet_h, did, req):
         req_type = request_get_type(req)
@@ -185,7 +188,8 @@ class LoadClientFees(LoadClient):
 
     async def _get_payment_sources(self, pmnt_addr):
         get_ps_req, _ = await payment.build_get_payment_sources_request(self._wallet_handle, self._test_did, pmnt_addr)
-        get_ps_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, get_ps_req)
+        get_ps_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did,
+                                                           get_ps_req)
         ensure_is_reply(get_ps_resp)
 
         source_infos_json = await payment.parse_get_payment_sources_response(self._payment_method, get_ps_resp)
@@ -198,10 +202,9 @@ class LoadClientFees(LoadClient):
     async def _pool_fees_init(self):
         # _pool_fees: txn_type -> amount
         # _auth_rule_metadata: txn_type -> {fees: alias} metadata
-        self._pool_fees, self._auth_rule_metadata = await self.__set_fees_once(self._wallet_handle, self._set_fees,
-                                                                               self._test_did, self._payment_method,
-                                                                               self._trustee_dids, self._pool_handle,
-                                                                               self._auth_rule_metadata)
+        self._pool_fees = await self.__set_fees_once(self._wallet_handle, self._set_fees,
+                                                     self._test_did, self._payment_method,
+                                                     self._trustee_dids, self._pool_handle)
         self._logger.info("_pool_fees_init done")
 
     async def _payment_address_init(self):
