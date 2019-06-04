@@ -1,11 +1,13 @@
 import pytest
 
+from indy_common.state import config
+from indy_common.types import AuthRuleField
 from plenum.common.types import OPERATION
 from plenum.common.constants import TXN_TYPE, TRUSTEE, STEWARD, DATA, STATE_PROOF
 from plenum.common.exceptions import RequestNackedException
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
-from indy_common.authorize.auth_constraints import ROLE
+from indy_common.authorize.auth_constraints import ROLE, AuthConstraintForbidden
 from indy_common.authorize.auth_map import auth_map
 from indy_common.constants import NYM, TRUST_ANCHOR, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, \
     OLD_VALUE, SCHEMA, CONSTRAINT, AUTH_RULE
@@ -95,7 +97,7 @@ def test_get_one_disabled_auth_rule_transaction(looper,
     result = resp["result"][DATA]
     assert len(result) == 1
     _check_key(key, result[0])
-    assert {} == result[0][CONSTRAINT]
+    assert AuthConstraintForbidden().as_dict == result[0][CONSTRAINT]
 
 
 def test_get_all_auth_rule_transactions(looper,
@@ -167,9 +169,7 @@ def test_get_all_auth_rule_transactions_after_write(looper,
     result = resp[0][1]["result"][DATA]
     for rule in result:
         key = ConfigReqHandler.get_auth_key(rule)
-        if auth_map[key] is None:
-            assert {} == rule[CONSTRAINT]
-        elif key == str_auth_key:
+        if key == str_auth_key:
             assert constraint == rule[CONSTRAINT]
         else:
             assert auth_map[key].as_dict == rule[CONSTRAINT]

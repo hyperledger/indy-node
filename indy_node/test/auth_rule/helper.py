@@ -4,7 +4,7 @@ from indy.did import create_and_store_my_did
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.constants import AUTH_RULE, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, OLD_VALUE, NYM, \
-    TRUST_ANCHOR, GET_AUTH_RULE
+    TRUST_ANCHOR, RULES, AUTH_RULES, GET_AUTH_RULE
 from plenum.common.constants import TRUSTEE, TXN_TYPE
 
 from indy_common.authorize.auth_constraints import CONSTRAINT_ID, ROLE, SIG_COUNT, NEED_TO_BE_OWNER, METADATA, \
@@ -50,20 +50,27 @@ def generate_constraint_list(constraint_id=ConstraintsEnum.AND_CONSTRAINT_ID,
 def generate_auth_rule_operation(auth_action=ADD_PREFIX, auth_type=NYM,
                                  field=ROLE, new_value=TRUST_ANCHOR,
                                  old_value=None, constraint=None):
-    # TODO relates to INDY-2077
-    constraint = generate_constraint_entity() \
-        if constraint is None \
-        else constraint
-    op = {TXN_TYPE: AUTH_RULE,
-          CONSTRAINT: constraint,
-          AUTH_ACTION: auth_action,
-          AUTH_TYPE: auth_type,
-          FIELD: field,
-          NEW_VALUE: new_value
-          }
-    if old_value or auth_action == EDIT_PREFIX:
-        op[OLD_VALUE] = old_value
+    op = generate_auth_rule(auth_action, auth_type,
+                            field, new_value,
+                            old_value, constraint)
+    op[TXN_TYPE] = AUTH_RULE
     return op
+
+
+def generate_auth_rule(auth_action=ADD_PREFIX, auth_type=NYM,
+                       field=ROLE, new_value=TRUST_ANCHOR,
+                       old_value=None, constraint=None):
+    if constraint is None:
+        constraint = generate_constraint_entity()
+    rule = {CONSTRAINT: constraint,
+            AUTH_ACTION: auth_action,
+            AUTH_TYPE: auth_type,
+            FIELD: field,
+            NEW_VALUE: new_value
+            }
+    if old_value or auth_action == EDIT_PREFIX:
+        rule[OLD_VALUE] = old_value
+    return rule
 
 
 def create_verkey_did(looper, wh):
@@ -135,6 +142,27 @@ def sdk_send_and_check_auth_rule_invalid_request(
     return sdk_send_and_check_req_json(
         looper, sdk_pool_handle, sdk_wallet_trustee, req_json, no_wait=no_wait
     )
+
+
+def sdk_send_and_check_auth_rules_request(looper, sdk_wallet_trustee, sdk_pool_handle,
+                                          rules=None, no_wait=False):
+    if rules is None:
+        rules = [generate_auth_rule(ADD_PREFIX, NYM,
+                                    ROLE, TRUST_ANCHOR),
+                 generate_auth_rule(EDIT_PREFIX, NYM,
+                                    ROLE, TRUST_ANCHOR, TRUSTEE)]
+    op = {RULES: rules,
+          TXN_TYPE: AUTH_RULES}
+
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+    req = sdk_sign_and_submit_req_obj(looper,
+                                      sdk_pool_handle,
+                                      sdk_wallet_trustee,
+                                      req_obj)
+    if no_wait:
+        return req
+    resp = sdk_get_and_check_replies(looper, [req])
+    return resp
 
 
 def add_new_nym(looper, sdk_pool_handle, creators_wallets,

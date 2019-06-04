@@ -27,7 +27,7 @@ with open(metadata['__file__'], 'r') as f:
 
 BASE_DIR = os.path.join(os.path.expanduser("~"), ".indy")
 
-tests_require = ['pytest==3.3.1', 'pytest-xdist==1.22.1', 'python3-indy==1.8.3-dev-1099', 'pytest-asyncio==0.8.0']
+tests_require = ['pytest==3.3.1', 'pytest-xdist==1.22.1', 'python3-indy==1.9.0-dev-1122', 'pytest-asyncio==0.8.0']
 
 setup(
     name=metadata['__title__'],
@@ -50,7 +50,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum==1.9.0.dev807',
+    install_requires=['indy-plenum==1.9.0.dev808',
                       'python-dateutil',
                       'timeout-decorator==0.4.0',
                       'distro==1.3.0'],
