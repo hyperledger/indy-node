@@ -188,8 +188,8 @@ class LoadClient:
 
             # Try to set aml
             set_aml = await ledger.build_acceptance_mechanisms_request(self._test_did,
-                                                                      json.dumps({self.TestAcceptanceMechanism: {}}),
-                                                                      self.TestAcceptanceMechanismVersion, None)
+                                                                       json.dumps({self.TestAcceptanceMechanism: {}}),
+                                                                       self.TestAcceptanceMechanismVersion, None)
             await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, set_aml)
 
         self._logger.info("_taa_aml_init done")
