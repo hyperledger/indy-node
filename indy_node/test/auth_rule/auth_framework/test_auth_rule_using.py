@@ -31,8 +31,9 @@ from indy_node.test.auth_rule.auth_framework.schema import SchemaTest
 from indy_node.test.auth_rule.auth_framework.upgrade import StartUpgradeTest, CancelUpgradeTest
 from indy_node.test.upgrade.helper import bumpedVersion
 from indy_node.test.auth_rule.auth_framework.add_attrib import AddAttribTest
-from indy_node.test.auth_rule.auth_framework.auth_rules import AuthRuleTest
 from indy_node.test.auth_rule.auth_framework.edit_attrib import EditAttribTest
+from indy_node.test.auth_rule.auth_framework.edit_auth_rules import AuthRulesTest
+from indy_node.test.auth_rule.auth_framework.edit_auth_rule import AuthRuleTest
 from indy_node.test.auth_rule.auth_framework.node_services import AddNewNodeTest, AddNewNodeEmptyServiceTest, \
     DemoteNodeTest, PromoteNodeTest
 from indy_node.test.auth_rule.auth_framework.node_properties import EditNodeIpTest, EditNodePortTest, \
@@ -109,6 +110,7 @@ class TestAuthRuleUsing():
         auth_map.pool_restart.get_action_id(): RestartTest,
         auth_map.pool_config.get_action_id(): PoolConfigTest,
         auth_map.auth_rule.get_action_id(): AuthRuleTest,
+        auth_map.auth_rules.get_action_id(): AuthRulesTest,
         auth_map.validator_info.get_action_id(): ValidatorInfoTest,
     })
 

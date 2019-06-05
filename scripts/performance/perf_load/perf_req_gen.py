@@ -1,3 +1,4 @@
+import logging
 from abc import ABCMeta, abstractmethod
 import json
 import random
@@ -18,6 +19,7 @@ class RequestGenerator(metaclass=ABCMeta):
                  file_name: str = None, ignore_first_line: bool = True,
                  file_sep: str = "|", file_max_split: int = 2, file_field: int = 2,
                  client_stat: ClientStatistic = None, **kwargs):
+        self._logger = logging.getLogger(self.__class__.__name__)
         self._test_label = label
         self._client_stat = client_stat
         if not isinstance(self._client_stat, ClientStatistic):

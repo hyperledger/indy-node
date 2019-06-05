@@ -4,7 +4,7 @@ import random
 from indy import payment
 from indy import ledger
 
-from perf_load.perf_utils import ensure_is_reply, gen_input_output, PUB_XFER_TXN_ID
+from perf_load.perf_utils import ensure_is_reply, gen_input_output, PUB_XFER_TXN_ID, log_addr_txos_update
 from perf_load.perf_req_gen import NoReqDataAvailableException, RequestGenerator
 
 
@@ -32,9 +32,10 @@ class RGBasePayment(RequestGenerator):
 
     def _gen_input_output(self, val, fees):
         address, inputs, outputs = gen_input_output(self._addr_txos, val + fees)
-
         if inputs is None or outputs is None:
+            self._logger.warning("Failed to create XFER, insufficient txos")
             raise NoReqDataAvailableException()
+        log_addr_txos_update('XFER', self._addr_txos, -len(inputs))
 
         addrs = list(self._addr_txos)
         addrs.remove(list(address)[0])
@@ -75,19 +76,29 @@ class RGPayment(RGBasePayment):
         self._sent_reqs.add(gen_req)
 
     async def on_request_replied(self, req_data, gen_req, resp_or_exp):
-        if gen_req in self._sent_reqs:
-            self._sent_reqs.remove(gen_req)
+        if gen_req not in self._sent_reqs:
+            return
 
-            if isinstance(resp_or_exp, Exception):
-                return
+        self._sent_reqs.remove(gen_req)
 
-            try:
-                receipt_infos_json = await payment.parse_payment_response(self._payment_method, resp_or_exp)
-                receipt_infos = json.loads(receipt_infos_json) if receipt_infos_json else []
-                for ri in receipt_infos:
-                    self._addr_txos[ri["recipient"]].append((ri["receipt"], ri["amount"]))
-            except Exception:
-                pass
+        if isinstance(resp_or_exp, Exception):
+            return
+
+        reply = json.loads(resp_or_exp)
+        result = reply.get('result')
+        if not result or result['txn']['type'] != PUB_XFER_TXN_ID:
+            return
+
+        try:
+            receipt_infos_json = await payment.parse_payment_response(self._payment_method, resp_or_exp)
+            receipt_infos = json.loads(receipt_infos_json) if receipt_infos_json else []
+            for ri in receipt_infos:
+                self._addr_txos[ri["recipient"]].append((ri["receipt"], ri["amount"]))
+            log_addr_txos_update('XFER', self._addr_txos, len(receipt_infos))
+        except Exception as e:
+            self._logger.info('Got unexpected error: {}'.format(e))
+            self._logger.info('While parsing reply: {}'.format(reply))
+            raise
 
 
 class RGVerifyPayment(RGBasePayment):
