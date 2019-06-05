@@ -10,4 +10,4 @@ class RGGetTAAAML(RequestGenerator):
         return (None, None)
 
     async def _gen_req(self, submitter_did, req_data):
-        return await ledger.build_get_acceptance_mechanism_request(submitter_did, req_data[0], req_data[1])
+        return await ledger.build_get_acceptance_mechanisms_request(submitter_did, req_data[0], req_data[1])

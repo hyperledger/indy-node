@@ -251,7 +251,7 @@ pub extern fn indy_append_txn_author_agreement_acceptance_to_request(command_han
 /// #Errors
 /// Common*
 #[no_mangle]
-pub extern fn indy_build_acceptance_mechanism_request(command_handle: CommandHandle,
+pub extern fn indy_build_acceptance_mechanisms_request(command_handle: CommandHandle,
                                                       submitter_did: *const c_char,
                                                       aml: *const c_char,
                                                       aml_context: *const c_char,
@@ -275,7 +275,7 @@ pub extern fn indy_build_acceptance_mechanism_request(command_handle: CommandHan
 /// #Errors
 /// Common*
 #[no_mangle]
-pub extern fn indy_build_get_acceptance_mechanism_request(command_handle: CommandHandle,
+pub extern fn indy_build_get_acceptance_mechanisms_request(command_handle: CommandHandle,
                                                           submitter_did: *const c_char,
                                                           timestamp: i64,
                                                           cb: Option<extern fn(command_handle_: CommandHandle,
