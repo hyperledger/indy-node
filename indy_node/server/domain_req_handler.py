@@ -274,14 +274,16 @@ class DomainReqHandler(PHandler):
             with_proof=False
         )
         if schema:
-            raise InvalidClientRequest(identifier, req.reqId,
-                                       '{} can have one and only one SCHEMA with '
-                                       'name {} and version {}'
-                                       .format(identifier, schema_name, schema_version))
-        self.write_req_validator.validate(req,
-                                          [AuthActionAdd(txn_type=SCHEMA,
-                                                         field='*',
-                                                         value='*')])
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=SCHEMA,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*')])
+        else:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=SCHEMA,
+                                                             field='*',
+                                                             value='*')])
 
     def _validate_claim_def(self, req: Request):
         # we can not add a Claim Def with existent ISSUER_DID
