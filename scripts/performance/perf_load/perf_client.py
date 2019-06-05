@@ -171,7 +171,7 @@ class LoadClient:
 
         while True:
             # Continuously check for latest TAA
-            get_aml = await ledger.build_get_acceptance_mechanism_request(self._test_did, None, None)
+            get_aml = await ledger.build_get_acceptance_mechanisms_request(self._test_did, None, None)
             reply = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did,
                                                          get_aml)
             ensure_is_reply(reply)
@@ -187,9 +187,9 @@ class LoadClient:
                 raise RuntimeError("There is already incompatible TAA AML written to ledger")
 
             # Try to set aml
-            set_aml = await ledger.build_acceptance_mechanism_request(self._test_did,
-                                                                      json.dumps({self.TestAcceptanceMechanism: {}}),
-                                                                      self.TestAcceptanceMechanismVersion, None)
+            set_aml = await ledger.build_acceptance_mechanisms_request(self._test_did,
+                                                                       json.dumps({self.TestAcceptanceMechanism: {}}),
+                                                                       self.TestAcceptanceMechanismVersion, None)
             await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, set_aml)
 
         self._logger.info("_taa_aml_init done")
