@@ -283,7 +283,7 @@
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
     <td><sub>No one can edit existing Schema</sub></td>
-    <td><sub>Editing a Schema: not supported by auth constraints yet (INDY-2077)</sub></td>
+    <td><sub>Editing a Schema</sub></td>
   </tr>
   <tr>
     <td><sub>CLAIM_DEF</sub></td>
