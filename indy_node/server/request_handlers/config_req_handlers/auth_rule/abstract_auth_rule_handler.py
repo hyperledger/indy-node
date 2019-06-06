@@ -14,9 +14,9 @@ from plenum.server.request_handlers.handler_interfaces.write_request_handler imp
 class AbstractAuthRuleHandler(WriteRequestHandler, metaclass=ABCMeta):
 
     def __init__(self, database_manager: DatabaseManager,
-                 write_req_validator: WriteRequestValidator, txn_type):
+                 write_request_validator: WriteRequestValidator, txn_type):
         super().__init__(database_manager, txn_type, CONFIG_LEDGER_ID)
-        self.write_req_validator = write_req_validator
+        self.write_request_validator = write_request_validator
         self.constraint_serializer = ConstraintsSerializer(domain_state_serializer)
 
     def _static_validation_for_rule(self, operation, identifier, req_id):
