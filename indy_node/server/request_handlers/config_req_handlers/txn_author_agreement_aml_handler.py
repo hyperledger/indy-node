@@ -13,12 +13,8 @@ class TxnAuthorAgreementAmlHandler(PTxnAuthorAgreementAmlHandler):
         super().__init__(database_manager, bls_crypto_verifier)
         self.write_request_validator = write_request_validator
 
-    def dynamic_validation(self, request: Request):
-        super().dynamic_validation(request)
+    def authorize(self, request):
         self.write_request_validator.validate(request,
                                               [AuthActionAdd(txn_type=self.txn_type,
                                                              field='*',
                                                              value='*')])
-
-    def authorize(self, request):
-        pass
