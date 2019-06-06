@@ -1,5 +1,9 @@
 from _sha256 import sha256
+from json import JSONDecodeError
 
+from common.exceptions import LogicError
+from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
+from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.serialization import attrib_raw_data_serializer
 from indy_common.state import domain
 
@@ -14,12 +18,17 @@ from plenum.common.txn_util import get_type, get_request_data, get_payload_data,
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 from plenum.server.request_handlers.utils import encode_state_value
+from stp_core.common.log import getlogger
+
+logger = getlogger()
 
 
 class AttributeHandler(WriteRequestHandler):
 
-    def __init__(self, database_manager: DatabaseManager):
+    def __init__(self, database_manager: DatabaseManager,
+                 write_request_validator: WriteRequestValidator):
         super().__init__(database_manager, ATTRIB, DOMAIN_LEDGER_ID)
+        self.write_request_validator = write_request_validator
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
@@ -33,6 +42,7 @@ class AttributeHandler(WriteRequestHandler):
 
     def dynamic_validation(self, request: Request):
         self._validate_request_type(request)
+
         identifier, req_id, operation = get_request_data(request)
 
         if not (not operation.get(TARGET_NYM) or
@@ -42,14 +52,50 @@ class AttributeHandler(WriteRequestHandler):
                                        'attribute for it'.
                                        format(TARGET_NYM))
 
-        if operation.get(TARGET_NYM) and operation[TARGET_NYM] != identifier and \
-                not self.database_manager.idr_cache.getOwnerFor(operation[TARGET_NYM],
-                                                                isCommitted=False) == identifier:
-            raise UnauthorizedClientRequest(
-                identifier,
-                req_id,
-                "Only identity owner/guardian can add attribute "
-                "for that identity")
+        is_owner = self.database_manager.idrCache.getOwnerFor(op[TARGET_NYM],
+                                                              isCommitted=False) == origin
+        field = None
+        value = None
+        for key in (RAW, ENC, HASH):
+            if key in operation:
+                field = key
+                value = operation[key]
+                break
+
+        get_key = None
+        if field == RAW:
+            try:
+                get_key = attrib_raw_data_serializer.deserialize(value)
+                if len(get_key) == 0:
+                    raise InvalidClientRequest(origin, request.reqId,
+                                               '"row" attribute field must contain non-empty dict'.
+                                               format(TARGET_NYM))
+                get_key = next(iter(get_key.keys()))
+            except JSONDecodeError:
+                raise InvalidClientRequest(origin, request.reqId,
+                                           'Attribute field must be dict while adding it as a row field'.
+                                           format(TARGET_NYM))
+        else:
+            get_key = value
+
+        if get_key is None:
+            raise LogicError('Attribute data must be parsed')
+
+        old_value, seq_no, _, _ = self._get_attr(op[TARGET_NYM], get_key, field, isCommitted=False)
+
+        if seq_no is not None:
+            self.write_request_validator.validate(request,
+                                              [AuthActionEdit(txn_type=ATTRIB,
+                                                              field=field,
+                                                              old_value=old_value,
+                                                              new_value=value,
+                                                              is_owner=is_owner)])
+        else:
+            self.write_request_validator.validate(request,
+                                              [AuthActionAdd(txn_type=ATTRIB,
+                                                             field=field,
+                                                             value=value,
+                                                             is_owner=is_owner)])
 
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
@@ -69,6 +115,31 @@ class AttributeHandler(WriteRequestHandler):
         self.state.set(path, value_bytes)
         if attr_type != HASH:
             self.database_manager.attribute_store.set(hashed_value, value)
+
+    def _get_attr(self,
+                did: str,
+                key: str,
+                attr_type,
+                isCommitted=True) -> (str, int, int, list):
+        assert did is not None
+        assert key is not None
+        path = AttributeHandler.make_state_path_for_attr(did, key, attr_type == HASH)
+        try:
+            hashed_val, lastSeqNo, lastUpdateTime, proof = \
+                self.lookup(path, isCommitted, with_proof=True)
+        except KeyError:
+            return None, None, None, None
+        if not hashed_val or hashed_val == '':
+            # Its a HASH attribute
+            return hashed_val, lastSeqNo, lastUpdateTime, proof
+        else:
+            try:
+                value = self.attributeStore.get(hashed_val)
+            except KeyError:
+                logger.error('Could not get value from attribute store for {}'
+                             .format(hashed_val))
+                return None, None, None, None
+        return value, lastSeqNo, lastUpdateTime, proof
 
     def __has_nym(self, nym, is_committed: bool = True):
         return self.database_manager.idr_cache.hasNym(nym, isCommitted=is_committed)

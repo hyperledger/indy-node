@@ -17,6 +17,12 @@ from storage.helper import initKeyValueStorage
 @pytest.fixture(scope="module")
 def db_manager(tconf, tdir):
     db_manager = DatabaseManager()
+
+    state = State()
+    state.txn_list = {}
+    state.get = lambda key, isCommitted=True: state.txn_list.get(key, None)
+    state.set = lambda key, value: state.txn_list.update({key: value})
+
     name = 'name'
     idr_cache = IdrCache(name,
                          initKeyValueStorage(KeyValueStorageType.Rocksdb,
@@ -24,7 +30,7 @@ def db_manager(tconf, tdir):
                                              tconf.idrCacheDbName,
                                              db_config=tconf.db_idr_cache_db_config))
     db_manager.register_new_store('idr', idr_cache)
-    db_manager.register_new_database(DOMAIN_LEDGER_ID, get_fake_ledger(), State())
+    db_manager.register_new_database(DOMAIN_LEDGER_ID, get_fake_ledger(), state)
     return db_manager
 
 

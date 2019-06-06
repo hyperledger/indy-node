@@ -6,7 +6,6 @@ from indy_common.constants import SCHEMA, SCHEMA_ATTR_NAMES
 from indy_common.req_utils import get_write_schema_name, get_write_schema_version, get_txn_schema_name, \
     get_txn_schema_version, get_txn_schema_attr_names
 from indy_common.state.state_constants import MARKER_SCHEMA
-from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 
@@ -19,11 +18,10 @@ from plenum.server.request_handlers.utils import encode_state_value
 
 class SchemaHandler(WriteRequestHandler):
 
-    def __init__(self, database_manager: DatabaseManager, get_schema_handler: GetSchemaHandler,
+    def __init__(self, database_manager: DatabaseManager,
                  write_request_validator: WriteRequestValidator):
         super().__init__(database_manager, SCHEMA, DOMAIN_LEDGER_ID)
         self.write_request_validator = write_request_validator
-        self.get_schema_handler = get_schema_handler
 
     def static_validation(self, request: Request):
         pass
@@ -35,11 +33,8 @@ class SchemaHandler(WriteRequestHandler):
         identifier, req_id, operation = get_request_data(request)
         schema_name = get_write_schema_name(request)
         schema_version = get_write_schema_version(request)
-        schema, _, _, _ = self.get_schema_handler.get_schema(
-            author=identifier,
-            schema_name=schema_name,
-            schema_version=schema_version,
-            with_proof=False)
+        path = SchemaHandler.make_state_path_for_schema(identifier, schema_name, schema_version)
+        schema = self.state.get(path, isCommitted=True)
         if schema:
             self.write_request_validator.validate(request,
                                                   [AuthActionEdit(txn_type=SCHEMA,

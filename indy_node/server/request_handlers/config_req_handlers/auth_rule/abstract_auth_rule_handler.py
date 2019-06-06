@@ -22,7 +22,7 @@ class AbstractAuthRuleHandler(WriteRequestHandler, metaclass=ABCMeta):
     def _static_validation_for_rule(self, operation, identifier, req_id):
         try:
             ConstraintCreator.create_constraint(operation.get(CONSTRAINT))
-        except ValueError as exp:
+        except (ValueError, KeyError) as exp:
             raise InvalidClientRequest(identifier,
                                        req_id,
                                        exp)
