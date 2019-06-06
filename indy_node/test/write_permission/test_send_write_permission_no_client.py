@@ -12,6 +12,7 @@ from indy_node.test.anon_creds.conftest import claim_def, build_revoc_reg_entry_
 from indy_node.test.attrib_txn.test_nym_attrib import attributeData, attributeName, attributeValue
 from indy_node.test.anon_creds.conftest import build_revoc_def_by_default
 from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
+from indy_node.test.schema.test_send_get_schema import send_schema_req
 
 from indy.anoncreds import issuer_create_schema
 from indy.ledger import build_schema_request

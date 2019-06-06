@@ -1,4 +1,9 @@
-import pytest
+import copy
+
+import time
+from indy.ledger import build_get_revoc_reg_def_request, build_get_revoc_reg_request, build_get_revoc_reg_delta_request
+
+from indy_node.test.anon_creds.helper import get_revoc_reg_def_id
 
 from common.serializers.serialization import domain_state_serializer
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, \
@@ -16,6 +21,10 @@ from indy_common.serialization import attrib_raw_data_serializer
 from indy_node.test.attrib_txn.test_nym_attrib import \
     sdk_added_raw_attribute, attributeName, attributeValue, attributeData
 from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
+from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_and_submit_req
+
+from indy_node.test.anon_creds.conftest import send_revoc_reg_entry, send_revoc_reg_def, send_claim_def, claim_def
+from indy_node.test.schema.test_send_get_schema import send_schema_req
 
 
 def test_state_proof_returned_for_get_attr(looper,
@@ -176,3 +185,111 @@ def test_state_proof_returned_for_get_claim_def(looper,
     assert data == expected_data
     assert result[TXN_TIME]
     check_valid_proof(result)
+
+
+def test_state_proof_returned_for_get_revoc_reg_def(looper,
+                                                    nodeSetWithOneNodeResponding,
+                                                    sdk_wallet_steward,
+                                                    sdk_pool_handle,
+                                                    sdk_wallet_client,
+                                                    send_revoc_reg_def):
+    revoc_reg_def_data = send_revoc_reg_def[0]['operation']
+
+    req = looper.loop.run_until_complete(build_get_revoc_reg_def_request(
+        sdk_wallet_client[1], get_revoc_reg_def_id(sdk_wallet_steward[1], send_revoc_reg_def[0])))
+    rep = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, req)])
+    result = rep[0][1]['result']
+
+    expected_data = revoc_reg_def_data
+    del expected_data['type']
+    assert DATA in result
+    data = result.get(DATA)
+    assert data
+    assert data == expected_data
+    assert result[TXN_TIME]
+    check_valid_proof(result)
+
+
+def test_state_proof_returned_for_get_revoc_reg_entry(looper,
+                                                      nodeSetWithOneNodeResponding,
+                                                      sdk_wallet_steward,
+                                                      sdk_pool_handle,
+                                                      sdk_wallet_client,
+                                                      send_revoc_reg_entry):
+    revoc_reg_def = send_revoc_reg_entry[0]
+    revoc_reg_entry_data = send_revoc_reg_entry[1][0]['operation']
+
+    timestamp = int(time.time())
+    req = looper.loop.run_until_complete(build_get_revoc_reg_request(
+        sdk_wallet_client[1], get_revoc_reg_def_id(sdk_wallet_steward[1], revoc_reg_def[0]), timestamp))
+    rep = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, req)])
+    result = rep[0][1]['result']
+
+    expected_data = revoc_reg_entry_data
+    data = result.get(DATA)
+
+    del expected_data['type']
+    del data['seqNo']
+    del data['txnTime']
+    assert DATA in result
+    assert data
+    assert data == expected_data
+    assert result[TXN_TIME]
+    check_valid_proof(result)
+
+
+def check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, timestamp_fr, timestamp_to,
+                    sdk_pool_handle, revoc_reg_entry_data, check_data=True):
+    req = looper.loop.run_until_complete(build_get_revoc_reg_delta_request(
+        sdk_wallet_client[1], get_revoc_reg_def_id(sdk_wallet_steward[1], revoc_reg_def[0]), timestamp_fr,
+        timestamp_to))
+    rep = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, req)])
+
+    if check_data:
+        result = rep[0][1]['result']
+        expected_data = revoc_reg_entry_data
+        data = result.get(DATA)['value']['accum_to']
+
+        del data['seqNo']
+        del data['txnTime']
+        if 'type' in expected_data:
+            del expected_data['type']
+        assert DATA in result
+        assert data
+        assert data == expected_data
+        assert result[TXN_TIME]
+        check_valid_proof(result)
+
+
+def test_state_proof_returned_for_get_revoc_reg_delta(looper,
+                                                      nodeSetWithOneNodeResponding,
+                                                      sdk_wallet_steward,
+                                                      sdk_pool_handle,
+                                                      sdk_wallet_client,
+                                                      send_revoc_reg_entry):
+    revoc_reg_def = send_revoc_reg_entry[0]
+    revoc_reg_entry_data = send_revoc_reg_entry[1][0]['operation']
+    timestamp = send_revoc_reg_entry[1][1]['result']['txnMetadata']['txnTime']
+
+    check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, None, timestamp + 1,
+                    sdk_pool_handle, revoc_reg_entry_data)
+
+    check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, None, timestamp - 1,
+                    sdk_pool_handle, revoc_reg_entry_data, False)
+
+    # TODO: INDY-2115
+    # check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, timestamp - 2, timestamp - 1,
+    #                 sdk_pool_handle, revoc_reg_entry_data, False)
+
+    check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, timestamp - 1, timestamp + 1,
+                    sdk_pool_handle, revoc_reg_entry_data)
+
+    check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, timestamp + 1, timestamp + 2,
+                    sdk_pool_handle, revoc_reg_entry_data)
+
+    # TODO: INDY-2115
+    # check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, None, timestamp - 999,
+    #                 sdk_pool_handle, revoc_reg_entry_data)
+    #
+    # check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, timestamp - 1000, timestamp - 999,
+    #                 sdk_pool_handle, revoc_reg_entry_data)

@@ -84,7 +84,6 @@ def test_get_auth_rule_transaction_unique_for_anyone_can_write_map_is_rejected(
         )
 
 
-@pytest.mark.skip('INDY-2077')
 def test_get_one_disabled_auth_rule_transaction(looper,
                                                 sdk_wallet_trustee,
                                                 sdk_pool_handle):
