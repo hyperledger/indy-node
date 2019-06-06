@@ -1,4 +1,4 @@
-from indy_common.authorize.auth_actions import AuthActionAdd
+from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.state import domain
 
@@ -39,16 +39,18 @@ class SchemaHandler(WriteRequestHandler):
             schema_version=schema_version,
             with_proof=False)
         if schema:
-            raise InvalidClientRequest(identifier, req_id,
-                                       '{} can have one and only one SCHEMA with '
-                                       'name {} and version {}'
-                                       .format(identifier, schema_name, schema_version))
-        self.write_request_validator.validate(request,
-                                              [AuthActionAdd(txn_type=SCHEMA,
-                                                             field='*',
-                                                             value='*')])
+            self.write_request_validator.validate(request,
+                                                  [AuthActionEdit(txn_type=SCHEMA,
+                                                                  field='*',
+                                                                  old_value='*',
+                                                                  new_value='*')])
+        else:
+            self.write_request_validator.validate(request,
+                                                  [AuthActionAdd(txn_type=SCHEMA,
+                                                                 field='*',
+                                                                 value='*')])
 
-    def gen_state_key(self, txn):
+    def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
         path = domain.prepare_schema_for_state(txn, path_only=True)
         return path.decode()

@@ -15,7 +15,7 @@ def test_send_revoc_reg_def(looper,
     txns_count_before = set([n.domainLedger.size for n in txnPoolNodeSet])
     assert len(txns_count_before) == 1, "Ledger size for nodes are not equal"
     _, author_did = sdk_wallet_steward
-    claim_def_req = send_claim_def
+    claim_def_req = send_claim_def[0]
     revoc_req = build_revoc_def_by_default
     revoc_req['operation'][CRED_DEF_ID] = make_state_path_for_claim_def(author_did,
                                                                         str(claim_def_req['operation'][

@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from indy_common.authorize.auth_constraints import AuthConstraintForbidden
 from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
 from indy_common.constants import SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES
 from indy_common.types import SchemaField
@@ -43,7 +44,8 @@ def test_can_not_send_same_schema(looper, sdk_pool_handle,
         "1.8"
     )
 
-    with pytest.raises(RequestRejectedException) as ex_info:
+    with pytest.raises(RequestRejectedException,
+                       match=str(AuthConstraintForbidden())):
         resp = sdk_write_schema_and_check(
             looper, sdk_pool_handle,
             sdk_wallet_trust_anchor,
@@ -52,9 +54,6 @@ def test_can_not_send_same_schema(looper, sdk_pool_handle,
             "1.8"
         )
         validate_write_reply(resp)
-    ex_info.match(
-        "can have one and only one SCHEMA with name business and version 1.8"
-    )
 
 
 def test_schema_maximum_attrib(looper, sdk_pool_handle,

@@ -1,5 +1,7 @@
 import pytest
 
+from indy_common.authorize.auth_actions import AuthActionEdit
+from indy_common.constants import SCHEMA
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
 from indy_node.test.request_handlers.helper import add_to_idr, get_exception
 from plenum.common.constants import TRUSTEE
@@ -25,7 +27,17 @@ def make_schema_exist(handler, is_exist: bool):
 
 def test_schema_dynamic_validation_failed_existing_schema(schema_request, schema_handler):
     make_schema_exist(schema_handler.get_schema_handler, True)
-    with pytest.raises(InvalidClientRequest):
+
+    def validate(request, action_list):
+        if action_list != [AuthActionEdit(txn_type=SCHEMA,
+                                          field='*',
+                                          old_value='*',
+                                          new_value='*')]:
+            raise UnauthorizedClientRequest("identifier", "reqId")
+
+    schema_handler.write_request_validator.validate = validate
+
+    with pytest.raises(UnauthorizedClientRequest):
         schema_handler.dynamic_validation(schema_request)
 
 
