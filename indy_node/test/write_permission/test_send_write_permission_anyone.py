@@ -19,6 +19,7 @@ from indy_node.test.attrib_txn.test_nym_attrib import attributeData, attributeNa
 from indy_node.test.anon_creds.conftest import build_revoc_def_by_default
 
 from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
+from indy_node.test.schema.test_send_get_schema import send_schema_req
 
 
 @pytest.fixture(scope="module")
