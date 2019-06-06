@@ -189,4 +189,4 @@ class ForbiddenAuthorizer(AbstractAuthorizer):
                   request: Request,
                   auth_constraint: AuthConstraintForbidden,
                   auth_action: AbstractAuthAction):
-        return False, str(AuthConstraintForbidden)
+        return False, str(auth_constraint)
