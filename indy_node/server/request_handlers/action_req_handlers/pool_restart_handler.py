@@ -30,9 +30,9 @@ class PoolRestartHandler(ActionRequestHandler):
         self._validate_request_type(request)
         action = request.operation.get(ACTION)
         self.write_request_validator.validate(request,
-                                          [AuthActionAdd(txn_type=POOL_RESTART,
-                                                         field=ACTION,
-                                                         value=action)])
+                                              [AuthActionAdd(txn_type=POOL_RESTART,
+                                                             field=ACTION,
+                                                             value=action)])
 
     def process_action(self, request: Request):
         self._validate_request_type(request)

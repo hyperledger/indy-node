@@ -52,10 +52,10 @@ class AuthRuleHandler(WriteRequestHandler):
     def dynamic_validation(self, request: Request):
         self._validate_request_type(request)
         self.write_request_validator.validate(request,
-                                          [AuthActionEdit(txn_type=AUTH_RULE,
-                                                          field="*",
-                                                          old_value="*",
-                                                          new_value="*")])
+                                              [AuthActionEdit(txn_type=AUTH_RULE,
+                                                              field="*",
+                                                              old_value="*",
+                                                              new_value="*")])
 
     @staticmethod
     def get_auth_constraint(txn):
