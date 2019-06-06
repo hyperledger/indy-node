@@ -1,3 +1,9 @@
+import json
+
+from indy import blob_storage
+from indy.anoncreds import issuer_create_and_store_revoc_reg
+from indy.ledger import build_revoc_reg_def_request, build_revoc_reg_entry_request
+
 from plenum.common.types import f
 
 from plenum.common.constants import STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, MULTI_SIGNATURE_SIGNATURE, \
@@ -6,10 +12,63 @@ from plenum.common.constants import STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PRO
     MULTI_SIGNATURE_VALUE_TIMESTAMP, TYPE, DATA, TXN_TIME, TXN_PAYLOAD, TXN_PAYLOAD_METADATA, TXN_PAYLOAD_METADATA_FROM, \
     TXN_PAYLOAD_DATA, TXN_METADATA, TXN_METADATA_SEQ_NO, TXN_METADATA_TIME
 from indy_common.constants import VALUE, GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA, \
-    ACCUM_TO, ISSUED, STATE_PROOF_FROM, ACCUM_FROM
+    ACCUM_TO, ISSUED, STATE_PROOF_FROM, ACCUM_FROM, CRED_DEF_ID, REVOC_TYPE, TAG
 from common.serializers.serialization import state_roots_serializer, proof_nodes_serializer
 from state.pruning_state import PruningState
 from indy_common.state import domain
+
+
+def get_cred_def_id(submitter_did, schema_id, tag):
+    cred_def_marker = domain.MARKER_CLAIM_DEF
+    signature_type = 'CL'
+    cred_def_id = ':'.join([submitter_did, cred_def_marker, signature_type, str(schema_id), tag])
+    return cred_def_id
+
+
+def get_revoc_reg_def_id(author_did, revoc_req):
+    return ":".join([author_did,
+                     domain.MARKER_REVOC_DEF,
+                     revoc_req['operation'][CRED_DEF_ID],
+                     revoc_req['operation'][REVOC_TYPE],
+                     revoc_req['operation'][TAG]])
+
+
+def get_revoc_reg_entry_id(submitter_did, def_revoc_id):
+    entry_revoc_id = ':'.join([submitter_did, domain.MARKER_REVOC_REG_ENTRY, def_revoc_id])
+    return entry_revoc_id
+
+
+def create_revoc_reg(looper, wallet_handle, submitter_did, tag, cred_def_id,
+                     issuance):
+    tails_writer_config = json.dumps({'base_dir': 'tails', 'uri_pattern': ''})
+    tails_writer = looper.loop.run_until_complete(blob_storage.open_writer(
+        'default', tails_writer_config))
+    _, revoc_reg_def_json, revoc_reg_entry_json = \
+        looper.loop.run_until_complete(issuer_create_and_store_revoc_reg(
+            wallet_handle, submitter_did, "CL_ACCUM", tag, cred_def_id,
+            json.dumps({"max_cred_num": 5, "issuance_type": issuance}),
+            tails_writer))
+    return looper.loop.run_until_complete(
+        build_revoc_reg_def_request(submitter_did, revoc_reg_def_json))
+
+
+def create_revoc_reg_entry(looper, wallet_handle, submitter_did, tag, cred_def_id,
+                           issuance):
+    tails_writer_config = json.dumps({'base_dir': 'tails', 'uri_pattern': ''})
+    tails_writer = looper.loop.run_until_complete(blob_storage.open_writer(
+        'default', tails_writer_config))
+    revoc_reg_def_id, revoc_reg_def_json, revoc_reg_entry_json = \
+        looper.loop.run_until_complete(issuer_create_and_store_revoc_reg(
+            wallet_handle, submitter_did, "CL_ACCUM", tag, cred_def_id,
+            json.dumps({"max_cred_num": 5, "issuance_type": issuance}),
+            tails_writer))
+    revoc_reg_def = looper.loop.run_until_complete(
+        build_revoc_reg_def_request(submitter_did, revoc_reg_def_json))
+    entry_revoc_request = looper.loop.run_until_complete(
+        build_revoc_reg_entry_request(
+            submitter_did, revoc_reg_def_id, "CL_ACCUM", revoc_reg_entry_json))
+
+    return revoc_reg_def, entry_revoc_request
 
 
 def prepare_for_state(result):

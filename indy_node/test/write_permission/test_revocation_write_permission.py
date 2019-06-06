@@ -12,6 +12,8 @@ from plenum.common.exceptions import RequestNackedException, RequestRejectedExce
 from plenum.common.util import randomString
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
 
+from indy_node.test.schema.test_send_get_schema import send_schema_req
+
 
 @pytest.fixture(scope='module')
 def tconf(tconf):
