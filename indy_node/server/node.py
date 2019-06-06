@@ -205,7 +205,8 @@ class Node(PlenumNode):
 
     def register_config_req_handlers(self):
         # Read handlers
-        get_auth_rule_handler = GetAuthRuleHandler(self.db_manager)
+        get_auth_rule_handler = GetAuthRuleHandler(database_manager=self.db_manager,
+                                                   write_request_validator=self.write_req_validator)
         # Write handlers
         auth_rule_handler = AuthRuleHandler(database_manager=self.db_manager,
                                             write_request_validator=self.write_req_validator)
