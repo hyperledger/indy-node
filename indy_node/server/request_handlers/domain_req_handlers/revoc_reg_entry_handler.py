@@ -36,7 +36,7 @@ class RevocRegEntryHandler(WriteRequestHandler):
         validator = validator_cls(self.state)
         validator.validate(current_entry, request)
 
-    def gen_state_key(self, txn):
+    def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
         path = domain.prepare_revoc_reg_entry_for_state(txn, path_only=True)
         return path.decode()

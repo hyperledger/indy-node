@@ -53,7 +53,7 @@ class NymHandler(WriteRequestHandler):
         else:
             self._validate_existing_nym(request, operation, nym_data)
 
-    def gen_state_key(self, txn):
+    def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
         nym = get_payload_data(txn).get(TARGET_NYM)
         binary_digest = domain.make_state_path_for_nym(nym)
