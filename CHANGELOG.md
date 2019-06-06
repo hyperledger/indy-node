@@ -1,5 +1,7 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.8.1](#181)
+
 * [1.8.0](#180)
 
 * [1.7.1](#171)
@@ -39,6 +41,24 @@
 #### Disclosure
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
+
+## 1.8.1
+### Release date: June 06th, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.8.1 |
+| indy-node | 1.8.1 |
+| sovrin | 1.1.46 |
+
+
+### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| All BuilderNet nodes are restarting every 30-50 seconds | |[INDY-2128](https://jira.hyperledger.org/browse/INDY-2128) |
+| Primaries are not updated in audit ledger if one of the primaries is demoted | |[INDY-2129](https://jira.hyperledger.org/browse/INDY-2129) |
+| A client may receive NACK for a payment transfer request, but the transaction will be eventually ordered (payment transferred) | |[INDY-2122](https://jira.hyperledger.org/browse/INDY-2122) |
 
 ## 1.8.0 
 ### Release date: May 31th, 2019
