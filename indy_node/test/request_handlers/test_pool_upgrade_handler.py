@@ -162,5 +162,5 @@ def test_pool_upgrade_dynamic_validation_passes(
     pool_upgrade_handler.upgrader.get_upgrade_txn = \
         lambda predicate, reverse: \
             {TXN_PAYLOAD: {TXN_PAYLOAD_DATA: {}}}
-    pool_upgrade_handler.write_request_validator.validate = lambda a, b: 0
+    pool_upgrade_handler.write_req_validator.validate = lambda a, b: 0
     pool_upgrade_handler.dynamic_validation(pool_upgrade_request)
