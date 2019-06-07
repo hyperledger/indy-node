@@ -27,9 +27,9 @@ class ValidatorInfoHandler(ActionRequestHandler):
     def dynamic_validation(self, request: Request):
         self._validate_request_type(request)
         self.write_req_validator.validate(request,
-                                              [AuthActionAdd(txn_type=VALIDATOR_INFO,
-                                                             field='*',
-                                                             value='*')])
+                                          [AuthActionAdd(txn_type=VALIDATOR_INFO,
+                                                         field='*',
+                                                         value='*')])
 
     def process_action(self, request: Request):
         self._validate_request_type(request)

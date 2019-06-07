@@ -40,15 +40,15 @@ class SchemaHandler(WriteRequestHandler):
             with_proof=False)
         if schema:
             self.write_req_validator.validate(request,
-                                                  [AuthActionEdit(txn_type=SCHEMA,
-                                                                  field='*',
-                                                                  old_value='*',
-                                                                  new_value='*')])
+                                              [AuthActionEdit(txn_type=SCHEMA,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*')])
         else:
             self.write_req_validator.validate(request,
-                                                  [AuthActionAdd(txn_type=SCHEMA,
-                                                                 field='*',
-                                                                 value='*')])
+                                              [AuthActionAdd(txn_type=SCHEMA,
+                                                             field='*',
+                                                             value='*')])
 
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)

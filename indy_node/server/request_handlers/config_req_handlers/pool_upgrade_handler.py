@@ -95,7 +95,7 @@ class PoolUpgradeHandler(WriteRequestHandler):
                                          old_value=status,
                                          new_value=action)
         self.write_req_validator.validate(request,
-                                              [auth_action])
+                                          [auth_action])
 
     def apply_forced_request(self, req: Request):
         super().apply_forced_request(req)

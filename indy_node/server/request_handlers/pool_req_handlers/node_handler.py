@@ -34,9 +34,9 @@ class NodeHandler(PNodeHandler):
             return "existing data has conflicts with " \
                    "request data {}. Error: {}".format(operation.get(DATA), error)
         self.write_req_validator.validate(request,
-                                              [AuthActionAdd(txn_type=NODE,
-                                                             field=SERVICES,
-                                                             value=data.get(SERVICES, [VALIDATOR]))])
+                                          [AuthActionAdd(txn_type=NODE,
+                                                         field=SERVICES,
+                                                         value=data.get(SERVICES, [VALIDATOR]))])
 
     def _auth_error_while_updating_node(self, request):
         origin = request.identifier
@@ -72,8 +72,8 @@ class NodeHandler(PNodeHandler):
                     new_val = []
             if old_val != new_val:
                 self.write_req_validator.validate(request,
-                                                      [AuthActionEdit(txn_type=NODE,
-                                                                      field=k,
-                                                                      old_value=old_val,
-                                                                      new_value=new_val,
-                                                                      is_owner=is_steward_of_node)])
+                                                  [AuthActionEdit(txn_type=NODE,
+                                                                  field=k,
+                                                                  old_value=old_val,
+                                                                  new_value=new_val,
+                                                                  is_owner=is_steward_of_node)])

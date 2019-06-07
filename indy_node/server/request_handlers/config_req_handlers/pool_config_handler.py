@@ -25,10 +25,10 @@ class PoolConfigHandler(WriteRequestHandler):
         action = '*'
         status = '*'
         self.write_req_validator.validate(request,
-                                              [AuthActionEdit(txn_type=self.txn_type,
-                                                              field=ACTION,
-                                                              old_value=status,
-                                                              new_value=action)])
+                                          [AuthActionEdit(txn_type=self.txn_type,
+                                                          field=ACTION,
+                                                          old_value=status,
+                                                          new_value=action)])
 
     def apply_forced_request(self, req: Request):
         super().apply_forced_request(req)

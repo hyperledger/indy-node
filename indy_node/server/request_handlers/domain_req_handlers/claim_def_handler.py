@@ -43,9 +43,9 @@ class ClaimDefHandler(WriteRequestHandler):
         # only owner can update claim_def,
         # because his identifier is the primary key of claim_def
         self.write_req_validator.validate(request,
-                                              [AuthActionAdd(txn_type=CLAIM_DEF,
-                                                             field='*',
-                                                             value='*')])
+                                          [AuthActionAdd(txn_type=CLAIM_DEF,
+                                                         field='*',
+                                                         value='*')])
 
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)

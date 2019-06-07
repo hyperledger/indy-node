@@ -14,6 +14,6 @@ class TxnAuthorAgreementHandler(PTxnAuthorAgreementHandler):
 
     def authorize(self, request):
         self.write_req_validator.validate(request,
-                                              [AuthActionAdd(txn_type=self.txn_type,
-                                                             field='*',
-                                                             value='*')])
+                                          [AuthActionAdd(txn_type=self.txn_type,
+                                                         field='*',
+                                                         value='*')])

@@ -86,9 +86,9 @@ class NymHandler(WriteRequestHandler):
     def _validate_new_nym(self, request, operation):
         role = operation.get(ROLE)
         self.write_req_validator.validate(request,
-                                              [AuthActionAdd(txn_type=NYM,
-                                                             field=ROLE,
-                                                             value=role)])
+                                          [AuthActionAdd(txn_type=NYM,
+                                                         field=ROLE,
+                                                         value=role)])
 
     def _validate_existing_nym(self, request, operation, nym_data):
         origin = request.identifier
@@ -101,8 +101,8 @@ class NymHandler(WriteRequestHandler):
                 newVal = operation[key]
                 oldVal = nym_data.get(key)
                 self.write_req_validator.validate(request,
-                                                      [AuthActionEdit(txn_type=NYM,
-                                                                      field=key,
-                                                                      old_value=oldVal,
-                                                                      new_value=newVal,
-                                                                      is_owner=is_owner)])
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=key,
+                                                                  old_value=oldVal,
+                                                                  new_value=newVal,
+                                                                  is_owner=is_owner)])

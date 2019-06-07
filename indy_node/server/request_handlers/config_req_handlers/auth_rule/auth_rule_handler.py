@@ -22,10 +22,10 @@ class AuthRuleHandler(AbstractAuthRuleHandler):
     def dynamic_validation(self, request: Request):
         self._validate_request_type(request)
         self.write_req_validator.validate(request,
-                                              [AuthActionEdit(txn_type=AUTH_RULE,
-                                                              field="*",
-                                                              old_value="*",
-                                                              new_value="*")])
+                                          [AuthActionEdit(txn_type=AUTH_RULE,
+                                                          field="*",
+                                                          old_value="*",
+                                                          new_value="*")])
 
     def update_state(self, txn, prev_result, is_committed=False):
         payload = get_payload_data(txn)
