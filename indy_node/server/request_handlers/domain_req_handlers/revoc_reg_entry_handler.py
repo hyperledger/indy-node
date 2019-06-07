@@ -4,7 +4,6 @@ from typing import Dict, Callable
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, VALUE, ISSUANCE_TYPE
 from indy_common.state.state_constants import MARKER_REVOC_REG_ENTRY, MARKER_REVOC_REG_ENTRY_ACCUM
-from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_handler import GetRevocRegHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID, TXN_TIME
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
