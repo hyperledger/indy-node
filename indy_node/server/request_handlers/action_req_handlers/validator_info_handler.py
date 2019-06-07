@@ -15,10 +15,10 @@ logger = getlogger()
 
 class ValidatorInfoHandler(ActionRequestHandler):
     def __init__(self, database_manager: DatabaseManager,
-                 write_request_validator: WriteRequestValidator,
+                 write_req_validator: WriteRequestValidator,
                  info_tool):
         super().__init__(database_manager, VALIDATOR_INFO, None)
-        self.write_request_validator = write_request_validator
+        self.write_req_validator = write_req_validator
         self.info_tool = info_tool
 
     def static_validation(self, request: Request):
@@ -26,7 +26,7 @@ class ValidatorInfoHandler(ActionRequestHandler):
 
     def dynamic_validation(self, request: Request):
         self._validate_request_type(request)
-        self.write_request_validator.validate(request,
+        self.write_req_validator.validate(request,
                                               [AuthActionAdd(txn_type=VALIDATOR_INFO,
                                                              field='*',
                                                              value='*')])

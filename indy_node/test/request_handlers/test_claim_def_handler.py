@@ -47,7 +47,7 @@ def test_claim_def_dynamic_validation_for_new_claim_def(claim_def_request, schem
 
 def test_claim_def_dynamic_validation_without_permission(claim_def_request, schema_request,
                                                          claim_def_handler: ClaimDefHandler):
-    claim_def_handler.write_request_validator.validate = get_exception(True)
+    claim_def_handler.write_req_validator.validate = get_exception(True)
     schema = reqToTxn(schema_request)
     claim_def_request.operation[REF] = get_seq_no(schema)
     claim_def_handler.ledger.appendTxns([schema])
@@ -65,7 +65,7 @@ def test_claim_def_dynamic_validation_without_permission(claim_def_request, sche
 
 def test_claim_def_dynamic_validation_for_unknown_identifier(claim_def_request, schema_request,
                                                              claim_def_handler: ClaimDefHandler):
-    claim_def_handler.write_request_validator.validate = get_exception(True)
+    claim_def_handler.write_req_validator.validate = get_exception(True)
     test_identifier = randomString()
     schema = reqToTxn(schema_request)
     claim_def_request.operation[REF] = get_seq_no(schema)

@@ -18,8 +18,8 @@ from plenum.server.database_manager import DatabaseManager
 class GetAuthRuleHandler(ReadRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
-                 write_request_validator: WriteRequestValidator):
-        self.write_request_validator = write_request_validator
+                 write_req_validator: WriteRequestValidator):
+        self.write_req_validator = write_req_validator
         self.constraint_serializer = ConstraintsSerializer(domain_state_serializer)
         super().__init__(database_manager, GET_AUTH_RULE, CONFIG_LEDGER_ID)
 
@@ -33,7 +33,7 @@ class GetAuthRuleHandler(ReadRequestHandler):
             if not set(required_fields).issubset(set(operation.keys())):
                 raise InvalidClientRequest(identifier, req_id,
                                            "Not enough fields to build an auth key.")
-            StaticAuthRuleHelper.check_auth_key(operation, identifier, req_id, self.write_request_validator.auth_map)
+            StaticAuthRuleHelper.check_auth_key(operation, identifier, req_id, self.write_req_validator.auth_map)
 
     def get_result(self, request: Request):
         self._validate_request_type(request)
@@ -57,14 +57,14 @@ class GetAuthRuleHandler(ReadRequestHandler):
         if map_data:
             data = self.constraint_serializer.deserialize(map_data)
         else:
-            data = self.write_request_validator.auth_map[key]
+            data = self.write_req_validator.auth_map[key]
         action_obj = split_action_id(key)
         return [self.make_auth_rule_data(data, action_obj)], proof
 
     def _get_all_auth_rules(self):
-        data = self.write_request_validator.auth_map.copy()
+        data = self.write_req_validator.auth_map.copy()
         result = []
-        for key in self.write_request_validator.auth_map:
+        for key in self.write_req_validator.auth_map:
             path = config.make_state_path_for_auth_rule(key)
             state_constraint, _ = self._get_value_from_state(path)
             if state_constraint:

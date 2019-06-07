@@ -42,10 +42,10 @@ def aml_request(txn_author_agreement_aml_handler):
 def test_dynamic_validation(aml_request,
                             txn_author_agreement_aml_handler: TxnAuthorAgreementAmlHandler,
                             creator):
-    txn_author_agreement_aml_handler.write_request_validator.validate = get_exception(False)
+    txn_author_agreement_aml_handler.write_req_validator.validate = get_exception(False)
     add_to_idr(txn_author_agreement_aml_handler.database_manager.idr_cache, creator, STEWARD)
     txn_author_agreement_aml_handler.dynamic_validation(aml_request)
 
-    txn_author_agreement_aml_handler.write_request_validator.validate = get_exception(True)
+    txn_author_agreement_aml_handler.write_req_validator.validate = get_exception(True)
     with pytest.raises(UnauthorizedClientRequest):
         txn_author_agreement_aml_handler.dynamic_validation(aml_request)

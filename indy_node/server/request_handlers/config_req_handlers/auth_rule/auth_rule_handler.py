@@ -11,8 +11,8 @@ from plenum.server.database_manager import DatabaseManager
 
 class AuthRuleHandler(AbstractAuthRuleHandler):
 
-    def __init__(self, database_manager: DatabaseManager, write_request_validator: WriteRequestValidator):
-        super().__init__(database_manager, write_request_validator, AUTH_RULE)
+    def __init__(self, database_manager: DatabaseManager, write_req_validator: WriteRequestValidator):
+        super().__init__(database_manager, write_req_validator, AUTH_RULE)
 
     def static_validation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
@@ -21,7 +21,7 @@ class AuthRuleHandler(AbstractAuthRuleHandler):
 
     def dynamic_validation(self, request: Request):
         self._validate_request_type(request)
-        self.write_request_validator.validate(request,
+        self.write_req_validator.validate(request,
                                               [AuthActionEdit(txn_type=AUTH_RULE,
                                                               field="*",
                                                               old_value="*",

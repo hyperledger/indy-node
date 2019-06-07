@@ -173,13 +173,13 @@ class Node(PlenumNode):
                                                               get_revocation_strategy=RevocRegDefHandler.get_revocation_strategy)
         # Write handlers
         nym_handler = NymHandler(database_manager=self.db_manager,
-                                 write_request_validator=self.write_req_validator)
+                                 write_req_validator=self.write_req_validator)
         attrib_handler = AttributeHandler(database_manager=self.db_manager)
         schema_handler = SchemaHandler(database_manager=self.db_manager,
                                        get_schema_handler=get_schema_handler,
-                                       write_request_validator=self.write_req_validator)
+                                       write_req_validator=self.write_req_validator)
         claim_def_handler = ClaimDefHandler(database_manager=self.db_manager,
-                                            write_request_validator=self.write_req_validator)
+                                            write_req_validator=self.write_req_validator)
         revoc_reg_def_handler = RevocRegDefHandler(database_manager=self.db_manager,
                                                    get_revoc_reg_def=get_revoc_reg_def_handler)
         revoc_reg_entry_handler = RevocRegEntryHandler(database_manager=self.db_manager,
@@ -206,18 +206,18 @@ class Node(PlenumNode):
     def register_config_req_handlers(self):
         # Read handlers
         get_auth_rule_handler = GetAuthRuleHandler(database_manager=self.db_manager,
-                                                   write_request_validator=self.write_req_validator)
+                                                   write_req_validator=self.write_req_validator)
         # Write handlers
         auth_rule_handler = AuthRuleHandler(database_manager=self.db_manager,
-                                            write_request_validator=self.write_req_validator)
+                                            write_req_validator=self.write_req_validator)
         auth_rules_handler = AuthRulesHandler(database_manager=self.db_manager,
-                                              write_request_validator=self.write_req_validator)
+                                              write_req_validator=self.write_req_validator)
         pool_config_handler = PoolConfigHandler(database_manager=self.db_manager,
-                                                write_request_validator=self.write_req_validator,
+                                                write_req_validator=self.write_req_validator,
                                                 pool_config=self.poolCfg)
         pool_upgrade_handler = PoolUpgradeHandler(database_manager=self.db_manager,
                                                   upgrader=self.upgrader,
-                                                  write_request_validator=self.write_req_validator,
+                                                  write_req_validator=self.write_req_validator,
                                                   pool_manager=self.poolManager)
         # Register write handlers
         self.write_manager.register_req_handler(auth_rule_handler)
@@ -230,10 +230,10 @@ class Node(PlenumNode):
     def register_action_req_handlers(self):
         # Action handlers
         pool_restart_handler = PoolRestartHandler(database_manager=self.db_manager,
-                                                  write_request_validator=self.write_req_validator,
+                                                  write_req_validator=self.write_req_validator,
                                                   restarter=self.restarter)
         validator_info_handler = ValidatorInfoHandler(database_manager=self.db_manager,
-                                                      write_request_validator=self.write_req_validator,
+                                                      write_req_validator=self.write_req_validator,
                                                       info_tool=self._info_tool)
         # Register action handlers
         self.action_manager.register_action_handler(pool_restart_handler)

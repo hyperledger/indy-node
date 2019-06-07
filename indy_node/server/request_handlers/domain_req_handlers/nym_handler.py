@@ -22,9 +22,9 @@ class NymHandler(WriteRequestHandler):
     state_serializer = domain_state_serializer
 
     def __init__(self, database_manager: DatabaseManager,
-                 write_request_validator: WriteRequestValidator):
+                 write_req_validator: WriteRequestValidator):
         super().__init__(database_manager, NYM, DOMAIN_LEDGER_ID)
-        self.write_request_validator = write_request_validator
+        self.write_req_validator = write_req_validator
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
@@ -85,7 +85,7 @@ class NymHandler(WriteRequestHandler):
 
     def _validate_new_nym(self, request, operation):
         role = operation.get(ROLE)
-        self.write_request_validator.validate(request,
+        self.write_req_validator.validate(request,
                                               [AuthActionAdd(txn_type=NYM,
                                                              field=ROLE,
                                                              value=role)])
@@ -100,7 +100,7 @@ class NymHandler(WriteRequestHandler):
             if key in operation:
                 newVal = operation[key]
                 oldVal = nym_data.get(key)
-                self.write_request_validator.validate(request,
+                self.write_req_validator.validate(request,
                                                       [AuthActionEdit(txn_type=NYM,
                                                                       field=key,
                                                                       old_value=oldVal,

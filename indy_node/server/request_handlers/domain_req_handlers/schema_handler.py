@@ -18,9 +18,9 @@ from plenum.server.request_handlers.handler_interfaces.write_request_handler imp
 class SchemaHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager, get_schema_handler: GetSchemaHandler,
-                 write_request_validator: WriteRequestValidator):
+                 write_req_validator: WriteRequestValidator):
         super().__init__(database_manager, SCHEMA, DOMAIN_LEDGER_ID)
-        self.write_request_validator = write_request_validator
+        self.write_req_validator = write_req_validator
         self.get_schema_handler = get_schema_handler
 
     def static_validation(self, request: Request):
@@ -39,13 +39,13 @@ class SchemaHandler(WriteRequestHandler):
             schema_version=schema_version,
             with_proof=False)
         if schema:
-            self.write_request_validator.validate(request,
+            self.write_req_validator.validate(request,
                                                   [AuthActionEdit(txn_type=SCHEMA,
                                                                   field='*',
                                                                   old_value='*',
                                                                   new_value='*')])
         else:
-            self.write_request_validator.validate(request,
+            self.write_req_validator.validate(request,
                                                   [AuthActionAdd(txn_type=SCHEMA,
                                                                  field='*',
                                                                  value='*')])
