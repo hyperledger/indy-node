@@ -83,7 +83,7 @@ class AuthRuleHandler(WriteRequestHandler):
                           field=field,
                           value=new_value).get_action_id()
 
-    def update_state(self, txn, prev_result, is_committed=False):
+    def update_state(self, txn, prev_result, request, is_committed=False):
         constraint = self.get_auth_constraint(txn)
         auth_key = self.gen_state_key(txn)
         self.update_auth_constraint(auth_key, constraint)

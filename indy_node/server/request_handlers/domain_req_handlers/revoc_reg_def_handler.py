@@ -47,7 +47,7 @@ class RevocRegDefHandler(WriteRequestHandler):
         path = domain.prepare_revoc_def_for_state(txn, path_only=True)
         return path.decode()
 
-    def update_state(self, txn, prev_result, is_committed=False):
+    def update_state(self, txn, prev_result, request, is_committed=False):
         self._validate_txn_type(txn)
         path, value_bytes = domain.prepare_revoc_def_for_state(txn)
         self.state.set(path, value_bytes)

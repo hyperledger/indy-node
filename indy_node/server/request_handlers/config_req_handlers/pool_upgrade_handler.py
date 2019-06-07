@@ -103,7 +103,7 @@ class PoolUpgradeHandler(WriteRequestHandler):
         self.upgrader.handleUpgradeTxn(txn)
 
     # Config handler don't use state for any validation for now
-    def update_state(self, txn, prev_result, is_committed=False):
+    def update_state(self, txn, prev_result, request, is_committed=False):
         pass
 
     def gen_state_key(self, txn):
