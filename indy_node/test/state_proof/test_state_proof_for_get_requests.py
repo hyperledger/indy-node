@@ -3,18 +3,21 @@ import copy
 import time
 from indy.ledger import build_get_revoc_reg_def_request, build_get_revoc_reg_request, build_get_revoc_reg_delta_request
 
+from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_node.test.anon_creds.helper import get_revoc_reg_def_id
 
 from common.serializers.serialization import domain_state_serializer
+from indy_node.test.auth_rule.helper import sdk_send_and_check_get_auth_rule_request, generate_key, \
+    sdk_send_and_check_auth_rule_request
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, \
-    ROLE, VERKEY, TXN_TIME, NYM, NAME, VERSION
+    ROLE, VERKEY, TXN_TIME, NYM, NAME, VERSION, STEWARD
 from plenum.common.types import f
 
 from indy_node.test.state_proof.helper import check_valid_proof, \
     sdk_submit_operation_and_get_result
 from indy_common.constants import GET_ATTR, GET_NYM, SCHEMA, GET_SCHEMA, \
     CLAIM_DEF, REVOCATION, GET_CLAIM_DEF, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_FROM, \
-    SCHEMA_ATTR_NAMES, SCHEMA_NAME, SCHEMA_VERSION, CLAIM_DEF_TAG
+    SCHEMA_ATTR_NAMES, SCHEMA_NAME, SCHEMA_VERSION, CLAIM_DEF_TAG, TRUST_ANCHOR
 from indy_common.serialization import attrib_raw_data_serializer
 
 # Fixtures, do not remove
@@ -184,6 +187,28 @@ def test_state_proof_returned_for_get_claim_def(looper,
     assert data
     assert data == expected_data
     assert result[TXN_TIME]
+    check_valid_proof(result)
+
+
+def test_state_proof_returned_for_get_auth_rule(looper,
+                                                nodeSetWithOneNodeResponding,
+                                                sdk_wallet_steward,
+                                                sdk_pool_handle,
+                                                sdk_wallet_client,
+                                                send_auth_rule):
+    req = send_auth_rule
+
+    key = generate_key(auth_action=ADD_PREFIX, auth_type=NYM,
+                       field=ROLE, new_value=TRUST_ANCHOR)
+    rep = sdk_send_and_check_get_auth_rule_request(looper, sdk_pool_handle, sdk_wallet_client, **key)
+    result = rep[0][1]['result']
+
+    expected_data = req[0][0]['operation']
+    del expected_data['type']
+    assert DATA in result
+    data = result.get(DATA)
+    assert data
+    assert data[0] == expected_data
     check_valid_proof(result)
 
 
