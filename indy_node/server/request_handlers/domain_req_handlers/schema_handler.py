@@ -34,7 +34,7 @@ class SchemaHandler(WriteRequestHandler):
         schema_name = get_write_schema_name(request)
         schema_version = get_write_schema_version(request)
         path = SchemaHandler.make_state_path_for_schema(identifier, schema_name, schema_version)
-        schema = self.state.get(path, isCommitted=True)
+        schema, _, _ = self.get_from_state(path)
         if schema:
             self.write_request_validator.validate(request,
                                                   [AuthActionEdit(txn_type=SCHEMA,

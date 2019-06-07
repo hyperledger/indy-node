@@ -37,4 +37,3 @@ class AbstractAuthRuleHandler(WriteRequestHandler, metaclass=ABCMeta):
         return "{MARKER}:{ACTION_ID}" \
             .format(MARKER=MARKER_AUTH_RULE,
                     ACTION_ID=action_id).encode()
-

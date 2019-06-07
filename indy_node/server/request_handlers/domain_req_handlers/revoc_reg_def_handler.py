@@ -20,7 +20,14 @@ class RevocRegDefHandler(WriteRequestHandler):
         self.write_request_validator = write_request_validator
 
     def static_validation(self, request: Request):
-        pass
+        cred_def_id = request.operation.get(CRED_DEF_ID)
+        tags = cred_def_id.split(":")
+        if len(tags) != 4 and len(tags) != 5:
+            raise InvalidClientRequest(request.identifier,
+                                       request.reqId,
+                                       "Format of {} field is not acceptable. "
+                                       "Expected: 'did:marker:signature_type:schema_ref' or "
+                                       "'did:marker:signature_type:schema_ref:tag'".format(CRED_DEF_ID))
 
     def dynamic_validation(self, request: Request):
         operation = request.operation
@@ -30,13 +37,12 @@ class RevocRegDefHandler(WriteRequestHandler):
         assert cred_def_id
         assert revoc_def_tag
         assert revoc_def_type
-        tags = cred_def_id.split(":")
 
         revoc_def_id = RevocRegDefHandler.make_state_path_for_revoc_def(request.identifier,
                                                                         cred_def_id,
                                                                         revoc_def_type,
                                                                         revoc_def_tag)
-        revoc_def = self.state.get(revoc_def_id, isCommitted=False)
+        revoc_def, _, _ = self.get_from_state(revoc_def_id)
 
         if revoc_def is None:
             self.write_request_validator.validate(request,
@@ -50,14 +56,7 @@ class RevocRegDefHandler(WriteRequestHandler):
                                                                   old_value='*',
                                                                   new_value='*')])
 
-        cred_def = self.state.get(cred_def_id, isCommitted=False)
-
-        if len(tags) != 4 and len(tags) != 5:
-            raise InvalidClientRequest(request.identifier,
-                                       request.reqId,
-                                       "Format of {} field is not acceptable. "
-                                       "Expected: 'did:marker:signature_type:schema_ref' or "
-                                       "'did:marker:signature_type:schema_ref:tag'".format(CRED_DEF_ID))
+        cred_def, _, _ = self.get_from_state(cred_def_id)
         if cred_def is None:
             raise InvalidClientRequest(request.identifier,
                                        request.reqId,
@@ -85,9 +84,9 @@ class RevocRegDefHandler(WriteRequestHandler):
         assert revoc_def_type
         assert revoc_def_tag
         path = RevocRegDefHandler.make_state_path_for_revoc_def(author_did,
-                                             cred_def_id,
-                                             revoc_def_type,
-                                             revoc_def_tag)
+                                                                cred_def_id,
+                                                                revoc_def_type,
+                                                                revoc_def_tag)
         if path_only:
             return path
         seq_no = get_seq_no(txn)
@@ -105,5 +104,3 @@ class RevocRegDefHandler(WriteRequestHandler):
                     CRED_DEF_ID=cred_def_id,
                     REVOC_DEF_TYPE=revoc_def_type,
                     REVOC_DEF_TAG=revoc_def_tag).encode()
-
-

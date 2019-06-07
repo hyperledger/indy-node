@@ -89,5 +89,3 @@ class ClaimDefHandler(WriteRequestHandler):
                     SIGNATURE_TYPE=signature_type,
                     SCHEMA_SEQ_NO=schema_seq_no,
                     TAG=tag).encode()
-
-

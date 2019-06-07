@@ -8,6 +8,7 @@ from indy_node.test.request_handlers.helper import add_to_idr, get_exception
 from plenum.common.constants import TRUSTEE
 from plenum.common.exceptions import InvalidClientRequest, UnknownIdentifier, UnauthorizedClientRequest
 from plenum.common.txn_util import get_request_data
+from plenum.server.request_handlers.utils import encode_state_value
 from plenum.test.testing_utils import FakeSomething
 
 
@@ -23,7 +24,7 @@ def make_schema_exist(schema_request, schema_handler):
     schema_name = get_write_schema_name(schema_request)
     schema_version = get_write_schema_version(schema_request)
     path = SchemaHandler.make_state_path_for_schema(identifier, schema_name, schema_version)
-    schema_handler.state.set(path, "{}")
+    schema_handler.state.set(path, encode_state_value("value", "seqNo", "txnTime"))
 
 
 def test_schema_dynamic_validation_failed_existing_schema(schema_request, schema_handler):
