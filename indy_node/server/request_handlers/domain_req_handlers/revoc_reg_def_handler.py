@@ -1,7 +1,8 @@
 from indy_common.state import domain
 
-from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG
+from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_def_handler import GetRevocRegDefHandler
+from indy_node.server.revocation_strategy import RevokedStrategy, IssuedStrategy
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
@@ -13,9 +14,18 @@ from plenum.server.request_handlers.handler_interfaces.write_request_handler imp
 
 class RevocRegDefHandler(WriteRequestHandler):
 
+    revocation_strategy_map = {
+        ISSUANCE_BY_DEFAULT: RevokedStrategy,
+        ISSUANCE_ON_DEMAND: IssuedStrategy,
+    }
+
     def __init__(self, database_manager: DatabaseManager, get_revoc_reg_def: GetRevocRegDefHandler):
         super().__init__(database_manager, REVOC_REG_DEF, DOMAIN_LEDGER_ID)
         self.get_revoc_reg_def = get_revoc_reg_def
+
+    @staticmethod
+    def get_revocation_strategy(typ):
+        return RevocRegDefHandler.revocation_strategy_map.get(typ)
 
     def static_validation(self, request: Request):
         pass

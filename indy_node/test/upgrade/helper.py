@@ -263,11 +263,11 @@ def check_ledger_after_upgrade(
         assert len(node.configLedger) == ledger_size
         ids = set()
         for _, txn in node.configLedger.getAllTxn():
-            type = get_type(txn)
-            assert type in allowed_txn_types
+            typ = get_type(txn)
+            assert typ in allowed_txn_types
             txn_data = get_payload_data(txn)
             data = txn_data
-            if type == NODE_UPGRADE:
+            if typ == NODE_UPGRADE:
                 data = txn_data[DATA]
 
             assert data[ACTION]
