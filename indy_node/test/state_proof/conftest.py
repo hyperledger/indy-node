@@ -17,8 +17,7 @@ def nodeSetWithOneNodeResponding(nodeSet):
 
 
 @pytest.fixture(scope="module")
-def send_auth_rule(looper, sdk_pool_handle, sdk_wallet_steward, nodeSet):
-    sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward)
+def send_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee, nodeSet):
     return sdk_send_and_check_auth_rule_request(looper,
                                                 sdk_pool_handle,
-                                                sdk_wallet_steward)
+                                                sdk_wallet_trustee)
