@@ -110,5 +110,3 @@ class RevocRegEntryHandler(WriteRequestHandler):
         return "{MARKER}:{REVOC_REG_DEF_ID}" \
             .format(MARKER=MARKER_REVOC_REG_ENTRY,
                     REVOC_REG_DEF_ID=revoc_reg_def_id).encode()
-
-

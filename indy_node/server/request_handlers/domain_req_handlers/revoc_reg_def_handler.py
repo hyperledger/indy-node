@@ -58,14 +58,14 @@ class RevocRegDefHandler(WriteRequestHandler):
         if revoc_def is None:
             self.write_req_validator.validate(request,
                                               [AuthActionAdd(txn_type=REVOC_REG_DEF,
-                                                                 field='*',
-                                                                 value='*')])
+                                                             field='*',
+                                                             value='*')])
         else:
             self.write_req_validator.validate(request,
                                               [AuthActionEdit(txn_type=REVOC_REG_DEF,
-                                                                  field='*',
-                                                                  old_value='*',
-                                                                  new_value='*')])
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*')])
 
         cred_def, _, _ = self.get_from_state(cred_def_id)
         if cred_def is None:

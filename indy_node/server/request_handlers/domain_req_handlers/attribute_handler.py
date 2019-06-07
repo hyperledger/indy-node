@@ -8,7 +8,7 @@ from indy_common.serialization import attrib_raw_data_serializer
 from indy_common.state import domain
 
 from indy_common.constants import ATTRIB
-from indy_common.state.state_constants import ALL_ATR_KEYS, MARKER_ATTR
+from indy_common.state.state_constants import MARKER_ATTR
 from indy_node.server.request_handlers.utils import validate_attrib_keys
 from plenum.common.constants import DOMAIN_LEDGER_ID, RAW, ENC, HASH, TARGET_NYM
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
@@ -21,6 +21,8 @@ from plenum.server.request_handlers.utils import encode_state_value
 from stp_core.common.log import getlogger
 
 logger = getlogger()
+
+ALL_ATR_KEYS = [RAW, ENC, HASH]
 
 
 class AttributeHandler(WriteRequestHandler):

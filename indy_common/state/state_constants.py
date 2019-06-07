@@ -1,5 +1,3 @@
-from plenum.common.constants import RAW, ENC, HASH
-
 # DOMAIN LEDGER
 MARKER_ATTR = "1"
 MARKER_SCHEMA = "2"
@@ -10,8 +8,6 @@ MARKER_REVOC_REG_ENTRY_ACCUM = "6"
 LAST_SEQ_NO = "lsn"
 VALUE = "val"
 LAST_UPDATE_TIME = "lut"
-
-ALL_ATR_KEYS = [RAW, ENC, HASH]
 
 # CONFIG LEDGER
 MARKER_AUTH_RULE = "1"
