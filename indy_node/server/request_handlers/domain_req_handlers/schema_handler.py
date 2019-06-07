@@ -19,9 +19,9 @@ from plenum.server.request_handlers.utils import encode_state_value
 class SchemaHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
-                 write_request_validator: WriteRequestValidator):
+                 write_req_validator: WriteRequestValidator):
         super().__init__(database_manager, SCHEMA, DOMAIN_LEDGER_ID)
-        self.write_request_validator = write_request_validator
+        self.write_req_validator = write_req_validator
 
     def static_validation(self, request: Request):
         pass
@@ -36,16 +36,16 @@ class SchemaHandler(WriteRequestHandler):
         path = SchemaHandler.make_state_path_for_schema(identifier, schema_name, schema_version)
         schema, _, _ = self.get_from_state(path)
         if schema:
-            self.write_request_validator.validate(request,
-                                                  [AuthActionEdit(txn_type=SCHEMA,
-                                                                  field='*',
-                                                                  old_value='*',
-                                                                  new_value='*')])
+            self.write_req_validator.validate(request,
+                                              [AuthActionEdit(txn_type=SCHEMA,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*')])
         else:
-            self.write_request_validator.validate(request,
-                                                  [AuthActionAdd(txn_type=SCHEMA,
-                                                                 field='*',
-                                                                 value='*')])
+            self.write_req_validator.validate(request,
+                                              [AuthActionAdd(txn_type=SCHEMA,
+                                                             field='*',
+                                                             value='*')])
 
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)

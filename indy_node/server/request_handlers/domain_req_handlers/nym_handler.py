@@ -7,7 +7,7 @@ from indy_common.constants import NYM
 from indy_common.auth import Authoriser
 from ledger.util import F
 
-from plenum.common.constants import ROLE, TARGET_NYM, VERKEY, TXN_TIME
+from plenum.common.constants import ROLE, TARGET_NYM, VERKEY, TXN_TIME, DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import get_payload_data, get_seq_no, get_txn_time, get_request_data, get_from
@@ -21,9 +21,9 @@ class NymHandler(PNymHandler):
     state_serializer = domain_state_serializer
 
     def __init__(self, database_manager: DatabaseManager,
-                 write_request_validator: WriteRequestValidator):
-        super().__init__(database_manager, NYM)
-        self.write_request_validator = write_request_validator
+                 write_req_validator: WriteRequestValidator):
+        super().__init__(database_manager, NYM, DOMAIN_LEDGER_ID)
+        self.write_req_validator = write_req_validator
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
@@ -84,10 +84,10 @@ class NymHandler(PNymHandler):
 
     def _validate_new_nym(self, request, operation):
         role = operation.get(ROLE)
-        self.write_request_validator.validate(request,
-                                              [AuthActionAdd(txn_type=NYM,
-                                                             field=ROLE,
-                                                             value=role)])
+        self.write_req_validator.validate(request,
+                                          [AuthActionAdd(txn_type=NYM,
+                                                         field=ROLE,
+                                                         value=role)])
 
     def _validate_existing_nym(self, request, operation, nym_data):
         origin = request.identifier
@@ -99,9 +99,9 @@ class NymHandler(PNymHandler):
             if key in operation:
                 newVal = operation[key]
                 oldVal = nym_data.get(key)
-                self.write_request_validator.validate(request,
-                                                      [AuthActionEdit(txn_type=NYM,
-                                                                      field=key,
-                                                                      old_value=oldVal,
-                                                                      new_value=newVal,
-                                                                      is_owner=is_owner)])
+                self.write_req_validator.validate(request,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=key,
+                                                                  old_value=oldVal,
+                                                                  new_value=newVal,
+                                                                  is_owner=is_owner)])

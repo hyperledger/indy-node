@@ -12,9 +12,9 @@ from plenum.server.request_handlers.node_handler import NodeHandler as PNodeHand
 class NodeHandler(PNodeHandler):
 
     def __init__(self, database_manager: DatabaseManager, bls_crypto_verifier,
-                 write_request_validator: WriteRequestValidator):
+                 write_req_validator: WriteRequestValidator):
         super().__init__(database_manager, bls_crypto_verifier)
-        self.write_request_validator = write_request_validator
+        self.write_req_validator = write_req_validator
 
     def _is_steward(self, nym, is_committed: bool = True):
         return self.database_manager.idr_cache.hasSteward(nym, is_committed)
@@ -33,10 +33,10 @@ class NodeHandler(PNodeHandler):
         if error:
             return "existing data has conflicts with " \
                    "request data {}. Error: {}".format(operation.get(DATA), error)
-        self.write_request_validator.validate(request,
-                                              [AuthActionAdd(txn_type=NODE,
-                                                             field=SERVICES,
-                                                             value=data.get(SERVICES, [VALIDATOR]))])
+        self.write_req_validator.validate(request,
+                                          [AuthActionAdd(txn_type=NODE,
+                                                         field=SERVICES,
+                                                         value=data.get(SERVICES, [VALIDATOR]))])
 
     def _auth_error_while_updating_node(self, request):
         origin = request.identifier
@@ -71,9 +71,9 @@ class NodeHandler(PNodeHandler):
                 if not new_val:
                     new_val = []
             if old_val != new_val:
-                self.write_request_validator.validate(request,
-                                                      [AuthActionEdit(txn_type=NODE,
-                                                                      field=k,
-                                                                      old_value=old_val,
-                                                                      new_value=new_val,
-                                                                      is_owner=is_steward_of_node)])
+                self.write_req_validator.validate(request,
+                                                  [AuthActionEdit(txn_type=NODE,
+                                                                  field=k,
+                                                                  old_value=old_val,
+                                                                  new_value=new_val,
+                                                                  is_owner=is_steward_of_node)])

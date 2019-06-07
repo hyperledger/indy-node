@@ -37,20 +37,20 @@ def test_schema_dynamic_validation_failed_existing_schema(schema_request, schema
                                                             new_value='*').get_action_id():
             raise UnauthorizedClientRequest("identifier", "reqId")
 
-    schema_handler.write_request_validator.validate = validate
+    schema_handler.write_req_validator.validate = validate
 
     with pytest.raises(UnauthorizedClientRequest):
         schema_handler.dynamic_validation(schema_request)
 
 
 def test_schema_dynamic_validation_failed_not_authorised(schema_request, schema_handler):
-    schema_handler.write_request_validator.validate = get_exception(True)
+    schema_handler.write_req_validator.validate = get_exception(True)
     add_to_idr(schema_handler.database_manager.idr_cache, schema_request.identifier, None)
     with pytest.raises(UnauthorizedClientRequest):
         schema_handler.dynamic_validation(schema_request)
 
 
 def test_schema_dynamic_validation_passes(schema_request, schema_handler):
-    schema_handler.write_request_validator.validate = get_exception(False)
+    schema_handler.write_req_validator.validate = get_exception(False)
     add_to_idr(schema_handler.database_manager.idr_cache, schema_request.identifier, TRUSTEE)
     schema_handler.dynamic_validation(schema_request)

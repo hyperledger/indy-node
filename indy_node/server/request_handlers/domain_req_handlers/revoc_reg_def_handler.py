@@ -1,7 +1,8 @@
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG
+from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
 from indy_common.state.state_constants import MARKER_REVOC_DEF
+from indy_node.server.revocation_strategy import RevokedStrategy, IssuedStrategy
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
@@ -14,10 +15,19 @@ from plenum.server.request_handlers.utils import encode_state_value
 
 class RevocRegDefHandler(WriteRequestHandler):
 
+    revocation_strategy_map = {
+        ISSUANCE_BY_DEFAULT: RevokedStrategy,
+        ISSUANCE_ON_DEMAND: IssuedStrategy,
+    }
+
     def __init__(self, database_manager: DatabaseManager,
                  write_request_validator: WriteRequestValidator):
         super().__init__(database_manager, REVOC_REG_DEF, DOMAIN_LEDGER_ID)
         self.write_request_validator = write_request_validator
+
+    @staticmethod
+    def get_revocation_strategy(typ):
+        return RevocRegDefHandler.revocation_strategy_map.get(typ)
 
     def static_validation(self, request: Request):
         cred_def_id = request.operation.get(CRED_DEF_ID)
@@ -30,6 +40,7 @@ class RevocRegDefHandler(WriteRequestHandler):
                                        "'did:marker:signature_type:schema_ref:tag'".format(CRED_DEF_ID))
 
     def dynamic_validation(self, request: Request):
+        self._validate_request_type(request)
         operation = request.operation
         cred_def_id = operation.get(CRED_DEF_ID)
         revoc_def_type = operation.get(REVOC_TYPE)
