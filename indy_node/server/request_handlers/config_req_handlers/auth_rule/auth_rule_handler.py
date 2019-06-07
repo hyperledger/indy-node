@@ -27,7 +27,7 @@ class AuthRuleHandler(AbstractAuthRuleHandler):
                                                           old_value="*",
                                                           new_value="*")])
 
-    def update_state(self, txn, prev_result, is_committed=False):
+    def update_state(self, txn, prev_result, request=None, is_committed=False):
         payload = get_payload_data(txn)
         constraint = StaticAuthRuleHelper.get_auth_constraint(payload)
         auth_key = StaticAuthRuleHelper.get_auth_key(payload)
