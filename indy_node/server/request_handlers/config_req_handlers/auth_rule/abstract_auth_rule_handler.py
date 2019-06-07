@@ -3,7 +3,7 @@ from abc import ABCMeta
 from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.constants import CONFIG_LEDGER_ID, AUTH_RULE, CONSTRAINT
+from indy_common.constants import CONFIG_LEDGER_ID, CONSTRAINT
 from indy_common.state.state_constants import MARKER_AUTH_RULE
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.static_auth_rule_helper import StaticAuthRuleHelper
 from plenum.common.exceptions import InvalidClientRequest
@@ -14,8 +14,8 @@ from plenum.server.request_handlers.handler_interfaces.write_request_handler imp
 class AbstractAuthRuleHandler(WriteRequestHandler, metaclass=ABCMeta):
 
     def __init__(self, database_manager: DatabaseManager,
-                 write_req_validator: WriteRequestValidator):
-        super().__init__(database_manager, AUTH_RULE, CONFIG_LEDGER_ID)
+                 write_req_validator: WriteRequestValidator, txn_type):
+        super().__init__(database_manager, txn_type, CONFIG_LEDGER_ID)
         self.write_req_validator = write_req_validator
         self.constraint_serializer = ConstraintsSerializer(domain_state_serializer)
 
