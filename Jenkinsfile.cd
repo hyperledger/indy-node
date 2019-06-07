@@ -76,27 +76,27 @@ def buildDebUbuntu = { releaseVersion, sourcePath, packageVersion=null, missedPk
 def systemTests = { component, releaseVersion ->
 
     String prefix = "System Tests ($component)"
-    String defaultNetwork = 'pool-network'
-    int nodesNum = 7
+    String systemTestsNetwork = 'indy-test-automation-network'
+    String systemTestsDir = './system_tests'
 
-    String indyPlenumVersion
-    String indySDKVersion
-    String indyCryptoVersion
+    Map indyPlenumVersions = [:]
+    Map indySDKVersions = [:]
+    Map indyCryptoVersions = [:]
 
-    def dockerClean = { networkName ->
-        networkName = networkName ?: defaultNetwork
+    def dockerClean = {
+        sh "./system/docker/clean.sh $systemTestsNetwork"
 
         try {
-            sh "docker ps -q --filter network=$networkName | xargs -r docker rm -f"
+            sh "docker ps -q --filter network=$systemTestsNetwork | xargs -r docker rm -f"
         } catch (Exception exc) {
-            echo "$prefix: failed to remove docker containers in $networkName network: $exc"
+            echo "$prefix: failed to remove docker containers in $systemTestsNetwork network: $exc"
             throw exc
         }
 
         try {
-            sh "docker network ls -q --filter name=$networkName | xargs -r docker network rm"
+            sh "docker network ls -q --filter name=$systemTestsNetwork | xargs -r docker network rm"
         } catch (Exception exc) {
-            echo "$prefix: failed to remove docker $networkName network: $exc"
+            echo "$prefix: failed to remove docker $systemTestsNetwork network: $exc"
             throw exc
         }
 
@@ -104,124 +104,59 @@ def systemTests = { component, releaseVersion ->
         sh "docker network prune -f"
     }
 
-    def dockerSetup = { testFileName ->
-        dir("environment/docker/pool") {
-            stage("[${testFileName}] Run pool") {
-                echo "$prefix: Running nodes..."
-                sh "./pool_start.sh $nodesNum"
-                pool_nodes = sh(script: 'docker ps', returnStdout: true)
-                echo "$prefix: $pool_nodes"
+    def runTest = { testFilePath ->
+        stage("[${testFilePath}] Checkout system tests") {
+            testHelpers.getSystemTests(targetDir: systemTestsDir)
+        }
+
+        dir(systemTestsDir) {
+            stage("[${testFilePath}] Patch system tests python requirements") {
+                sh """
+                    sed -i 's/python3-indy.*/python3-indy==${indySDKVersions.pypi}/g' ./system/requirements.txt
+                    #sed -i 's/indy-plenum.*/indy-plenum==${indyPlenumVersions.pypi}/g' ./system/requirements.txt
+                    #sed -i 's/indy-crypto.*/indy-crypto==${indyCryptoVersions.pypi}/g' ./system/requirements.txt
+                """
             }
 
-            stage("[${testFileName}] Ensure node services started") {
-                // TODO explore and fix the reason why they (mostly Node1) not always active
-                for (int nodeNum = 1; nodeNum <= nodesNum; nodeNum++) {
-                    for (service in ['indy-node', 'indy-node-control']) {
-                        sh """
-                            for i in 1 2 3; do
-                                echo "Ensure $service on node${nodeNum} is started (try #\$i)"
-                                docker exec -t -u 0 node${nodeNum} systemctl start $service
-                                if [ "\$(docker exec -u 0 node${nodeNum} systemctl is-active $service)" = "active" ]; then
-                                    exit 0
-                                fi
-                            done
+            stage("[${testFilePath}] Cleanup docker") {
+                dockerClean()
+            }
 
-                            echo 'Failed to start $service on node${nodeNum}'
-                            exit 1
+            stage("[${testFilePath}] Prepare docker env") {
+                withEnv([
+                    "INDY_NODE_REPO_COMPONENT=$component",
+                    "LIBINDY_CRYPTO_VERSION=${indyCryptoVersions.debian}",
+                    "PYTHON3_LIBINDY_CRYPTO_VERSION=${indyCryptoVersions.debian}",
+                    "INDY_PLENUM_VERSION=${indyPlenumVersions.debian}",
+                    "INDY_NODE_VERSION=$releaseVersion",
+                    "LIBINDY_REPO_COMPONENT=${indySDKVersions.debian == indySDKVersions.pypi ? 'stable' : 'master'}",
+                    "LIBINDY_VERSION=${indySDKVersions.debian}",
+                ]) {
+                    sh "./system/docker/prepare.sh $systemTestsNetwork"
+                }
+            }
+
+            try {
+                def err
+                String testReportFileNameXml = "system_tests_${testFilePath.replace('/', '_')}_report.${component}.xml"
+                String testReportFileNamePlain = "system_tests_${testFilePath.replace('/', '_')}_report.${component}.txt"
+                try {
+                    stage("[${testFilePath}] Run tests") {
+                        sh """
+                            bash -c "\
+                                set -o pipefail; \
+                                ./system/docker/run.sh \
+                                    \\"$testFilePath\\" \
+                                    \\"-l -v --junit-xml=$testReportFileNameXml\\" \
+                                    \\"$systemTestsNetwork\\" 2>&1 | tee $testReportFileNamePlain;\
+                            "
                         """
                     }
-                }
-            }
-
-            stage("[${testFileName}] Run client") {
-                sh './client_for_pool_start.sh'
-            }
-        }
-    }
-
-    def runTest = { testFileName, checkoutScm=true ->
-        stage("[${testFileName}] Cleanup docker") {
-            dockerClean()
-        }
-
-        if (checkoutScm) {
-            stage("[${testFileName}] Checkout SCM") {
-                checkout scm
-            }
-        }
-
-        stage("[${testFileName}] Checkout and patch system tests") {
-            testHelpers.getSystemTests(tag: 'v0.6.0', targetDir: './system_tests')
-            sh """
-                sed -i 's/indy-plenum.*/indy-plenum==$indyPlenumVersion/g' ./system_tests/system/requirements.txt
-                sed -i 's/python3-indy.*/python3-indy==$indySDKVersion/g' ./system_tests/system/requirements.txt
-                sed -i 's/indy-crypto.*/indy-crypto==$indyCryptoVersion/g' ./system_tests/system/requirements.txt
-            """
-        }
-
-        stage("[${testFileName}] Patch dockerfiles") {
-             def test_deps = sh(returnStdout: true, script: 'cat ./system_tests/system/requirements.txt | paste -sd " "').trim()
-
-             dir("environment/docker/pool") {
-                // TODO make dockerfile to accept params instead of patching
-                sh """
-                    sed -i 's/repo.sovrin.org\\/deb xenial .*\\+"/repo.sovrin.org\\/deb xenial $component"/g' core.ubuntu.dockerfile
-                    sed -i 's/sdk\\/deb xenial .\\+"/sdk\\/deb xenial stable"/g' core.ubuntu.dockerfile
-                    sed -i 's/\\(apt-get install -y indy-node\\) libindy/\\1=$releaseVersion indy-plenum=$indyPlenumVersion libindy=$indySDKVersion python3-indy-crypto=$indyCryptoVersion libindy-crypto=$indyCryptoVersion ssh/g' core.ubuntu.dockerfile
-                    sed -i 's/\\(RUN pip3 install python3-indy\\)/&==$indySDKVersion $test_deps/g' core.ubuntu.dockerfile
-                    cat core.ubuntu.dockerfile
-                    sed -i 's/\\(apt-get install -y libindy\\) indy-cli/\\1=$indySDKVersion indy-cli=$indySDKVersion/g' client.ubuntu.dockerfile
-                    cat client.ubuntu.dockerfile
-                """
-            }
-        }
-
-        try {
-            stage("[${testFileName}] Setup docker") {
-                dockerSetup()
-            }
-
-            stage("[${testFileName}] Prepare in-docker env") {
-                // https://github.com/moby/moby/issues/34096
-                // https://github.com/moby/moby/issues/34096
-                // inconsistent docker behaviour, depends on version
-                // thus, ensure ownership for copied files
-                sh """
-                    docker cp ./system_tests indyclient:/home/indy
-                    docker exec -t -u 0 indyclient mkdir -p /home/indy/.ssh/
-                    docker cp ./system_tests/system/config indyclient:/home/indy/.ssh/config
-                    docker cp ./system_tests/system/test_key.pub indyclient:/home/indy/.ssh/test_key.pub
-                    docker cp ./system_tests/system/test_key indyclient:/home/indy/.ssh/test_key
-                    docker exec -t -u 0 indyclient chmod 0400 /home/indy/.ssh/test_key
-                    docker exec -t -u 0 indyclient chown -R indy:indy /home/indy/system_tests
-                    docker exec -t -u 0 indyclient chown -R indy:indy /home/indy/.ssh
-                    for x in `seq 1 $nodesNum`; do docker exec -t -u 0 node\$x mkdir -p /root/.ssh; done
-                    for x in `seq 1 $nodesNum`; do docker cp ./system_tests/system/test_key.pub node\$x:/root/.ssh/authorized_keys; done
-                    for x in `seq 1 $nodesNum`; do docker exec -t -u 0 node\$x chown root:root /root/.ssh/authorized_keys; done
-                """
-            }
-
-            String testReportFileNameXml = "system_tests_${testFileName}_report.${component}.xml"
-            String testReportFileNamePlain = "system_tests_${testFileName}_report.${component}.txt"
-            def err
-            try {
-                stage("[${testFileName}] Run tests") {
-                    sh """
-                        docker exec -t --user indy indyclient bash -c "\
-                            set -o pipefail; \
-                            cd /home/indy/system_tests/system && mkdir reports && \
-                            pytest -l -v --junit-xml=./reports/$testReportFileNameXml ./indy-node-tests/${testFileName} 2>&1 | \
-                            tee ./reports/$testReportFileNamePlain"
-                    """
-                }
-            } catch (_err) {
-                err = _err
-                throw _err
-            } finally {
-                stage("[${testFileName}] Upload test report") {
-                    sh "docker cp indyclient:/home/indy/system_tests/system/reports/ ./system_tests"
-
-                    dir("system_tests/reports"){
+                } catch (_err) {
+                    err = _err
+                    throw _err
+                } finally {
+                    stage("[${testFilePath}] Upload test report") {
                         sh "ls -la *report* || true"
                         if (err) {
                             archiveArtifacts artifacts: testReportFileNamePlain, allowEmptyArchive: true
@@ -229,13 +164,13 @@ def systemTests = { component, releaseVersion ->
                         junit testResults: testReportFileNameXml, allowEmptyResults: true
                     }
                 }
-            }
-        } catch (Exception exc) {
-            echo "$prefix: fail: $exc"
-            throw exc
-        } finally {
-            stage("[${testFileName}] Cleanup docker") {
-                dockerClean()
+            } catch (Exception exc) {
+                echo "$prefix: fail: $exc"
+                throw exc
+            } finally {
+                stage("[${testFilePath}] Cleanup docker") {
+                    dockerClean()
+                }
             }
         }
     }
@@ -246,49 +181,59 @@ def systemTests = { component, releaseVersion ->
         }
 
         stage("Get versions of dependencies") {
+            String pipLogName = "pip.intsall.log"
             def uid = sh(returnStdout: true, script: 'id -u').trim()
             docker.build("hyperledger/indy-node-ci", "--build-arg uid=$uid -f ci/ubuntu.dockerfile ci").inside {
-                sh "pip install .[tests]"
+                sh """
+                    pip install .[tests] >$pipLogName
+                """
 
-                indyPlenumVersion = sh(returnStdout: true, script: """
-                    pip freeze | grep indy-plenum== | awk -F'==' '{print \$2}' | sed -r "s/([0-9\\.]+[0-9])(\\.)?([a-z]+)/\\1~\\3/"
+                indyPlenumVersions.pypi = sh(returnStdout: true, script: """
+                    grep "^Collecting indy-plenum==" $pipLogName | awk '{print \$2}' | awk -F'==' '{print \$2}'
                 """).trim()
-                echo "indy-plenum version: $indyPlenumVersion"
+                indyPlenumVersions.debian = indyPlenumVersions.pypi.replaceAll(/\.?(dev|rc)(.*)/, "~\$1\$2")
+                echo "indy-plenum versions: $indyPlenumVersions"
 
-                indySDKVersion = sh(returnStdout: true, script: """
-                    pip freeze | grep python3-indy== | awk -F'==' '{print \$2}'
+                indySDKVersions.pypi = sh(returnStdout: true, script: """
+                    grep "^Collecting python3-indy==" $pipLogName | awk '{print \$2}' | awk -F'==' '{print \$2}'
                 """).trim()
-                echo "indy-sdk version: $indySDKVersion"
+                indySDKVersions.debian = indySDKVersions.pypi.replaceAll(/-(dev|rc)-(.*)/, "~\$2")
+                echo "indy-sdk version: ${indySDKVersions}"
 
-                indyCryptoVersion = sh(returnStdout: true, script: """
-                    pip freeze | grep indy-crypto== | awk -F'==' '{print \$2}'
+                indyCryptoVersions.pypi = sh(returnStdout: true, script: """
+                    grep "^Collecting indy-crypto==" $pipLogName | awk '{print \$2}' | awk -F'==' '{print \$2}'
                 """).trim()
-                echo "indy-crypto version: $indyCryptoVersion"
+                indyCryptoVersions.debian = indyCryptoVersions.pypi.replaceAll(/-(dev|rc)-(.*)/, "~\$2")
+                echo "indy-crypto version: ${indyCryptoVersions}"
             }
 
-            if (!(indyPlenumVersion && indySDKVersion && indyCryptoVersion)) {
+            if (!(indyPlenumVersions.debian && indySDKVersions.debian && indyCryptoVersions.debian)) {
                 error "Failed to get versions for indy-plenum or indy-crypto or indy-sdk"
             }
         }
 
         Map builds = [:]
-        List tests = ['test_ledger.py', 'test_consensus.py', 'test_vc.py']
+        List tests = [
+            'system/indy-node-tests/test_ledger.py',
+            'system/indy-node-tests/test_consensus.py',
+            'system/indy-node-tests/test_vc.py'
+        ]
         for (int i = 0; i < tests.size(); i++) {
-            String testFileName = tests[i]
+            String testFilePath = tests[i]
             Boolean isFirst = (i == 0)
-            builds[testFileName] = {
-                stage("Run ${testFileName}") {
+            builds[testFilePath] = {
+                stage("Run ${testFilePath}") {
                     // TODO INDY-2111
                     try {
                         if (isFirst) {
-                            runTest(testFileName, false)
+                            runTest(testFilePath, false)
                         } else {
                             nodeWrapper('ubuntu') {
-                                runTest(testFileName, true)
+                                runTest(testFilePath, true)
                             }
                         }
                     } catch (err) {
-                        echo "System tests '$testFileName' failed (ignored): $err"
+                        echo "System test '$testFilePath' failed (ignored): $err"
                     }
                 }
             }
