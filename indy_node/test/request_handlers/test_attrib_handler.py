@@ -51,6 +51,12 @@ def test_attrib_dynamic_validation_fails(attrib_request, attrib_handler: Attribu
 
 def test_attrib_dynamic_validation_fails_not_owner(attrib_request, attrib_handler: AttributeHandler):
     add_to_idr(attrib_handler.database_manager.idr_cache, attrib_request.operation['dest'], None)
+
+    def validate(request, action_list):
+        if not action_list[0].is_owner:
+            raise UnauthorizedClientRequest("identifier", "reqId")
+
+    attrib_handler.write_req_validator.validate = validate
     with pytest.raises(UnauthorizedClientRequest):
         attrib_handler.dynamic_validation(attrib_request)
 

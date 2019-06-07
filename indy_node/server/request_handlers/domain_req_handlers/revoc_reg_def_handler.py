@@ -21,9 +21,9 @@ class RevocRegDefHandler(WriteRequestHandler):
     }
 
     def __init__(self, database_manager: DatabaseManager,
-                 write_request_validator: WriteRequestValidator):
+                 write_req_validator: WriteRequestValidator):
         super().__init__(database_manager, REVOC_REG_DEF, DOMAIN_LEDGER_ID)
-        self.write_request_validator = write_request_validator
+        self.write_req_validator = write_req_validator
 
     @staticmethod
     def get_revocation_strategy(typ):
@@ -56,13 +56,13 @@ class RevocRegDefHandler(WriteRequestHandler):
         revoc_def, _, _ = self.get_from_state(revoc_def_id)
 
         if revoc_def is None:
-            self.write_request_validator.validate(request,
-                                                  [AuthActionAdd(txn_type=REVOC_REG_DEF,
+            self.write_req_validator.validate(request,
+                                              [AuthActionAdd(txn_type=REVOC_REG_DEF,
                                                                  field='*',
                                                                  value='*')])
         else:
-            self.write_request_validator.validate(request,
-                                                  [AuthActionEdit(txn_type=REVOC_REG_DEF,
+            self.write_req_validator.validate(request,
+                                              [AuthActionEdit(txn_type=REVOC_REG_DEF,
                                                                   field='*',
                                                                   old_value='*',
                                                                   new_value='*')])

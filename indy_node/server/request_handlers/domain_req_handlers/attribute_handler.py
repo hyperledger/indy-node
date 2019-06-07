@@ -26,9 +26,9 @@ logger = getlogger()
 class AttributeHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
-                 write_request_validator: WriteRequestValidator):
+                 write_req_validator: WriteRequestValidator):
         super().__init__(database_manager, ATTRIB, DOMAIN_LEDGER_ID)
-        self.write_request_validator = write_request_validator
+        self.write_req_validator = write_req_validator
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
@@ -39,6 +39,18 @@ class AttributeHandler(WriteRequestHandler):
                                        '{} should have one and only one of '
                                        '{}, {}, {}'
                                        .format(ATTRIB, RAW, ENC, HASH))
+
+        if RAW in operation:
+            try:
+                get_key = attrib_raw_data_serializer.deserialize(operation[RAW])
+                if len(get_key) == 0:
+                    raise InvalidClientRequest(identifier, request.reqId,
+                                               '"row" attribute field must contain non-empty dict'.
+                                               format(TARGET_NYM))
+            except JSONDecodeError:
+                raise InvalidClientRequest(identifier, request.reqId,
+                                           'Attribute field must be dict while adding it as a row field'.
+                                           format(TARGET_NYM))
 
     def dynamic_validation(self, request: Request):
         self._validate_request_type(request)
@@ -61,43 +73,28 @@ class AttributeHandler(WriteRequestHandler):
                 field = key
                 value = operation[key]
                 break
-        if field is None or value is None:
-            raise LogicError('Attribute data cannot be empty')
 
-        get_key = None
         if field == RAW:
-            try:
-                get_key = attrib_raw_data_serializer.deserialize(value)
-                if len(get_key) == 0:
-                    raise InvalidClientRequest(identifier, request.reqId,
-                                               '"row" attribute field must contain non-empty dict'.
-                                               format(TARGET_NYM))
-                get_key = next(iter(get_key.keys()))
-            except JSONDecodeError:
-                raise InvalidClientRequest(identifier, request.reqId,
-                                           'Attribute field must be dict while adding it as a row field'.
-                                           format(TARGET_NYM))
+            get_key = attrib_raw_data_serializer.deserialize(value)
+            get_key = list(get_key.keys())[0]
         else:
             get_key = value
 
-        if get_key is None:
-            raise LogicError('Attribute data must be parsed')
-
-        old_value, seq_no, _, _ = self._get_attr(operation[TARGET_NYM], get_key, field)
+        old_value, seq_no, _ = self._get_attr(operation[TARGET_NYM], get_key, field)
 
         if seq_no is not None:
-            self.write_request_validator.validate(request,
-                                                  [AuthActionEdit(txn_type=ATTRIB,
-                                                                  field=field,
-                                                                  old_value=old_value,
-                                                                  new_value=value,
-                                                                  is_owner=is_owner)])
+            self.write_req_validator.validate(request,
+                                              [AuthActionEdit(txn_type=ATTRIB,
+                                                              field=field,
+                                                              old_value=old_value,
+                                                              new_value=value,
+                                                              is_owner=is_owner)])
         else:
-            self.write_request_validator.validate(request,
-                                                  [AuthActionAdd(txn_type=ATTRIB,
-                                                                 field=field,
-                                                                 value=value,
-                                                                 is_owner=is_owner)])
+            self.write_req_validator.validate(request,
+                                              [AuthActionAdd(txn_type=ATTRIB,
+                                                             field=field,
+                                                             value=value,
+                                                             is_owner=is_owner)])
 
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)

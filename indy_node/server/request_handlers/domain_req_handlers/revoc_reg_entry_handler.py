@@ -18,11 +18,11 @@ from plenum.server.request_handlers.utils import encode_state_value
 class RevocRegEntryHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
-                 write_request_validator: WriteRequestValidator,
+                 write_req_validator: WriteRequestValidator,
                  get_revocation_strategy: Callable):
         super().__init__(database_manager, REVOC_REG_ENTRY, DOMAIN_LEDGER_ID)
         self.get_revocation_strategy = get_revocation_strategy
-        self.write_request_validator = write_request_validator
+        self.write_req_validator = write_req_validator
 
     def static_validation(self, request: Request):
         pass
@@ -59,7 +59,7 @@ class RevocRegEntryHandler(WriteRequestHandler):
     def _get_current_revoc_entry_and_revoc_def(self, author_did, revoc_reg_def_id, req_id):
         assert revoc_reg_def_id
         current_entry, _, _ = self._get_revoc_def_entry(revoc_reg_def_id=revoc_reg_def_id)
-        revoc_def, _, _, _ = self.get_from_state(revoc_reg_def_id)
+        revoc_def, _, _ = self.get_from_state(revoc_reg_def_id)
         if revoc_def is None:
             raise InvalidClientRequest(author_did,
                                        req_id,

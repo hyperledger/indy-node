@@ -172,18 +172,19 @@ class Node(PlenumNode):
         get_revoc_reg_delta_handler = GetRevocRegDeltaHandler(database_manager=self.db_manager,
                                                               get_revocation_strategy=RevocRegDefHandler.get_revocation_strategy)
         # Write handlers
-        nym_handler = NymHandler(database_manager=self.db_manager,
+        nym_handler = NymHandler(config=self.config,
+                                 database_manager=self.db_manager,
                                  write_req_validator=self.write_req_validator)
-        attrib_handler = AttributeHandler(database_manager=self.db_manager)
+        attrib_handler = AttributeHandler(database_manager=self.db_manager,
+                                          write_req_validator=self.write_req_validator)
         schema_handler = SchemaHandler(database_manager=self.db_manager,
-                                       get_schema_handler=get_schema_handler,
                                        write_req_validator=self.write_req_validator)
         claim_def_handler = ClaimDefHandler(database_manager=self.db_manager,
                                             write_req_validator=self.write_req_validator)
         revoc_reg_def_handler = RevocRegDefHandler(database_manager=self.db_manager,
-                                                   get_revoc_reg_def=get_revoc_reg_def_handler)
+                                                   write_req_validator=self.write_req_validator)
         revoc_reg_entry_handler = RevocRegEntryHandler(database_manager=self.db_manager,
-                                                       get_revoc_reg_entry=get_revoc_reg_handler,
+                                                       write_req_validator=self.write_req_validator,
                                                        get_revocation_strategy=RevocRegDefHandler.get_revocation_strategy)
         # Register write handlers
         self.write_manager.register_req_handler(nym_handler)
