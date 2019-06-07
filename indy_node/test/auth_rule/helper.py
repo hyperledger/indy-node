@@ -19,7 +19,7 @@ from indy_node.test.helper import (
     sdk_send_and_check_req_json,
     sdk_send_and_check_auth_rule_request as _sdk_send_and_check_auth_rule_request,
     sdk_send_and_check_get_auth_rule_request as _sdk_send_and_check_get_auth_rule_request,
-    generate_auth_rule)
+    generate_auth_rule, generate_constraint_entity)
 
 
 def generate_constraint_list(constraint_id=ConstraintsEnum.AND_CONSTRAINT_ID,
