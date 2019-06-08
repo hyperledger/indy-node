@@ -1,6 +1,9 @@
 #!groovy
 
-@Library('SovrinHelpers@v2.1.1') _
+//@Library('SovrinHelpers@v2.1.1') _
+library(identifier: 'sovrin@v2.1.1', retriever: modernSCM(
+    github(credentialsId: 'sovbot-github', repoOwner: 'sovrin-foundation', repository: 'jenkins-shared')
+))
 
 String name = 'indy-node'
 String pkgName = name
@@ -106,7 +109,8 @@ def systemTests = { component, releaseVersion ->
 
     def runTest = { testFilePath ->
         stage("[${testFilePath}] Checkout system tests") {
-            testHelpers.getSystemTests(targetDir: systemTestsDir)
+            // FIXME set proper version/tag
+            testHelpers.getSystemTests(targetDir: systemTestsDir, branch: 'INDY-2129-update-primaries-after-primary-demotion')
         }
 
         dir(systemTestsDir) {
@@ -244,31 +248,46 @@ def systemTests = { component, releaseVersion ->
     }
 }
 
-def options = new TestAndPublishOptions()
+def options = TestAndPublishOptions
 options.setPkgName(pkgName)
-options.setApprovers(['QA'])
-options.setNotifEmails([
-    QA: [
-        to: "${env.INDY_NODE_QA_RECIPIENTS ?: ''}",
-        cc: "${env.INDY_NODE_RECIPIENTS ?: ''}"
-    ],
-    success: [
-        to: "${env.INDY_NODE_RECIPIENTS ?: ''}"
-    ],
-    fail: [
-        to: "${env.INDY_NODE_RECIPIENTS ?: ''}"
-    ]
-])
+options.setApprovers([])
+ 
 
 // TODO duplicates list from build scripts
 options.setBuiltPkgs([
     'python3-timeout-decorator': '0.4.0',
     'python3-distro': '1.3.0',
 ])
-
+ 
 
 options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
 options.setCopyWithDeps(true)
+
+options.skip([StagesEnum.IS_TESTED])
+options.skip([StagesEnum.STATIC_CODE_VALIDATION])
+options.skip([StagesEnum.TEST])
+options.skip([StagesEnum.AUTOMERGE])
+options.skip([StagesEnum.GET_RELEASE_VERSION])
+options.skip([StagesEnum.PYPI_RELEASE])
+options.skip([StagesEnum.PACK_RELEASE])
+options.skip([StagesEnum.PACK_RELEASE_COPY])
+//options.skip([StagesEnum.SYSTEM_TESTS])
+options.skip([StagesEnum.GITHUB_RELEASE])
+options.skip([StagesEnum.PACK_RELEASE_ST])
+options.skip([StagesEnum.PACK_RELEASE_COPY_ST])
+options.skip([StagesEnum.SYSTEM_TESTS_ST])
+options.skip([StagesEnum.GITHUB_RELEASE_ST])
+options.skip([StagesEnum.POOL_UPDATE_NOTIF])
+options.skip([StagesEnum.BUILD_RESULT_NOTIF])
+
+env.BRANCH_NAME = 'master'
+options.releaseVersion = [
+    full: '1.9.0.dev987',
+    release: '1.9.0',
+    pre: 'dev',
+    revision: '987'
+]
+
 options.setSystemTestsCb(systemTests)
 options.setPrContexts([env.INDY_GITHUB_PR_REQUIRED_CONTEXT ?: "ci/hyperledger-jenkins/pr-merge"])
 
