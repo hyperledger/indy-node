@@ -67,7 +67,7 @@ comprehensive list of things being compared.
 
 nsdiff is intended to help understand how node state differs between different
 nodes in the same cluster or between a node and it's replayed state. It is not
-inteneded to lessen/reduce the need for in-depth understanding of the Indy
+intended to lessen/reduce the need for in-depth understanding of the Indy
 codebase.
 
 **Assumptions**
@@ -75,7 +75,7 @@ codebase.
 
 **Other Notes**
 
-When using nsdiff to compare a node and it's replayed state, you will be required to do the following:
+When using nsdiff to compare a node and its replayed state, you will be required to do the following:
 
 1. Run nscapture on a node. This will produce a ```*.tar.gz``` file.
 
@@ -136,7 +136,7 @@ the replay, debugging and other development tools should be usable.
 In the environment (on the server, VM, docker container, etc) where nsreplay was
 run, execute nscapture to capture the replayed state.
 
-### Step #6 - Diff captured Node state with capatured replay state
+### Step #6 - Diff captured Node state with captured replay state
 If desired, the nsdiff can be used to check that the replay was able to
 reproduce the same state as the recording.  Use nsdiff to check the difference
 between the states. Ideally, they will be identical but if they are different, 
