@@ -160,7 +160,7 @@ def systemTests = { component, releaseVersion ->
                                 set -o pipefail; \
                                 ./system/docker/run.sh \
                                     \\"$testTargets\\" \
-                                    \\"-l -v --junit-xml=$testReportFileNameXml\\" \
+                                    \\"-l -vv --junit-xml=$testReportFileNameXml\\" \
                                     \\"$systemTestsNetwork\\" 2>&1 | tee $testReportFileNamePlain;\
                             "
                         """
