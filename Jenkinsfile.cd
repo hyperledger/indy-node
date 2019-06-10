@@ -82,6 +82,13 @@ def systemTests = { component, releaseVersion ->
     String systemTestsNetwork = 'indy-test-automation-network'
     String systemTestsDir = './system_tests'
 
+    List testsSchema = [
+        ['test_ledger.py'],
+        ['test_vc.py'],
+        ['test_consensus.py', 'TestTAASuite.py'],
+        ['test_upgrade.py', 'test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py']
+    ]
+
     Map indyPlenumVersions = [:]
     Map indySDKVersions = [:]
     Map indyCryptoVersions = [:]
@@ -107,14 +114,15 @@ def systemTests = { component, releaseVersion ->
         sh "docker network prune -f"
     }
 
-    def runTest = { testFilePath ->
-        stage("[${testFilePath}] Checkout system tests") {
+    def runTest = { testGroup ->
+
+        stage("[${testGroup}] Checkout system tests") {
             // FIXME set proper version/tag
             testHelpers.getSystemTests(targetDir: systemTestsDir, branch: 'INDY-2129-update-primaries-after-primary-demotion')
         }
 
         dir(systemTestsDir) {
-            stage("[${testFilePath}] Patch system tests python requirements") {
+            stage("[${testGroup}] Patch system tests python requirements") {
                 sh """
                     sed -i 's/python3-indy.*/python3-indy==${indySDKVersions.pypi}/g' ./system/requirements.txt
                     #sed -i 's/indy-plenum.*/indy-plenum==${indyPlenumVersions.pypi}/g' ./system/requirements.txt
@@ -122,11 +130,11 @@ def systemTests = { component, releaseVersion ->
                 """
             }
 
-            stage("[${testFilePath}] Cleanup docker") {
+            stage("[${testGroup}] Cleanup docker") {
                 dockerClean()
             }
 
-            stage("[${testFilePath}] Prepare docker env") {
+            stage("[${testGroup}] Prepare docker env") {
                 withEnv([
                     "INDY_NODE_REPO_COMPONENT=$component",
                     "LIBINDY_CRYPTO_VERSION=${indyCryptoVersions.debian}",
@@ -142,15 +150,16 @@ def systemTests = { component, releaseVersion ->
 
             try {
                 def err
-                String testReportFileNameXml = "system_tests_${testFilePath.replace('/', '_')}_report.${component}.xml"
-                String testReportFileNamePlain = "system_tests_${testFilePath.replace('/', '_')}_report.${component}.txt"
+                String testReportFileNameXml = "system_tests_${testGroup}_report.${component}.xml"
+                String testReportFileNamePlain = "system_tests_${testGroup}_report.${component}.txt"
+                String testTargets = testsSchema[testGroup].collect{"system/indy-node-tests/$it"}.join(' ')
                 try {
-                    stage("[${testFilePath}] Run tests") {
+                    stage("[${testGroup}] Run tests") {
                         sh """
                             bash -c "\
                                 set -o pipefail; \
                                 ./system/docker/run.sh \
-                                    \\"$testFilePath\\" \
+                                    \\"$testTargets\\" \
                                     \\"-l -v --junit-xml=$testReportFileNameXml\\" \
                                     \\"$systemTestsNetwork\\" 2>&1 | tee $testReportFileNamePlain;\
                             "
@@ -160,7 +169,7 @@ def systemTests = { component, releaseVersion ->
                     err = _err
                     throw _err
                 } finally {
-                    stage("[${testFilePath}] Upload test report") {
+                    stage("[${testGroup}] Upload test report") {
                         sh "ls -la *report* || true"
                         if (err) {
                             archiveArtifacts artifacts: testReportFileNamePlain, allowEmptyArchive: true
@@ -172,7 +181,7 @@ def systemTests = { component, releaseVersion ->
                 echo "$prefix: fail: $exc"
                 throw exc
             } finally {
-                stage("[${testFilePath}] Cleanup docker") {
+                stage("[${testGroup}] Cleanup docker") {
                     dockerClean()
                 }
             }
@@ -217,27 +226,22 @@ def systemTests = { component, releaseVersion ->
         }
 
         Map builds = [:]
-        List tests = [
-            'system/indy-node-tests/test_ledger.py',
-            'system/indy-node-tests/test_consensus.py',
-            'system/indy-node-tests/test_vc.py'
-        ]
-        for (int i = 0; i < tests.size(); i++) {
-            String testFilePath = tests[i]
+        for (int i = 0; i < testsSchema.size(); i++) {
+            String testNames = testsSchema[i].join(' ')
             Boolean isFirst = (i == 0)
-            builds[testFilePath] = {
-                stage("Run ${testFilePath}") {
-                    // TODO INDY-2111
+            int testGroup = i
+            builds[testNames] = {
+                stage("Run ${testNames}") {
                     try {
                         if (isFirst) {
-                            runTest(testFilePath, false)
+                            runTest(testGroup)
                         } else {
                             nodeWrapper('ubuntu') {
-                                runTest(testFilePath, true)
+                                runTest(testGroup)
                             }
                         }
-                    } catch (err) {
-                        echo "System test '$testFilePath' failed (ignored): $err"
+                    } catch (Exception exc) {
+                        echo "System testing failed for: $testNames"
                     }
                 }
             }
