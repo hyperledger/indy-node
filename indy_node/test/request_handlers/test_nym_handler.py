@@ -10,13 +10,12 @@ from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientReq
 from plenum.common.request import Request
 from plenum.common.util import randomString
 from plenum.test.testing_utils import FakeSomething
+from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
 
 
 @pytest.fixture(scope="module")
-def nym_handler(db_manager, tconf):
-    f = FakeSomething()
-    f.validate = lambda request, action_list: True
-    return NymHandler(tconf, db_manager, f)
+def nym_handler(db_manager, tconf, write_auth_req_validator):
+    return NymHandler(tconf, db_manager, write_auth_req_validator)
 
 
 @pytest.fixture(scope="function")

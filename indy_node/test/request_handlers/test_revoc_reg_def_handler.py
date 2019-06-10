@@ -1,28 +1,30 @@
 import pytest
 
+from common.serializers.serialization import domain_state_serializer
 from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, \
     TAG
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
-from plenum.common.exceptions import InvalidClientRequest
+from indy_node.test.request_handlers.helper import add_to_idr
+from plenum.common.constants import TRUSTEE
+from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
 from plenum.common.util import randomString
 from plenum.server.request_handlers.utils import encode_state_value
-from plenum.test.testing_utils import FakeSomething
+from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
 
 
 @pytest.fixture(scope="function")
-def revoc_reg_def_handler(db_manager):
-    f = FakeSomething()
-    f.validate = lambda request, action_list: True
-    return RevocRegDefHandler(db_manager, f)
+def revoc_reg_def_handler(db_manager, write_auth_req_validator):
+    return RevocRegDefHandler(db_manager, write_auth_req_validator)
 
 
 @pytest.fixture(scope="function")
 def revoc_reg_def_request():
     return Request(identifier=randomString(),
                    reqId=5,
+                   signature="sig",
                    operation={'type': REVOC_REG_DEF,
-                              CRED_DEF_ID: 'sample:' * 4,
+                              CRED_DEF_ID: "credDefId",
                               REVOC_TYPE: randomString(),
                               TAG: randomString()
                               })
@@ -40,6 +42,9 @@ def test_revoc_reg_def_dynamic_validation_fails_wrong_id(revoc_reg_def_handler,
 
 def test_revoc_reg_def_dynamic_validation_fails_no_cred_def(revoc_reg_def_handler,
                                                             revoc_reg_def_request):
+    add_to_idr(revoc_reg_def_handler.database_manager.idr_cache,
+               revoc_reg_def_request.identifier,
+               TRUSTEE)
     operation = revoc_reg_def_request.operation
     cred_def_id = operation.get(CRED_DEF_ID)
     revoc_def_type = operation.get(REVOC_TYPE)
@@ -58,7 +63,23 @@ def test_revoc_reg_def_dynamic_validation_fails_no_cred_def(revoc_reg_def_handle
 
 def test_revoc_reg_def_dynamic_validation_passes(revoc_reg_def_handler,
                                                  revoc_reg_def_request):
+    add_to_idr(revoc_reg_def_handler.database_manager.idr_cache,
+               revoc_reg_def_request.identifier,
+               TRUSTEE)
     cred_def_id = revoc_reg_def_request.operation.get(CRED_DEF_ID)
-    revoc_reg_def_handler.state.set(cred_def_id,
+    revoc_reg_def_handler.state.set(cred_def_id.encode(),
                                     encode_state_value("value", "seqNo", "txnTime"))
     revoc_reg_def_handler.dynamic_validation(revoc_reg_def_request)
+
+
+def test_revoc_reg_def_dynamic_validation_without_permission(revoc_reg_def_handler,
+                                                             revoc_reg_def_request):
+    add_to_idr(revoc_reg_def_handler.database_manager.idr_cache,
+               revoc_reg_def_request.identifier,
+               None)
+    cred_def_id = revoc_reg_def_request.operation.get(CRED_DEF_ID)
+    revoc_reg_def_handler.state.set(cred_def_id.encode(),
+                                    encode_state_value("value", "seqNo", "txnTime"))
+    with pytest.raises(UnauthorizedClientRequest,
+                       match="Not enough TRUSTEE signatures"):
+        revoc_reg_def_handler.dynamic_validation(revoc_reg_def_request)

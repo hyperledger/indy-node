@@ -1,34 +1,31 @@
+import json
+
 import pytest
 from indy_common.constants import ATTRIB
 
 from indy_node.server.request_handlers.domain_req_handlers.attribute_handler import AttributeHandler
 from indy_node.test.request_handlers.helper import add_to_idr
+from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
 from plenum.common.constants import ENC
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
 from plenum.common.util import randomString
 
 from indy_node.test.attrib_txn.test_nym_attrib import attributeData, attributeName, attributeValue
+from plenum.test.helper import sdk_multisign_request_object, sdk_sign_request_objects
 from plenum.test.testing_utils import FakeSomething
 
 
 @pytest.fixture(scope="module")
-def attrib_handler(db_manager):
-    f_validator = FakeSomething()
-    f_validator.validate = lambda request, action_list: True
-    return AttributeHandler(db_manager, f_validator)
-
-
-@pytest.fixture(scope="module")
-def creator(db_manager):
-    identifier = randomString()
-    return identifier
+def attrib_handler(db_manager, write_auth_req_validator):
+    return AttributeHandler(db_manager, write_auth_req_validator)
 
 
 @pytest.fixture(scope="function")
-def attrib_request(creator, attributeData):
-    return Request(identifier=creator,
+def attrib_request(attributeData, looper, sdk_wallet_client):
+    return Request(identifier=sdk_wallet_client[1],
                    reqId=5,
+                   signature="signature",
                    operation={'type': ATTRIB,
                               'dest': randomString(),
                               'raw': attributeData})
@@ -51,12 +48,6 @@ def test_attrib_dynamic_validation_fails(attrib_request, attrib_handler: Attribu
 
 def test_attrib_dynamic_validation_fails_not_owner(attrib_request, attrib_handler: AttributeHandler):
     add_to_idr(attrib_handler.database_manager.idr_cache, attrib_request.operation['dest'], None)
-
-    def validate(request, action_list):
-        if not action_list[0].is_owner:
-            raise UnauthorizedClientRequest("identifier", "reqId")
-
-    attrib_handler.write_req_validator.validate = validate
     with pytest.raises(UnauthorizedClientRequest):
         attrib_handler.dynamic_validation(attrib_request)
 

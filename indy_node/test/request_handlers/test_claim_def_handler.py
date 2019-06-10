@@ -11,13 +11,12 @@ from plenum.common.txn_util import reqToTxn, get_seq_no
 
 from plenum.common.util import randomString
 from plenum.test.testing_utils import FakeSomething
+from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
 
 
 @pytest.fixture(scope="module")
-def claim_def_handler(db_manager):
-    f = FakeSomething()
-    f.validate = lambda request, action_list: True
-    return ClaimDefHandler(db_manager, f)
+def claim_def_handler(db_manager, write_auth_req_validator):
+    return ClaimDefHandler(db_manager, write_auth_req_validator)
 
 
 @pytest.fixture(scope="module")
@@ -32,6 +31,7 @@ def creator(db_manager):
 def claim_def_request(creator, schema_request):
     return Request(identifier=creator,
                    reqId=5,
+                   signature="sig",
                    operation={'type': CLAIM_DEF,
                               'ref': schema_request,
                               'verkey': randomString()})

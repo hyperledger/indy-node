@@ -9,19 +9,17 @@ from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rule_h
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rules_handler import AuthRulesHandler
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation, generate_auth_rule
 from indy_node.test.request_handlers.helper import add_to_idr, get_exception
-from plenum.common.constants import TRUSTEE, TXN_TYPE
+from plenum.common.constants import TRUSTEE, TXN_TYPE, STEWARD
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
 from plenum.common.util import randomString
 from plenum.test.testing_utils import FakeSomething
+from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
 
 
 @pytest.fixture(scope="module")
-def auth_rule_handler(db_manager):
-    f = FakeSomething()
-    f.validate = lambda request, action_list: True
-    f.auth_map = auth_map
-    return AuthRulesHandler(db_manager, f)
+def auth_rule_handler(db_manager, write_auth_req_validator):
+    return AuthRulesHandler(db_manager, write_auth_req_validator)
 
 
 @pytest.fixture(scope="function")
@@ -72,12 +70,13 @@ def test_auth_rule_static_validation_failed_with_incorrect_key(auth_rule_request
         auth_rule_handler.static_validation(auth_rule_request)
 
 
-def test_auth_rule_dynamic_validation(auth_rule_request,
-                                      auth_rule_handler: AuthRuleHandler, creator):
-    auth_rule_handler.write_req_validator.validate = get_exception(False)
-    add_to_idr(auth_rule_handler.database_manager.idr_cache, creator, TRUSTEE)
-    auth_rule_handler.dynamic_validation(auth_rule_request)
-
-    auth_rule_handler.write_req_validator.validate = get_exception(True)
+def test_auth_rule_dynamic_validation_without_permission(auth_rule_request,
+                                                         auth_rule_handler: AuthRuleHandler, creator):
+    add_to_idr(auth_rule_handler.database_manager.idr_cache, creator, STEWARD)
     with pytest.raises(UnauthorizedClientRequest):
         auth_rule_handler.dynamic_validation(auth_rule_request)
+
+
+def test_auth_rule_dynamic_validation(auth_rule_request,
+                                      auth_rule_handler: AuthRuleHandler, creator):
+    add_to_idr(auth_rule_handler.database_manager.idr_cache, creator, TRUSTEE)

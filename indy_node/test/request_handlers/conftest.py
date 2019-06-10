@@ -10,25 +10,28 @@ from plenum.common.request import Request
 from plenum.common.util import randomString
 from plenum.server.database_manager import DatabaseManager
 from plenum.test.testing_utils import FakeSomething
+from state.pruning_state import PruningState
 from state.state import State
 from storage.helper import initKeyValueStorage
+from storage.kv_in_memory import KeyValueStorageInMemory
 
 
 @pytest.fixture(scope="module")
-def db_manager(tconf, tdir):
-    db_manager = DatabaseManager()
-
-    state = State()
-    state.txn_list = {}
-    state.get = lambda key, isCommitted=True: state.txn_list.get(key, None)
-    state.set = lambda key, value: state.txn_list.update({key: value})
-
+def idr_cache(tconf, tdir):
     name = 'name'
     idr_cache = IdrCache(name,
                          initKeyValueStorage(KeyValueStorageType.Rocksdb,
                                              tdir,
                                              tconf.idrCacheDbName,
                                              db_config=tconf.db_idr_cache_db_config))
+    return idr_cache
+
+
+@pytest.fixture(scope="module")
+def db_manager(tconf, tdir, idr_cache):
+    db_manager = DatabaseManager()
+
+    state = PruningState(KeyValueStorageInMemory())
     db_manager.register_new_store(IDR_CACHE_LABEL, idr_cache)
     db_manager.register_new_database(DOMAIN_LEDGER_ID, get_fake_ledger(), state)
     return db_manager
@@ -38,6 +41,7 @@ def db_manager(tconf, tdir):
 def schema_request():
     return Request(identifier=randomString(),
                    reqId=5,
+                   signature="sig",
                    operation={'type': SCHEMA,
                               'data': {
                                   'version': '1.0',

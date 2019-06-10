@@ -10,10 +10,11 @@ from plenum.common.util import randomString
 from plenum.server.request_handlers.utils import encode_state_value
 from plenum.test.input_validation.conftest import operation
 from plenum.test.testing_utils import FakeSomething
+from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
 
 
 @pytest.fixture(scope="module")
-def revoc_reg_entry_handler(db_manager):
+def revoc_reg_entry_handler(db_manager, write_auth_req_validator):
     class Validator:
         def __init__(self, state):
             pass
@@ -24,12 +25,10 @@ def revoc_reg_entry_handler(db_manager):
     def get_revocation_strategy(type):
         return Validator
 
-    def get_current_revoc_entry_and_revoc_def(author_did, revoc_reg_def_id, req_id):
-        return True, {VALUE: {ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT}}
+    # def get_current_revoc_entry_and_revoc_def(author_did, revoc_reg_def_id, req_id):
+    #     return True, {VALUE: {ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT}}
 
-    f = FakeSomething()
-    f.get_current_revoc_entry_and_revoc_def = get_current_revoc_entry_and_revoc_def
-    return RevocRegEntryHandler(db_manager, f, get_revocation_strategy)
+    return RevocRegEntryHandler(db_manager, write_auth_req_validator, get_revocation_strategy)
 
 
 @pytest.fixture(scope="function")
@@ -42,7 +41,7 @@ def revoc_reg_entry_request():
 
 def test_revoc_reg_entry_dynamic_validation_passes(revoc_reg_entry_handler,
                                                    revoc_reg_entry_request):
-    revoc_reg_entry_handler.state.set(revoc_reg_entry_request.operation[REVOC_REG_DEF_ID],
+    revoc_reg_entry_handler.state.set(revoc_reg_entry_request.operation[REVOC_REG_DEF_ID].encode(),
                                       encode_state_value({VALUE:{ISSUANCE_TYPE:5}}, "seqNo", "txnTime"))
     revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request)
 
