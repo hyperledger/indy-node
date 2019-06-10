@@ -5,10 +5,9 @@ import pytest
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ROLE, SIG_COUNT
 from indy_common.constants import AUTH_ACTION, OLD_VALUE, CONSTRAINT, NEW_VALUE, NYM, TRUST_ANCHOR, GET_AUTH_RULE
-from indy_node.test.auth_rule.helper import generate_constraint_entity, generate_constraint_list, \
-    sdk_send_and_check_auth_rules_request, generate_auth_rule_operation, sdk_send_and_check_auth_rules_request, \
-    sdk_send_and_check_get_auth_rule_request, generate_auth_rule
-from indy_node.test.helper import sdk_send_and_check_req_json
+from indy_node.test.auth_rule.helper import sdk_send_and_check_get_auth_rule_request, \
+    sdk_send_and_check_auth_rules_request_invalid
+from indy_node.test.helper import sdk_send_and_check_req_json, sdk_send_and_check_auth_rules_request, generate_auth_rule
 from plenum.common.constants import TRUSTEE, STEWARD, DATA, TXN_TYPE
 from plenum.common.exceptions import RequestRejectedException, \
     RequestNackedException
@@ -33,8 +32,8 @@ def test_auth_rules_transaction_without_changes(looper,
                                                            sdk_pool_handle,
                                                            sdk_wallet_trustee)
     sdk_send_and_check_auth_rules_request(looper,
-                                          sdk_wallet_trustee,
                                           sdk_pool_handle,
+                                          sdk_wallet_trustee,
                                           rules=before_resp[0][1][RESULT][DATA])
     after_resp = sdk_send_and_check_get_auth_rule_request(looper,
                                                           sdk_pool_handle,
@@ -49,8 +48,8 @@ def test_auth_rules_transaction(looper,
     key = dict(rule)
     key.pop(CONSTRAINT)
     sdk_send_and_check_auth_rules_request(looper,
-                                          sdk_wallet_trustee,
                                           sdk_pool_handle,
+                                          sdk_wallet_trustee,
                                           rules=[rule])
     after_resp = _send_and_check_get_auth_rule(looper,
                                                sdk_pool_handle,
@@ -71,8 +70,8 @@ def test_reject_all_rules_from_auth_rules_txn(looper,
                                 ROLE, TRUST_ANCHOR, TRUSTEE)]
     with pytest.raises(RequestNackedException):
         sdk_send_and_check_auth_rules_request(looper,
-                                              sdk_wallet_trustee,
                                               sdk_pool_handle,
+                                              sdk_wallet_trustee,
                                               rules=rules)
     _, after_resp = sdk_send_and_check_get_auth_rule_request(looper,
                                                              sdk_pool_handle,
@@ -85,10 +84,10 @@ def test_reject_with_empty_rules_list(looper,
                                       sdk_pool_handle):
     with pytest.raises(RequestNackedException,
                        match="InvalidClientRequest.*length should be at least 1"):
-        sdk_send_and_check_auth_rules_request(looper,
-                                              sdk_wallet_trustee,
-                                              sdk_pool_handle,
-                                              rules=[])
+        sdk_send_and_check_auth_rules_request_invalid(looper,
+                                                      sdk_pool_handle,
+                                                      sdk_wallet_trustee,
+                                                      rules=[])
 
 
 def test_reject_with_unacceptable_role_in_constraint(looper,
@@ -99,8 +98,8 @@ def test_reject_with_unacceptable_role_in_constraint(looper,
     rule[CONSTRAINT][ROLE] = unacceptable_role
     with pytest.raises(RequestNackedException) as e:
         sdk_send_and_check_auth_rules_request(looper,
-                                              sdk_wallet_trustee,
                                               sdk_pool_handle,
+                                              sdk_wallet_trustee,
                                               rules=[rule])
     e.match('InvalidClientRequest')
     e.match('Role {} is not acceptable'.format(unacceptable_role))
@@ -111,8 +110,8 @@ def test_reject_auth_rules_transaction(looper,
                                        sdk_pool_handle):
     with pytest.raises(RequestRejectedException) as e:
         sdk_send_and_check_auth_rules_request(looper,
-                                              sdk_wallet_steward,
-                                              sdk_pool_handle)
+                                              sdk_pool_handle,
+                                              sdk_wallet_steward)
     e.match('Not enough TRUSTEE signatures')
 
 
@@ -121,8 +120,8 @@ def test_reqnack_auth_rules_transaction_with_wrong_key(looper,
                                                        sdk_pool_handle):
     with pytest.raises(RequestNackedException) as e:
         sdk_send_and_check_auth_rules_request(looper,
-                                              sdk_wallet_trustee,
                                               sdk_pool_handle,
+                                              sdk_wallet_trustee,
                                               [generate_auth_rule(auth_type="*")])
     e.match("InvalidClientRequest")
     e.match("is not found in authorization map")
@@ -134,10 +133,10 @@ def test_reqnack_auth_rules_edit_transaction_with_wrong_format(looper,
     rule = generate_auth_rule(auth_action=EDIT_PREFIX)
     rule.pop(OLD_VALUE)
     with pytest.raises(RequestNackedException) as e:
-        sdk_send_and_check_auth_rules_request(looper,
-                                              sdk_wallet_trustee,
-                                              sdk_pool_handle,
-                                              rules=[rule])
+        sdk_send_and_check_auth_rules_request_invalid(looper,
+                                                      sdk_pool_handle,
+                                                      sdk_wallet_trustee,
+                                                      rules=[rule])
     e.match("InvalidClientRequest")
     e.match("Transaction for change authentication "
             "rule for {}={} must contain field {}".
@@ -148,10 +147,10 @@ def test_reqnack_auth_rules_add_transaction_with_wrong_format(looper,
                                                               sdk_wallet_trustee,
                                                               sdk_pool_handle):
     with pytest.raises(RequestNackedException) as e:
-        sdk_send_and_check_auth_rules_request(looper,
-                                              sdk_wallet_trustee,
-                                              sdk_pool_handle,
-                                              [generate_auth_rule(old_value="*")])
+        sdk_send_and_check_auth_rules_request_invalid(looper,
+                                                      sdk_pool_handle,
+                                                      sdk_wallet_trustee,
+                                                      [generate_auth_rule(old_value="*")])
     e.match("InvalidClientRequest")
     e.match("Transaction for change authentication "
             "rule for {}={} must not contain field {}".

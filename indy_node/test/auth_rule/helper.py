@@ -15,24 +15,11 @@ from plenum.test.helper import sdk_sign_and_submit_req_obj, sdk_get_and_check_re
     sdk_multi_sign_request_objects, sdk_json_to_request_object, sdk_send_signed_requests
 from plenum.test.pool_transactions.helper import prepare_nym_request
 
-from indy_node.test.helper import sdk_send_and_check_req_json
 from indy_node.test.helper import (
-    build_auth_rule_request_json,
+    sdk_send_and_check_req_json,
     sdk_send_and_check_auth_rule_request as _sdk_send_and_check_auth_rule_request,
-    sdk_send_and_check_get_auth_rule_request as _sdk_send_and_check_get_auth_rule_request
-)
-
-
-def generate_constraint_entity(constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID,
-                               role=TRUSTEE,
-                               sig_count=1,
-                               need_to_be_owner=False,
-                               metadata={}):
-    return {CONSTRAINT_ID: constraint_id,
-            ROLE: role,
-            SIG_COUNT: sig_count,
-            NEED_TO_BE_OWNER: need_to_be_owner,
-            METADATA: metadata}
+    sdk_send_and_check_get_auth_rule_request as _sdk_send_and_check_get_auth_rule_request,
+    generate_auth_rule, generate_constraint_entity)
 
 
 def generate_constraint_list(constraint_id=ConstraintsEnum.AND_CONSTRAINT_ID,
@@ -55,22 +42,6 @@ def generate_auth_rule_operation(auth_action=ADD_PREFIX, auth_type=NYM,
                             old_value, constraint)
     op[TXN_TYPE] = AUTH_RULE
     return op
-
-
-def generate_auth_rule(auth_action=ADD_PREFIX, auth_type=NYM,
-                       field=ROLE, new_value=TRUST_ANCHOR,
-                       old_value=None, constraint=None):
-    if constraint is None:
-        constraint = generate_constraint_entity()
-    rule = {CONSTRAINT: constraint,
-            AUTH_ACTION: auth_action,
-            AUTH_TYPE: auth_type,
-            FIELD: field,
-            NEW_VALUE: new_value
-            }
-    if old_value or auth_action == EDIT_PREFIX:
-        rule[OLD_VALUE] = old_value
-    return rule
 
 
 def create_verkey_did(looper, wh):
@@ -144,7 +115,7 @@ def sdk_send_and_check_auth_rule_invalid_request(
     )
 
 
-def sdk_send_and_check_auth_rules_request(looper, sdk_wallet_trustee, sdk_pool_handle,
+def sdk_send_and_check_auth_rules_request_invalid(looper, sdk_pool_handle, sdk_wallet_trustee,
                                           rules=None, no_wait=False):
     if rules is None:
         rules = [generate_auth_rule(ADD_PREFIX, NYM,

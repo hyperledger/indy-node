@@ -17,8 +17,8 @@ from plenum.test.helper import (
     sdk_gen_request, sdk_sign_and_submit_req, sdk_get_and_check_replies,
     sdk_sign_and_submit_req_obj
 )
-from indy_node.test.helper import build_auth_rule_request_json
-from indy_node.test.auth_rule.helper import generate_constraint_list, generate_constraint_entity, \
+from indy_node.test.helper import build_auth_rule_request_json, generate_constraint_entity
+from indy_node.test.auth_rule.helper import generate_constraint_list, \
     sdk_send_and_check_auth_rule_request, generate_key, sdk_send_and_check_get_auth_rule_request, \
     sdk_send_and_check_get_auth_rule_invalid_request
 
