@@ -47,23 +47,23 @@ from storage.helper import initKeyValueStorage
 class NodeBootstrap(PNodeBootstrap):
 
     def init_idr_cache_storage(self):
-        idr_cache = self.getIdrCache()
-        self.db_manager.register_new_store(IDR_CACHE_LABEL, idr_cache)
+        idr_cache = self.node.getIdrCache()
+        self.node.db_manager.register_new_store(IDR_CACHE_LABEL, idr_cache)
 
     def init_attribute_store(self):
         return AttributeStore(
             initKeyValueStorage(
-                self.config.attrStorage,
-                self.dataLocation,
-                self.config.attrDbName,
-                db_config=self.config.db_attr_db_config)
+                self.node.config.attrStorage,
+                self.node.dataLocation,
+                self.node.config.attrDbName,
+                db_config=self.node.config.db_attr_db_config)
         )
 
     def init_attribute_storage(self):
         # ToDo: refactor this on pluggable handlers integration phase
-        if self.attributeStore is None:
-            self.attributeStore = self.init_attribute_store()
-        self.db_manager.register_new_store(ATTRIB_LABEL, self.attributeStore)
+        if self.node.attributeStore is None:
+            self.node.attributeStore = self.init_attribute_store()
+        self.node.db_manager.register_new_store(ATTRIB_LABEL, self.node.attributeStore)
 
     def init_storages(self, storage=None):
         super().init_storages()
@@ -71,158 +71,158 @@ class NodeBootstrap(PNodeBootstrap):
         self.init_attribute_storage()
 
     def register_pool_req_handlers(self):
-        node_handler = NodeHandler(self.db_manager,
-                                   self.bls_bft.bls_crypto_verifier,
-                                   self.write_req_validator)
-        self.write_manager.register_req_handler(node_handler)
+        node_handler = NodeHandler(self.node.db_manager,
+                                   self.node.bls_bft.bls_crypto_verifier,
+                                   self.node.write_req_validator)
+        self.node.write_manager.register_req_handler(node_handler)
 
     def register_domain_req_handlers(self):
         # Read handlers
-        get_nym_handler = GetNymHandler(database_manager=self.db_manager)
-        get_attribute_handler = GetAttributeHandler(database_manager=self.db_manager)
-        get_schema_handler = GetSchemaHandler(database_manager=self.db_manager)
-        get_claim_def_handler = GetClaimDefHandler(database_manager=self.db_manager)
-        get_revoc_reg_def_handler = GetRevocRegDefHandler(database_manager=self.db_manager)
-        get_revoc_reg_handler = GetRevocRegHandler(database_manager=self.db_manager)
-        get_revoc_reg_delta_handler = GetRevocRegDeltaHandler(database_manager=self.db_manager,
+        get_nym_handler = GetNymHandler(database_manager=self.node.db_manager)
+        get_attribute_handler = GetAttributeHandler(database_manager=self.node.db_manager)
+        get_schema_handler = GetSchemaHandler(database_manager=self.node.db_manager)
+        get_claim_def_handler = GetClaimDefHandler(database_manager=self.node.db_manager)
+        get_revoc_reg_def_handler = GetRevocRegDefHandler(database_manager=self.node.db_manager)
+        get_revoc_reg_handler = GetRevocRegHandler(database_manager=self.node.db_manager)
+        get_revoc_reg_delta_handler = GetRevocRegDeltaHandler(database_manager=self.node.db_manager,
                                                               get_revocation_strategy=RevocRegDefHandler.get_revocation_strategy)
         # Write handlers
-        nym_handler = NymHandler(database_manager=self.db_manager,
-                                 write_req_validator=self.write_req_validator)
-        attrib_handler = AttributeHandler(database_manager=self.db_manager)
-        schema_handler = SchemaHandler(database_manager=self.db_manager,
+        nym_handler = NymHandler(database_manager=self.node.db_manager,
+                                 write_req_validator=self.node.write_req_validator)
+        attrib_handler = AttributeHandler(database_manager=self.node.db_manager)
+        schema_handler = SchemaHandler(database_manager=self.node.db_manager,
                                        get_schema_handler=get_schema_handler,
-                                       write_req_validator=self.write_req_validator)
-        claim_def_handler = ClaimDefHandler(database_manager=self.db_manager,
-                                            write_req_validator=self.write_req_validator)
-        revoc_reg_def_handler = RevocRegDefHandler(database_manager=self.db_manager,
+                                       write_req_validator=self.node.write_req_validator)
+        claim_def_handler = ClaimDefHandler(database_manager=self.node.db_manager,
+                                            write_req_validator=self.node.write_req_validator)
+        revoc_reg_def_handler = RevocRegDefHandler(database_manager=self.node.db_manager,
                                                    get_revoc_reg_def=get_revoc_reg_def_handler)
-        revoc_reg_entry_handler = RevocRegEntryHandler(database_manager=self.db_manager,
+        revoc_reg_entry_handler = RevocRegEntryHandler(database_manager=self.node.db_manager,
                                                        get_revoc_reg_entry=get_revoc_reg_handler,
                                                        get_revocation_strategy=RevocRegDefHandler.get_revocation_strategy)
         # Register write handlers
-        self.write_manager.register_req_handler(nym_handler)
-        self.write_manager.register_req_handler(attrib_handler)
-        self.write_manager.register_req_handler(schema_handler)
-        self.write_manager.register_req_handler(claim_def_handler)
-        self.write_manager.register_req_handler(revoc_reg_def_handler)
-        self.write_manager.register_req_handler(revoc_reg_entry_handler)
+        self.node.write_manager.register_req_handler(nym_handler)
+        self.node.write_manager.register_req_handler(attrib_handler)
+        self.node.write_manager.register_req_handler(schema_handler)
+        self.node.write_manager.register_req_handler(claim_def_handler)
+        self.node.write_manager.register_req_handler(revoc_reg_def_handler)
+        self.node.write_manager.register_req_handler(revoc_reg_entry_handler)
         # Additional handler for idCache
         self.register_idr_cache_nym_handler()
         # Register read handlers
-        self.read_manager.register_req_handler(get_nym_handler)
-        self.read_manager.register_req_handler(get_attribute_handler)
-        self.read_manager.register_req_handler(get_schema_handler)
-        self.read_manager.register_req_handler(get_claim_def_handler)
-        self.read_manager.register_req_handler(get_revoc_reg_def_handler)
-        self.read_manager.register_req_handler(get_revoc_reg_handler)
-        self.read_manager.register_req_handler(get_revoc_reg_delta_handler)
+        self.node.read_manager.register_req_handler(get_nym_handler)
+        self.node.read_manager.register_req_handler(get_attribute_handler)
+        self.node.read_manager.register_req_handler(get_schema_handler)
+        self.node.read_manager.register_req_handler(get_claim_def_handler)
+        self.node.read_manager.register_req_handler(get_revoc_reg_def_handler)
+        self.node.read_manager.register_req_handler(get_revoc_reg_handler)
+        self.node.read_manager.register_req_handler(get_revoc_reg_delta_handler)
 
     def register_config_req_handlers(self):
         # Read handlers
-        get_auth_rule_handler = GetAuthRuleHandler(database_manager=self.db_manager,
-                                                   write_req_validator=self.write_req_validator)
+        get_auth_rule_handler = GetAuthRuleHandler(database_manager=self.node.db_manager,
+                                                   write_req_validator=self.node.write_req_validator)
         # Write handlers
-        auth_rule_handler = AuthRuleHandler(database_manager=self.db_manager,
-                                            write_req_validator=self.write_req_validator)
-        auth_rules_handler = AuthRulesHandler(database_manager=self.db_manager,
-                                              write_req_validator=self.write_req_validator)
-        pool_config_handler = PoolConfigHandler(database_manager=self.db_manager,
-                                                write_req_validator=self.write_req_validator,
-                                                pool_config=self.poolCfg)
-        pool_upgrade_handler = PoolUpgradeHandler(database_manager=self.db_manager,
-                                                  upgrader=self.upgrader,
-                                                  write_req_validator=self.write_req_validator,
-                                                  pool_manager=self.poolManager)
+        auth_rule_handler = AuthRuleHandler(database_manager=self.node.db_manager,
+                                            write_req_validator=self.node.write_req_validator)
+        auth_rules_handler = AuthRulesHandler(database_manager=self.node.db_manager,
+                                              write_req_validator=self.node.write_req_validator)
+        pool_config_handler = PoolConfigHandler(database_manager=self.node.db_manager,
+                                                write_req_validator=self.node.write_req_validator,
+                                                pool_config=self.node.poolCfg)
+        pool_upgrade_handler = PoolUpgradeHandler(database_manager=self.node.db_manager,
+                                                  upgrader=self.node.upgrader,
+                                                  write_req_validator=self.node.write_req_validator,
+                                                  pool_manager=self.node.poolManager)
         # Register write handlers
-        self.write_manager.register_req_handler(auth_rule_handler)
-        self.write_manager.register_req_handler(auth_rules_handler)
-        self.write_manager.register_req_handler(pool_config_handler)
-        self.write_manager.register_req_handler(pool_upgrade_handler)
+        self.node.write_manager.register_req_handler(auth_rule_handler)
+        self.node.write_manager.register_req_handler(auth_rules_handler)
+        self.node.write_manager.register_req_handler(pool_config_handler)
+        self.node.write_manager.register_req_handler(pool_upgrade_handler)
         # Register read handlers
-        self.read_manager.register_req_handler(get_auth_rule_handler)
+        self.node.read_manager.register_req_handler(get_auth_rule_handler)
 
     def register_action_req_handlers(self):
         # Action handlers
-        pool_restart_handler = PoolRestartHandler(database_manager=self.db_manager,
-                                                  write_req_validator=self.write_req_validator,
-                                                  restarter=self.restarter)
-        validator_info_handler = ValidatorInfoHandler(database_manager=self.db_manager,
-                                                      write_req_validator=self.write_req_validator,
-                                                      info_tool=self._info_tool)
+        pool_restart_handler = PoolRestartHandler(database_manager=self.node.db_manager,
+                                                  write_req_validator=self.node.write_req_validator,
+                                                  restarter=self.node.restarter)
+        validator_info_handler = ValidatorInfoHandler(database_manager=self.node.db_manager,
+                                                      write_req_validator=self.node.write_req_validator,
+                                                      info_tool=self.node._info_tool)
         # Register action handlers
-        self.action_manager.register_action_handler(pool_restart_handler)
-        self.action_manager.register_action_handler(validator_info_handler)
+        self.node.action_manager.register_action_handler(pool_restart_handler)
+        self.node.action_manager.register_action_handler(validator_info_handler)
 
     def register_domain_batch_handlers(self):
         super().register_domain_batch_handlers()
         self.register_idr_cache_batch_handler()
 
     def register_config_batch_handlers(self):
-        config_batch_handler = ConfigBatchHandler(database_manager=self.db_manager,
-                                                  upgrader=self.upgrader,
-                                                  pool_config=self.poolCfg)
-        self.write_manager.register_batch_handler(config_batch_handler)
+        config_batch_handler = ConfigBatchHandler(database_manager=self.node.db_manager,
+                                                  upgrader=self.node.upgrader,
+                                                  pool_config=self.node.poolCfg)
+        self.node.write_manager.register_batch_handler(config_batch_handler)
 
     def register_idr_cache_nym_handler(self):
-        idr_cache_nym_handler = IdrCacheNymHandler(database_manager=self.db_manager)
-        self.write_manager.register_req_handler(idr_cache_nym_handler)
+        idr_cache_nym_handler = IdrCacheNymHandler(database_manager=self.node.db_manager)
+        self.node.write_manager.register_req_handler(idr_cache_nym_handler)
 
     def register_idr_cache_batch_handler(self):
-        idr_cache_batch_handler = IdrCacheBatchHandler(database_manager=self.db_manager)
-        self.write_manager.register_batch_handler(idr_cache_batch_handler)
+        idr_cache_batch_handler = IdrCacheBatchHandler(database_manager=self.node.db_manager)
+        self.node.write_manager.register_batch_handler(idr_cache_batch_handler)
 
     def init_pool_config(self):
-        return PoolConfig(self.configLedger)
+        return PoolConfig(self.node.configLedger)
 
     def init_domain_ledger(self):
         """
         This is usually an implementation of Ledger
         """
-        if self.config.primaryStorage is None:
+        if self.node.config.primaryStorage is None:
             genesis_txn_initiator = GenesisTxnInitiatorFromFile(
-                self.genesis_dir, self.config.domainTransactionsFile)
+                self.node.genesis_dir, self.node.config.domainTransactionsFile)
             return Ledger(
                 CompactMerkleTree(
-                    hashStore=self.getHashStore('domain')),
-                dataDir=self.dataLocation,
-                fileName=self.config.domainTransactionsFile,
-                ensureDurability=self.config.EnsureLedgerDurability,
+                    hashStore=self.node.getHashStore('domain')),
+                dataDir=self.node.dataLocation,
+                fileName=self.node.config.domainTransactionsFile,
+                ensureDurability=self.node.config.EnsureLedgerDurability,
                 genesis_txn_initiator=genesis_txn_initiator)
         else:
-            return initStorage(self.config.primaryStorage,
-                               name=self.name + NODE_PRIMARY_STORAGE_SUFFIX,
-                               dataDir=self.dataLocation,
-                               config=self.config)
+            return initStorage(self.node.config.primaryStorage,
+                               name=self.node.name + NODE_PRIMARY_STORAGE_SUFFIX,
+                               dataDir=self.node.dataLocation,
+                               config=self.node.config)
 
     def init_upgrader(self):
-        return Upgrader(self.id,
-                        self.name,
-                        self.dataLocation,
-                        self.config,
-                        self.configLedger,
-                        actionFailedCallback=self.postConfigLedgerCaughtUp,
-                        action_start_callback=self.notify_upgrade_start)
+        return Upgrader(self.node.id,
+                        self.node.name,
+                        self.node.dataLocation,
+                        self.node.config,
+                        self.node.configLedger,
+                        actionFailedCallback=self.node.postConfigLedgerCaughtUp,
+                        action_start_callback=self.node.notify_upgrade_start)
 
     def init_restarter(self):
-        return Restarter(self.id,
-                         self.name,
-                         self.dataLocation,
-                         self.config)
+        return Restarter(self.node.id,
+                         self.node.name,
+                         self.node.dataLocation,
+                         self.node.config)
 
     def init_common_managers(self):
         super().init_common_managers()
-        self.upgrader = self.init_upgrader()
-        self.restarter = self.init_restarter()
-        self.poolCfg = self.init_pool_config()
+        self.node.upgrader = self.init_upgrader()
+        self.node.restarter = self.init_restarter()
+        self.node.poolCfg = self.init_pool_config()
 
     def _init_write_request_validator(self):
         constraint_serializer = ConstraintsSerializer(domain_state_serializer)
-        config_state = self.states[CONFIG_LEDGER_ID]
-        self.write_req_validator = WriteRequestValidator(config=self.config,
-                                                         auth_map=auth_map,
-                                                         cache=self.getIdrCache(),
-                                                         config_state=config_state,
-                                                         state_serializer=constraint_serializer,
-                                                         anyone_can_write_map=anyone_can_write_map,
-                                                         metrics=self.metrics)
+        config_state = self.node.states[CONFIG_LEDGER_ID]
+        self.node.write_req_validator = WriteRequestValidator(config=self.node.config,
+                                                              auth_map=auth_map,
+                                                              cache=self.node.getIdrCache(),
+                                                              config_state=config_state,
+                                                              state_serializer=constraint_serializer,
+                                                              anyone_can_write_map=anyone_can_write_map,
+                                                              metrics=self.node.metrics)

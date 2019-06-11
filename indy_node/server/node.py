@@ -35,7 +35,7 @@ from stp_core.common.log import getlogger
 logger = getlogger()
 
 
-class Node(PlenumNode, NodeBootstrap):
+class Node(PlenumNode):
     keygenScript = "init_indy_keys"
     client_request_class = SafeRequest
     TxnUtilConfig.client_request_class = Request
@@ -88,7 +88,8 @@ class Node(PlenumNode, NodeBootstrap):
                          primaryDecider=primaryDecider,
                          pluginPaths=pluginPaths,
                          storage=storage,
-                         config=config)
+                         config=config,
+                         bootstrap_cls=NodeBootstrap)
 
         # TODO: ugly line ahead, don't know how to avoid
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
@@ -336,7 +337,3 @@ class Node(PlenumNode, NodeBootstrap):
             serialized_value = serializer.serialize(auth_constraint)
             if not state.get(serialized_key, isCommitted=False):
                 state.set(serialized_key, serialized_value)
-
-    def _bootstrap_node(self, storage):
-        NodeBootstrap.__init__(self)
-        self.init_node(storage)
