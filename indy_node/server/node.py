@@ -56,7 +56,8 @@ class Node(PlenumNode):
                  primaryDecider=None,
                  pluginPaths: Iterable[str] = None,
                  storage=None,
-                 config=None):
+                 config=None,
+                 bootstrap_cls=NodeBootstrap):
         config = config or getConfig()
 
         config_helper = config_helper or NodeConfigHelper(name, config)
@@ -89,7 +90,7 @@ class Node(PlenumNode):
                          pluginPaths=pluginPaths,
                          storage=storage,
                          config=config,
-                         bootstrap_cls=NodeBootstrap)
+                         bootstrap_cls=bootstrap_cls)
 
         # TODO: ugly line ahead, don't know how to avoid
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
