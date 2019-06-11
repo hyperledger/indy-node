@@ -1,15 +1,15 @@
 from collections import Callable
 
-from indy_common.state import domain
-
 from indy_common.constants import FROM, TO, REVOC_REG_DEF_ID, ISSUANCE_TYPE, REVOKED, ISSUED, VALUE, REVOC_TYPE, \
     ACCUM_TO, STATE_PROOF_FROM, ACCUM_FROM, GET_REVOC_REG_DELTA
+from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handler import RevocRegEntryHandler
 
 from indy_node.server.request_handlers.utils import StateValue
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.request import Request
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
+from plenum.server.request_handlers.utils import decode_state_value
 
 
 class GetRevocRegDeltaHandler(ReadRequestHandler):
@@ -42,8 +42,8 @@ class GetRevocRegDeltaHandler(ReadRequestHandler):
         Get root hash for "to" timestamp
         Get REVOC_REG_ENTRY and ACCUM record for timestamp "to"
         """
-        path_to_reg_entry = domain.make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
-        path_to_reg_entry_accum = domain.make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id=revoc_reg_def_id)
+        path_to_reg_entry = RevocRegEntryHandler.make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
+        path_to_reg_entry_accum = RevocRegEntryHandler.make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id=revoc_reg_def_id)
 
         entry_to = self._get_reg_entry_by_timestamp(req_ts_to, path_to_reg_entry)
         accum_to = self._get_reg_entry_accum_by_timestamp(req_ts_to, path_to_reg_entry_accum)
@@ -55,7 +55,7 @@ class GetRevocRegDeltaHandler(ReadRequestHandler):
             encoded_revoc_reg_def = self.state.get_for_root_hash(entry_to.root_hash,
                                                                  revoc_reg_def_id)
             if encoded_revoc_reg_def:
-                revoc_reg_def, _, _ = domain.decode_state_value(encoded_revoc_reg_def)
+                revoc_reg_def, _, _ = decode_state_value(encoded_revoc_reg_def)
                 strategy_cls = self.get_revocation_strategy(revoc_reg_def[VALUE][ISSUANCE_TYPE])
                 issued_to = entry_to.value[VALUE].get(ISSUED, [])
                 revoked_to = entry_to.value[VALUE].get(REVOKED, [])
@@ -116,7 +116,7 @@ class GetRevocRegDeltaHandler(ReadRequestHandler):
                                                                         head_hash=past_root,
                                                                         with_proof=True)
             if encoded_entry:
-                reg_entry, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
+                reg_entry, seq_no, last_update_time = decode_state_value(encoded_entry)
         return StateValue(root_hash=past_root,
                           value=reg_entry,
                           seq_no=seq_no,
@@ -133,7 +133,7 @@ class GetRevocRegDeltaHandler(ReadRequestHandler):
             encoded_entry, reg_entry_accum_proof = self._get_value_from_state(
                 path_to_reg_entry_accum, head_hash=past_root, with_proof=True)
             if encoded_entry:
-                reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
+                reg_entry_accum, seq_no, last_update_time = decode_state_value(encoded_entry)
         return StateValue(root_hash=past_root,
                           value=reg_entry_accum,
                           seq_no=seq_no,

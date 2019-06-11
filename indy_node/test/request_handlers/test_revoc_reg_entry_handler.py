@@ -7,6 +7,8 @@ from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handl
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.util import randomString
+from plenum.server.request_handlers.utils import encode_state_value
+from plenum.test.input_validation.conftest import operation
 from plenum.test.testing_utils import FakeSomething
 
 
@@ -40,6 +42,8 @@ def revoc_reg_entry_request():
 
 def test_revoc_reg_entry_dynamic_validation_passes(revoc_reg_entry_handler,
                                                    revoc_reg_entry_request):
+    revoc_reg_entry_handler.state.set(revoc_reg_entry_request.operation[REVOC_REG_DEF_ID],
+                                      encode_state_value({VALUE:{ISSUANCE_TYPE:5}}, "seqNo", "txnTime"))
     revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request)
 
 

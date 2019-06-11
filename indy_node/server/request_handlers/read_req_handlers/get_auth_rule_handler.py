@@ -3,12 +3,14 @@ from indy_common.authorize.auth_constraints import ConstraintsSerializer
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.state import config
 from indy_common.types import ClientGetAuthRuleOperation
+from indy_node.server.request_handlers.config_req_handlers.auth_rule.abstract_auth_rule_handler import \
+    AbstractAuthRuleHandler
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.static_auth_rule_helper import StaticAuthRuleHelper
 from plenum.common.txn_util import get_request_data
 from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
 
-from indy_common.authorize.auth_actions import AuthActionEdit, EDIT_PREFIX, AuthActionAdd, split_action_id
-from indy_common.constants import CONFIG_LEDGER_ID, AUTH_RULE, AUTH_ACTION, OLD_VALUE, \
+from indy_common.authorize.auth_actions import EDIT_PREFIX, split_action_id
+from indy_common.constants import CONFIG_LEDGER_ID, AUTH_ACTION, OLD_VALUE, \
     NEW_VALUE, AUTH_TYPE, FIELD, CONSTRAINT, GET_AUTH_RULE
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
@@ -65,7 +67,7 @@ class GetAuthRuleHandler(ReadRequestHandler):
         data = self.write_req_validator.auth_map.copy()
         result = []
         for key in self.write_req_validator.auth_map:
-            path = config.make_state_path_for_auth_rule(key)
+            path = AbstractAuthRuleHandler.make_state_path_for_auth_rule(key)
             state_constraint, _ = self._get_value_from_state(path)
             if state_constraint:
                 value = self.constraint_serializer.deserialize(state_constraint)

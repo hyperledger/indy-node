@@ -13,10 +13,10 @@ from plenum.test.testing_utils import FakeSomething
 
 
 @pytest.fixture(scope="module")
-def nym_handler(db_manager):
+def nym_handler(db_manager, tconf):
     f = FakeSomething()
     f.validate = lambda request, action_list: True
-    return NymHandler(db_manager, f)
+    return NymHandler(tconf, db_manager, f)
 
 
 @pytest.fixture(scope="function")
