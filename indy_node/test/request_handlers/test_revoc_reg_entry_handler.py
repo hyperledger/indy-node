@@ -6,6 +6,7 @@ from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handl
 
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
+from plenum.common.txn_util import reqToTxn, append_txn_metadata
 from plenum.common.util import randomString
 from plenum.server.request_handlers.utils import encode_state_value
 from plenum.test.input_validation.conftest import operation
@@ -24,9 +25,6 @@ def revoc_reg_entry_handler(db_manager, write_auth_req_validator):
 
     def get_revocation_strategy(type):
         return Validator
-
-    # def get_current_revoc_entry_and_revoc_def(author_did, revoc_reg_def_id, req_id):
-    #     return True, {VALUE: {ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT}}
 
     return RevocRegEntryHandler(db_manager, write_auth_req_validator, get_revocation_strategy)
 
@@ -54,3 +52,17 @@ def test_revoc_reg_entry_dynamic_validation_fails(revoc_reg_entry_handler,
     revoc_reg_entry_handler.get_revocation_strategy = validate
     with pytest.raises(InvalidClientRequest):
         revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request)
+
+
+def test_update_state(revoc_reg_entry_handler, revoc_reg_entry_request):
+    seq_no = 1
+    txn_time = 1560241033
+    txn = reqToTxn(revoc_reg_entry_request)
+    append_txn_metadata(txn, seq_no, txn_time)
+    path, value_bytes = SchemaHandler.prepare_schema_for_state(txn)
+    value = {
+        SCHEMA_ATTR_NAMES: get_txn_schema_attr_names(txn)
+    }
+
+    revoc_reg_entry_handler.update_state(txn, None, revoc_reg_entry_request)
+    assert revoc_reg_entry_handler.get_from_state(path) == (value, seq_no, txn_time)

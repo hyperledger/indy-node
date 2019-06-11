@@ -1,11 +1,11 @@
 import pytest
-from indy_common.constants import SCHEMA
+from indy_common.constants import SCHEMA, CONFIG_LEDGER_ID
 
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
 from indy_node.test.request_handlers.helper import get_fake_ledger, add_to_idr
 from indy_node.test.request_handlers.test_schema_handler import make_schema_exist
-from plenum.common.constants import KeyValueStorageType, DOMAIN_LEDGER_ID, IDR_CACHE_LABEL
+from plenum.common.constants import KeyValueStorageType, DOMAIN_LEDGER_ID, IDR_CACHE_LABEL, POOL_LEDGER_ID
 from plenum.common.request import Request
 from plenum.common.util import randomString
 from plenum.server.database_manager import DatabaseManager
@@ -31,9 +31,13 @@ def idr_cache(tconf, tdir):
 def db_manager(tconf, tdir, idr_cache):
     db_manager = DatabaseManager()
 
-    state = PruningState(KeyValueStorageInMemory())
     db_manager.register_new_store(IDR_CACHE_LABEL, idr_cache)
-    db_manager.register_new_database(DOMAIN_LEDGER_ID, get_fake_ledger(), state)
+    db_manager.register_new_database(DOMAIN_LEDGER_ID, get_fake_ledger(),
+                                     PruningState(KeyValueStorageInMemory()))
+    db_manager.register_new_database(CONFIG_LEDGER_ID, get_fake_ledger(),
+                                     PruningState(KeyValueStorageInMemory()))
+    db_manager.register_new_database(POOL_LEDGER_ID, get_fake_ledger(),
+                                     PruningState(KeyValueStorageInMemory()))
     return db_manager
 
 

@@ -8,6 +8,7 @@ from indy_node.test.request_handlers.helper import add_to_idr
 from plenum.common.constants import TRUSTEE
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
+from plenum.common.txn_util import reqToTxn, append_txn_metadata, get_payload_data
 from plenum.common.util import randomString
 from plenum.server.request_handlers.utils import encode_state_value
 from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
@@ -83,3 +84,16 @@ def test_revoc_reg_def_dynamic_validation_without_permission(revoc_reg_def_handl
     with pytest.raises(UnauthorizedClientRequest,
                        match="Not enough TRUSTEE signatures"):
         revoc_reg_def_handler.dynamic_validation(revoc_reg_def_request)
+
+
+def test_update_state(revoc_reg_def_handler, revoc_reg_def_request):
+    seq_no = 1
+    txn_time = 1560241033
+    txn = reqToTxn(revoc_reg_def_request)
+    append_txn_metadata(txn, seq_no, txn_time)
+    value = get_payload_data(txn)
+    path = RevocRegDefHandler.prepare_revoc_def_for_state(txn,
+                                                          path_only=True)
+
+    revoc_reg_def_handler.update_state(txn, None, revoc_reg_def_request)
+    assert revoc_reg_def_handler.get_from_state(path) == (value, seq_no, txn_time)

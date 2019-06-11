@@ -23,8 +23,6 @@ from storage.kv_in_memory import KeyValueStorageInMemory
 @pytest.fixture(scope="module")
 def txn_author_agreement_aml_handler(db_manager, write_auth_req_validator):
     handler = TxnAuthorAgreementAmlHandler(db_manager, FakeSomething(), write_auth_req_validator)
-    state = PruningState(KeyValueStorageInMemory())
-    db_manager.register_new_database(handler.ledger_id, FakeSomething(), state)
     return handler
 
 
