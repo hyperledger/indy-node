@@ -26,8 +26,8 @@ add_new_steward = AuthActionAdd(txn_type=NYM,
                                 value=STEWARD)
 
 add_new_endorser = AuthActionAdd(txn_type=NYM,
-                                     field=ROLE,
-                                     value=ENDORSER)
+                                 field=ROLE,
+                                 value=ENDORSER)
 
 add_new_network_monitor = AuthActionAdd(txn_type=NYM,
                                         field=ROLE,
@@ -248,8 +248,8 @@ steward_or_trustee_constraint = AuthConstraintOr([AuthConstraint(STEWARD, 1),
 
 # Endorser, Steward or Trustee constraint
 endorser_or_steward_or_trustee_constraint = AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
-                                                                  AuthConstraint(STEWARD, 1),
-                                                                  AuthConstraint(ENDORSER, 1)])
+                                                              AuthConstraint(STEWARD, 1),
+                                                              AuthConstraint(ENDORSER, 1)])
 # Trustee or owner steward
 trustee_or_owner_steward = AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                              AuthConstraint(STEWARD, 1, need_to_be_owner=True)])
