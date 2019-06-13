@@ -9,6 +9,7 @@ from indy_common.authorize.auth_constraints import AuthConstraint, ConstraintsSe
 from indy_common.state import config
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.node import Node
+from indy_node.server.node_bootstrap import NodeBootstrap
 from ledger.compact_merkle_tree import CompactMerkleTree
 from plenum.common.constants import TXN_TYPE, NYM, ROLE, TRUSTEE, STEWARD, CONFIG_LEDGER_ID, TXN_METADATA, \
     TXN_METADATA_SEQ_NO
@@ -163,10 +164,12 @@ def test_init_state_from_ledger(config_ledger,
     config_ledger.appendTxns([txn])
     config_ledger.commitTxns(req_count)
     # ToDo: ugly fix... Refactor this on pluggable req handler integration phase
-    init_state_from_ledger = functools.partial(Node.init_state_from_ledger,
-                                               FakeSomething(update_txn_with_extra_data=lambda txn: txn,
-                                                             write_manager=FakeSomething(
-                                                                 update_state=lambda txn, isCommitted: config_req_handler.updateState([txn], isCommitted=isCommitted))))
+    init_state_from_ledger = functools.partial(
+        NodeBootstrap.init_state_from_ledger,
+        FakeSomething(
+            node=FakeSomething(update_txn_with_extra_data=lambda txn: txn,
+                write_manager=FakeSomething(
+                update_state=lambda txn, isCommitted: config_req_handler.updateState([txn], isCommitted=isCommitted)))))
     """Check that txn is not exist in state"""
     assert config_state.get(config.make_state_path_for_auth_rule(action.get_action_id()),
                             isCommitted=False) is None

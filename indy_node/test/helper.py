@@ -13,6 +13,7 @@ from indy_common.authorize.auth_constraints import ROLE, CONSTRAINT_ID, Constrai
     METADATA
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.constants import NYM, TRUST_ANCHOR, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, OLD_VALUE
+from indy_node.server.node_bootstrap import NodeBootstrap
 from plenum.common.constants import TRUSTEE
 from plenum.common.signer_did import DidSigner
 from plenum.common.signer_simple import SimpleSigner
@@ -36,6 +37,14 @@ class TestUpgrader(Upgrader):
     pass
 
 
+class TestNodeBootstrap(NodeBootstrap):
+    def init_upgrader(self):
+        return TestUpgrader(self.node.id, self.node.name, self.node.dataLocation, self.node.config,
+                            self.node.configLedger,
+                            actionFailedCallback=self.node.postConfigLedgerCaughtUp,
+                            action_start_callback=self.node.notify_upgrade_start)
+
+
 # noinspection PyShadowingNames,PyShadowingNames
 @spyable(
     methods=[Node.handleOneNodeMsg, Node.processRequest, Node.processOrdered,
@@ -53,15 +62,9 @@ class TestNode(TempStorage, TestNodeCore, Node):
         self.NodeStackClass = nodeStackClass
         self.ClientStackClass = clientStackClass
 
-        Node.__init__(self, *args, **kwargs)
+        Node.__init__(self, *args, **kwargs, bootstrap_cls=TestNodeBootstrap)
         TestNodeCore.__init__(self, *args, **kwargs)
         self.cleanupOnStopping = True
-
-    def init_upgrader(self):
-        return TestUpgrader(self.id, self.name, self.dataLocation, self.config,
-                            self.configLedger,
-                            actionFailedCallback=self.postConfigLedgerCaughtUp,
-                            action_start_callback=self.notify_upgrade_start)
 
     def init_domain_req_handler(self):
         return Node.init_domain_req_handler(self)
