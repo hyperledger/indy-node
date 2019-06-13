@@ -4,8 +4,6 @@ from typing import Iterable, List
 
 from common.exceptions import LogicError
 from common.serializers.serialization import ledger_txn_serializer, domain_state_serializer
-from indy_common.authorize.auth_constraints import ConstraintsSerializer
-from indy_common.authorize.auth_map import auth_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.authorize.auth_constraints import AbstractConstraintSerializer
 from indy_node.server.node_bootstrap import NodeBootstrap
