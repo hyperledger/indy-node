@@ -26,11 +26,11 @@ class IdrCacheNymHandler(WriteRequestHandler):
                                             verkey=prev_result.get(VERKEY),
                                             isCommitted=is_committed)
 
-    def static_validation(self):
+    def static_validation(self, request):
         pass
 
-    def dynamic_validation(self):
+    def dynamic_validation(self, request):
         pass
 
-    def gen_state_key(self):
+    def gen_state_key(self, txn):
         pass
