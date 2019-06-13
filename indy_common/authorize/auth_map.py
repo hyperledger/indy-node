@@ -152,42 +152,6 @@ validator_info = AuthActionAdd(txn_type=VALIDATOR_INFO,
                                field='*',
                                value='*')
 
-anyone_can_add_nym = AuthActionAdd(txn_type=NYM,
-                                   field=ROLE,
-                                   value='*')
-
-anyone_can_add_schema = AuthActionAdd(txn_type=SCHEMA,
-                                      field='*',
-                                      value='*')
-
-anyone_can_add_claim_def = AuthActionAdd(txn_type=CLAIM_DEF,
-                                         field='*',
-                                         value='*')
-
-anyone_can_edit_nym = AuthActionEdit(txn_type=NYM,
-                                     field=ROLE,
-                                     old_value='*',
-                                     new_value='*')
-
-anyone_can_add_attrib = AuthActionAdd(txn_type=ATTRIB,
-                                      field='*',
-                                      value='*')
-
-anyone_can_edit_attrib = AuthActionEdit(txn_type=ATTRIB,
-                                        field='*',
-                                        old_value='*',
-                                        new_value='*')
-
-anyone_can_edit_schema = AuthActionEdit(txn_type=SCHEMA,
-                                        field='*',
-                                        old_value='*',
-                                        new_value='*')
-
-anyone_can_edit_claim_def = AuthActionEdit(txn_type=CLAIM_DEF,
-                                           field='*',
-                                           old_value='*',
-                                           new_value='*')
-
 add_revoc_reg_def = AuthActionAdd(txn_type=REVOC_REG_DEF,
                                   field='*',
                                   value='*')
@@ -195,14 +159,6 @@ add_revoc_reg_def = AuthActionAdd(txn_type=REVOC_REG_DEF,
 add_revoc_reg_entry = AuthActionAdd(txn_type=REVOC_REG_ENTRY,
                                     field='*',
                                     value='*')
-
-anyone_can_create_revoc_reg_def = AuthActionAdd(txn_type=REVOC_REG_DEF,
-                                                field='*',
-                                                value='*')
-
-anyone_can_create_revoc_reg_entry = AuthActionAdd(txn_type=REVOC_REG_ENTRY,
-                                                  field='*',
-                                                  value='*')
 
 edit_revoc_reg_def = AuthActionEdit(txn_type=REVOC_REG_DEF,
                                     field='*',
@@ -213,16 +169,6 @@ edit_revoc_reg_entry = AuthActionEdit(txn_type=REVOC_REG_ENTRY,
                                       field='*',
                                       old_value='*',
                                       new_value='*')
-
-anyone_can_edit_revoc_reg_def = AuthActionEdit(txn_type=REVOC_REG_DEF,
-                                               field='*',
-                                               old_value='*',
-                                               new_value='*')
-
-anyone_can_edit_revoc_reg_entry = AuthActionEdit(txn_type=REVOC_REG_ENTRY,
-                                                 field='*',
-                                                 old_value='*',
-                                                 new_value='*')
 
 # Anyone constraint
 anyone_constraint = AuthConstraint(role='*',
