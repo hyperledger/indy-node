@@ -516,7 +516,7 @@ No further action is required
 
 | Components | Version Numbers |
 | --- | --- |
-| indy-plenum | 1.5.47 |
+| indy-plenum | 1.5.48 |
 | indy-anoncreds | 1.0.11 |
 | indy-node | 1.5.68 |
 |   |   |    |
