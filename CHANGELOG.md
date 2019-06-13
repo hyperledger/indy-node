@@ -26,7 +26,7 @@
 
 * [1.3.62](#1362)
 
-* [1.3.56](#1356)
+* [1.3.57](#1357)
 
 * [1.3.55](#1355)
 
@@ -725,13 +725,13 @@ None for this release.
 None at this time.
 
 
-## 1.3.56
+## 1.3.57
 
 ### Component Version Information
 
 | Components | Version Numbers |
 | --- | --- |
-| indy-node | 1.3.56 |
+| indy-node | 1.3.57 |
 |   |   |   |
 
 ### Major Fixes
