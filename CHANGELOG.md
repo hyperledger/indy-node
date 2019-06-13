@@ -20,7 +20,7 @@
 
 * [1.6.70](#1670)
 
-* [1.5.67](#1567)
+* [1.5.68](#1568)
 
 * [1.4.66](#1466)
 
@@ -509,7 +509,7 @@ No further action is required
 **For more details about txn format changes see** [**INDY-1421**](https://jira.hyperledger.org/browse/INDY-1421) **.**
 
 
-## 1.5.67
+## 1.5.68
 
 
 ### Component Version Information
@@ -518,7 +518,7 @@ No further action is required
 | --- | --- |
 | indy-plenum | 1.5.47 |
 | indy-anoncreds | 1.0.11 |
-| indy-node | 1.5.67 |
+| indy-node | 1.5.68 |
 |   |   |    |
 
 ### Major Fixes
