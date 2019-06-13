@@ -72,7 +72,7 @@ What artifacts are produced after each push
         - indy-node release tag (https://github.com/hyperledger/indy-node/releases)
 
 Use cases for artifacts
-- Pypi artifacts can be used for development experiments, but not intended to be used for production.
+- PyPI artifacts can be used for development experiments, but not intended to be used for production.
 - Using deb packages is recommended way to be used for a test/production pool on Ubuntu.
     - indy-node deb package from [`https://repo.sovrin.org/deb xenial stable`](https://repo.sovrin.org/lib/apt/xenial/stable/)
     is one and the only official stable release that can be used for production (stable version).
@@ -141,7 +141,7 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
     1. [**Maintainer**] Once the release candidate PR is merged the maintainer **starts release candidate pipeline manually**.
     2. [**build server**] Once the CD pipeline is started (manually triggered) for branch `release-X.Y.Z` it does the following:
         - creates and pushes release commit to `release-X.Y.Z`;
-        - publishes release candidates packages;
+        - publishes release candidates packages to PyPI and debian `rc` components;
         - performs system testing (`indy-node` only);
         - creates a release PR to merge `release-X.Y.Z` to `stable`;
         - waits for an approval to proceed.
@@ -154,8 +154,8 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
         - otherwise rollbacks release commit pushed to release branch `release-X.Y.Z`.
 3. Publishing
     1. [**build server**] Once the release PR is merged stable pipeline is triggered and it:
-        - publishes to Pypi;
-        - re-packs rc debian package and publishes to debian stable components.
+        - publishes to PyPI;
+        - re-packs `rc` debian package and publishes to debian `stable` components.
 
 Hotfix releases are quite similar except the following difference:
   - hotifx branches `hotfix-X.Y.Z` are created from git tag `vX.Y.(Z-1)`;
