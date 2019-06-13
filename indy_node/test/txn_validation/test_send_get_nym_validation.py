@@ -2,7 +2,7 @@ from binascii import hexlify
 import pytest
 
 from indy.ledger import build_get_nym_request
-from indy_common.constants import TRUST_ANCHOR_STRING
+from indy_common.constants import ENDORSER_STRING
 from indy_node.test.helper import check_str_is_base58_compatible, modify_field, \
     createUuidIdentifier, createHalfKeyIdentifierAndAbbrevVerkey, createCryptonym
 from indy_node.test.nym_txn.test_nym_additional import get_nym
@@ -27,7 +27,7 @@ def testSendGetNymFailsForNotExistingUuidDest(
 
 def test_get_nym_returns_role(
         looper, sdk_pool_handle, sdk_wallet_trustee):
-    current_role = TRUST_ANCHOR_STRING
+    current_role = ENDORSER_STRING
     uuidIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
     sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trustee,
                     dest=uuidIdentifier, verkey=abbrevVerkey, role=current_role)

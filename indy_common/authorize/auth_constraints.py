@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from enum import Enum
 from typing import List
 from indy_common.authorize.helper import get_named_role
-from indy_common.constants import NETWORK_MONITOR, TRUST_ANCHOR
+from indy_common.constants import NETWORK_MONITOR, ENDORSER
 from plenum.common.constants import STEWARD, TRUSTEE
 
 CONSTRAINT_ID = "constraint_id"
@@ -14,7 +14,7 @@ NEED_TO_BE_OWNER = "need_to_be_owner"
 
 IDENTITY_OWNER = None
 
-accepted_roles = [IDENTITY_OWNER, NETWORK_MONITOR, TRUST_ANCHOR, STEWARD, TRUSTEE, '*']
+accepted_roles = [IDENTITY_OWNER, NETWORK_MONITOR, ENDORSER, STEWARD, TRUSTEE, '*']
 
 
 class ConstraintEnum(Enum):

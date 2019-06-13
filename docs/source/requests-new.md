@@ -423,7 +423,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     - None (common USER)
     - 0 (TRUSTEE)
     - 2 (STEWARD)
-    - 101 (TRUST_ANCHOR)
+    - 101 (ENDORSER)
     
   A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md)).
   

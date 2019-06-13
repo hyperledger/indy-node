@@ -13,6 +13,6 @@ did new seed=TrusteeTest080000000000000000000 metadata="custom trustee"
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=XhYtvJqezMUKfF6KVNaGmT role=STEWARD verkey=~RmCt3RtDvKDfQBSKxo4qvy 
 ledger nym did=FBQ5W7LxRp8bLeVNEafjpd role=STEWARD verkey=~2a4KepmnVVAPGo5gNA3P3p 
-ledger nym did=Rhx2qwaeiGyhU9vn4ynHSS role=TRUST_ANCHOR verkey=~RTJS62PRHurqHJnbnT1Hgi 
+ledger nym did=Rhx2qwaeiGyhU9vn4ynHSS role=ENDORSER verkey=~RTJS62PRHurqHJnbnT1Hgi
 ledger nym did=5qhSKMkpqui6taGLTecwqf verkey=~UWK9xwiKsqMQSBmymYpR5v
 ledger nym did=WnynyXyqjNFXeGELaR81Gh role=TRUSTEE verkey=~XKXdGyymBGos1Hz2JPCEkM

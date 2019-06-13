@@ -226,7 +226,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     - None (common USER)
     - "0" (TRUSTEE)
     - "2" (STEWARD)
-    - "101" (TRUST_ANCHOR)
+    - "101" (ENDORSER)
     - "201" (NETWORK_MONITOR)
     
   A TRUSTEE can change any Nym's role to None, thus stopping it from making any further writes (see [roles](auth_rules.md)).

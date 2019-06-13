@@ -8,11 +8,11 @@ from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
 def testTrusteeSuspendingTrustAnchor(looper, sdk_pool_handle, sdk_wallet_trustee,
-                                     sdk_wallet_trust_anchor):
-    _, did = sdk_wallet_trust_anchor
+                                     sdk_wallet_endorser):
+    _, did = sdk_wallet_endorser
     sdk_suspend_role(looper, sdk_pool_handle, sdk_wallet_trustee, did)
     with pytest.raises(RequestRejectedException) as e:
-        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trust_anchor)
+        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_endorser)
     e.match('Rule for this action is')
 
 
@@ -35,12 +35,12 @@ def testTrusteeSuspendingSteward(looper, sdk_pool_handle, sdk_wallet_trustee,
 
 
 def testTrustAnchorSuspendingHimselfByVerkeyFlush(looper, sdk_pool_handle,
-                                                  sdk_wallet_trust_anchor):
+                                                  sdk_wallet_endorser):
     # The trust anchor has already lost its role due to previous tests,
     # but it is ok for this test where the trust anchor flushes its verkey
     # and then he is unable to send NYM due to empty verkey.
-    _, did = sdk_wallet_trust_anchor
-    sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trust_anchor, dest=did, verkey='')
+    _, did = sdk_wallet_endorser
+    sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_endorser, dest=did, verkey='')
     with pytest.raises(RequestNackedException) as e:
-        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trust_anchor)
+        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_endorser)
     e.match('InsufficientCorrectSignatures')

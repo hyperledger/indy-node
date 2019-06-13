@@ -4,7 +4,7 @@ import pytest
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ROLE, SIG_COUNT
-from indy_common.constants import AUTH_ACTION, OLD_VALUE, CONSTRAINT, NEW_VALUE, NYM, TRUST_ANCHOR, GET_AUTH_RULE
+from indy_common.constants import AUTH_ACTION, OLD_VALUE, CONSTRAINT, NEW_VALUE, NYM, ENDORSER, GET_AUTH_RULE
 from indy_node.test.auth_rule.helper import sdk_send_and_check_get_auth_rule_request, \
     sdk_send_and_check_auth_rules_request_invalid
 from indy_node.test.helper import sdk_send_and_check_req_json, sdk_send_and_check_auth_rules_request, generate_auth_rule
@@ -67,7 +67,7 @@ def test_reject_all_rules_from_auth_rules_txn(looper,
     rules = [generate_auth_rule(ADD_PREFIX, NYM,
                                 ROLE, "wrong_new_value"),
              generate_auth_rule(EDIT_PREFIX, NYM,
-                                ROLE, TRUST_ANCHOR, TRUSTEE)]
+                                ROLE, ENDORSER, TRUSTEE)]
     with pytest.raises(RequestNackedException):
         sdk_send_and_check_auth_rules_request(looper,
                                               sdk_pool_handle,

@@ -1,6 +1,6 @@
 import rlp
 
-from indy_common.constants import ROLE, TRUST_ANCHOR
+from indy_common.constants import ROLE, ENDORSER
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, THREE_PC_PREFIX, \
     TXN_TIME
 from plenum.common.types import f
@@ -149,7 +149,7 @@ class IdrCache(OptimisticKVStore):
         return self.getNym(nym, STEWARD, isCommitted=isCommitted)
 
     def getTrustAnchor(self, nym, isCommitted=True):
-        return self.getNym(nym, TRUST_ANCHOR, isCommitted=isCommitted)
+        return self.getNym(nym, ENDORSER, isCommitted=isCommitted)
 
     def hasTrustee(self, nym, isCommitted=True):
         return bool(self.getTrustee(nym, isCommitted=isCommitted))

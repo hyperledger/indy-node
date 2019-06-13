@@ -12,7 +12,7 @@ from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ROLE, CONSTRAINT_ID, ConstraintsEnum, SIG_COUNT, NEED_TO_BE_OWNER, \
     METADATA
 from indy_common.config_helper import NodeConfigHelper
-from indy_common.constants import NYM, TRUST_ANCHOR, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, OLD_VALUE
+from indy_common.constants import NYM, ENDORSER, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, OLD_VALUE
 from indy_node.server.node_bootstrap import NodeBootstrap
 from plenum.common.constants import TRUSTEE
 from plenum.common.signer_did import DidSigner
@@ -189,9 +189,9 @@ def sdk_send_and_check_auth_rules_request(looper, sdk_pool_handle,
                                           sdk_wallet, rules=None, no_wait=False):
     if rules is None:
         rules = [generate_auth_rule(ADD_PREFIX, NYM,
-                                    ROLE, TRUST_ANCHOR),
+                                    ROLE, ENDORSER),
                  generate_auth_rule(EDIT_PREFIX, NYM,
-                                    ROLE, TRUST_ANCHOR, TRUSTEE)]
+                                    ROLE, ENDORSER, TRUSTEE)]
     req_json = looper.loop.run_until_complete(
         build_auth_rules_request(submitter_did=sdk_wallet[1], data=json.dumps(rules)))
     return sdk_send_and_check_req_json(
@@ -221,7 +221,7 @@ def sdk_send_and_check_get_auth_rule_request(
 
 
 def generate_auth_rule(auth_action=ADD_PREFIX, auth_type=NYM,
-                       field=ROLE, new_value=TRUST_ANCHOR,
+                       field=ROLE, new_value=ENDORSER,
                        old_value=None, constraint=None):
     if constraint is None:
         constraint = generate_constraint_entity()

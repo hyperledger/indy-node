@@ -6,7 +6,7 @@ from libnacl import randombytes
 from plenum.common.exceptions import RequestNackedException
 
 from plenum.common.constants import TRUSTEE, STEWARD, ROLE
-from indy_common.constants import TRUST_ANCHOR
+from indy_common.constants import ENDORSER
 from plenum.common.types import OPERATION
 from plenum.common.util import randomString, hexToFriendly, friendlyToHex, rawToFriendly, friendlyToHexStr
 
@@ -33,7 +33,7 @@ def testSendNymSucceedsForUuidIdentifierAnsdk_pool_handlemittedVerkey(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': createUuidIdentifier(),
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -47,7 +47,7 @@ def testSendNymSucceedsForUuidIdentifierAndFullVerkey(
     parameters = {
         'dest': uuidIdentifier,
         'verkey': fullVerkey,
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -61,7 +61,7 @@ def testSendNymSucceedsForHalfKeyIdentifierAndAbbrevVerkey(
     parameters = {
         'dest': halfKeyIdentifier,
         'verkey': abbrevVerkey,
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -74,7 +74,7 @@ def testSendNymFailsForCryptonymIdentifierAnsdk_pool_handlemittedVerkey(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': createCryptonym(),
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -91,7 +91,7 @@ def testSendNymFailsForCryptonymIdentifierAndFullVerkey(
     parameters = {
         'dest': cryptonym,
         'verkey': fullVerkey,
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
 
     nym_request[OPERATION].update(parameters)
@@ -109,7 +109,7 @@ def testSendNymFailsForCryptonymIdentifierAndMatchedAbbrevVerkey(
     parameters = {
         'dest': cryptonym,
         'verkey': abbrevVerkey,
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -123,7 +123,7 @@ def testSendNymFailsIfIdentifierSizeIs15Bytes(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': rawToFriendly(randombytes(15)),
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -136,7 +136,7 @@ def testSendNymFailsIfIdentifierSizeIs17Bytes(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': rawToFriendly(randombytes(17)),
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -150,7 +150,7 @@ def testSendNymFailsIfFullVerkeySizeIs31Bytes(
     parameters = {
         'dest': rawToFriendly(randombytes(16)),
         'verkey': rawToFriendly(randombytes(31)),
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -164,7 +164,7 @@ def testSendNymFailsIfFullVerkeySizeIs33Bytes(
     parameters = {
         'dest': rawToFriendly(randombytes(16)),
         'verkey': rawToFriendly(randombytes(33)),
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -178,7 +178,7 @@ def testSendNymFailsIfAbbrevVerkeySizeIs15Bytes(
     parameters = {
         'dest': rawToFriendly(randombytes(16)),
         'verkey': '~' + rawToFriendly(randombytes(15)),
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -192,7 +192,7 @@ def testSendNymFailsIfAbbrevVerkeySizeIs17Bytes(
     parameters = {
         'dest': rawToFriendly(randombytes(16)),
         'verkey': '~' + rawToFriendly(randombytes(17)),
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -205,7 +205,7 @@ def testSendNymFailsIfUuidIdentifierIsHexEncoded(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': friendlyToHexStr(createUuidIdentifier()),
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -220,7 +220,7 @@ def testSendNymFailsIfFullVerkeyIsHexEncoded(
     parameters = {
         'dest': uuidIdentifier,
         'verkey': friendlyToHexStr(fullVerkey),
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -235,7 +235,7 @@ def testSendNymFailsIfAbbrevVerkeyIsHexEncoded(
     parameters = {
         'dest': halfKeyIdentifier,
         'verkey': '~' + friendlyToHexStr(abbrevVerkey.replace('~', '')),
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -249,7 +249,7 @@ def testSendNymFailsIfIdentifierContainsNonBase58Characters(
     uuidIdentifier = createUuidIdentifier()
     parameters = {
         'dest': uuidIdentifier[:5] + '/' + uuidIdentifier[6:],
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -264,7 +264,7 @@ def testSendNymFailsIfFullVerkeyContainsNonBase58Characters(
     parameters = {
         'dest': uuidIdentifier,
         'verkey': fullVerkey[:5] + '/' + fullVerkey[6:],
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -279,7 +279,7 @@ def testSendNymFailsIfAbbrevVerkeyContainsNonBase58Characters(
     parameters = {
         'dest': halfKeyIdentifier,
         'verkey': abbrevVerkey[:6] + '/' + abbrevVerkey[7:],
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -294,7 +294,7 @@ def testSendNymFailsIfFullVerkeyContainsTilde(
     parameters = {
         'dest': uuidIdentifier,
         'verkey': '~' + fullVerkey,
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -309,7 +309,7 @@ def testSendNymFailsIfAbbrevVerkeysdk_pool_handleesNotContainTilde(
     parameters = {
         'dest': halfKeyIdentifier,
         'verkey': abbrevVerkey.replace('~', ''),
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -339,7 +339,7 @@ def testSendNymFailsIfRoleIsSpecifiedUsingNumericCode(
     parameters = {
         'dest': halfKeyIdentifier,
         'verkey': abbrevVerkey,
-        'role': TRUST_ANCHOR.value
+        'role': ENDORSER.value
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -354,7 +354,7 @@ def testSendNymHasInvalidSyntaxIfParametersOrderIsWrong(
     parameters = {
         'dest': halfKeyIdentifier,
         'verkey': abbrevVerkey,
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -369,7 +369,7 @@ def testSendNymHasInvalidSyntaxIfIdentifierIsEmpty(
     parameters = {
         'dest': '',
         'verkey': fullVerkey,
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -383,7 +383,7 @@ def testSendNymHasInvalidSyntaxIfIdentifierIsOmitted(
     _, fullVerkey = createUuidIdentifierAndFullVerkey()
     parameters = {
         'verkey': fullVerkey,
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -396,7 +396,7 @@ def testSendNymHasInvalidSyntaxForUuidIdentifierAndEmptyVerkey(
     parameters = {
         'dest': createUuidIdentifier(),
         'verkey': '',
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -409,7 +409,7 @@ def testSendNymHasInvalidSyntaxForUuidIdentifierAndEmptyVerkey(
 def testSendNymHasInvalidSyntaxIfIdentifierAndVerkeyAreOmitted(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
-        'role': TRUST_ANCHOR
+        'role': ENDORSER
     }
     nym_request[OPERATION].update(parameters)
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
@@ -424,7 +424,7 @@ def testSendNymHasInvalidSyntaxIfUnknownParameterIsPassed(
     parameters = {
         'dest': uuidIdentifier,
         'verkey': fullVerkey,
-        'role': TRUST_ANCHOR,
+        'role': ENDORSER,
         'extra': 42
     }
     nym_request[OPERATION].update(parameters)

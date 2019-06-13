@@ -190,9 +190,9 @@ Getting Started Guide, first, as the Steward, add each of the three agent's
 Trust Anchor to the ledger.:
 
 ```
-indy@sandbox> send NYM dest=ULtgFQJe6bjiFbs7ke3NJD role=TRUST_ANCHOR verkey=~5kh3FB4H3NKq7tUDqeqHc1
-indy@sandbox> send NYM dest=CzkavE58zgX7rUMrzSinLr role=TRUST_ANCHOR verkey=~WjXEvZ9xj4Tz9sLtzf7HVP
-indy@sandbox> send NYM dest=H2aKRiDeq8aLZSydQMDbtf role=TRUST_ANCHOR verkey=~3sphzTb2itL2mwSeJ1Ji28
+indy@sandbox> send NYM dest=ULtgFQJe6bjiFbs7ke3NJD role=ENDORSER verkey=~5kh3FB4H3NKq7tUDqeqHc1
+indy@sandbox> send NYM dest=CzkavE58zgX7rUMrzSinLr role=ENDORSER verkey=~WjXEvZ9xj4Tz9sLtzf7HVP
+indy@sandbox> send NYM dest=H2aKRiDeq8aLZSydQMDbtf role=ENDORSER verkey=~3sphzTb2itL2mwSeJ1Ji28
 ```
 
 In the first of the above commands, `~5kh3FB4H3NKq7tUDqeqHc1` is the

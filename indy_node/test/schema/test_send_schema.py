@@ -13,10 +13,10 @@ from plenum.config import NAME_FIELD_LIMIT
 
 
 def test_send_schema_multiple_attrib(looper, sdk_pool_handle,
-                                     sdk_wallet_trust_anchor):
+                                     sdk_wallet_endorser):
     sdk_write_schema_and_check(
         looper, sdk_pool_handle,
-        sdk_wallet_trust_anchor,
+        sdk_wallet_endorser,
         ["attrib1", "attrib2", "attrib3"],
         "faber",
         "1.4"
@@ -24,10 +24,10 @@ def test_send_schema_multiple_attrib(looper, sdk_pool_handle,
 
 
 def test_send_schema_one_attrib(looper, sdk_pool_handle,
-                                sdk_wallet_trust_anchor):
+                                sdk_wallet_endorser):
     sdk_write_schema_and_check(
         looper, sdk_pool_handle,
-        sdk_wallet_trust_anchor,
+        sdk_wallet_endorser,
         ["attrib1"],
         "University of Saber",
         "1.0"
@@ -35,10 +35,10 @@ def test_send_schema_one_attrib(looper, sdk_pool_handle,
 
 
 def test_can_not_send_same_schema(looper, sdk_pool_handle,
-                                  sdk_wallet_trust_anchor):
+                                  sdk_wallet_endorser):
     sdk_write_schema_and_check(
         looper, sdk_pool_handle,
-        sdk_wallet_trust_anchor,
+        sdk_wallet_endorser,
         ["attrib1", "attrib2", "attrib3"],
         "business",
         "1.8"
@@ -48,7 +48,7 @@ def test_can_not_send_same_schema(looper, sdk_pool_handle,
                        match=str(AuthConstraintForbidden())):
         resp = sdk_write_schema_and_check(
             looper, sdk_pool_handle,
-            sdk_wallet_trust_anchor,
+            sdk_wallet_endorser,
             ["attrib1", "attrib2", "attrib3"],
             "business",
             "1.8"
@@ -57,14 +57,14 @@ def test_can_not_send_same_schema(looper, sdk_pool_handle,
 
 
 def test_schema_maximum_attrib(looper, sdk_pool_handle,
-                               sdk_wallet_trust_anchor):
+                               sdk_wallet_endorser):
     attribs = []
     for i in range(SCHEMA_ATTRIBUTES_LIMIT):
         attribs.append(randomString(NAME_FIELD_LIMIT))
 
     sdk_write_schema_and_check(
         looper, sdk_pool_handle,
-        sdk_wallet_trust_anchor,
+        sdk_wallet_endorser,
         attribs,
         "business1",
         "1.9"

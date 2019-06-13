@@ -51,11 +51,11 @@ did use 7qFmEyYCXcmUFVied5Sp3b
 - ledger nym did=CEJJcfjNGt7YcNLyXaszaq role=
 # #4.2 CHECK Steward IS VALID
 did use CEJJcfjNGt7YcNLyXaszaq
-ledger nym did=Bhe7Uh5E1LYLgpLcbuVjj2 role=TRUST_ANCHOR verkey=~NMpYrG7tAXYV4ujYZjddKu
+ledger nym did=Bhe7Uh5E1LYLgpLcbuVjj2 role=ENDORSER verkey=~NMpYrG7tAXYV4ujYZjddKu
 - ledger get-nym did=Bhe7Uh5E1LYLgpLcbuVjj2
 # #5.1 AS Steward (steward1) CREATE TrustAnchor (PASS)
 did use 7qFmEyYCXcmUFVied5Sp3b
-ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=TRUST_ANCHOR verkey=~PuCGfSiTB3NZGi1SH8w7H
+ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=ENDORSER verkey=~PuCGfSiTB3NZGi1SH8w7H
 - ledger get-nym did=CDcGtKx1boRYFwPBaGkMmk
 # #5.2 CHECK TrustAnchor IS VALID
 did use CDcGtKx1boRYFwPBaGkMmk
@@ -72,7 +72,7 @@ ledger nym did=Jt7aMnw77aoaBMyhXUNjtt verkey=~DT5pLP1wcvsgAzM78sqiRJ
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=
 did use 7qFmEyYCXcmUFVied5Sp3b
-ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=TRUST_ANCHOR
+ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=ENDORSER
 # #7.2 CHECK TrustAnchor IS VALID
 did use CDcGtKx1boRYFwPBaGkMmk
 ledger nym did=XkZJxs6Uadv6MQeKGGZdZ6 verkey=~Aza4zyTRazcVsokmqNJfsg
@@ -85,7 +85,7 @@ ledger nym did=Xm3b3LtJ3UoL5KeYT7ti7j verkey=~GmTyyvE4eHWeSWuiAtmE19
 did use 7qFmEyYCXcmUFVied5Sp3b
 - ledger nym did=7qFmEyYCXcmUFVied5Sp3b role=
 # #9.2 CHECK Steward IS VALID
-ledger nym did=Jt7aMnw77aoaBMyhXUNjt1 verkey=~DT5pLP1wcvsgAzM78sqiR1 role=TRUST_ANCHOR
+ledger nym did=Jt7aMnw77aoaBMyhXUNjt1 verkey=~DT5pLP1wcvsgAzM78sqiR1 role=ENDORSER
 - ledger get-nym did=Jt7aMnw77aoaBMyhXUNjtt
 # #10 AS Steward (steward1) CREATE NetworkMonitor (PASS)
 did use 7qFmEyYCXcmUFVied5Sp3b

@@ -26,11 +26,11 @@ ledger nym did=23LxaWGVajU7vMn7zcrHGK role=STEWARD verkey=~UgkZ1ktZV2DQg1sJn3tjd
 - ledger get-nym did=23LxaWGVajU7vMn7zcrHGK
 # AS Trustee CREATE TrustAnchor (trustanchor1)
 did use V4SGRU86Z58d6TV7PBUe6f
-ledger nym did=T6XTs3nSU3J7ptAcxSnaVo role=TRUST_ANCHOR verkey=~5izgZjWpw3gxeDB9KRS7BN
+ledger nym did=T6XTs3nSU3J7ptAcxSnaVo role=ENDORSER verkey=~5izgZjWpw3gxeDB9KRS7BN
 - ledger get-nym did=T6XTs3nSU3J7ptAcxSnaVo
 # AS Trustee CREATE TrustAnchor (trustanchor2)
 did use V4SGRU86Z58d6TV7PBUe6f
-ledger nym did=TPrMRHHSunP3cEtpkY8gi7 role=TRUST_ANCHOR verkey=~ANMdNhQ3uuyXDmn7cxi8df
+ledger nym did=TPrMRHHSunP3cEtpkY8gi7 role=ENDORSER verkey=~ANMdNhQ3uuyXDmn7cxi8df
 - ledger get-nym did=TPrMRHHSunP3cEtpkY8gi7
 # AS Trustee CREATE NetworkMonitor (network monitor 1)
 did use V4SGRU86Z58d6TV7PBUe6f
@@ -63,7 +63,7 @@ did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=23LxaWGVajU7vMn7zcrHGK role=
 # #4.2 CHECK Steward IS VALID
 did use 23LxaWGVajU7vMn7zcrHGK
-ledger nym did=3KghQejG1HZU5MbpQL5Cuk role=TRUST_ANCHOR verkey=~6DWoz55wzC77CDEYkZzytR
+ledger nym did=3KghQejG1HZU5MbpQL5Cuk role=ENDORSER verkey=~6DWoz55wzC77CDEYkZzytR
 - ledger get-nym did=3KghQejG1HZU5MbpQL5Cuk
 # #5 AS TrustAnchor CREATE Steward (steward2) (FAIL)
 did use T6XTs3nSU3J7ptAcxSnaVo
@@ -78,7 +78,7 @@ ledger nym did=3B1g9f3vC4pR8bTfi21z91 verkey=~5RtP3dPmQdNmz75TvQPK9k
 - ledger get-nym did=3B1g9f3vC4pR8bTfi21z91
 # #7 AS TrustAnchor CREATE TrustAnchor (trustanchor3) (FAIL)
 did use T6XTs3nSU3J7ptAcxSnaVo
-- ledger nym did=Xw1QKjyG938oV5gUnLoBhm role=TRUST_ANCHOR verkey=~3iC9GEndzoEYcruyhTLWDc
+- ledger nym did=Xw1QKjyG938oV5gUnLoBhm role=ENDORSER verkey=~3iC9GEndzoEYcruyhTLWDc
 - ledger get-nym did=Xw1QKjyG938oV5gUnLoBhm
 # #8.1 AS TrustAnchor REMOVE self (FAIL)
 did use T6XTs3nSU3J7ptAcxSnaVo
@@ -97,16 +97,16 @@ did use E26xPPB4bhNkq5Dg4VDjca
 ledger get-validator-info nodes=Node1
 # #11 check that can't add roles back when don't have necessary permissions
 did use T6XTs3nSU3J7ptAcxSnaVo
-- ledger nym did=WDLETDtBugFiJvtkghHoH role=TRUST_ANCHOR
+- ledger nym did=WDLETDtBugFiJvtkghHoH role=ENDORSER
 - ledger nym did=WDLETDtBugFiJvtkghHoH role=STEWARD
 - ledger nym did=WDLETDtBugFiJvtkghHoH role=TRUSTEE
 - ledger nym did=UR1jYsBfADbYK5FZoF76Mh role=NETWORK_MONITOR
 ### Additional cases ###
 did use V4SGRU86Z58d6TV7PBUe6f
 did new seed=RandomAttribOwner000000000000002
-ledger nym did=LoZB9o2PFfSjrpnkugqunZ verkey=~X2yUYuMgCaaPSEyudS8jnT role=TRUST_ANCHOR
+ledger nym did=LoZB9o2PFfSjrpnkugqunZ verkey=~X2yUYuMgCaaPSEyudS8jnT role=ENDORSER
 did new seed=RandomUserForRotateKey0000000002
-ledger nym did=ETcbLj612u9oXr7adZSWZV verkey=~UUMiscx15SsxekQtLfVVLh role=TRUST_ANCHOR
+ledger nym did=ETcbLj612u9oXr7adZSWZV verkey=~UUMiscx15SsxekQtLfVVLh role=ENDORSER
 # Only owner can edit existing NYMs
 did use LoZB9o2PFfSjrpnkugqunZ
 did rotate-key seed=RandomUserForRotateKey0NewKey002

@@ -32,7 +32,7 @@ _NOTE_: The commands in this script need to be copied and pasted exactly as spec
 
 Create Faber College as an Identity and one that is a Trust Anchor.
 
-```send NYM dest=ULtgFQJe6bjiFbs7ke3NJD role=TRUST_ANCHOR verkey=~5kh3FB4H3NKq7tUDqeqHc1```
+```send NYM dest=ULtgFQJe6bjiFbs7ke3NJD role=ENDORSER verkey=~5kh3FB4H3NKq7tUDqeqHc1```
 
 NOTE: Be sure that the CLI responds with an "ADDED" response such as
 ```
@@ -55,7 +55,7 @@ That's it for Faber...on to Acme.  Before starting, we have to go back to using 
 
 Once that's done, repeat the steps for Acme (with different parameters).
 
-```send NYM dest=CzkavE58zgX7rUMrzSinLr role=TRUST_ANCHOR verkey=~WjXEvZ9xj4Tz9sLtzf7HVP```
+```send NYM dest=CzkavE58zgX7rUMrzSinLr role=ENDORSER verkey=~WjXEvZ9xj4Tz9sLtzf7HVP```
 
 ```new key with seed Acme0000000000000000000000000000```
 
@@ -70,7 +70,7 @@ And on to Thrift.  Before starting, we have to go back to using the Steward iden
 
 Once that's done, repeat the steps, using different IDs.
 
-```send NYM dest=H2aKRiDeq8aLZSydQMDbtf role=TRUST_ANCHOR verkey=~3sphzTb2itL2mwSeJ1Ji28```
+```send NYM dest=H2aKRiDeq8aLZSydQMDbtf role=ENDORSER verkey=~3sphzTb2itL2mwSeJ1Ji28```
 
 ```new key with seed Thrift00000000000000000000000000```
 
