@@ -214,7 +214,7 @@ Although every attempt has been made to make this information as accurate as pos
 | Trust anchor permission not needed for ledger writes |  | [INDY-1528](https://jira.hyperledger.org/browse/INDY-1528) |
 
 ## 1.6.82 
-### Release date: Dec 20th, 2018
+### Release date: Dec 24th, 2018
 
 ### Component Version Information
 | Components | Version Numbers |
