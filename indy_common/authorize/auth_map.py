@@ -246,7 +246,7 @@ one_trustee_constraint = AuthConstraint(TRUSTEE, 1)
 steward_or_trustee_constraint = AuthConstraintOr([AuthConstraint(STEWARD, 1),
                                                   AuthConstraint(TRUSTEE, 1)])
 
-# Trust Anchor, Steward or Trustee constraint
+# Endorser, Steward or Trustee constraint
 endorser_or_steward_or_trustee_constraint = AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                                                   AuthConstraint(STEWARD, 1),
                                                                   AuthConstraint(ENDORSER, 1)])
@@ -318,7 +318,7 @@ auth_map_steward = OrderedDict([
 ])
 auth_map.update(auth_map_steward)
 
-# Edit Trust Anchor
+# Edit Endorser
 auth_map_endorser = OrderedDict([
     (edit_role_actions[ENDORSER][TRUSTEE].get_action_id(), one_trustee_constraint),
     (edit_role_actions[ENDORSER][STEWARD].get_action_id(), one_trustee_constraint),

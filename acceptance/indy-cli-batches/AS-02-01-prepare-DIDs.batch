@@ -6,7 +6,7 @@ wallet open AS-02-wallet key=testkey
 #additg test DIDs with different roles for roles adding
 did new seed=StewardNode500000000000000000000 metadata="node5 steward"
 did new seed=StewardNode600000000000000000000 metadata="node6 steward"
-did new seed=TestAddNodeWithTrustAnchor000000 metadata="trust anchor"
+did new seed=TestAddNodeWithEndorser000000 metadata="endorser"
 did new seed=TestAddNodeWithIdentityOwner0000 metadata="identity owner"
 did new seed=000000000000000000000000Trustee1 metadata="default trustee"
 did new seed=TrusteeTest080000000000000000000 metadata="custom trustee"

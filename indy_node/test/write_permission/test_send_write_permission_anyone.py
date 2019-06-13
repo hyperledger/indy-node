@@ -39,7 +39,7 @@ def test_client_can_send_nym(looper,
                              sdk_wallet_client,
                              sdk_wallet_endorser,
                              sdk_pool_handle):
-    # Trust anchor can create schema in any case
+    # Endorser can create schema in any case
     sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_endorser)
 
     # Client can create another client NYM when ANYONE_CAN_WRITE set to True
@@ -57,7 +57,7 @@ def test_client_can_send_attrib(looper,
     sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_client,
                                 attributeData, client_did)
 
-    # another client or trust anchor cannot add attribute to another NYM
+    # another client or endorser cannot add attribute to another NYM
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser,
                                     attributeData, client_did)
@@ -68,7 +68,7 @@ def test_client_can_send_schema(looper,
                                 sdk_wallet_client,
                                 sdk_wallet_endorser,
                                 sdk_pool_handle):
-    # Trust anchor can create schema in any case
+    # Endorser can create schema in any case
     _, identifier = sdk_wallet_endorser
     _, schema_json = looper.loop.run_until_complete(
         issuer_create_schema(identifier, "name", "1.0", json.dumps(["first", "last"])))
@@ -89,7 +89,7 @@ def test_client_can_send_claim_def(looper,
                                    sdk_wallet_endorser,
                                    sdk_pool_handle,
                                    claim_def):
-    # Trust anchor can create claim_def in any case
+    # Endorser can create claim_def in any case
     req = sdk_sign_request_from_dict(looper, sdk_wallet_endorser, claim_def)
     sdk_send_and_check([json.dumps(req)], looper, txnPoolNodeSet, sdk_pool_handle)
 

@@ -7,7 +7,7 @@ from plenum.common.exceptions import RequestRejectedException, RequestNackedExce
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
-def testTrusteeSuspendingTrustAnchor(looper, sdk_pool_handle, sdk_wallet_trustee,
+def testTrusteeSuspendingEndorser(looper, sdk_pool_handle, sdk_wallet_trustee,
                                      sdk_wallet_endorser):
     _, did = sdk_wallet_endorser
     sdk_suspend_role(looper, sdk_pool_handle, sdk_wallet_trustee, did)
@@ -34,10 +34,10 @@ def testTrusteeSuspendingSteward(looper, sdk_pool_handle, sdk_wallet_trustee,
     e.match('Rule for this action is')
 
 
-def testTrustAnchorSuspendingHimselfByVerkeyFlush(looper, sdk_pool_handle,
+def testEndorserSuspendingHimselfByVerkeyFlush(looper, sdk_pool_handle,
                                                   sdk_wallet_endorser):
-    # The trust anchor has already lost its role due to previous tests,
-    # but it is ok for this test where the trust anchor flushes its verkey
+    # The endorser has already lost its role due to previous tests,
+    # but it is ok for this test where the endorser flushes its verkey
     # and then he is unable to send NYM due to empty verkey.
     _, did = sdk_wallet_endorser
     sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_endorser, dest=did, verkey='')

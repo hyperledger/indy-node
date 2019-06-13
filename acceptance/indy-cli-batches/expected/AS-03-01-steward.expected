@@ -26,11 +26,11 @@ did new seed=TestSteward300000000000000000001 metadata="test steward 3"
 Did "CEJJcfjNGt7YcNLyXaszaq" has been created with "~AAGGsLT3yQtTmNdKrHXtC2" verkey
 Metadata has been saved for DID "CEJJcfjNGt7YcNLyXaszaq"
 
-did new seed=TestTrustAnchor00000000000000001 metadata="test trust anchor 0"
+did new seed=TestEndorser00000000000000001 metadata="test endorser 0"
 Did "CDcGtKx1boRYFwPBaGkMmk" has been created with "~PuCGfSiTB3NZGi1SH8w7H" verkey
 Metadata has been saved for DID "CDcGtKx1boRYFwPBaGkMmk"
 
-did new seed=TestTrustAnchor10000000000000001 metadata="test trust anchor 1"
+did new seed=TestEndorser10000000000000001 metadata="test endorser 1"
 Did "Bhe7Uh5E1LYLgpLcbuVjj2" has been created with "~NMpYrG7tAXYV4ujYZjddKu" verkey
 Metadata has been saved for DID "Bhe7Uh5E1LYLgpLcbuVjj2"
 

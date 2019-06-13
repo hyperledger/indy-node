@@ -30,15 +30,15 @@ did new seed=TestSteward200000000000000000003 metadata="test steward 2"
 Did "CbPwHxKEibPhV4pgXWpu26" has been created with "~MviYa49QADQXAM68WSiLPD" verkey
 Metadata has been saved for DID "CbPwHxKEibPhV4pgXWpu26"
 
-did new seed=TestTrustAnchor10000000000000003 metadata="test trust anchor 1"
+did new seed=TestEndorser10000000000000003 metadata="test endorser 1"
 Did "DriVwCMbtEgkmoEHKin6Ah" has been created with "~YPZot1kM4DLwvsX6mtcKd9" verkey
 Metadata has been saved for DID "DriVwCMbtEgkmoEHKin6Ah"
 
-did new seed=TestTrustAnchor20000000000000003 metadata="test trust anchor 2"
+did new seed=TestEndorser20000000000000003 metadata="test endorser 2"
 Did "2b6xTx2HniDU77nxHm6zWB" has been created with "~HF34ymwfTJngb8zFDmCyvX" verkey
 Metadata has been saved for DID "2b6xTx2HniDU77nxHm6zWB"
 
-did new seed=TestTrustAnchor30000000000000003 metadata="test trust anchor 3"
+did new seed=TestEndorser30000000000000003 metadata="test endorser 3"
 Did "4xuWDwsQSqzQmYSheSWFyg" has been created with "~BmnEpJMi6kJHUcxcVJa2R4" verkey
 Metadata has been saved for DID "4xuWDwsQSqzQmYSheSWFyg"
 

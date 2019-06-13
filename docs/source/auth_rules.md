@@ -72,7 +72,7 @@
     <td><sub>TRUSTEE</sub></td>
     <td><sub>ENDORSER</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>Changing Trustee to Trust Anchor</sub></td>
+    <td><sub>Changing Trustee to Endorser</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
@@ -109,7 +109,7 @@
     <td><sub>STEWARD</sub></td>
     <td><sub>ENDORSER</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>Changing Steward to Trust Anchor</sub></td>
+    <td><sub>Changing Steward to Endorser</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
@@ -137,7 +137,7 @@
     <td><sub>ENDORSER</sub></td>
     <td><sub>TRUSTEE</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>Changing Trust Anchor to Trustee</sub></td>
+    <td><sub>Changing Endorser to Trustee</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
@@ -146,7 +146,7 @@
     <td><sub>ENDORSER</sub></td>
     <td><sub>STEWARD</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>Changing Trust Anchor to Steward</sub></td>
+    <td><sub>Changing Endorser to Steward</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
@@ -155,7 +155,7 @@
     <td><sub>ENDORSER</sub></td>
     <td><sub>NETWORK_MONITOR</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>Changing Trust Anchor to Network Monitor</sub></td>
+    <td><sub>Changing Endorser to Network Monitor</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
@@ -164,7 +164,7 @@
     <td><sub>ENDORSER</sub></td>
     <td><sub><code>&lt;None&gt;</code></sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>Demoting a Trust Anchor</sub></td>
+    <td><sub>Demoting a Endorser</sub></td>
   </tr>
 
   <tr>
@@ -192,7 +192,7 @@
     <td><sub>NETWORK_MONITOR</sub></td>
     <td><sub>ENDORSER</sub></td>
     <td><sub>1 TRUSTEE OR 1 STEWARD</sub></td>
-    <td><sub>Changing Network Monitor to Trust Anchor</sub></td>
+    <td><sub>Changing Network Monitor to Endorser</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
@@ -229,7 +229,7 @@
     <td><sub><code>&lt;None&gt;</code></sub></td>
     <td><sub>ENDORSER</sub></td>
     <td><sub>1 TRUSTEE OR 1 STEWARD</sub></td>
-    <td><sub>Promoting Identity Owner to Trust Anchor</sub></td>
+    <td><sub>Promoting Identity Owner to Endorser</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>

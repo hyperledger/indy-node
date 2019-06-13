@@ -61,11 +61,11 @@ def whitelistextras(*msg):
     [whitelistArray.remove(m) for m, _in in ins.items() if not _in]
 
 
-def testTrustAnchorAddsAttributeForUser(sdk_added_raw_attribute):
+def testEndorserAddsAttributeForUser(sdk_added_raw_attribute):
     pass
 
 
-def testTrustAnchorGetAttrsForUser(looper,
+def testEndorserGetAttrsForUser(looper,
                                    sdk_user_wallet_a,
                                    sdk_wallet_endorser,
                                    sdk_pool_handle,
@@ -112,7 +112,7 @@ def test_non_endorser_cannot_add_attribute_for_user(
     e.match('can not touch raw field since only the owner can modify it')
 
 
-def testOnlyUsersTrustAnchorCanAddAttribute(
+def testOnlyUsersEndorserCanAddAttribute(
         nodeSet,
         looper,
         attributeData,
@@ -202,8 +202,8 @@ def test_attr_with_no_dest_added(nodeSet, looper, attributeData):
     #
     # createNym(looper,
     #           user_wallet.defaultId,
-    #           trustAnchor,
-    #           addedTrustAnchor,
+    #           endorser,
+    #           addedEndorser,
     #           role=None,
     #           verkey=user_wallet.getVerkey())
     #
@@ -226,37 +226,37 @@ def testGetTxnsNoSeqNo():
 
 @pytest.mark.skip(reason="SOV-560. Come back to it later since "
                          "requestPendingTxns move to wallet")
-def testGetTxnsSeqNo(nodeSet, trustAnchorWallet, looper):
+def testGetTxnsSeqNo(nodeSet, endorserWallet, looper):
     pass
     """
     Test GET_TXNS from client and provide seqNo to fetch from
     """
-    # looper.add(trustAnchor)
-    # looper.run(trustAnchor.ensureConnectedToNodes())
+    # looper.add(endorser)
+    # looper.run(endorser.ensureConnectedToNodes())
     #
     # def chk():
-    #     assert trustAnchor.spylog.count(
-    #         trustAnchor.requestPendingTxns.__name__) > 0
+    #     assert endorser.spylog.count(
+    #         endorser.requestPendingTxns.__name__) > 0
     #
     # # TODO choose or create timeout in 'waits' on this case.
     # looper.run(eventually(chk, retryWait=1, timeout=3))
 
 
 @pytest.mark.skip(reason="SOV-560. Attribute encryption is done in client")
-def testTrustAnchorAddedAttributeIsEncrypted(addedEncryptedAttribute):
+def testEndorserAddedAttributeIsEncrypted(addedEncryptedAttribute):
     pass
 
 
 @pytest.mark.skip(reason="SOV-560. Attribute Disclosure is not done for now")
-def testTrustAnchorDisclosesEncryptedAttribute(
+def testEndorserDisclosesEncryptedAttribute(
         addedEncryptedAttribute,
         symEncData,
         looper,
         userSignerA,
-        trustAnchorSigner,
-        trustAnchor):
+        endorserSigner,
+        endorser):
     pass
-    # box = libnacl.public.Box(trustAnchorSigner.naclSigner.keyraw,
+    # box = libnacl.public.Box(endorserSigner.naclSigner.keyraw,
     #                          userSignerA.naclSigner.verraw)
     #
     # data = json.dumps({SKEY: symEncData.secretKey,
@@ -269,14 +269,14 @@ def testTrustAnchorDisclosesEncryptedAttribute(
     #     NONCE: base58.b58encode(nonce).decode("utf-8"),
     #     ENC: base58.b58encode(boxedMsg).decode("utf-8")
     # }
-    # submitAndCheck(looper, trustAnchor, op,
-    #                identifier=trustAnchorSigner.verstr)
+    # submitAndCheck(looper, endorser, op,
+    #                identifier=endorserSigner.verstr)
 
 
 @pytest.mark.skip(reason="SOV-561. Pending implementation")
-def testTrustAnchorAddedAttributeCanBeChanged(sdk_added_raw_attribute):
+def testEndorserAddedAttributeCanBeChanged(sdk_added_raw_attribute):
     # TODO but only by user(if user has taken control of his identity) and
-    # trustAnchor
+    # endorser
     raise NotImplementedError
 
 

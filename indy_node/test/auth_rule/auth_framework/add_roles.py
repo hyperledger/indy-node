@@ -94,7 +94,7 @@ class AddNewStewardTest(AddNewRoleTest):
         super().__init__(action_id, env.sdk_wallet_trustee, env)
 
 
-class AddNewTrustAnchorTest(AddNewRoleTest):
+class AddNewEndorserTest(AddNewRoleTest):
     def __init__(self, env, action_id=auth_map.add_new_endorser.get_action_id()):
         super().__init__(action_id, env.sdk_wallet_trustee, env)
 

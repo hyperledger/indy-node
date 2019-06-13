@@ -27,7 +27,7 @@ def tconf(tconf):
 def create_revoc_reg_def(looper, txnPoolNodeSet, sdk_pool_handle, build_revoc,
                          claim_def, wallet):
     # We need to have claim_def to send revocation txns
-    # must be signed by trust anchor since ANYONE_CAN_WRITE is false
+    # must be signed by endorser since ANYONE_CAN_WRITE is false
 
     claim_def_req = sdk_sign_request_from_dict(looper, wallet, claim_def)
     sdk_send_and_check([json.dumps(claim_def_req)], looper, txnPoolNodeSet, sdk_pool_handle)
@@ -76,7 +76,7 @@ def test_allowed_roles_can_create_revoc_reg_def(looper,
                                                 sdk_pool_handle,
                                                 build_revoc_def_by_default,
                                                 claim_def, tconf):
-    # trust anchor
+    # endorser
     create_revoc_reg_def(looper, txnPoolNodeSet, sdk_pool_handle, build_revoc_def_by_default,
                          claim_def, sdk_wallet_endorser)
     # steward
@@ -95,7 +95,7 @@ def test_allowed_roles_can_send_revoc_reg_entry(looper,
                                                 sdk_pool_handle,
                                                 build_revoc_def_by_default,
                                                 claim_def, tconf):
-    # trust anchor
+    # endorser
     create_revoc_reg_entry(looper, txnPoolNodeSet, sdk_pool_handle,
                            build_revoc_def_by_default, claim_def, sdk_wallet_endorser)
 
@@ -174,7 +174,7 @@ def test_allowed_roles_can_edit_revoc_reg_entry(looper,
                                                 build_revoc_def_by_endorser,
                                                 build_revoc_def_by_steward,
                                                 claim_def, tconf):
-    # trust anchor
+    # endorser
     revoc_entry_req_endorser = create_revoc_reg_entry(looper, txnPoolNodeSet, sdk_pool_handle,
                                                           build_revoc_def_by_endorser,
                                                           claim_def, sdk_wallet_endorser)

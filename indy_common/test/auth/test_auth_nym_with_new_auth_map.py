@@ -148,7 +148,7 @@ def test_change_steward_to_identity_owner(write_request_validation, req, is_owne
                                                                   is_owner=is_owner)])
 
 
-# Trust Anchor tests
+# Endorser tests
 def test_change_endorser_to_trustee(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,

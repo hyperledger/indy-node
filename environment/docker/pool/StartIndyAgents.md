@@ -22,7 +22,7 @@ Connect to the test network - the nodes that you are running on docker:
 
 #### Create Steward
 
-Create an initial Indy Steward for the test network. The Steward will be used to add the three organizations as Trust Anchors in the network.
+Create an initial Indy Steward for the test network. The Steward will be used to add the three organizations as Endorsers in the network.
 
 _NOTE_: The commands in this script need to be copied and pasted exactly as specified here. There are many "magic strings" that must match exactly for the communication to work.
 
@@ -30,7 +30,7 @@ _NOTE_: The commands in this script need to be copied and pasted exactly as spec
 
 #### Register the Faber Identity and Agent Endpoint
 
-Create Faber College as an Identity and one that is a Trust Anchor.
+Create Faber College as an Identity and one that is a Endorser.
 
 ```send NYM dest=ULtgFQJe6bjiFbs7ke3NJD role=ENDORSER verkey=~5kh3FB4H3NKq7tUDqeqHc1```
 
