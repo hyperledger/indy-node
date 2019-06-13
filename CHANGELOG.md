@@ -20,13 +20,13 @@
 
 * [1.6.70](#1670)
 
-* [1.5.67](#1567)
+* [1.5.68](#1568)
 
 * [1.4.66](#1466)
 
 * [1.3.62](#1362)
 
-* [1.3.56](#1356)
+* [1.3.57](#1357)
 
 * [1.3.55](#1355)
 
@@ -214,7 +214,7 @@ Although every attempt has been made to make this information as accurate as pos
 | Trust anchor permission not needed for ledger writes |  | [INDY-1528](https://jira.hyperledger.org/browse/INDY-1528) |
 
 ## 1.6.82 
-### Release date: Dec 20th, 2018
+### Release date: Dec 24th, 2018
 
 ### Component Version Information
 | Components | Version Numbers |
@@ -509,16 +509,16 @@ No further action is required
 **For more details about txn format changes see** [**INDY-1421**](https://jira.hyperledger.org/browse/INDY-1421) **.**
 
 
-## 1.5.67
+## 1.5.68
 
 
 ### Component Version Information
 
 | Components | Version Numbers |
 | --- | --- |
-| indy-plenum | 1.5.47 |
+| indy-plenum | 1.5.48 |
 | indy-anoncreds | 1.0.11 |
-| indy-node | 1.5.67 |
+| indy-node | 1.5.68 |
 |   |   |    |
 
 ### Major Fixes
@@ -725,13 +725,13 @@ None for this release.
 None at this time.
 
 
-## 1.3.56
+## 1.3.57
 
 ### Component Version Information
 
 | Components | Version Numbers |
 | --- | --- |
-| indy-node | 1.3.56 |
+| indy-node | 1.3.57 |
 |   |   |   |
 
 ### Major Fixes
