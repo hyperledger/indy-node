@@ -15,19 +15,9 @@ from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
 from indy_node.test.schema.test_send_get_schema import send_schema_req
 
 
-@pytest.fixture(scope='module')
-def tconf(tconf):
-    OLD_ANYONE_CAN_WRITE = tconf.ANYONE_CAN_WRITE
-    tconf.ANYONE_CAN_WRITE = False
-
-    yield tconf
-    tconf.ANYONE_CAN_WRITE = OLD_ANYONE_CAN_WRITE
-
-
 def create_revoc_reg_def(looper, txnPoolNodeSet, sdk_pool_handle, build_revoc,
                          claim_def, wallet):
     # We need to have claim_def to send revocation txns
-    # must be signed by trust anchor since ANYONE_CAN_WRITE is false
 
     claim_def_req = sdk_sign_request_from_dict(looper, wallet, claim_def)
     sdk_send_and_check([json.dumps(claim_def_req)], looper, txnPoolNodeSet, sdk_pool_handle)
@@ -223,7 +213,6 @@ def test_not_owner_trustee_cant_edit_revoc_reg_entry(looper,
                                                      sdk_pool_handle,
                                                      build_revoc_def_by_demand,
                                                      claim_def, tconf):
-
     revoc_entry_req_steward = create_revoc_reg_entry(looper, txnPoolNodeSet, sdk_pool_handle,
                                                      build_revoc_def_by_demand,
                                                      claim_def, sdk_wallet_trust_anchor)
@@ -266,7 +255,6 @@ def test_not_owner_trust_anchor_cant_edit_revoc_reg_entry(looper,
                                                           sdk_pool_handle,
                                                           build_revoc_def_by_default,
                                                           claim_def, tconf):
-
     revoc_build = build_revoc_def_random(looper, sdk_wallet_steward)
     revoc_entry_req_steward = create_revoc_reg_entry(looper, txnPoolNodeSet, sdk_pool_handle,
                                                      revoc_build, claim_def, sdk_wallet_steward)

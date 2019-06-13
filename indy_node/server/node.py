@@ -5,7 +5,7 @@ from typing import Iterable, List
 from common.exceptions import LogicError
 from common.serializers.serialization import ledger_txn_serializer, domain_state_serializer
 from indy_common.authorize.auth_constraints import ConstraintsSerializer, AbstractConstraintSerializer
-from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
+from indy_common.authorize.auth_map import auth_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_node.server.pool_req_handler import PoolRequestHandler
 
@@ -548,5 +548,4 @@ class Node(PlenumNode):
                                                          cache=self.getIdrCache(),
                                                          config_state=config_state,
                                                          state_serializer=constraint_serializer,
-                                                         anyone_can_write_map=anyone_can_write_map,
                                                          metrics=self.metrics)

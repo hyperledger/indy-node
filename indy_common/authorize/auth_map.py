@@ -347,18 +347,3 @@ auth_map_identity_owner = OrderedDict([
     (edit_role_actions[IDENTITY_OWNER][IDENTITY_OWNER].get_action_id(), owner_constraint),
 ])
 auth_map.update(auth_map_identity_owner)
-
-# Special rules, activated when ANYONE_CAN_WRITE set to True
-anyone_can_write_map = OrderedDict([
-    (anyone_can_add_nym.get_action_id(), anyone_constraint),
-    (anyone_can_add_schema.get_action_id(), anyone_constraint),
-    (anyone_can_add_claim_def.get_action_id(), owner_constraint),
-    (anyone_can_edit_nym.get_action_id(), anyone_constraint),
-    (anyone_can_add_attrib.get_action_id(), owner_constraint),
-    (anyone_can_edit_attrib.get_action_id(), owner_constraint),
-    (anyone_can_edit_claim_def.get_action_id(), owner_constraint),
-    (anyone_can_create_revoc_reg_def.get_action_id(), owner_constraint),
-    (anyone_can_create_revoc_reg_entry.get_action_id(), owner_constraint),
-    (anyone_can_edit_revoc_reg_def.get_action_id(), owner_constraint),
-    (anyone_can_create_revoc_reg_entry.get_action_id(), owner_constraint)
-])
