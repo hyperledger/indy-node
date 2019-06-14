@@ -4,7 +4,7 @@ import time
 from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_constraints import ConstraintsSerializer
-from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
+from indy_common.authorize.auth_map import auth_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
@@ -102,9 +102,6 @@ def config_state(constraint_serializer):
     Node.add_auth_rules_to_config_state(state=state,
                                         auth_map=auth_map,
                                         serializer=constraint_serializer)
-    Node.add_auth_rules_to_config_state(state=state,
-                                        auth_map=anyone_can_write_map,
-                                        serializer=constraint_serializer)
     return state
 
 
@@ -112,13 +109,11 @@ def config_state(constraint_serializer):
 def write_auth_req_validator(idr_cache,
                              constraint_serializer,
                              config_state):
-    validator = WriteRequestValidator(config=FakeSomething(authPolicy=CONFIG_LEDGER_AUTH_POLICY,
-                                                           ANYONE_CAN_WRITE=False),
+    validator = WriteRequestValidator(config=FakeSomething(authPolicy=CONFIG_LEDGER_AUTH_POLICY),
                                       auth_map=auth_map,
                                       cache=idr_cache,
                                       config_state=config_state,
-                                      state_serializer=constraint_serializer,
-                                      anyone_can_write_map=anyone_can_write_map)
+                                      state_serializer=constraint_serializer)
     return validator
 
 
