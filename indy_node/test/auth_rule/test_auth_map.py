@@ -108,31 +108,6 @@ def test_auth_map_action():
         assert rule_str in auth_map.auth_map.keys()
 
 
-def test_auth_map_anyone_can():
-    nym_rules = [(auth_map.anyone_can_add_nym, "1--ADD--role--*--*"),
-                 (auth_map.anyone_can_add_schema, "101--ADD--*--*--*"),
-                 (auth_map.anyone_can_add_claim_def, "102--ADD--*--*--*"),
-                 (auth_map.anyone_can_edit_nym, "1--EDIT--role--*--*"),
-                 (auth_map.anyone_can_add_attrib, '100--ADD--*--*--*'),
-                 (auth_map.anyone_can_edit_attrib, '100--EDIT--*--*--*'),
-                 (auth_map.anyone_can_edit_claim_def, '102--EDIT--*--*--*'),
-                 (auth_map.anyone_can_create_revoc_reg_def, '113--ADD--*--*--*'),
-                 (auth_map.anyone_can_create_revoc_reg_entry, '114--ADD--*--*--*'),
-                 (auth_map.anyone_can_edit_revoc_reg_def, '113--EDIT--*--*--*')]
-
-    for (rule, rule_str) in nym_rules:
-        assert rule.get_action_id() == rule_str
-        assert rule_str in auth_map.anyone_can_write_map.keys()
-
-
-def test_auth_map_anyone_can_for_omitted():
-    nym_rules = [(auth_map.anyone_can_edit_schema, '101--EDIT--*--*--*')]
-
-    for (rule, rule_str) in nym_rules:
-        assert rule.get_action_id() == rule_str
-        assert rule_str not in auth_map.anyone_can_write_map.keys()
-
-
 def test_auth_map_revoc_reg():
     nym_rules = [(auth_map.add_revoc_reg_def, "113--ADD--*--*--*"),
                  (auth_map.add_revoc_reg_entry, "114--ADD--*--*--*"),

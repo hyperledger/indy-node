@@ -19,7 +19,7 @@ from indy_node.server.request_handlers.domain_req_handlers.attribute_handler imp
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
 
-from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
+from indy_common.authorize.auth_map import auth_map
 
 from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_constraints import ConstraintsSerializer
@@ -225,5 +225,4 @@ class NodeBootstrap(PNodeBootstrap):
                                                               cache=self.node.getIdrCache(),
                                                               config_state=config_state,
                                                               state_serializer=constraint_serializer,
-                                                              anyone_can_write_map=anyone_can_write_map,
                                                               metrics=self.node.metrics)

@@ -38,7 +38,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
-    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES
+    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
 from indy_common.version import SchemaVersion
 
 
@@ -102,7 +102,8 @@ class ClaimDefField(MessageValidator):
 
 class RevocDefValueField(MessageValidator):
     schema = (
-        (ISSUANCE_TYPE, NonEmptyStringField()),
+        (ISSUANCE_TYPE, ChooseField(values=(ISSUANCE_BY_DEFAULT,
+                                            ISSUANCE_ON_DEMAND))),
         (MAX_CRED_NUM, IntegerField()),
         (PUBLIC_KEYS, AnyMapField()),
         (TAILS_HASH, NonEmptyStringField()),

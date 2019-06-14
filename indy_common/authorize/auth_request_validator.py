@@ -31,18 +31,15 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
                  cache: IdrCache,
                  config_state: PruningState,
                  state_serializer: AbstractConstraintSerializer,
-                 anyone_can_write_map=None,
-                 metrics: MetricsCollector=None):
+                 metrics: MetricsCollector = None):
         CompositeAuthorizer.__init__(self)
         self.config = config
         self.auth_map = auth_map
         self.cache = cache
         self.config_state = config_state
         self.state_serializer = state_serializer
-        self.anyone_can_write_map = anyone_can_write_map
         self.metrics = metrics
 
-        self.anyone_can_write = self.config.ANYONE_CAN_WRITE
         self.auth_cons_strategy = self.create_auth_strategy()
         self.register_default_authorizers()
 
@@ -76,11 +73,9 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
     def create_auth_strategy(self):
         """depends on config"""
         if self.config.authPolicy == LOCAL_AUTH_POLICY:
-            return LocalAuthStrategy(auth_map=self.auth_map,
-                                     anyone_can_write_map=self.anyone_can_write_map if self.anyone_can_write else None)
+            return LocalAuthStrategy(auth_map=self.auth_map)
         elif self.config.authPolicy == CONFIG_LEDGER_AUTH_POLICY:
             return ConfigLedgerAuthStrategy(auth_map=self.auth_map,
                                             state=self.config_state,
                                             serializer=self.state_serializer,
-                                            anyone_can_write_map=self.anyone_can_write_map if self.anyone_can_write else None,
                                             metrics=self.metrics)

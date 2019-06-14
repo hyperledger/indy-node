@@ -18,9 +18,9 @@ from indy_common.roles import Roles
 
 from indy_node.test.helper import createUuidIdentifierAndFullVerkey
 
+
 #   TODO
 #   - more specific string patterns for auth exc check
-#   - ANYONE_CAN_WRITE=True case
 
 
 class DID(object):
@@ -77,10 +77,10 @@ NYMEditSignerTypes = Enum(
 NYMEditDestRoles = NYMAddDestRoles
 NYMEditDestVerkeys = Enum('NYMEditDestVerkeys', 'same new demote omitted', type=EnumBase)
 
-
 dids = {}
 did_editor_others = {}
 did_provisioners = did_editor_others
+
 
 # FIXTURES
 
@@ -275,7 +275,7 @@ def auth_check(action_id, signer, op, did_ledger=None):
     elif action_id == ActionIds.edit:
         # is_self = signer.did == did_ledger.did
         is_owner = signer == (did_ledger if did_ledger.verkey is not None else
-                              did_ledger.creator)
+        did_ledger.creator)
 
         if (VERKEY in op) and (not is_owner):
             return False
@@ -328,7 +328,6 @@ def test_nym_edit(
         edited_nym_role, edited_nym_verkey,
         looper, txnPoolNodeSet,
         editor, edited, edit_op):
-
     if edit_op is None:  # might be None, means a duplicate test case
         return
 
