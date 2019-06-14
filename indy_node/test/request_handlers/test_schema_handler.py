@@ -14,11 +14,6 @@ from plenum.test.testing_utils import FakeSomething
 from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
 
 
-@pytest.fixture(scope="module")
-def schema_handler(db_manager, write_auth_req_validator):
-    return SchemaHandler(db_manager, write_auth_req_validator)
-
-
 def make_schema_exist(schema_request, schema_handler):
     identifier, req_id, operation = get_request_data(schema_request)
     schema_name = get_write_schema_name(schema_request)

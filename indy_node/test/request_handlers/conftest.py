@@ -1,7 +1,8 @@
 import pytest
-from indy_common.constants import SCHEMA, CONFIG_LEDGER_ID
+from indy_common.constants import SCHEMA, CONFIG_LEDGER_ID, REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG
 
 from indy_node.persistence.idr_cache import IdrCache
+from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
 from indy_node.test.request_handlers.helper import get_fake_ledger, add_to_idr
 from indy_node.test.request_handlers.test_schema_handler import make_schema_exist
@@ -25,6 +26,11 @@ def idr_cache(tconf, tdir):
                                              tconf.idrCacheDbName,
                                              db_config=tconf.db_idr_cache_db_config))
     return idr_cache
+
+
+@pytest.fixture(scope="module")
+def schema_handler(db_manager, write_auth_req_validator):
+    return SchemaHandler(db_manager, write_auth_req_validator)
 
 
 @pytest.fixture(scope="module")
@@ -56,10 +62,20 @@ def schema_request():
 
 
 @pytest.fixture(scope="module")
-def schema_handler(db_manager):
-    f = FakeSomething()
-    make_schema_exist(f, False)
-    return SchemaHandler(db_manager, f)
+def revoc_reg_def_handler(db_manager, write_auth_req_validator):
+    return RevocRegDefHandler(db_manager, write_auth_req_validator)
+
+
+@pytest.fixture(scope="module")
+def revoc_reg_def_request():
+    return Request(identifier=randomString(),
+                   reqId=5,
+                   signature="sig",
+                   operation={'type': REVOC_REG_DEF,
+                              CRED_DEF_ID: "credDefId",
+                              REVOC_TYPE: randomString(),
+                              TAG: randomString(),
+                              })
 
 
 @pytest.fixture(scope="module")

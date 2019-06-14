@@ -1,8 +1,9 @@
 import pytest
 
-from indy_common.constants import NYM, CLAIM_DEF, REF
+from indy_common.constants import NYM, CLAIM_DEF, REF, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_SCHEMA_REF
 from indy_common.req_utils import get_txn_claim_def_public_keys
 from indy_node.server.request_handlers.domain_req_handlers.claim_def_handler import ClaimDefHandler
+from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
 from indy_node.test.request_handlers.helper import add_to_idr, get_exception
 
 from plenum.common.constants import STEWARD
@@ -40,7 +41,8 @@ def claim_def_request(creator, schema):
                    signature="sig",
                    operation={'type': CLAIM_DEF,
                               'ref': get_seq_no(schema),
-                              'verkey': randomString()})
+                              'verkey': randomString(),
+                              'data': {}})
 
 
 def test_claim_def_dynamic_validation_without_schema(claim_def_request,
@@ -97,16 +99,57 @@ def test_claim_def_dynamic_validation_without_ref_to_not_schema(claim_def_reques
            in e._excinfo[1].args[0]
 
 
-def test_update_state(claim_def_request, claim_def_handler: ClaimDefHandler):
-    seq_no = 1
-    txn_time = 1560241033
-    txn_id = "id"
-    txn = reqToTxn(claim_def_request)
-    print(get_payload_data(txn))
-    print(get_txn_claim_def_public_keys(txn))
-    append_txn_metadata(txn, seq_no, txn_time, txn_id)
-    path, value_bytes = ClaimDefHandler.prepare_claim_def_for_state(txn)
+def test_update_state(claim_def_request, claim_def_handler: ClaimDefHandler, schema_handler, schema_request):
+    # add schema to state
+    schema_seq_no = 1
+    schema_txn_time = 1560241000
+    schema_txn = reqToTxn(schema_request)
+    append_txn_metadata(schema_txn, schema_seq_no, schema_txn_time)
+    schema_handler.update_state(schema_txn, None, schema_request)
 
-    claim_def_handler.update_state(txn, None, claim_def_request)
-    assert claim_def_handler.get_from_state(path) == (value_bytes, seq_no, txn_time)
+    # prepare claim def data
+    claim_def_request.operation[REF] = schema_seq_no
+    claim_def_seq_no = 1
+    claim_def_txn_time = 1560241033
+    claim_def_txn = reqToTxn(claim_def_request)
+    append_txn_metadata(claim_def_txn, claim_def_seq_no, claim_def_txn_time)
+    path, value_bytes = ClaimDefHandler.prepare_claim_def_for_state(claim_def_txn)
 
+    claim_def_handler.update_state(claim_def_txn, None, claim_def_request)
+    assert claim_def_handler.get_from_state(path) == (claim_def_request.operation[CLAIM_DEF_PUBLIC_KEYS],
+                                                      claim_def_seq_no,
+                                                      claim_def_txn_time)
+
+
+def test_update_state_with_incorrect_data(claim_def_request, claim_def_handler: ClaimDefHandler,
+                                          schema_handler, schema_request):
+    # add schema to state
+    schema_seq_no = 1
+    schema_txn_time = 1560241000
+    schema_txn = reqToTxn(schema_request)
+    append_txn_metadata(schema_txn, schema_seq_no, schema_txn_time)
+    schema_handler.update_state(schema_txn, None, schema_request)
+
+    # set incorrect CLAIM_DEF_PUBLIC_KEYS
+    claim_def_request.operation[CLAIM_DEF_PUBLIC_KEYS] = None
+    # prepare claim def data
+    claim_def_request.operation[REF] = schema_seq_no
+    claim_def_seq_no = 1
+    claim_def_txn_time = 1560241033
+    claim_def_txn = reqToTxn(claim_def_request)
+    append_txn_metadata(claim_def_txn, claim_def_seq_no, claim_def_txn_time)
+
+    with pytest.raises(ValueError, match="'{}' field is absent, but it must contain "
+                                         "components of keys".format(CLAIM_DEF_PUBLIC_KEYS)):
+        claim_def_handler.update_state(claim_def_txn, None, claim_def_request)
+
+
+def test_update_state_with_incorrect_schema_seq_no(claim_def_request, claim_def_handler: ClaimDefHandler,
+                                                   schema_handler, schema_request):
+    claim_def_seq_no = 1
+    claim_def_txn_time = 1560241033
+    claim_def_txn = reqToTxn(claim_def_request)
+    append_txn_metadata(claim_def_txn, claim_def_seq_no, claim_def_txn_time)
+    with pytest.raises(ValueError, match="'{}' field is absent, "
+                                         "but it must contain schema seq no".format(CLAIM_DEF_SCHEMA_REF)):
+        claim_def_handler.update_state(claim_def_txn, None, claim_def_request)

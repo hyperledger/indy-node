@@ -14,23 +14,6 @@ from plenum.server.request_handlers.utils import encode_state_value
 from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
 
 
-@pytest.fixture(scope="function")
-def revoc_reg_def_handler(db_manager, write_auth_req_validator):
-    return RevocRegDefHandler(db_manager, write_auth_req_validator)
-
-
-@pytest.fixture(scope="function")
-def revoc_reg_def_request():
-    return Request(identifier=randomString(),
-                   reqId=5,
-                   signature="sig",
-                   operation={'type': REVOC_REG_DEF,
-                              CRED_DEF_ID: "credDefId",
-                              REVOC_TYPE: randomString(),
-                              TAG: randomString()
-                              })
-
-
 def test_revoc_reg_def_dynamic_validation_fails_wrong_id(revoc_reg_def_handler,
                                                          revoc_reg_def_request):
     revoc_reg_def_request.operation[CRED_DEF_ID] = 'sample' * 3
