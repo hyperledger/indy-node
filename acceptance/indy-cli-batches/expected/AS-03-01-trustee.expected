@@ -30,11 +30,11 @@ did new seed=TestSteward200000000000000000000 metadata="test steward 2"
 Did "3JauiZvnHv6oSBi4DTikg4" has been created with "~5EhgzbpoKEH6f7rQgyUbjJ" verkey
 Metadata has been saved for DID "3JauiZvnHv6oSBi4DTikg4"
 
-did new seed=TestEndorser00000000000000000 metadata="test endorser 1"
+did new seed=TestEndorser00000000000000000000 metadata="test endorser 1"
 Did "AWwweaRGGCa4hfvW9WLmeb" has been created with "~D8gYyv77VvdkXguu7mHKfR" verkey
 Metadata has been saved for DID "AWwweaRGGCa4hfvW9WLmeb"
 
-did new seed=TestEndorser10000000000000000 metadata="test endorser 2"
+did new seed=TestEndorser10000000000000000000 metadata="test endorser 2"
 Did "EAvxCBmoYzkojBtgX1SVh8" has been created with "~HXn8bHcAYuaDAsCdjdLxLc" verkey
 Metadata has been saved for DID "EAvxCBmoYzkojBtgX1SVh8"
 

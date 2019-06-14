@@ -7,4 +7,4 @@ echo "Testing lambda/nym ..."
 # Python wrappers require libindy and libindy requires libsodium                
 # Add /usr/local/lib to LD_LIBRARY_PATH for libsodium                           
 # Add /src/indy-sdk/libindy/target/debug to LD_LIBRARY_PATH for libindy         
-sudo -H -u ec2-user PYTHONPATH=$PYTHONPATH:/src/indy-sdk/wrappers/python LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib:/src/indy-sdk/libindy/target/debug lambda/nym/test/EndorserAddSandboxTest.sh
+sudo -H -u ec2-user PYTHONPATH=$PYTHONPATH:/src/indy-sdk/wrappers/python LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib:/src/indy-sdk/libindy/target/debug lambda/nym/test/TrustAnchorAddSandboxTest.sh

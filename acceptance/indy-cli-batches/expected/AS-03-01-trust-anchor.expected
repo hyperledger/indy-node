@@ -14,47 +14,47 @@ did new seed=000000000000000000000000Trustee1 metadata="Default Trustee"
 Did "V4SGRU86Z58d6TV7PBUe6f" has been created with "~CoRER63DVYnWZtK8uAzNbx" verkey
 Metadata has been saved for DID "V4SGRU86Z58d6TV7PBUe6f"
 
-did new seed=TestEndorserTrustee1000000002 metadata="Trustee 1"
+did new seed=TestEndorserTrustee1000000000002 metadata="Trustee 1"
 Did "HUBDajRyCvTGR18ETzEGEB" has been created with "~DriCN8uMxoA8tiBazmkBWk" verkey
 Metadata has been saved for DID "HUBDajRyCvTGR18ETzEGEB"
 
-did new seed=TestEndorserTrustee2000000002 metadata="Trustee 2"
+did new seed=TestEndorserTrustee2000000000002 metadata="Trustee 2"
 Did "KY4VDKjHUPTnxtF2zfJnNP" has been created with "~WUktVVQHL7saxaNochggZR" verkey
 Metadata has been saved for DID "KY4VDKjHUPTnxtF2zfJnNP"
 
-did new seed=TestEndorserSteward1000000002 metadata="Steward 1"
+did new seed=TestEndorserSteward1000000000002 metadata="Steward 1"
 Did "23LxaWGVajU7vMn7zcrHGK" has been created with "~UgkZ1ktZV2DQg1sJn3tjdP" verkey
 Metadata has been saved for DID "23LxaWGVajU7vMn7zcrHGK"
 
-did new seed=TestEndorserSteward2000000002 metadata="Steward 2"
+did new seed=TestEndorserSteward2000000000002 metadata="Steward 2"
 Did "BhJXbKYGm9ZkHF3jjhDrPJ" has been created with "~R7RAboPbpw5ycURytkcASB" verkey
 Metadata has been saved for DID "BhJXbKYGm9ZkHF3jjhDrPJ"
 
-did new seed=TestEndorserCreateTrustAncho1 metadata="Endorser 1"
+did new seed=TestEndorserCreateEndorser000001 metadata="Endorser 1"
 Did "T6XTs3nSU3J7ptAcxSnaVo" has been created with "~5izgZjWpw3gxeDB9KRS7BN" verkey
 Metadata has been saved for DID "T6XTs3nSU3J7ptAcxSnaVo"
 
-did new seed=TestEndorserCreateTrustAncho2 metadata="Endorser 2"
+did new seed=TestEndorserCreateEndorser000002 metadata="Endorser 2"
 Did "TPrMRHHSunP3cEtpkY8gi7" has been created with "~ANMdNhQ3uuyXDmn7cxi8df" verkey
 Metadata has been saved for DID "TPrMRHHSunP3cEtpkY8gi7"
 
-did new seed=TestEndorserCreateTrustAncho3 metadata="Endorser 3"
+did new seed=TestEndorserCreateEndorser000003 metadata="Endorser 3"
 Did "Xw1QKjyG938oV5gUnLoBhm" has been created with "~3iC9GEndzoEYcruyhTLWDc" verkey
 Metadata has been saved for DID "Xw1QKjyG938oV5gUnLoBhm"
 
-did new seed=TestEndorserCreateTrustAncho4 metadata="Endorser 4"
+did new seed=TestEndorserCreateEndorser000004 metadata="Endorser 4"
 Did "3KghQejG1HZU5MbpQL5Cuk" has been created with "~6DWoz55wzC77CDEYkZzytR" verkey
 Metadata has been saved for DID "3KghQejG1HZU5MbpQL5Cuk"
 
-did new seed=TestEndorserRandomUser1000002 metadata="Random User 1"
+did new seed=TestEndorserRandomUser1000000002 metadata="Random User 1"
 Did "MXYSvpB5e549z6nqa1nTEh" has been created with "~PR7BXc75UwtiPvKjtDn26N" verkey
 Metadata has been saved for DID "MXYSvpB5e549z6nqa1nTEh"
 
-did new seed=TestEndorserRandomUser2000002 metadata="Random User 2"
+did new seed=TestEndorserRandomUser2000000002 metadata="Random User 2"
 Did "WDLETDtBugFiJvtkghHoH" has been created with "~QdAhvFaZ81ZZ1DxwqZ5i8i" verkey
 Metadata has been saved for DID "WDLETDtBugFiJvtkghHoH"
 
-did new seed=TestEndorserRandomUser3000002 metadata="Random User 3"
+did new seed=TestEndorserRandomUser3000000002 metadata="Random User 3"
 Did "3B1g9f3vC4pR8bTfi21z91" has been created with "~5RtP3dPmQdNmz75TvQPK9k" verkey
 Metadata has been saved for DID "3B1g9f3vC4pR8bTfi21z91"
 
