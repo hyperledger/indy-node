@@ -114,8 +114,7 @@ def systemTests = { component, releaseVersion ->
     def runTest = { testGroup ->
 
         stage("[${testGroup}] Checkout system tests") {
-            // FIXME set proper version/tag
-            testHelpers.getSystemTests(targetDir: systemTestsDir)
+            testHelpers.getSystemTests(tag: 'v0.7.0', targetDir: systemTestsDir)
         }
 
         dir(systemTestsDir) {
