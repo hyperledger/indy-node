@@ -280,12 +280,12 @@ options.skip([StagesEnum.GITHUB_RELEASE_ST])
 options.skip([StagesEnum.POOL_UPDATE_NOTIF])
 options.skip([StagesEnum.BUILD_RESULT_NOTIF])
 
-env.BRANCH_NAME = 'stable'
+env.BRANCH_NAME = 'master'
 options.releaseVersion = [
-    full: '1.8.1',
-    release: '1.8.1',
-    pre: '',
-    revision: ''
+    full: '1.9.0.dev987',
+    release: '1.9.0',
+    pre: 'dev',
+    revision: '987'
 ]
 
 options.setSystemTestsCb(systemTests)
