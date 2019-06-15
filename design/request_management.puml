@@ -25,7 +25,8 @@ post_batch_rejected(ledger_id)
 }
 
 class WriteRequestHandler{
-apply_request(request: Request, batch_ts)
+update_state(txn, prev_result, request: Request, is_committed)
+dynamic_validation(request: Request)
 }
 
 class BatchRequestHandler{
@@ -57,7 +58,6 @@ database_manager: DatabaseManager
 txn_type: int
 ledger_id: int
 static_validation(request: Request)
-dynamic_validation(request: Request)
 }
 
 RequestHandler <|-- ActionRequestHandler
@@ -69,6 +69,7 @@ RequestManager <|-- ReadRequestManager
 RequestManager <|-- ActionRequestManager
 
 BatchRequestHandler <|-- DomainBatchReqHandler
+BatchRequestHandler <|-- IdrCacheBatchHandler
 BatchRequestHandler <|-- PoolBatchReqHandler
 BatchRequestHandler <|-- ConfigBatchReqHandler
 
@@ -80,6 +81,7 @@ ReadRequestManager o-- ReadRequestHandler
 ActionRequestManager o-- ActionRequestHandler
 
 WriteRequestHandler<|-- NymHandler
+WriteRequestHandler<|-- IdrCacheHandler
 WriteRequestHandler<|-- NodeHandler
 WriteRequestHandler<|-- AttributteHandler
 WriteRequestHandler<|-- SchemaHandler

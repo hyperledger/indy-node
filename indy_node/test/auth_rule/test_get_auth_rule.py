@@ -69,7 +69,7 @@ def test_get_one_auth_rule_transaction(looper,
         assert auth_map.get(str_key).as_dict == resp_rule[CONSTRAINT]
 
 
-def test_get_auth_rule_transaction_unique_for_anyone_can_write_map_is_rejected(
+def test_get_unknown_auth_rule_transaction_is_rejected(
     looper, sdk_wallet_trustee, sdk_pool_handle
 ):
     key = generate_key(auth_action=ADD_PREFIX, auth_type=NYM,

@@ -13,9 +13,9 @@ class IdrCacheNymHandler(WriteRequestHandler):
 
     def apply_request(self, request: Request, batch_ts, prev_result):
         txn = self._req_to_txn(request)
-        self.update_state(txn, prev_result)
+        self.update_state(txn, prev_result, request)
 
-    def update_state(self, txn, prev_result, is_committed=False):
+    def update_state(self, txn, prev_result, request, is_committed=False):
         txn_time = get_txn_time(txn)
         nym = get_payload_data(txn).get(TARGET_NYM)
         self.database_manager.idr_cache.set(nym,
@@ -26,11 +26,11 @@ class IdrCacheNymHandler(WriteRequestHandler):
                                             verkey=prev_result.get(VERKEY),
                                             isCommitted=is_committed)
 
-    def static_validation(self):
+    def static_validation(self, request):
         pass
 
-    def dynamic_validation(self):
+    def dynamic_validation(self, request):
         pass
 
-    def gen_state_key(self):
+    def gen_state_key(self, txn):
         pass

@@ -9,11 +9,14 @@ from plenum.common.request import Request
 from plenum.common.util import randomString
 
 from indy_node.test.attrib_txn.test_nym_attrib import attributeData, attributeName, attributeValue
+from plenum.test.testing_utils import FakeSomething
 
 
 @pytest.fixture(scope="module")
 def attrib_handler(db_manager):
-    return AttributeHandler(db_manager)
+    f_validator = FakeSomething()
+    f_validator.validate = lambda request, action_list: True
+    return AttributeHandler(db_manager, f_validator)
 
 
 @pytest.fixture(scope="module")
@@ -48,6 +51,12 @@ def test_attrib_dynamic_validation_fails(attrib_request, attrib_handler: Attribu
 
 def test_attrib_dynamic_validation_fails_not_owner(attrib_request, attrib_handler: AttributeHandler):
     add_to_idr(attrib_handler.database_manager.idr_cache, attrib_request.operation['dest'], None)
+
+    def validate(request, action_list):
+        if not action_list[0].is_owner:
+            raise UnauthorizedClientRequest("identifier", "reqId")
+
+    attrib_handler.write_req_validator.validate = validate
     with pytest.raises(UnauthorizedClientRequest):
         attrib_handler.dynamic_validation(attrib_request)
 

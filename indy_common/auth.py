@@ -13,7 +13,7 @@ logger = getlogger()
 # TODO: make this class the only point of authorization and checking permissions!
 # There are some duplicates of this logic in *_req_handler classes
 
-def generate_auth_map(valid_roles, anyone_can_write=None):
+def generate_auth_map(valid_roles):
     auth_map = {
         '{}_role__{}'.format(NYM, TRUSTEE):
             {TRUSTEE: []},
@@ -63,10 +63,6 @@ def generate_auth_map(valid_roles, anyone_can_write=None):
         '{}_<any>_<any>_<any>'.format(VALIDATOR_INFO):
             {TRUSTEE: [], STEWARD: []},
     }
-    if anyone_can_write is True or (anyone_can_write is None and getConfig().ANYONE_CAN_WRITE):
-        auth_map['{}_role__'.format(NYM)][None] = []
-        auth_map['{}_<any>_<any>_<any>'.format(SCHEMA)][None] = []
-        auth_map['{}_<any>_<any>_<any>'.format(CLAIM_DEF)][None] = [OWNER]
     return auth_map
 
 
