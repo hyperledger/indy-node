@@ -232,16 +232,12 @@ def systemTests = { component, releaseVersion ->
             int testGroup = i
             builds[testNames] = {
                 stage("Run ${testNames}") {
-                    try {
-                        if (isFirst) {
+                    if (isFirst) {
+                        runTest(testGroup)
+                    } else {
+                        nodeWrapper('ubuntu') {
                             runTest(testGroup)
-                        } else {
-                            nodeWrapper('ubuntu') {
-                                runTest(testGroup)
-                            }
                         }
-                    } catch (Exception exc) {
-                        echo "System testing failed for: $testNames"
                     }
                 }
             }
