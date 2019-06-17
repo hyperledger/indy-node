@@ -5,6 +5,8 @@ from indy_common.authorize.auth_constraints import AuthConstraintOr
 from indy_common.authorize.auth_map import auth_map
 
 from indy_common.constants import NYM, AUTH_RULE, OLD_VALUE, AUTH_TYPE, ROLE, ENDORSER, CONSTRAINT, AUTH_ACTION
+from indy_node.server.request_handlers.config_req_handlers.auth_rule.abstract_auth_rule_handler import \
+    AbstractAuthRuleHandler
 
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rule_handler import AuthRuleHandler
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.static_auth_rule_helper import StaticAuthRuleHelper
