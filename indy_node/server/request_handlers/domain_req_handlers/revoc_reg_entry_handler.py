@@ -52,7 +52,7 @@ class RevocRegEntryHandler(WriteRequestHandler):
             req_id=get_req_id(txn)
         )
         writer_cls = self.get_revocation_strategy(
-            revoc_def[VALUE][ISSUANCE_TYPE])
+            revoc_def[ISSUANCE_TYPE])
         writer = writer_cls(self.state)
         writer.write(current_entry, txn)
 
@@ -75,6 +75,27 @@ class RevocRegEntryHandler(WriteRequestHandler):
             return keys, seq_no, last_update_time
         except KeyError:
             return None, None, None, None
+
+    @staticmethod
+    def prepare_revoc_reg_entry_accum_for_state(txn):
+        author_did = get_from(txn)
+        txn_data = get_payload_data(txn)
+        revoc_reg_def_id = txn_data.get(REVOC_REG_DEF_ID)
+        seq_no = get_seq_no(txn)
+        txn_time = get_txn_time(txn)
+        assert author_did
+        assert revoc_reg_def_id
+        assert seq_no
+        assert txn_time
+        path = RevocRegEntryHandler.make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id)
+
+        # TODO: do not duplicate seqNo here
+        # doing this now just for backward-compatibility
+        txn_data = deepcopy(txn_data)
+        txn_data[f.SEQ_NO.nm] = seq_no
+        txn_data[TXN_TIME] = txn_time
+        value_bytes = encode_state_value(txn_data, seq_no, txn_time)
+        return path, value_bytes
 
     @staticmethod
     def prepare_revoc_reg_entry_for_state(txn, path_only=False):

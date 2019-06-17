@@ -1,6 +1,6 @@
 from abc import ABCMeta
 
-from common.serializers.serialization import domain_state_serializer
+from common.serializers.serialization import domain_state_serializer, config_state_serializer
 from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.constants import CONFIG_LEDGER_ID, CONSTRAINT
@@ -9,6 +9,7 @@ from indy_node.server.request_handlers.config_req_handlers.auth_rule.static_auth
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
+from plenum.server.request_handlers.utils import decode_state_value
 
 
 class AbstractAuthRuleHandler(WriteRequestHandler, metaclass=ABCMeta):
@@ -31,6 +32,11 @@ class AbstractAuthRuleHandler(WriteRequestHandler, metaclass=ABCMeta):
     def _update_auth_constraint(self, auth_key: str, constraint):
         self.state.set(AbstractAuthRuleHandler.make_state_path_for_auth_rule(auth_key),
                        self.constraint_serializer.serialize(constraint))
+
+    def _decode_state_value(self, encoded):
+        if encoded:
+            return config_state_serializer.deserialize(encoded)
+        return None
 
     @staticmethod
     def make_state_path_for_auth_rule(action_id) -> bytes:
