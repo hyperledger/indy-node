@@ -251,20 +251,20 @@ def auth_check(action_id, signer, op, did_ledger=None):
     def check_promotion():
         # omitted role means IDENTITY_OWNER
         if op_role in (None, Roles.IDENTITY_OWNER):
-            return signer.role in (Roles.TRUSTEE, Roles.STEWARD, Roles.TRUST_ANCHOR)
+            return signer.role in (Roles.TRUSTEE, Roles.STEWARD, Roles.ENDORSER)
         elif op_role in (Roles.TRUSTEE, Roles.STEWARD):
             return signer.role == Roles.TRUSTEE
-        elif op_role in (Roles.TRUST_ANCHOR, Roles.NETWORK_MONITOR):
+        elif op_role in (Roles.ENDORSER, Roles.NETWORK_MONITOR):
             return signer.role in (Roles.TRUSTEE, Roles.STEWARD)
 
     def check_demotion():
         if did_ledger.role in (Roles.TRUSTEE, Roles.STEWARD):
             return signer.role == Roles.TRUSTEE
-        elif did_ledger.role == Roles.TRUST_ANCHOR:
+        elif did_ledger.role == Roles.ENDORSER:
             return (signer.role == Roles.TRUSTEE)
             # FIXME INDY-1968: uncomment when the task is addressed
             # return ((signer.role == Roles.TRUSTEE) or
-            #        (signer.role == Roles.TRUST_ANCHOR and
+            #        (signer.role == Roles.ENDORSER and
             #            is_self and is_owner))
         elif did_ledger.role == Roles.NETWORK_MONITOR:
             return signer.role in (Roles.TRUSTEE, Roles.STEWARD)

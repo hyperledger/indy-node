@@ -12,7 +12,7 @@ from indy_common.types import Request
 class Identity(GeneratesRequest):
     def __init__(self,
                  identifier: Identifier,
-                 trust_anchor: Identifier=None,
+                 endorser: Identifier=None,
                  verkey=None,
                  role=None,
                  last_synced=None,
@@ -20,7 +20,7 @@ class Identity(GeneratesRequest):
         """
 
         :param identifier:
-        :param trust_anchor:
+        :param endorser:
         :param verkey:
         :param role: If role is explicitly passed as `null` then in the request
          to ledger, `role` key would be sent as None which would stop the
@@ -31,9 +31,9 @@ class Identity(GeneratesRequest):
         """
 
         self.identity = DidIdentity(identifier, verkey=verkey)
-        self.trustAnchor = trust_anchor
+        self.endorser = endorser
 
-        # if role and role not in (TRUST_ANCHOR, STEWARD):
+        # if role and role not in (ENDORSER, STEWARD):
         if not Authoriser.isValidRole(self.correctRole(role)):
             raise AttributeError("Invalid role {}".format(role))
         self._role = role
@@ -87,7 +87,7 @@ class Identity(GeneratesRequest):
     def ledgerRequest(self):
         if not self.seqNo:
             assert self.identity.identifier is not None
-            return Request(identifier=self.trustAnchor,
+            return Request(identifier=self.endorser,
                            operation=self._op(),
                            protocolVersion=CURRENT_PROTOCOL_VERSION)
 

@@ -17,7 +17,7 @@ from indy_node.test.state_proof.helper import check_valid_proof, \
     sdk_submit_operation_and_get_result
 from indy_common.constants import GET_ATTR, GET_NYM, SCHEMA, GET_SCHEMA, \
     CLAIM_DEF, REVOCATION, GET_CLAIM_DEF, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_FROM, \
-    SCHEMA_ATTR_NAMES, SCHEMA_NAME, SCHEMA_VERSION, CLAIM_DEF_TAG, TRUST_ANCHOR
+    SCHEMA_ATTR_NAMES, SCHEMA_NAME, SCHEMA_VERSION, CLAIM_DEF_TAG, ENDORSER
 from indy_common.serialization import attrib_raw_data_serializer
 
 # Fixtures, do not remove
@@ -63,7 +63,7 @@ def test_state_proof_returned_for_get_nym(looper,
                                           sdk_user_wallet_a,
                                           sdk_pool_handle,
                                           sdk_wallet_client,
-                                          sdk_wallet_trust_anchor):
+                                          sdk_wallet_endorser):
     """
     Tests that state proof is returned in the reply for GET_NYM transactions.
     Use different submitter and reader!
@@ -76,7 +76,7 @@ def test_state_proof_returned_for_get_nym(looper,
     }
 
     sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
-                                        sdk_wallet_trust_anchor,
+                                        sdk_wallet_endorser,
                                         nym_operation)
 
     get_nym_operation = {
@@ -99,14 +99,14 @@ def test_state_proof_returned_for_get_nym(looper,
 
 def test_state_proof_returned_for_get_schema(looper,
                                              nodeSetWithOneNodeResponding,
-                                             sdk_wallet_trust_anchor,
+                                             sdk_wallet_endorser,
                                              sdk_pool_handle,
                                              sdk_wallet_client):
     """
     Tests that state proof is returned in the reply for GET_SCHEMA transactions.
     Use different submitter and reader!
     """
-    _, dest = sdk_wallet_trust_anchor
+    _, dest = sdk_wallet_endorser
     schema_name = "test_schema"
     schema_version = "1.0"
     schema_attr_names = ["width", "height"]
@@ -121,7 +121,7 @@ def test_state_proof_returned_for_get_schema(looper,
     }
     sdk_submit_operation_and_get_result(looper,
                                         sdk_pool_handle,
-                                        sdk_wallet_trust_anchor,
+                                        sdk_wallet_endorser,
                                         schema_operation)
 
     get_schema_operation = {
@@ -148,7 +148,7 @@ def test_state_proof_returned_for_get_schema(looper,
 
 def test_state_proof_returned_for_get_claim_def(looper,
                                                 nodeSetWithOneNodeResponding,
-                                                sdk_wallet_trust_anchor,
+                                                sdk_wallet_endorser,
                                                 sdk_pool_handle,
                                                 sdk_wallet_client,
                                                 send_schema_seq_no):
@@ -157,7 +157,7 @@ def test_state_proof_returned_for_get_claim_def(looper,
     transactions.
     Use different submitter and reader!
     """
-    _, dest = sdk_wallet_trust_anchor
+    _, dest = sdk_wallet_endorser
     data = {"primary": {'N': '123'}, REVOCATION: {'h0': '456'}}
     claim_def_operation = {
         TXN_TYPE: CLAIM_DEF,
@@ -168,7 +168,7 @@ def test_state_proof_returned_for_get_claim_def(looper,
     }
     sdk_submit_operation_and_get_result(looper,
                                         sdk_pool_handle,
-                                        sdk_wallet_trust_anchor,
+                                        sdk_wallet_endorser,
                                         claim_def_operation)
     get_claim_def_operation = {
         CLAIM_DEF_FROM: dest,
@@ -199,7 +199,7 @@ def test_state_proof_returned_for_get_auth_rule(looper,
     req = send_auth_rule
 
     key = generate_key(auth_action=ADD_PREFIX, auth_type=NYM,
-                       field=ROLE, new_value=TRUST_ANCHOR)
+                       field=ROLE, new_value=ENDORSER)
     rep = sdk_send_and_check_get_auth_rule_request(looper, sdk_pool_handle, sdk_wallet_client, **key)
     result = rep[0][1]['result']
 

@@ -18,7 +18,7 @@ did new seed=StewardNode600000000000000000000 metadata="node6 steward"
 Did "FBQ5W7LxRp8bLeVNEafjpd" has been created with "~2a4KepmnVVAPGo5gNA3P3p" verkey
 Metadata has been saved for DID "FBQ5W7LxRp8bLeVNEafjpd"
 
-did new seed=TestAddNodeWithTrustAnchor000000 metadata="trust anchor"
+did new seed=TestAddNodeWithEndorser000000000 metadata="endorser"
 Did "Rhx2qwaeiGyhU9vn4ynHSS" has been created with "~RTJS62PRHurqHJnbnT1Hgi" verkey
 Metadata has been saved for DID "Rhx2qwaeiGyhU9vn4ynHSS"
 
@@ -67,7 +67,7 @@ Data:
 | FBQ5W7LxRp8bLeVNEafjpd | ~2a4KepmnVVAPGo5gNA3P3p | STEWARD |
 +------------------------+-------------------------+---------+
 
-ledger nym did=Rhx2qwaeiGyhU9vn4ynHSS role=TRUST_ANCHOR verkey=~RTJS62PRHurqHJnbnT1Hgi 
+ledger nym did=Rhx2qwaeiGyhU9vn4ynHSS role=ENDORSER verkey=~RTJS62PRHurqHJnbnT1Hgi
 Nym request has been sent to Ledger.
 Metadata:
 +---------------------+---------------------+
@@ -79,7 +79,7 @@ Data:
 +------------------------+-------------------------+--------------+
 | Did                    | Verkey                  | Role         |
 +------------------------+-------------------------+--------------+
-| Rhx2qwaeiGyhU9vn4ynHSS | ~RTJS62PRHurqHJnbnT1Hgi | TRUST_ANCHOR |
+| Rhx2qwaeiGyhU9vn4ynHSS | ~RTJS62PRHurqHJnbnT1Hgi | ENDORSER |
 +------------------------+-------------------------+--------------+
 
 ledger nym did=5qhSKMkpqui6taGLTecwqf verkey=~UWK9xwiKsqMQSBmymYpR5v

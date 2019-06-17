@@ -2,7 +2,7 @@ import pytest
 from indy_common.authorize.auth_actions import EDIT_PREFIX, ADD_PREFIX
 from indy_common.authorize.auth_map import auth_map
 
-from indy_common.constants import OLD_VALUE, AUTH_TYPE, ROLE, TRUST_ANCHOR, AUTH_ACTION, \
+from indy_common.constants import OLD_VALUE, AUTH_TYPE, ROLE, ENDORSER, AUTH_ACTION, \
     AUTH_RULES, RULES
 
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rule_handler import AuthRuleHandler
@@ -67,7 +67,7 @@ def test_auth_rule_static_validation_failed_with_incorrect_key(auth_rule_request
                                                                auth_rule_handler: AuthRuleHandler):
     auth_rule_request.operation[RULES].append(generate_auth_rule(auth_action=ADD_PREFIX,
                                                                  auth_type="wrong_type",
-                                                                 field=ROLE, new_value=TRUST_ANCHOR))
+                                                                 field=ROLE, new_value=ENDORSER))
     with pytest.raises(InvalidClientRequest, match="key .* is not found in authorization map"):
         auth_rule_handler.static_validation(auth_rule_request)
 
