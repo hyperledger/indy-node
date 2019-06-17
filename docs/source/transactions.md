@@ -146,7 +146,7 @@ transaction specific data:
              It may differ from `did` field for some of transaction (for example NYM), where `did` is a
              target identifier (for example, a newly created DID identifier).
 
-             *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
+             *Example*: `from` is a DID of a Endorser creating a new DID, and `did` is a newly created DID.
 
         - `reqId` (integer):
             Unique ID number of the request with transaction.
@@ -206,8 +206,8 @@ Please note that all these metadata fields may be absent for genesis transaction
 ## Domain Ledger
 
 #### NYM
-Creates a new NYM record for a specific user, trust anchor, steward or trustee.
-Note that only trustees and stewards can create new trust anchors and a trustee can be created only by other trustees (see [roles](auth_rules.md)).
+Creates a new NYM record for a specific user, endorser, steward or trustee.
+Note that only trustees and stewards can create new endorsers and a trustee can be created only by other trustees (see [roles](auth_rules.md)).
 
 The transaction can be used for
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
@@ -217,7 +217,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from the `from` metadata field, where `from` is the DID of the submitter.
 
-    *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
+    *Example*: `from` is a DID of a Endorser creating a new DID, and `dest` is a newly created DID.
 
 - `role` (enum number as integer; optional):
 
@@ -226,7 +226,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     - None (common USER)
     - "0" (TRUSTEE)
     - "2" (STEWARD)
-    - "101" (TRUST_ANCHOR)
+    - "101" (ENDORSER)
     - "201" (NETWORK_MONITOR)
     
   A TRUSTEE can change any Nym's role to None, thus stopping it from making any further writes (see [roles](auth_rules.md)).
@@ -305,7 +305,7 @@ Adds an attribute to a NYM record
     Target DID we set an attribute for as base58-encoded string for 16 or 32 byte DID value.
     It differs from `from` metadata field, where `from` is the DID of the submitter.
 
-    *Example*: `from` is a DID of a Trust Anchor setting an attribute for a DID, and `dest` is the DID we set an attribute for.
+    *Example*: `from` is a DID of a Endorser setting an attribute for a DID, and `dest` is the DID we set an attribute for.
 
 - `raw` (sha256 hash string; mutually exclusive with `hash` and `enc`):
 

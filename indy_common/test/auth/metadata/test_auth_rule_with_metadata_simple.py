@@ -1,6 +1,6 @@
 from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER, AuthConstraintOr, AuthConstraintAnd, \
     AuthConstraintForbidden
-from indy_common.constants import TRUST_ANCHOR
+from indy_common.constants import ENDORSER
 from indy_common.test.auth.metadata.helper import validate, PLUGIN_FIELD
 from plenum.common.constants import TRUSTEE, STEWARD
 

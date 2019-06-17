@@ -20,7 +20,7 @@ def test_auth_map_node():
 def test_auth_map_nym():
     nym_rules = [(auth_map.add_new_trustee, "1--ADD--role--*--0"),
                  (auth_map.add_new_steward, "1--ADD--role--*--2"),
-                 (auth_map.add_new_trust_anchor, "1--ADD--role--*--101"),
+                 (auth_map.add_new_endorser, "1--ADD--role--*--101"),
                  (auth_map.add_new_network_monitor, "1--ADD--role--*--201"),
                  (auth_map.add_new_identity_owner, '1--ADD--role--*--'),
                  (auth_map.key_rotation, '1--EDIT--verkey--*--*')]

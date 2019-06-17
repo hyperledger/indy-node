@@ -2,7 +2,7 @@ from indy_common.config_util import getConfig
 from plenum.common.constants import TRUSTEE, STEWARD, NODE
 from stp_core.common.log import getlogger
 
-from indy_common.constants import OWNER, POOL_UPGRADE, TRUST_ANCHOR, NYM, \
+from indy_common.constants import OWNER, POOL_UPGRADE, ENDORSER, NYM, \
     POOL_CONFIG, SCHEMA, CLAIM_DEF, \
     POOL_RESTART, VALIDATOR_INFO, NETWORK_MONITOR
 from indy_common.roles import Roles
@@ -19,20 +19,20 @@ def generate_auth_map(valid_roles):
             {TRUSTEE: []},
         '{}_role__{}'.format(NYM, STEWARD):
             {TRUSTEE: []},
-        '{}_role__{}'.format(NYM, TRUST_ANCHOR):
+        '{}_role__{}'.format(NYM, ENDORSER):
             {TRUSTEE: [], STEWARD: []},
         '{}_role__'.format(NYM):
-            {TRUSTEE: [], STEWARD: [], TRUST_ANCHOR: []},
+            {TRUSTEE: [], STEWARD: [], ENDORSER: []},
         '{}_role_{}_'.format(NYM, TRUSTEE):
             {TRUSTEE: []},
         '{}_role_{}_'.format(NYM, STEWARD):
             {TRUSTEE: []},
-        '{}_role_{}_'.format(NYM, TRUST_ANCHOR):
+        '{}_role_{}_'.format(NYM, ENDORSER):
             {TRUSTEE: []},
         '{}_<any>_<any>_<any>'.format(SCHEMA):
-            {TRUSTEE: [], STEWARD: [], TRUST_ANCHOR: []},
+            {TRUSTEE: [], STEWARD: [], ENDORSER: []},
         '{}_<any>_<any>_<any>'.format(CLAIM_DEF):
-            {TRUSTEE: [OWNER, ], STEWARD: [OWNER, ], TRUST_ANCHOR: [OWNER, ]},
+            {TRUSTEE: [OWNER, ], STEWARD: [OWNER, ], ENDORSER: [OWNER, ]},
         '{}_verkey_<any>_<any>'.format(NYM):
             {r: [OWNER] for r in valid_roles},
         '{}_services__[VALIDATOR]'.format(NODE):
@@ -67,7 +67,7 @@ def generate_auth_map(valid_roles):
 
 
 class Authoriser:
-    ValidRoles = (TRUSTEE, STEWARD, TRUST_ANCHOR, NETWORK_MONITOR, None)
+    ValidRoles = (TRUSTEE, STEWARD, ENDORSER, NETWORK_MONITOR, None)
 
     auth_map = None
 

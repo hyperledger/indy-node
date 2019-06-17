@@ -216,7 +216,7 @@ def build_revoc_def_by_default(looper, sdk_wallet_steward):
 
 
 @pytest.fixture(scope="module")
-def build_revoc_def_by_trust_anchor(looper, sdk_wallet_trust_anchor):
+def build_revoc_def_by_endorser(looper, sdk_wallet_endorser):
     data = {
         ID: randomString(50),
         TXN_TYPE: REVOC_REG_DEF,
@@ -231,7 +231,7 @@ def build_revoc_def_by_trust_anchor(looper, sdk_wallet_trust_anchor):
             PUBLIC_KEYS: {},
         }
     }
-    req = sdk_sign_request_from_dict(looper, sdk_wallet_trust_anchor, data)
+    req = sdk_sign_request_from_dict(looper, sdk_wallet_endorser, data)
     return req
 
 

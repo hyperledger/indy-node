@@ -6,7 +6,7 @@ from indy_common.authorize import auth_map
 from indy_common.authorize.auth_constraints import accepted_roles, ConstraintsEnum, \
     AuthConstraint
 from indy_node.test.auth_rule.auth_framework.add_roles import AddNewTrusteeTest, AddNewStewardTest, \
-    AddNewTrustAnchorTest, AddNewIdentityOwnerTest, AddNewNetworkMonitorTest
+    AddNewEndorserTest, AddNewIdentityOwnerTest, AddNewNetworkMonitorTest
 from indy_node.test.auth_rule.auth_framework.basic import roles_to_string, AuthTest
 from plenum.common.exceptions import RequestRejectedException
 
@@ -137,7 +137,7 @@ class EditTrusteeToStewardTest(EditRoleTest):
                          AddNewTrusteeTest)
 
 
-class EditTrusteeToTrustAnchorTest(EditRoleTest):
+class EditTrusteeToEndorserTest(EditRoleTest):
     def __init__(self, env, action_id):
         super().__init__(action_id,
                          env,
@@ -172,7 +172,7 @@ class EditStewardToNetworkMonitorTest(EditRoleTest):
                          AddNewStewardTest)
 
 
-class EditStewardToTrustAnchorTest(EditRoleTest):
+class EditStewardToEndorserTest(EditRoleTest):
     def __init__(self, env, action_id):
         super().__init__(action_id,
                          env,
@@ -186,32 +186,32 @@ class EditStewardToIdentityOwnerTest(EditRoleTest):
                          AddNewStewardTest)
 
 
-class EditTrustAnchorToTrusteeTest(EditRoleTest):
+class EditEndorserToTrusteeTest(EditRoleTest):
     def __init__(self, env, action_id):
         super().__init__(action_id,
                          env,
-                         AddNewTrustAnchorTest)
+                         AddNewEndorserTest)
 
 
-class EditTrustAnchorToStewardTest(EditRoleTest):
+class EditEndorserToStewardTest(EditRoleTest):
     def __init__(self, env, action_id):
         super().__init__(action_id,
                          env,
-                         AddNewTrustAnchorTest)
+                         AddNewEndorserTest)
 
 
-class EditTrustAnchorToNetworkMonitorTest(EditRoleTest):
+class EditEndorserToNetworkMonitorTest(EditRoleTest):
     def __init__(self, env, action_id):
         super().__init__(action_id,
                          env,
-                         AddNewTrustAnchorTest)
+                         AddNewEndorserTest)
 
 
-class EditTrustAnchorToIdentityOwnerTest(EditRoleTest):
+class EditEndorserToIdentityOwnerTest(EditRoleTest):
     def __init__(self, env, action_id):
         super().__init__(action_id,
                          env,
-                         AddNewTrustAnchorTest)
+                         AddNewEndorserTest)
 
 
 class EditIdentityOwnerToTrusteeTest(EditRoleTest):
@@ -228,7 +228,7 @@ class EditIdentityOwnerToStewardTest(EditRoleTest):
                          AddNewIdentityOwnerTest)
 
 
-class EditIdentityOwnerToTrustAnchorTest(EditRoleTest):
+class EditIdentityOwnerToEndorserTest(EditRoleTest):
     def __init__(self, env, action_id):
         super().__init__(action_id,
                          env,
@@ -256,7 +256,7 @@ class EditNetworkMonitorToStewardTest(EditRoleTest):
                          AddNewNetworkMonitorTest)
 
 
-class EditNetworkMonitorToTrustAnchorTest(EditRoleTest):
+class EditNetworkMonitorToEndorserTest(EditRoleTest):
     def __init__(self, env, action_id):
         super().__init__(action_id,
                          env,
@@ -284,11 +284,11 @@ class EditTrusteeToTrusteeTest(EditRoleTest):
                          AddNewTrusteeTest)
 
 
-class EditTrustAnchorToTrustAnchorTest(EditRoleTest):
+class EditEndorserToEndorserTest(EditRoleTest):
     def __init__(self, env, action_id):
         super().__init__(action_id,
                          env,
-                         AddNewTrustAnchorTest)
+                         AddNewEndorserTest)
 
 
 class EditNetworkMonitorToNetworkMonitorTest(EditRoleTest):

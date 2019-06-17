@@ -113,7 +113,7 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
      It may differ from `dest` field for some of requests (for example NYM), where `dest` is a 
      target identifier (for example, a newly created DID identifier).
      
-     *Example*: `identifier` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
+     *Example*: `identifier` is a DID of a Endorser creating a new DID, and `dest` is a newly created DID.
      
 - `reqId` (integer): 
 
@@ -272,7 +272,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
              It may differ from `did` field for some of transaction (for example NYM), where `did` is a 
              target identifier (for example, a newly created DID identifier).
              
-             *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
+             *Example*: `from` is a DID of a Endorser creating a new DID, and `did` is a newly created DID.
              
         - `reqId` (integer): 
             Unique ID number of the request with transaction.
@@ -443,8 +443,8 @@ These common metadata values are added to result's JSON at the same level as rea
 The format of each request-specific data for each type of request.
 
 ### NYM
-Creates a new NYM record for a specific user, trust anchor, steward or trustee.
-Note that only trustees and stewards can create new trust anchors and trustee can be created only by other trusties (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md)).
+Creates a new NYM record for a specific user, endorser, steward or trustee.
+Note that only trustees and stewards can create new endorsers and trustee can be created only by other trusties (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md)).
 
 The request can be used for 
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
@@ -454,7 +454,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
-    *Example*: `identifier` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
+    *Example*: `identifier` is a DID of a Endorser creating a new DID, and `dest` is a newly created DID.
      
 - `role` (enum number as string; optional): 
 
@@ -463,7 +463,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     - None (common USER)
     - "0" (TRUSTEE)
     - "2" (STEWARD)
-    - "101" (TRUST_ANCHOR)
+    - "101" (ENDORSER)
     - "201" (NETWORK_MONITOR)
     
   A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md)).
@@ -563,7 +563,7 @@ Adds attribute to a NYM record.
     Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
-    *Example*: `identifier` is a DID of a Trust Anchor setting an attribute for a DID, and `dest` is the DID we set an attribute for.
+    *Example*: `identifier` is a DID of a Endorser setting an attribute for a DID, and `dest` is the DID we set an attribute for.
     
 - `raw` (json; mutually exclusive with `hash` and `enc`):
 

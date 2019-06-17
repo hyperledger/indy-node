@@ -85,14 +85,14 @@ def test_new_node_catchup_update_projection(looper,
                                             nodeSet,
                                             new_node.name)
     looper.removeProdable(name=new_node.name)
-    trust_anchors = []
+    endorsers = []
     attributes = []
     for i in range(ta_count):
-        trust_anchors.append(
+        endorsers.append(
             sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trustee,
-                            role='TRUST_ANCHOR', alias='TA' + str(i)))
+                            role='ENDORSER', alias='TA' + str(i)))
         attributes.append((randomString(6), randomString(10)))
-        sdk_add_raw_attribute(looper, sdk_pool_handle, trust_anchors[-1],
+        sdk_add_raw_attribute(looper, sdk_pool_handle, endorsers[-1],
                               *attributes[-1])
     non_privileged = []
     for i in range(np_count):
@@ -123,7 +123,7 @@ def test_new_node_catchup_update_projection(looper,
                   nodeSet)
 
     more_nyms_count = 2
-    for wh in trust_anchors:
+    for wh in endorsers:
         for i in range(more_nyms_count):
             non_privileged.append(sdk_add_new_nym(looper, sdk_pool_handle, wh,
                                                   alias='NP1' + str(i)))
@@ -132,5 +132,5 @@ def test_new_node_catchup_update_projection(looper,
     # ledger while catchup
     fill_counters(new_ledger_sizes, new_projection_sizes, new_seq_no_map_sizes,
                   nodeSet)
-    new_txn_count = more_nyms_count * len(trust_anchors)
+    new_txn_count = more_nyms_count * len(endorsers)
     check_sizes(nodeSet)
