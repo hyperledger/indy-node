@@ -70,7 +70,7 @@ class RevocRegEntryHandler(WriteRequestHandler):
             req_id=get_req_id(txn)
         )
         writer_cls = self.get_revocation_strategy(
-            revoc_def[ISSUANCE_TYPE])
+            revoc_def[VALUE][ISSUANCE_TYPE])
         writer = writer_cls(self.state)
         writer.write(current_entry, txn)
 
