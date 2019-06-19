@@ -1,6 +1,7 @@
 from copy import deepcopy
 from typing import Dict, Callable
 
+from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, VALUE, ISSUANCE_TYPE
 from indy_common.state.state_constants import MARKER_REVOC_REG_ENTRY, MARKER_REVOC_REG_ENTRY_ACCUM
@@ -29,12 +30,29 @@ class RevocRegEntryHandler(WriteRequestHandler):
 
     def dynamic_validation(self, request: Request):
         self._validate_request_type(request)
-        identifier, req_id, operation = get_request_data(request)
+        rev_reg_tags = request.operation[REVOC_REG_DEF_ID]
+        author_did, req_id, operation = get_request_data(request)
         current_entry, revoc_def = self._get_current_revoc_entry_and_revoc_def(
-            author_did=identifier,
+            author_did=author_did,
             revoc_reg_def_id=operation[REVOC_REG_DEF_ID],
             req_id=req_id
         )
+        rev_ref_def_author_did = rev_reg_tags.split(":", 1)[0]
+        is_owner = rev_ref_def_author_did == author_did
+
+        if current_entry:
+            self.write_req_validator.validate(request,
+                                              [AuthActionEdit(txn_type=REVOC_REG_ENTRY,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*',
+                                                              is_owner=is_owner)])
+        else:
+            self.write_req_validator.validate(request,
+                                              [AuthActionAdd(txn_type=REVOC_REG_ENTRY,
+                                                             field='*',
+                                                             value='*',
+                                                             is_owner=is_owner)])
         validator_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
         validator = validator_cls(self.state)
         validator.validate(current_entry, request)
@@ -52,7 +70,7 @@ class RevocRegEntryHandler(WriteRequestHandler):
             req_id=get_req_id(txn)
         )
         writer_cls = self.get_revocation_strategy(
-            revoc_def[ISSUANCE_TYPE])
+            revoc_def[VALUE][ISSUANCE_TYPE])
         writer = writer_cls(self.state)
         writer.write(current_entry, txn)
 
