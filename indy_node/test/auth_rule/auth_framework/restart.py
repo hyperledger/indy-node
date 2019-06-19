@@ -1,5 +1,6 @@
 import pytest
 
+from indy_node.server.request_handlers.action_req_handlers.pool_restart_handler import PoolRestartHandler
 from indy_node.test.pool_restart.helper import sdk_send_restart
 
 from indy_common.authorize.auth_actions import ADD_PREFIX
@@ -20,7 +21,9 @@ class RestartTest(AuthTest):
         self.default_auth_rule = self.get_default_auth_rule()
         self.changed_auth_rule = self.get_changed_auth_rule()
         for n in self.env.txnPoolNodeSet:
-            n.actionReqHandler.restarter.handleRestartRequest = lambda *args, **kwargs: True
+            for h in n.action_manager.request_handlers.values():
+                if isinstance(h, PoolRestartHandler):
+                    h.restarter.handleRestartRequest = lambda *args, **kwargs: True
 
     def run(self):
         # Step 1. Check default auth rule

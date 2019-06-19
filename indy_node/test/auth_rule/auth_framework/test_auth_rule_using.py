@@ -52,6 +52,9 @@ from indy_node.test.upgrade.conftest import patch_packet_mgr_output, EXT_PKT_NAM
 
 nodeCount = 7
 
+from stp_core.common.log import Logger
+Logger().enableStdLogging()
+
 
 class TestAuthRuleUsing():
     map_of_tests = OrderedDict({

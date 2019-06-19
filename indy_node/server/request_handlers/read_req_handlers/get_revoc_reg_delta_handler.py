@@ -6,6 +6,7 @@ from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handl
 
 from indy_node.server.request_handlers.utils import StateValue
 from plenum.common.constants import DOMAIN_LEDGER_ID
+from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
@@ -18,6 +19,17 @@ class GetRevocRegDeltaHandler(ReadRequestHandler):
                  get_revocation_strategy: Callable):
         super().__init__(database_manager, GET_REVOC_REG_DELTA, DOMAIN_LEDGER_ID)
         self.get_revocation_strategy = get_revocation_strategy
+
+    def static_validation(self, request: Request):
+        operation = request.operation
+        req_ts_to = operation.get(TO, None)
+        assert req_ts_to
+        req_ts_from = operation.get(FROM, None)
+
+        if req_ts_from and req_ts_from > req_ts_to:
+            raise InvalidClientRequest(request.identifier,
+                                       request.reqId,
+                                       "Timestamp FROM more then TO: {} > {}".format(req_ts_from, req_ts_to))
 
     def get_result(self, request: Request):
         """
@@ -86,7 +98,7 @@ class GetRevocRegDeltaHandler(ReadRequestHandler):
 
                 }
                 """If we got "from" timestamp, then add state proof into "data" section of reply"""
-                if req_ts_from and accum_from.value:
+                if req_ts_from:
                     reply[STATE_PROOF_FROM] = accum_from.proof
                     reply[VALUE][ACCUM_FROM] = accum_from.value
 
@@ -94,6 +106,14 @@ class GetRevocRegDeltaHandler(ReadRequestHandler):
             seq_no = accum_to.seq_no if entry_from.value else entry_to.seq_no
             update_time = accum_to.update_time if entry_from.value else entry_to.update_time
             proof = accum_to.proof if entry_from.value else entry_to.proof
+            if reply is None and req_ts_from is not None:
+                # TODO: change this according to INDY-2115
+                reply = {}
+                accum_from = self._get_reg_entry_accum_by_timestamp(req_ts_from, path_to_reg_entry_accum)
+                reply[STATE_PROOF_FROM] = accum_from.proof
+                reply[VALUE] = {}
+                reply[VALUE][ACCUM_TO] = None
+                reply[VALUE][ACCUM_FROM] = accum_from.value
         else:
             seq_no = None
             update_time = None

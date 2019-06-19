@@ -11,21 +11,19 @@ def test_validation_cred_def_not_present(build_revoc_def_by_default,
                                          create_node_and_not_start):
     node = create_node_and_not_start
     req = build_revoc_def_by_default
-    req_handler = node.get_req_handler(DOMAIN_LEDGER_ID)
     with pytest.raises(InvalidClientRequest, match="There is no any CRED_DEF"):
-        req_handler.validate(Request(**req))
+        node.write_manager.dynamic_validation(Request(**req))
 
 
 def test_invalid_cred_def_id_format(build_revoc_def_by_default,
                                     create_node_and_not_start):
     node = create_node_and_not_start
-    req_handler = node.get_req_handler(DOMAIN_LEDGER_ID)
     req = build_revoc_def_by_default
 
     req['operation'][CRED_DEF_ID] = ":".join(3 * [randomString(10)])
     with pytest.raises(InvalidClientRequest, match="Format of {} field is not acceptable".format(CRED_DEF_ID)):
-        req_handler.validate(Request(**req))
+        node.write_manager.static_validation(Request(**req))
 
     req['operation'][CRED_DEF_ID] = ":".join(6 * [randomString(10)])
     with pytest.raises(InvalidClientRequest, match="Format of {} field is not acceptable".format(CRED_DEF_ID)):
-        req_handler.validate(Request(**req))
+        node.write_manager.static_validation(Request(**req))

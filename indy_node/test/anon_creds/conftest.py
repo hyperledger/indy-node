@@ -102,11 +102,10 @@ def add_revoc_def_by_default(create_node_and_not_start,
     }
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
 
-    req_handler = node.get_req_handler(DOMAIN_LEDGER_ID)
     txn = append_txn_metadata(reqToTxn(Request(**req)),
                               txn_time=int(time.time()),
                               seq_no=node.domainLedger.seqNo + 1)
-    req_handler._addRevocDef(txn)
+    node.write_manager.update_state(txn)
     return req
 
 
@@ -162,11 +161,10 @@ def add_revoc_def_by_demand(create_node_and_not_start,
     }
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
 
-    req_handler = node.get_req_handler(DOMAIN_LEDGER_ID)
     txn = append_txn_metadata(reqToTxn(Request(**req)),
                               txn_time=int(time.time()),
                               seq_no=node.domainLedger.seqNo + 1)
-    req_handler._addRevocDef(txn)
+    node.write_manager.update_state(txn)
     return req
 
 

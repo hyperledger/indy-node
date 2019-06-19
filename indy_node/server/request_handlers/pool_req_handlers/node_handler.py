@@ -19,6 +19,13 @@ class NodeHandler(PNodeHandler):
     def _is_steward(self, nym, is_committed: bool = True):
         return self.database_manager.idr_cache.hasSteward(nym, is_committed)
 
+    def _get_node_data(self, nym, is_committed: bool = True):
+        key = nym.encode()
+        data = self.state.get(key, is_committed)
+        if not data:
+            return {}
+        return self.state_serializer.deserialize(data)
+
     def _auth_error_while_adding_node(self, request):
         origin = request.identifier
         operation = request.operation
