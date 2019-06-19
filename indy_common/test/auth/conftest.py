@@ -4,14 +4,14 @@ import time
 from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_constraints import ConstraintsSerializer
-from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
+from indy_common.authorize.auth_map import auth_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.node import Node
 from plenum.common.constants import STEWARD, TRUSTEE
 
-from indy_common.constants import TRUST_ANCHOR, LOCAL_AUTH_POLICY, NETWORK_MONITOR, CONFIG_LEDGER_AUTH_POLICY
+from indy_common.constants import ENDORSER, LOCAL_AUTH_POLICY, NETWORK_MONITOR, CONFIG_LEDGER_AUTH_POLICY
 from plenum.common.exceptions import UnauthorizedClientRequest
 from plenum.test.helper import randomOperation
 from plenum.test.testing_utils import FakeSomething
@@ -23,8 +23,8 @@ OTHER_IDENTIFIER = "some_other_identifier"
 
 IDENTIFIERS = {TRUSTEE: ["trustee_identifier", "trustee_identifier2", "trustee_identifier3", "trustee_identifier4"],
                STEWARD: ["steward_identifier", "steward_identifier2", "steward_identifier3", "steward_identifier4"],
-               TRUST_ANCHOR: ["trust_anchor_identifier", "trust_anchor_identifier2", "trust_anchor_identifier3",
-                              "trust_anchor_identifier4"],
+               ENDORSER: ["endorser_identifier", "endorser_identifier2", "endorser_identifier3",
+                          "endorser_identifier4"],
                NETWORK_MONITOR: ["network_monitor_identifier"],
                None: ["identity_owner_identifier", "identity_owner_identifier2", "identity_owner_identifier3",
                       "identity_owner_identifier4"],
@@ -68,10 +68,10 @@ def idr_cache():
         cache.set(id, i, int(time.time()), role=STEWARD,
                   verkey="steward_identifier_verkey", isCommitted=False)
 
-    for id in IDENTIFIERS[TRUST_ANCHOR]:
+    for id in IDENTIFIERS[ENDORSER]:
         i += 1
-        cache.set(id, i, int(time.time()), role=TRUST_ANCHOR,
-                  verkey="trust_anchor_identifier_verkey", isCommitted=False)
+        cache.set(id, i, int(time.time()), role=ENDORSER,
+                  verkey="endorser_identifier_verkey", isCommitted=False)
 
     for id in IDENTIFIERS[NETWORK_MONITOR]:
         i += 1
@@ -102,9 +102,6 @@ def config_state(constraint_serializer):
     Node.add_auth_rules_to_config_state(state=state,
                                         auth_map=auth_map,
                                         serializer=constraint_serializer)
-    Node.add_auth_rules_to_config_state(state=state,
-                                        auth_map=anyone_can_write_map,
-                                        serializer=constraint_serializer)
     return state
 
 
@@ -112,13 +109,11 @@ def config_state(constraint_serializer):
 def write_auth_req_validator(idr_cache,
                              constraint_serializer,
                              config_state):
-    validator = WriteRequestValidator(config=FakeSomething(authPolicy=CONFIG_LEDGER_AUTH_POLICY,
-                                                           ANYONE_CAN_WRITE=False),
+    validator = WriteRequestValidator(config=FakeSomething(authPolicy=CONFIG_LEDGER_AUTH_POLICY),
                                       auth_map=auth_map,
                                       cache=idr_cache,
                                       config_state=config_state,
-                                      state_serializer=constraint_serializer,
-                                      anyone_can_write_map=anyone_can_write_map)
+                                      state_serializer=constraint_serializer)
     return validator
 
 

@@ -9,7 +9,7 @@ did use XhYtvJqezMUKfF6KVNaGmT
 - ledger node target=6G9QhQa3HWjRKeRmEvEkLbWWf2t7cw6KLtafzi494G4G alias=Node6 services=
 #demote node with wrong pair of target and alias (FAIL)
 - ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc alias=Node6 services=
-#demote node as TRUST_ANCHOR (FAIL)
+#demote node as ENDORSER (FAIL)
 did use Rhx2qwaeiGyhU9vn4ynHSS
 - ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc alias=Node5 services=
 #demote node as IDENTITY_OWNER (FAIL)
@@ -18,7 +18,7 @@ did use 5qhSKMkpqui6taGLTecwqf
 #promote node as STEWARD of ANOTHER node (FAIL)
 did use XhYtvJqezMUKfF6KVNaGmT
 - ledger node target=6G9QhQa3HWjRKeRmEvEkLbWWf2t7cw6KLtafzi494G4G alias=Node6 services=VALIDATOR
-#promote node as TRUST_ANCHOR (FAIL)
+#promote node as ENDORSER (FAIL)
 did use Rhx2qwaeiGyhU9vn4ynHSS
 - ledger node target=6G9QhQa3HWjRKeRmEvEkLbWWf2t7cw6KLtafzi494G4G alias=Node6 services=VALIDATOR
 #promote node as IDENTITY_OWNER (FAIL)

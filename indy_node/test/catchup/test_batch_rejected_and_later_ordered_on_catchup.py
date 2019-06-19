@@ -47,7 +47,7 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
         tdirWithDomainTxns,
         nodeSet,
         sdk_pool_handle,
-        sdk_wallet_trust_anchor,
+        sdk_wallet_endorser,
         allPluginsPath,
         tconf,
         disable_transport_batching):
@@ -94,7 +94,7 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
     process_ordered_call_times_before = \
         slow_node.spylog.count(Node.processOrdered.__name__)
 
-    send_random_requests(looper, sdk_pool_handle, sdk_wallet_trust_anchor, 1)
+    send_random_requests(looper, sdk_pool_handle, sdk_wallet_endorser, 1)
 
     slow_node.start_catchup()
 
@@ -146,7 +146,7 @@ def patched_try_processing_ordered(self, msg):
             MethodType(Node.try_processing_ordered, self)
 
 
-def send_random_requests(looper, sdk_pool_handle, sdk_wallet_trust_anchor, count: int):
+def send_random_requests(looper, sdk_pool_handle, sdk_wallet_endorser, count: int):
     logger.info('{} random requests will be sent'.format(count))
     for i in range(count):
-        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trust_anchor)
+        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_endorser)

@@ -105,3 +105,8 @@ class NymHandler(PNymHandler):
                                                                   old_value=oldVal,
                                                                   new_value=newVal,
                                                                   is_owner=is_owner)])
+
+    def _decode_state_value(self, encoded):
+        if encoded:
+            return domain_state_serializer.deserialize(encoded)
+        return None, None, None

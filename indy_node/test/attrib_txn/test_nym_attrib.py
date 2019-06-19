@@ -11,7 +11,7 @@ from indy_node.test.helper import sdk_send_and_check_auth_rule_request
 from plenum.common.constants import STEWARD_STRING, STEWARD
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.util import adict, randomString
-from indy_common.constants import TRUST_ANCHOR_STRING, ATTRIB
+from indy_common.constants import ENDORSER_STRING, ATTRIB
 from indy_common.util import getSymmetricallyEncryptedVal
 from indy_node.test.helper import sdk_add_attribute_and_check, sdk_get_attribute_and_check
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
@@ -40,9 +40,9 @@ def attributeData(attributeName, attributeValue):
 
 @pytest.fixture(scope="module")
 def sdk_added_raw_attribute(sdk_pool_handle, sdk_user_wallet_a,
-                            sdk_wallet_trust_anchor, attributeData, looper):
+                            sdk_wallet_endorser, attributeData, looper):
     _, did_cl = sdk_user_wallet_a
-    req_couple = sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, attributeData, did_cl)[0]
+    req_couple = sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, attributeData, did_cl)[0]
     return req_couple[1]
 
 
@@ -61,27 +61,27 @@ def whitelistextras(*msg):
     [whitelistArray.remove(m) for m, _in in ins.items() if not _in]
 
 
-def testTrustAnchorAddsAttributeForUser(sdk_added_raw_attribute):
+def testEndorserAddsAttributeForUser(sdk_added_raw_attribute):
     pass
 
 
-def testTrustAnchorGetAttrsForUser(looper,
+def testEndorserGetAttrsForUser(looper,
                                    sdk_user_wallet_a,
-                                   sdk_wallet_trust_anchor,
+                                   sdk_wallet_endorser,
                                    sdk_pool_handle,
                                    attributeName,
                                    sdk_added_raw_attribute):
     _, dest = sdk_user_wallet_a
     sdk_get_attribute_and_check(looper, sdk_pool_handle,
-                                sdk_wallet_trust_anchor, dest, attributeName)
+                                sdk_wallet_endorser, dest, attributeName)
 
 
 def test_edit_attrib(sdk_pool_handle, sdk_user_wallet_a,
-                     sdk_wallet_trust_anchor, attributeData, looper, attributeName):
+                     sdk_wallet_endorser, attributeData, looper, attributeName):
     _, did_cl = sdk_user_wallet_a
 
-    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, attributeData, did_cl)
-    res1 = sdk_get_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, did_cl, attributeName)
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, attributeData, did_cl)
+    res1 = sdk_get_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, did_cl, attributeName)
     assert serialize_msg_for_signing(
         json.loads(res1[0][1]['result']['data'])) == serialize_msg_for_signing(
         json.loads(attributeData.replace(' ', '')))
@@ -90,14 +90,14 @@ def test_edit_attrib(sdk_pool_handle, sdk_user_wallet_a,
     data[attributeName] = {'John': 'Snow'}
     data = json.dumps(data)
 
-    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
-    res2 = sdk_get_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, did_cl, attributeName)
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, data, did_cl)
+    res2 = sdk_get_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, did_cl, attributeName)
     assert serialize_msg_for_signing(
         json.loads(res2[0][1]['result']['data'])) == serialize_msg_for_signing(
         json.loads(data.replace(' ', '')))
 
 
-def test_non_trust_anchor_cannot_add_attribute_for_user(
+def test_non_endorser_cannot_add_attribute_for_user(
         looper,
         nodeSet,
         sdk_wallet_client,
@@ -112,7 +112,7 @@ def test_non_trust_anchor_cannot_add_attribute_for_user(
     e.match('can not touch raw field since only the owner can modify it')
 
 
-def testOnlyUsersTrustAnchorCanAddAttribute(
+def testOnlyUsersEndorserCanAddAttribute(
         nodeSet,
         looper,
         attributeData,
@@ -121,7 +121,7 @@ def testOnlyUsersTrustAnchorCanAddAttribute(
         sdk_user_wallet_a):
     _, dest = sdk_user_wallet_a
     wallet_another_ta = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trustee,
-                                        alias='TA-' + randomString(5), role=TRUST_ANCHOR_STRING)
+                                        alias='TA-' + randomString(5), role=ENDORSER_STRING)
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_attribute_and_check(looper, sdk_pool_handle,
                                     wallet_another_ta, attributeData, dest)
@@ -149,23 +149,23 @@ def testStewardCannotAddUsersAttribute(
 def testLatestAttrIsReceived(
         looper,
         nodeSet,
-        sdk_wallet_trust_anchor,
+        sdk_wallet_endorser,
         sdk_pool_handle,
         sdk_user_wallet_a):
     _, dest = sdk_user_wallet_a
 
     attr1 = json.dumps({'name': 'Mario'})
     sdk_add_attribute_and_check(looper, sdk_pool_handle,
-                                sdk_wallet_trust_anchor, attr1, dest)
+                                sdk_wallet_endorser, attr1, dest)
     reply = sdk_get_attribute_and_check(looper, sdk_pool_handle,
-                                        sdk_wallet_trust_anchor, dest, 'name')[0]
+                                        sdk_wallet_endorser, dest, 'name')[0]
     reply_equality_of_get_attribute(reply, 'Mario')
 
     attr2 = json.dumps({'name': 'Luigi'})
     sdk_add_attribute_and_check(looper, sdk_pool_handle,
-                                sdk_wallet_trust_anchor, attr2, dest)
+                                sdk_wallet_endorser, attr2, dest)
     reply = sdk_get_attribute_and_check(looper, sdk_pool_handle,
-                                        sdk_wallet_trust_anchor, dest, 'name')[0]
+                                        sdk_wallet_endorser, dest, 'name')[0]
     reply_equality_of_get_attribute(reply, 'Luigi')
 
 
@@ -202,8 +202,8 @@ def test_attr_with_no_dest_added(nodeSet, looper, attributeData):
     #
     # createNym(looper,
     #           user_wallet.defaultId,
-    #           trustAnchor,
-    #           addedTrustAnchor,
+    #           endorser,
+    #           addedEndorser,
     #           role=None,
     #           verkey=user_wallet.getVerkey())
     #
@@ -226,37 +226,37 @@ def testGetTxnsNoSeqNo():
 
 @pytest.mark.skip(reason="SOV-560. Come back to it later since "
                          "requestPendingTxns move to wallet")
-def testGetTxnsSeqNo(nodeSet, trustAnchorWallet, looper):
+def testGetTxnsSeqNo(nodeSet, endorserWallet, looper):
     pass
     """
     Test GET_TXNS from client and provide seqNo to fetch from
     """
-    # looper.add(trustAnchor)
-    # looper.run(trustAnchor.ensureConnectedToNodes())
+    # looper.add(endorser)
+    # looper.run(endorser.ensureConnectedToNodes())
     #
     # def chk():
-    #     assert trustAnchor.spylog.count(
-    #         trustAnchor.requestPendingTxns.__name__) > 0
+    #     assert endorser.spylog.count(
+    #         endorser.requestPendingTxns.__name__) > 0
     #
     # # TODO choose or create timeout in 'waits' on this case.
     # looper.run(eventually(chk, retryWait=1, timeout=3))
 
 
 @pytest.mark.skip(reason="SOV-560. Attribute encryption is done in client")
-def testTrustAnchorAddedAttributeIsEncrypted(addedEncryptedAttribute):
+def testEndorserAddedAttributeIsEncrypted(addedEncryptedAttribute):
     pass
 
 
 @pytest.mark.skip(reason="SOV-560. Attribute Disclosure is not done for now")
-def testTrustAnchorDisclosesEncryptedAttribute(
+def testEndorserDisclosesEncryptedAttribute(
         addedEncryptedAttribute,
         symEncData,
         looper,
         userSignerA,
-        trustAnchorSigner,
-        trustAnchor):
+        endorserSigner,
+        endorser):
     pass
-    # box = libnacl.public.Box(trustAnchorSigner.naclSigner.keyraw,
+    # box = libnacl.public.Box(endorserSigner.naclSigner.keyraw,
     #                          userSignerA.naclSigner.verraw)
     #
     # data = json.dumps({SKEY: symEncData.secretKey,
@@ -269,14 +269,14 @@ def testTrustAnchorDisclosesEncryptedAttribute(
     #     NONCE: base58.b58encode(nonce).decode("utf-8"),
     #     ENC: base58.b58encode(boxedMsg).decode("utf-8")
     # }
-    # submitAndCheck(looper, trustAnchor, op,
-    #                identifier=trustAnchorSigner.verstr)
+    # submitAndCheck(looper, endorser, op,
+    #                identifier=endorserSigner.verstr)
 
 
 @pytest.mark.skip(reason="SOV-561. Pending implementation")
-def testTrustAnchorAddedAttributeCanBeChanged(sdk_added_raw_attribute):
+def testEndorserAddedAttributeCanBeChanged(sdk_added_raw_attribute):
     # TODO but only by user(if user has taken control of his identity) and
-    # trustAnchor
+    # endorser
     raise NotImplementedError
 
 
@@ -307,16 +307,16 @@ def test_auth_rule_for_raw_attrib_works(looper,
                                         sdk_wallet_trustee,
                                         sdk_pool_handle,
                                         sdk_user_wallet_a,
-                                        sdk_wallet_trust_anchor):
+                                        sdk_wallet_endorser):
     _, did_cl = sdk_user_wallet_a
 
     # We can add and modify attribs
     data = dict()
     data['a'] = {'John': 'Snow'}
     data = json.dumps(data)
-    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, data, did_cl)
 
-    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, data, did_cl)
 
     sdk_send_and_check_auth_rule_request(looper,
                                          sdk_pool_handle,
@@ -332,10 +332,10 @@ def test_auth_rule_for_raw_attrib_works(looper,
     data = dict()
     data['b'] = {'John': 'Snow'}
     data = json.dumps(data)
-    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, data, did_cl)
 
     with pytest.raises(RequestRejectedException) as e:
-        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, data, did_cl)
     e.match('Not enough STEWARD signatures')
 
     sdk_send_and_check_auth_rule_request(looper,
@@ -351,11 +351,11 @@ def test_auth_rule_for_raw_attrib_works(looper,
     data['c'] = {'John': 'Snow'}
     data = json.dumps(data)
     with pytest.raises(RequestRejectedException) as e:
-        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, data, did_cl)
     e.match('Not enough STEWARD signatures')
 
     with pytest.raises(RequestRejectedException) as e:
-        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, data, did_cl)
     e.match('Not enough STEWARD signatures')
 
 
@@ -363,16 +363,16 @@ def test_auth_rule_for_hash_attrib_works(looper,
                                          sdk_wallet_trustee,
                                          sdk_pool_handle,
                                          sdk_user_wallet_a,
-                                         sdk_wallet_trust_anchor):
+                                         sdk_wallet_endorser):
     _, did_cl = sdk_user_wallet_a
 
     set_attrib_auth_to_none(looper, sdk_wallet_trustee, sdk_pool_handle)
 
     # We can add and modify attribs
     data = sha256(json.dumps({'name': 'John'}).encode()).hexdigest()
-    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, xhash=data)
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, None, did_cl, xhash=data)
 
-    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, xhash=data)
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, None, did_cl, xhash=data)
 
     sdk_send_and_check_auth_rule_request(looper,
                                          sdk_pool_handle,
@@ -387,10 +387,10 @@ def test_auth_rule_for_hash_attrib_works(looper,
     # We still can add, but cannot edit attrib
     data = sha256(json.dumps({'name': 'Ned'}).encode()).hexdigest()
 
-    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, xhash=data)
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, None, did_cl, xhash=data)
 
     with pytest.raises(RequestRejectedException) as e:
-        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, xhash=data)
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, None, did_cl, xhash=data)
     e.match('Not enough STEWARD signatures')
 
     sdk_send_and_check_auth_rule_request(looper,
@@ -405,11 +405,11 @@ def test_auth_rule_for_hash_attrib_works(looper,
     data = sha256(json.dumps({'name': 'Aria'}).encode()).hexdigest()
 
     with pytest.raises(RequestRejectedException) as e:
-        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, xhash=data)
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, None, did_cl, xhash=data)
     e.match('Not enough STEWARD signatures')
 
     with pytest.raises(RequestRejectedException) as e:
-        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, xhash=data)
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, None, did_cl, xhash=data)
     e.match('Not enough STEWARD signatures')
 
 
@@ -417,16 +417,16 @@ def test_auth_rule_for_enc_attrib_works(looper,
                                         sdk_wallet_trustee,
                                         sdk_pool_handle,
                                         sdk_user_wallet_a,
-                                        sdk_wallet_trust_anchor):
+                                        sdk_wallet_endorser):
     _, did_cl = sdk_user_wallet_a
 
     set_attrib_auth_to_none(looper, sdk_wallet_trustee, sdk_pool_handle)
 
     # We can add and modify attribs
     data = secretBox.encrypt(json.dumps({'name': 'Jaime'}).encode()).hex()
-    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, enc=data)
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, None, did_cl, enc=data)
 
-    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, enc=data)
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, None, did_cl, enc=data)
 
     sdk_send_and_check_auth_rule_request(looper,
                                          sdk_pool_handle,
@@ -441,10 +441,10 @@ def test_auth_rule_for_enc_attrib_works(looper,
     # We still can add, but cannot edit attrib
     data = secretBox.encrypt(json.dumps({'name': 'Cersei'}).encode()).hex()
 
-    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, enc=data)
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, None, did_cl, enc=data)
 
     with pytest.raises(RequestRejectedException) as e:
-        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, enc=data)
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, None, did_cl, enc=data)
     e.match('Not enough STEWARD signatures')
 
     sdk_send_and_check_auth_rule_request(looper,
@@ -459,9 +459,9 @@ def test_auth_rule_for_enc_attrib_works(looper,
     data = secretBox.encrypt(json.dumps({'name': 'Tywin'}).encode()).hex()
 
     with pytest.raises(RequestRejectedException) as e:
-        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, enc=data)
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, None, did_cl, enc=data)
     e.match('Not enough STEWARD signatures')
 
     with pytest.raises(RequestRejectedException) as e:
-        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, enc=data)
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, None, did_cl, enc=data)
     e.match('Not enough STEWARD signatures')

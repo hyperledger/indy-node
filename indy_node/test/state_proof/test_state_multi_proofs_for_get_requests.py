@@ -9,7 +9,7 @@ from common.serializers import serialization
 from common.serializers.serialization import state_roots_serializer, domain_state_serializer
 from crypto.bls.bls_multi_signature import MultiSignature, MultiSignatureValue
 from indy_common.authorize.auth_constraints import ConstraintsSerializer
-from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
+from indy_common.authorize.auth_map import auth_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from plenum.bls.bls_store import BlsStore
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, \
@@ -48,13 +48,11 @@ def request_handler(bls_store):
     state_serializer = ConstraintsSerializer(domain_state_serializer)
     cache = IdrCache('Cache', KeyValueStorageInMemory())
     attr_store = AttributeStore(KeyValueStorageInMemory())
-    write_req_validator = WriteRequestValidator(config=FakeSomething(authPolicy=CONFIG_LEDGER_AUTH_POLICY,
-                                                                     ANYONE_CAN_WRITE=False),
+    write_req_validator = WriteRequestValidator(config=FakeSomething(authPolicy=CONFIG_LEDGER_AUTH_POLICY),
                                                 auth_map=auth_map,
                                                 cache=cache,
                                                 config_state=config_state,
-                                                state_serializer=state_serializer,
-                                                anyone_can_write_map=anyone_can_write_map)
+                                                state_serializer=state_serializer)
     return DomainReqHandler(ledger=None,
                             state=state,
                             config=None,
@@ -296,7 +294,6 @@ def get_nym_verify_proof(request_handler, nym, data, multi_sig):
         result_data = request_handler.stateSerializer.deserialize(result[DATA])
         result_data.pop(TARGET_NYM, None)
         assert result_data == data
-
 
     # Verifying signed state proof
     path = request_handler.nym_to_state_key(nym)

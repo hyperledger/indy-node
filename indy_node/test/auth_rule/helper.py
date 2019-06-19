@@ -4,7 +4,7 @@ from indy.did import create_and_store_my_did
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.constants import AUTH_RULE, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, OLD_VALUE, NYM, \
-    TRUST_ANCHOR, RULES, AUTH_RULES, GET_AUTH_RULE
+    ENDORSER, RULES, AUTH_RULES, GET_AUTH_RULE
 from plenum.common.constants import TRUSTEE, TXN_TYPE
 
 from indy_common.authorize.auth_constraints import CONSTRAINT_ID, ROLE, SIG_COUNT, NEED_TO_BE_OWNER, METADATA, \
@@ -35,7 +35,7 @@ def generate_constraint_list(constraint_id=ConstraintsEnum.AND_CONSTRAINT_ID,
 # DO NOT USE it for valid cases, use 'build_auth_rule_request_json'
 # instead.
 def generate_auth_rule_operation(auth_action=ADD_PREFIX, auth_type=NYM,
-                                 field=ROLE, new_value=TRUST_ANCHOR,
+                                 field=ROLE, new_value=ENDORSER,
                                  old_value=None, constraint=None):
     op = generate_auth_rule(auth_action, auth_type,
                             field, new_value,
@@ -56,7 +56,7 @@ def sdk_send_and_check_auth_rule_request(
     auth_type=NYM,
     field=ROLE,
     old_value=None,
-    new_value=TRUST_ANCHOR,
+    new_value=ENDORSER,
     constraint=None,
     no_wait=False
 ):
@@ -119,9 +119,9 @@ def sdk_send_and_check_auth_rules_request_invalid(looper, sdk_pool_handle, sdk_w
                                           rules=None, no_wait=False):
     if rules is None:
         rules = [generate_auth_rule(ADD_PREFIX, NYM,
-                                    ROLE, TRUST_ANCHOR),
+                                    ROLE, ENDORSER),
                  generate_auth_rule(EDIT_PREFIX, NYM,
-                                    ROLE, TRUST_ANCHOR, TRUSTEE)]
+                                    ROLE, ENDORSER, TRUSTEE)]
     op = {RULES: rules,
           TXN_TYPE: AUTH_RULES}
 
@@ -161,7 +161,7 @@ def add_new_nym(looper, sdk_pool_handle, creators_wallets,
 
 
 def generate_key(auth_action=ADD_PREFIX, auth_type=NYM,
-                 field=ROLE, new_value=TRUST_ANCHOR,
+                 field=ROLE, new_value=ENDORSER,
                  old_value=None):
     key = {AUTH_ACTION: auth_action,
            AUTH_TYPE: auth_type,

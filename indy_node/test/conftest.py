@@ -124,16 +124,16 @@ def sdk_node_theta_added(looper,
 
 
 @pytest.fixture(scope="module")
-def sdk_wallet_trust_anchor(looper, sdk_pool_handle, sdk_wallet_trustee):
+def sdk_wallet_endorser(looper, sdk_pool_handle, sdk_wallet_trustee):
     return sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trustee,
-                           alias='TA-1', role='TRUST_ANCHOR')
+                           alias='TA-1', role='ENDORSER')
 
 
 @pytest.fixture(scope="module")
-def sdk_user_wallet_a(nodeSet, sdk_wallet_trust_anchor,
+def sdk_user_wallet_a(nodeSet, sdk_wallet_endorser,
                       sdk_pool_handle, looper):
     return sdk_add_new_nym(looper, sdk_pool_handle,
-                           sdk_wallet_trust_anchor, alias='userA',
+                           sdk_wallet_endorser, alias='userA',
                            skipverkey=True)
 
 

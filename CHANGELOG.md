@@ -20,13 +20,13 @@
 
 * [1.6.70](#1670)
 
-* [1.5.67](#1567)
+* [1.5.68](#1568)
 
 * [1.4.66](#1466)
 
 * [1.3.62](#1362)
 
-* [1.3.56](#1356)
+* [1.3.57](#1357)
 
 * [1.3.55](#1355)
 
@@ -211,10 +211,10 @@ Although every attempt has been made to make this information as accurate as pos
 | There should always be fresh enough signature of a state |  | [INDY-933](https://jira.hyperledger.org/browse/INDY-933) |
 | Node stops working without any services failure |  | [INDY-1949](https://jira.hyperledger.org/browse/INDY-1949) |
 | As a user of Valdiator Info script, I need to know whether the pool has write consensus and when the state was updated the last time |  | [INDY-1928](https://jira.hyperledger.org/browse/INDY-1928) |
-| Trust anchor permission not needed for ledger writes |  | [INDY-1528](https://jira.hyperledger.org/browse/INDY-1528) |
+| Endorser permission not needed for ledger writes |  | [INDY-1528](https://jira.hyperledger.org/browse/INDY-1528) |
 
 ## 1.6.82 
-### Release date: Dec 20th, 2018
+### Release date: Dec 24th, 2018
 
 ### Component Version Information
 | Components | Version Numbers |
@@ -492,7 +492,7 @@ No further action is required
 | Updated revocation registry delta value during REG\_ENTRY\_REVOC writing. |   | [INDY-1378](https://jira.hyperledger.org/browse/INDY-1378) |
 | Support latest SDK in Indy Plenum and Node. |   | [INDY-1480](https://jira.hyperledger.org/browse/INDY-1480) |
 | Latency measurements in monitor are windowed. |   | [INDY-1468](https://jira.hyperledger.org/browse/INDY-1468) |
-| Trust anchor permissions are not needed for ledger writes. |   | [INDY-1528](https://jira.hyperledger.org/browse/INDY-1528) |
+| Endorser permissions are not needed for ledger writes. |   | [INDY-1528](https://jira.hyperledger.org/browse/INDY-1528) |
 |   |   |   |
 | **Known Issue:** Docker pool can&#39;t be built because of new python3-indy-crypto in sdk repo. The problem described in INDY-1517 will be fixed in the next release of indy-node. | Workaround for this problem is to add python3-indy-crypto=0.4.1 to the list of packages to be installed. | [INDY-1517](https://jira.hyperledger.org/browse/INDY-1517) |
 | **Known Issue:** Upgrade failed on pool from 1.3.62 to 1.4.66. Note that INDY-1447 was fixed in indy-node 1.5.68, but it still presents in indy-node 1.3.62 and 1.4.66 code. | **So, some of the nodes may not to be upgraded during simultaneous pool-upgrade.** If this problem will appear, stewards should perform manual upgrade of indy-node in accordance with this [instruction:](https://docs.google.com/document/d/1vUvbioL5OsmZMSkwRcu0p0jdttJO5VS8K3GhDLdNaoI)**(!)** To reduce the risk of reproducing INDY-1447, it is **recommended to use old CLI for pool upgrade.** | [INDY-1447](https://jira.hyperledger.org/browse/INDY-1447) |
@@ -509,16 +509,16 @@ No further action is required
 **For more details about txn format changes see** [**INDY-1421**](https://jira.hyperledger.org/browse/INDY-1421) **.**
 
 
-## 1.5.67
+## 1.5.68
 
 
 ### Component Version Information
 
 | Components | Version Numbers |
 | --- | --- |
-| indy-plenum | 1.5.47 |
+| indy-plenum | 1.5.48 |
 | indy-anoncreds | 1.0.11 |
-| indy-node | 1.5.67 |
+| indy-node | 1.5.68 |
 |   |   |    |
 
 ### Major Fixes
@@ -725,13 +725,13 @@ None for this release.
 None at this time.
 
 
-## 1.3.56
+## 1.3.57
 
 ### Component Version Information
 
 | Components | Version Numbers |
 | --- | --- |
-| indy-node | 1.3.56 |
+| indy-node | 1.3.57 |
 |   |   |   |
 
 ### Major Fixes

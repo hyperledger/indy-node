@@ -57,7 +57,7 @@ class NodeHandler(PNodeHandler):
         is_steward_of_node = self._is_steward_of_node(
             origin, node_nym, is_committed=False)
 
-        node_info = self._get_node_data(node_nym, is_committed=False)
+        node_info = self.get_from_state(node_nym, is_committed=False)
         data = deepcopy(data)
         data.pop(ALIAS, None)
         for k in data:

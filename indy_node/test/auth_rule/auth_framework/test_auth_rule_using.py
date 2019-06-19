@@ -6,7 +6,7 @@ from collections import OrderedDict
 from plenum.common.constants import STEWARD, TRUSTEE, IDENTITY_OWNER
 
 from indy_common.constants import (
-    TRUST_ANCHOR, START, NETWORK_MONITOR, NETWORK_MONITOR_STRING
+    ENDORSER, START, NETWORK_MONITOR, NETWORK_MONITOR_STRING
 )
 from indy_common.authorize import auth_map
 
@@ -16,16 +16,16 @@ from plenum.test.testing_utils import FakeSomething
 
 from indy_node.test.auth_rule.auth_framework.claim_def import AddClaimDefTest, EditClaimDefTest
 from indy_node.test.auth_rule.auth_framework.add_roles import AddNewTrusteeTest, AddNewStewardTest, \
-    AddNewTrustAnchorTest, AddNewNetworkMonitorTest, AddNewIdentityOwnerTest
+    AddNewEndorserTest, AddNewNetworkMonitorTest, AddNewIdentityOwnerTest
 from indy_node.test.auth_rule.auth_framework.edit_roles import EditTrusteeToStewardTest, \
-    EditTrusteeToTrustAnchorTest, EditTrusteeToNetworkMonitorTest, EditTrusteeToIdentityOwnerTest, \
-    EditStewardToTrusteeTest, EditStewardToTrustAnchorTest, EditStewardToNetworkMonitorTest, \
-    EditStewardToIdentityOwnerTest, EditTrustAnchorToTrusteeTest, EditTrustAnchorToStewardTest, \
-    EditTrustAnchorToIdentityOwnerTest, EditTrustAnchorToNetworkMonitorTest, EditIdentityOwnerToNetworkMonitorTest, \
-    EditIdentityOwnerToTrusteeTest, EditIdentityOwnerToTrustAnchorTest, EditIdentityOwnerToStewardTest, \
+    EditTrusteeToEndorserTest, EditTrusteeToNetworkMonitorTest, EditTrusteeToIdentityOwnerTest, \
+    EditStewardToTrusteeTest, EditStewardToEndorserTest, EditStewardToNetworkMonitorTest, \
+    EditStewardToIdentityOwnerTest, EditEndorserToTrusteeTest, EditEndorserToStewardTest, \
+    EditEndorserToIdentityOwnerTest, EditEndorserToNetworkMonitorTest, EditIdentityOwnerToNetworkMonitorTest, \
+    EditIdentityOwnerToTrusteeTest, EditIdentityOwnerToEndorserTest, EditIdentityOwnerToStewardTest, \
     EditNetworkMonitorToIdentityOwnerTest, EditNetworkMonitorToTrusteeTest, EditNetworkMonitorToStewardTest, \
-    EditNetworkMonitorToTrustAnchorTest, EditStewardToStewardTest, EditTrusteeToTrusteeTest, \
-    EditTrustAnchorToTrustAnchorTest, EditNetworkMonitorToNetworkMonitorTest, EditIdentityOwnerToIdentityOwnerTest
+    EditNetworkMonitorToEndorserTest, EditStewardToStewardTest, EditTrusteeToTrusteeTest, \
+    EditEndorserToEndorserTest, EditNetworkMonitorToNetworkMonitorTest, EditIdentityOwnerToIdentityOwnerTest
 from indy_node.test.auth_rule.auth_framework.key_rotation import RotateKeyTest
 from indy_node.test.auth_rule.auth_framework.schema import SchemaTest
 from indy_node.test.auth_rule.auth_framework.upgrade import StartUpgradeTest, CancelUpgradeTest
@@ -66,7 +66,7 @@ class TestAuthRuleUsing():
         auth_map.change_bls_key.get_action_id(): EditNodeBlsTest,
         auth_map.add_new_trustee.get_action_id(): AddNewTrusteeTest,
         auth_map.add_new_steward.get_action_id(): AddNewStewardTest,
-        auth_map.add_new_trust_anchor.get_action_id(): AddNewTrustAnchorTest,
+        auth_map.add_new_endorser.get_action_id(): AddNewEndorserTest,
         auth_map.add_new_network_monitor.get_action_id(): AddNewNetworkMonitorTest,
         auth_map.add_new_identity_owner.get_action_id(): AddNewIdentityOwnerTest,
         auth_map.add_attrib.get_action_id(): AddAttribTest,
@@ -76,28 +76,28 @@ class TestAuthRuleUsing():
         auth_map.add_revoc_reg_entry.get_action_id(): AddRevocRegEntryTest,
         auth_map.edit_revoc_reg_entry.get_action_id(): EditRevocRegEntryTest,
         auth_map.edit_role_actions[TRUSTEE][STEWARD].get_action_id(): EditTrusteeToStewardTest,
-        auth_map.edit_role_actions[TRUSTEE][TRUST_ANCHOR].get_action_id(): EditTrusteeToTrustAnchorTest,
+        auth_map.edit_role_actions[TRUSTEE][ENDORSER].get_action_id(): EditTrusteeToEndorserTest,
         auth_map.edit_role_actions[TRUSTEE][NETWORK_MONITOR].get_action_id(): EditTrusteeToNetworkMonitorTest,
         auth_map.edit_role_actions[TRUSTEE][IDENTITY_OWNER].get_action_id(): EditTrusteeToIdentityOwnerTest,
         auth_map.edit_role_actions[STEWARD][TRUSTEE].get_action_id(): EditStewardToTrusteeTest,
-        auth_map.edit_role_actions[STEWARD][TRUST_ANCHOR].get_action_id(): EditStewardToTrustAnchorTest,
+        auth_map.edit_role_actions[STEWARD][ENDORSER].get_action_id(): EditStewardToEndorserTest,
         auth_map.edit_role_actions[STEWARD][NETWORK_MONITOR].get_action_id(): EditStewardToNetworkMonitorTest,
         auth_map.edit_role_actions[STEWARD][IDENTITY_OWNER].get_action_id(): EditStewardToIdentityOwnerTest,
-        auth_map.edit_role_actions[TRUST_ANCHOR][TRUSTEE].get_action_id(): EditTrustAnchorToTrusteeTest,
-        auth_map.edit_role_actions[TRUST_ANCHOR][STEWARD].get_action_id(): EditTrustAnchorToStewardTest,
-        auth_map.edit_role_actions[TRUST_ANCHOR][NETWORK_MONITOR].get_action_id(): EditTrustAnchorToNetworkMonitorTest,
-        auth_map.edit_role_actions[TRUST_ANCHOR][IDENTITY_OWNER].get_action_id(): EditTrustAnchorToIdentityOwnerTest,
+        auth_map.edit_role_actions[ENDORSER][TRUSTEE].get_action_id(): EditEndorserToTrusteeTest,
+        auth_map.edit_role_actions[ENDORSER][STEWARD].get_action_id(): EditEndorserToStewardTest,
+        auth_map.edit_role_actions[ENDORSER][NETWORK_MONITOR].get_action_id(): EditEndorserToNetworkMonitorTest,
+        auth_map.edit_role_actions[ENDORSER][IDENTITY_OWNER].get_action_id(): EditEndorserToIdentityOwnerTest,
         auth_map.edit_role_actions[IDENTITY_OWNER][TRUSTEE].get_action_id(): EditIdentityOwnerToTrusteeTest,
         auth_map.edit_role_actions[IDENTITY_OWNER][STEWARD].get_action_id(): EditIdentityOwnerToStewardTest,
-        auth_map.edit_role_actions[IDENTITY_OWNER][TRUST_ANCHOR].get_action_id(): EditIdentityOwnerToTrustAnchorTest,
+        auth_map.edit_role_actions[IDENTITY_OWNER][ENDORSER].get_action_id(): EditIdentityOwnerToEndorserTest,
         auth_map.edit_role_actions[IDENTITY_OWNER][NETWORK_MONITOR].get_action_id(): EditIdentityOwnerToNetworkMonitorTest,
         auth_map.edit_role_actions[NETWORK_MONITOR][TRUSTEE].get_action_id(): EditNetworkMonitorToTrusteeTest,
         auth_map.edit_role_actions[NETWORK_MONITOR][STEWARD].get_action_id(): EditNetworkMonitorToStewardTest,
-        auth_map.edit_role_actions[NETWORK_MONITOR][TRUST_ANCHOR].get_action_id(): EditNetworkMonitorToTrustAnchorTest,
+        auth_map.edit_role_actions[NETWORK_MONITOR][ENDORSER].get_action_id(): EditNetworkMonitorToEndorserTest,
         auth_map.edit_role_actions[NETWORK_MONITOR][IDENTITY_OWNER].get_action_id(): EditNetworkMonitorToIdentityOwnerTest,
         auth_map.edit_role_actions[TRUSTEE][TRUSTEE].get_action_id(): EditTrusteeToTrusteeTest,
         auth_map.edit_role_actions[STEWARD][STEWARD].get_action_id(): EditStewardToStewardTest,
-        auth_map.edit_role_actions[TRUST_ANCHOR][TRUST_ANCHOR].get_action_id(): EditTrustAnchorToTrustAnchorTest,
+        auth_map.edit_role_actions[ENDORSER][ENDORSER].get_action_id(): EditEndorserToEndorserTest,
         auth_map.edit_role_actions[NETWORK_MONITOR][NETWORK_MONITOR].get_action_id(): EditNetworkMonitorToNetworkMonitorTest,
         auth_map.edit_role_actions[IDENTITY_OWNER][IDENTITY_OWNER].get_action_id(): EditIdentityOwnerToIdentityOwnerTest,
         auth_map.key_rotation.get_action_id(): RotateKeyTest,
@@ -158,7 +158,7 @@ class TestAuthRuleUsing():
             sdk_pool_handle,
             sdk_wallet_trustee,
             sdk_wallet_steward,
-            sdk_wallet_trust_anchor,
+            sdk_wallet_endorser,
             sdk_wallet_client,
             validUpgrade,
             poolConfigWTFF,
@@ -167,7 +167,7 @@ class TestAuthRuleUsing():
         role_to_wallet = {
             TRUSTEE: sdk_wallet_trustee,
             STEWARD: sdk_wallet_steward,
-            TRUST_ANCHOR: sdk_wallet_trust_anchor,
+            ENDORSER: sdk_wallet_endorser,
             NETWORK_MONITOR: sdk_wallet_network_monitor,
             IDENTITY_OWNER: sdk_wallet_client,
         }

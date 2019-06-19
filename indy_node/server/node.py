@@ -4,49 +4,20 @@ from typing import Iterable, List
 
 from common.exceptions import LogicError
 from common.serializers.serialization import ledger_txn_serializer, domain_state_serializer
-from indy_common.authorize.auth_constraints import ConstraintsSerializer, AbstractConstraintSerializer
-from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
+from indy_common.authorize.auth_constraints import AbstractConstraintSerializer
+from indy_node.server.node_bootstrap import NodeBootstrap
 from indy_node.server.pool_req_handler import PoolRequestHandler
 
 from indy_node.server.action_req_handler import ActionReqHandler
-from indy_node.server.request_handlers.action_req_handlers.pool_restart_handler import PoolRestartHandler
-from indy_node.server.request_handlers.action_req_handlers.validator_info_handler import ValidatorInfoHandler
-from indy_node.server.request_handlers.config_batch_handler import ConfigBatchHandler
-from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rule_handler import AuthRuleHandler
-from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rules_handler import AuthRulesHandler
-from indy_node.server.request_handlers.config_req_handlers.pool_config_handler import PoolConfigHandler
-from indy_node.server.request_handlers.config_req_handlers.pool_upgrade_handler import PoolUpgradeHandler
-from indy_node.server.request_handlers.domain_req_handlers.attribute_handler import AttributeHandler
-from indy_node.server.request_handlers.domain_req_handlers.claim_def_handler import ClaimDefHandler
-from indy_node.server.request_handlers.domain_req_handlers.idr_cache_nym_handler import IdrCacheNymHandler
-from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
-from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
-from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handler import RevocRegEntryHandler
-from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
-from indy_node.server.request_handlers.idr_cache_batch_handler import IdrCacheBatchHandler
-from indy_node.server.request_handlers.pool_req_handlers.node_handler import NodeHandler
-from indy_node.server.request_handlers.read_req_handlers.get_attribute_handler import GetAttributeHandler
-from indy_node.server.request_handlers.read_req_handlers.get_auth_rule_handler import GetAuthRuleHandler
-from indy_node.server.request_handlers.read_req_handlers.get_claim_def_handler import GetClaimDefHandler
-from indy_node.server.request_handlers.read_req_handlers.get_nym_handler import GetNymHandler
-from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_def_handler import GetRevocRegDefHandler
-from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_delta_handler import GetRevocRegDeltaHandler
-from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_handler import GetRevocRegHandler
-from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
-from indy_node.server.restarter import Restarter
-from ledger.compact_merkle_tree import CompactMerkleTree
-from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 
-from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
-    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION, FORCE, POOL_LEDGER_ID, IDR_CACHE_LABEL, ATTRIB_LABEL
-from plenum.common.ledger import Ledger
+from plenum.common.constants import VERSION, \
+    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION, FORCE, POOL_LEDGER_ID
 from plenum.common.txn_util import get_type, get_payload_data, TxnUtilConfig
 from plenum.common.types import f, \
     OPERATION
 from plenum.common.util import get_utc_datetime
-from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
 from state.pruning_state import PruningState
 from storage.helper import initKeyValueStorage
@@ -56,14 +27,11 @@ from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
     IN_PROGRESS, AUTH_RULE, AUTH_RULES
 from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
-from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.client_authn import LedgerBasedAuthNr
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
 from indy_node.server.node_authn import NodeAuthNr
-from indy_node.server.upgrader import Upgrader
-from indy_node.server.pool_config import PoolConfig
 from stp_core.common.log import getlogger
 
 logger = getlogger()
@@ -90,7 +58,8 @@ class Node(PlenumNode):
                  primaryDecider=None,
                  pluginPaths: Iterable[str] = None,
                  storage=None,
-                 config=None):
+                 config=None,
+                 bootstrap_cls=NodeBootstrap):
         config = config or getConfig()
 
         config_helper = config_helper or NodeConfigHelper(name, config)
@@ -122,11 +91,8 @@ class Node(PlenumNode):
                          primaryDecider=primaryDecider,
                          pluginPaths=pluginPaths,
                          storage=storage,
-                         config=config)
-
-        self.upgrader = self.init_upgrader()
-        self.restarter = self.init_restarter()
-        self.poolCfg = self.init_pool_config()
+                         config=config,
+                         bootstrap_cls=bootstrap_cls)
 
         # TODO: ugly line ahead, don't know how to avoid
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
@@ -140,127 +106,6 @@ class Node(PlenumNode):
         self.actionReqHandler.poolCfg = self.poolCfg
         self.actionReqHandler.restarter = self.restarter
 
-    def init_idr_cache_storage(self):
-        idr_cache = self.getIdrCache()
-        self.db_manager.register_new_store(IDR_CACHE_LABEL, idr_cache)
-
-    def init_attribute_storage(self):
-        # ToDo: refactor this on pluggable handlers integration phase
-        if self.attributeStore is None:
-            self.attributeStore = self.init_attribute_store()
-        self.db_manager.register_new_store(ATTRIB_LABEL, self.attributeStore)
-
-    def init_storages(self, storage=None):
-        super().init_storages()
-        self.init_idr_cache_storage()
-        self.init_attribute_storage()
-
-    def register_pool_req_handlers(self):
-        node_handler = NodeHandler(self.db_manager,
-                                   self.bls_bft.bls_crypto_verifier,
-                                   self.write_req_validator)
-        self.write_manager.register_req_handler(node_handler)
-
-    def register_domain_req_handlers(self):
-        # Read handlers
-        get_nym_handler = GetNymHandler(database_manager=self.db_manager)
-        get_attribute_handler = GetAttributeHandler(database_manager=self.db_manager)
-        get_schema_handler = GetSchemaHandler(database_manager=self.db_manager)
-        get_claim_def_handler = GetClaimDefHandler(database_manager=self.db_manager)
-        get_revoc_reg_def_handler = GetRevocRegDefHandler(database_manager=self.db_manager)
-        get_revoc_reg_handler = GetRevocRegHandler(database_manager=self.db_manager)
-        get_revoc_reg_delta_handler = GetRevocRegDeltaHandler(database_manager=self.db_manager,
-                                                              get_revocation_strategy=RevocRegDefHandler.get_revocation_strategy)
-        # Write handlers
-        nym_handler = NymHandler(config=self.config,
-                                 database_manager=self.db_manager,
-                                 write_req_validator=self.write_req_validator)
-        attrib_handler = AttributeHandler(database_manager=self.db_manager,
-                                          write_req_validator=self.write_req_validator)
-        schema_handler = SchemaHandler(database_manager=self.db_manager,
-                                       write_req_validator=self.write_req_validator)
-        claim_def_handler = ClaimDefHandler(database_manager=self.db_manager,
-                                            write_req_validator=self.write_req_validator)
-        revoc_reg_def_handler = RevocRegDefHandler(database_manager=self.db_manager,
-                                                   write_req_validator=self.write_req_validator)
-        revoc_reg_entry_handler = RevocRegEntryHandler(database_manager=self.db_manager,
-                                                       write_req_validator=self.write_req_validator,
-                                                       get_revocation_strategy=RevocRegDefHandler.get_revocation_strategy)
-        # Register write handlers
-        self.write_manager.register_req_handler(nym_handler)
-        self.write_manager.register_req_handler(attrib_handler)
-        self.write_manager.register_req_handler(schema_handler)
-        self.write_manager.register_req_handler(claim_def_handler)
-        self.write_manager.register_req_handler(revoc_reg_def_handler)
-        self.write_manager.register_req_handler(revoc_reg_entry_handler)
-        # Additional handler for idCache
-        self.register_idr_cache_nym_handler()
-        # Register read handlers
-        self.read_manager.register_req_handler(get_nym_handler)
-        self.read_manager.register_req_handler(get_attribute_handler)
-        self.read_manager.register_req_handler(get_schema_handler)
-        self.read_manager.register_req_handler(get_claim_def_handler)
-        self.read_manager.register_req_handler(get_revoc_reg_def_handler)
-        self.read_manager.register_req_handler(get_revoc_reg_handler)
-        self.read_manager.register_req_handler(get_revoc_reg_delta_handler)
-
-    def register_config_req_handlers(self):
-        # Read handlers
-        get_auth_rule_handler = GetAuthRuleHandler(database_manager=self.db_manager,
-                                                   write_req_validator=self.write_req_validator)
-        # Write handlers
-        auth_rule_handler = AuthRuleHandler(database_manager=self.db_manager,
-                                            write_req_validator=self.write_req_validator)
-        auth_rules_handler = AuthRulesHandler(database_manager=self.db_manager,
-                                              write_req_validator=self.write_req_validator)
-        pool_config_handler = PoolConfigHandler(database_manager=self.db_manager,
-                                                write_req_validator=self.write_req_validator,
-                                                pool_config=self.poolCfg)
-        pool_upgrade_handler = PoolUpgradeHandler(database_manager=self.db_manager,
-                                                  upgrader=self.upgrader,
-                                                  write_req_validator=self.write_req_validator,
-                                                  pool_manager=self.poolManager)
-        # Register write handlers
-        self.write_manager.register_req_handler(auth_rule_handler)
-        self.write_manager.register_req_handler(auth_rules_handler)
-        self.write_manager.register_req_handler(pool_config_handler)
-        self.write_manager.register_req_handler(pool_upgrade_handler)
-        # Register read handlers
-        self.read_manager.register_req_handler(get_auth_rule_handler)
-
-    def register_action_req_handlers(self):
-        # Action handlers
-        pool_restart_handler = PoolRestartHandler(database_manager=self.db_manager,
-                                                  write_req_validator=self.write_req_validator,
-                                                  restarter=self.restarter)
-        validator_info_handler = ValidatorInfoHandler(database_manager=self.db_manager,
-                                                      write_req_validator=self.write_req_validator,
-                                                      info_tool=self._info_tool)
-        # Register action handlers
-        self.action_manager.register_action_handler(pool_restart_handler)
-        self.action_manager.register_action_handler(validator_info_handler)
-
-    def register_domain_batch_handlers(self):
-        super().register_domain_batch_handlers()
-        self.register_idr_cache_batch_handler()
-
-    def register_config_batch_handlers(self):
-        config_batch_handler = ConfigBatchHandler(database_manager=self.db_manager,
-                                                  upgrader=self.upgrader,
-                                                  pool_config=self.poolCfg)
-        self.write_manager.register_batch_handler(config_batch_handler)
-
-    def register_idr_cache_nym_handler(self):
-        idr_cache_nym_handler = IdrCacheNymHandler(database_manager=self.db_manager)
-        self.write_manager.register_req_handler(idr_cache_nym_handler)
-
-    def register_idr_cache_batch_handler(self):
-        idr_cache_batch_handler = IdrCacheBatchHandler(database_manager=self.db_manager)
-        self.write_manager.register_batch_handler(idr_cache_batch_handler)
-
-    def init_pool_config(self):
-        return PoolConfig(self.configLedger)
-
     def on_inconsistent_3pc_state(self):
         timeout = self.config.INCONSISTENCY_WATCHER_NETWORK_TIMEOUT
         logger.warning("Suspecting inconsistent 3PC state, going to restart in {} seconds".format(timeout))
@@ -268,41 +113,6 @@ class Node(PlenumNode):
         now = get_utc_datetime()
         when = now + timedelta(seconds=timeout)
         self.restarter.requestRestart(when)
-
-    def init_domain_ledger(self):
-        """
-        This is usually an implementation of Ledger
-        """
-        if self.config.primaryStorage is None:
-            genesis_txn_initiator = GenesisTxnInitiatorFromFile(
-                self.genesis_dir, self.config.domainTransactionsFile)
-            return Ledger(
-                CompactMerkleTree(
-                    hashStore=self.getHashStore('domain')),
-                dataDir=self.dataLocation,
-                fileName=self.config.domainTransactionsFile,
-                ensureDurability=self.config.EnsureLedgerDurability,
-                genesis_txn_initiator=genesis_txn_initiator)
-        else:
-            return initStorage(self.config.primaryStorage,
-                               name=self.name + NODE_PRIMARY_STORAGE_SUFFIX,
-                               dataDir=self.dataLocation,
-                               config=self.config)
-
-    def init_upgrader(self):
-        return Upgrader(self.id,
-                        self.name,
-                        self.dataLocation,
-                        self.config,
-                        self.configLedger,
-                        actionFailedCallback=self.postConfigLedgerCaughtUp,
-                        action_start_callback=self.notify_upgrade_start)
-
-    def init_restarter(self):
-        return Restarter(self.id,
-                         self.name,
-                         self.dataLocation,
-                         self.config)
 
     def init_pool_req_handler(self):
         return PoolRequestHandler(self.poolLedger,
@@ -345,15 +155,6 @@ class Node(PlenumNode):
                                                          db_config=self.config.db_idr_cache_db_config)
                                      )
         return self.idrCache
-
-    def init_attribute_store(self):
-        return AttributeStore(
-            initKeyValueStorage(
-                self.config.attrStorage,
-                self.dataLocation,
-                self.config.attrDbName,
-                db_config=self.config.db_attr_db_config)
-        )
 
     def init_action_req_handler(self):
         return ActionReqHandler(self.getIdrCache(),
@@ -539,14 +340,3 @@ class Node(PlenumNode):
             serialized_value = serializer.serialize(auth_constraint)
             if not state.get(serialized_key, isCommitted=False):
                 state.set(serialized_key, serialized_value)
-
-    def _init_write_request_validator(self):
-        constraint_serializer = ConstraintsSerializer(domain_state_serializer)
-        config_state = self.states[CONFIG_LEDGER_ID]
-        self.write_req_validator = WriteRequestValidator(config=self.config,
-                                                         auth_map=auth_map,
-                                                         cache=self.getIdrCache(),
-                                                         config_state=config_state,
-                                                         state_serializer=constraint_serializer,
-                                                         anyone_can_write_map=anyone_can_write_map,
-                                                         metrics=self.metrics)

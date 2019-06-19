@@ -9,7 +9,7 @@ from plenum.common.exceptions import RequestNackedException
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ROLE, AuthConstraintForbidden
 from indy_common.authorize.auth_map import auth_map
-from indy_common.constants import NYM, TRUST_ANCHOR, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, \
+from indy_common.constants import NYM, ENDORSER, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, \
     OLD_VALUE, SCHEMA, CONSTRAINT, AUTH_RULE
 from indy_node.server.config_req_handler import ConfigReqHandler
 
@@ -69,7 +69,7 @@ def test_get_one_auth_rule_transaction(looper,
         assert auth_map.get(str_key).as_dict == resp_rule[CONSTRAINT]
 
 
-def test_get_auth_rule_transaction_unique_for_anyone_can_write_map_is_rejected(
+def test_get_unknown_auth_rule_transaction_is_rejected(
     looper, sdk_wallet_trustee, sdk_pool_handle
 ):
     key = generate_key(auth_action=ADD_PREFIX, auth_type=NYM,
@@ -122,7 +122,7 @@ def test_get_one_auth_rule_transaction_after_write(looper,
     auth_action = ADD_PREFIX
     auth_type = NYM
     field = ROLE
-    new_value = TRUST_ANCHOR
+    new_value = ENDORSER
     constraint = generate_constraint_list(auth_constraints=[generate_constraint_entity(role=TRUSTEE),
                                                             generate_constraint_entity(role=STEWARD)])
     resp = sdk_send_and_check_auth_rule_request(looper,
@@ -149,7 +149,7 @@ def test_get_all_auth_rule_transactions_after_write(looper,
     auth_action = ADD_PREFIX
     auth_type = NYM
     field = ROLE
-    new_value = TRUST_ANCHOR
+    new_value = ENDORSER
     constraint = generate_constraint_list(auth_constraints=[generate_constraint_entity(role=TRUSTEE),
                                                             generate_constraint_entity(role=STEWARD)])
     resp = sdk_send_and_check_auth_rule_request(looper,
