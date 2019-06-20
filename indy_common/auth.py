@@ -2,9 +2,9 @@ from indy_common.config_util import getConfig
 from plenum.common.constants import TRUSTEE, STEWARD, NODE
 from stp_core.common.log import getlogger
 
-from indy_common.constants import OWNER, POOL_UPGRADE, TGB, TRUST_ANCHOR, NYM, \
+from indy_common.constants import OWNER, POOL_UPGRADE, ENDORSER, NYM, \
     POOL_CONFIG, SCHEMA, CLAIM_DEF, \
-    POOL_RESTART, VALIDATOR_INFO
+    POOL_RESTART, VALIDATOR_INFO, NETWORK_MONITOR
 from indy_common.roles import Roles
 
 logger = getlogger()
@@ -13,30 +13,26 @@ logger = getlogger()
 # TODO: make this class the only point of authorization and checking permissions!
 # There are some duplicates of this logic in *_req_handler classes
 
-def generate_auth_map(valid_roles, anyone_can_write=None):
+def generate_auth_map(valid_roles):
     auth_map = {
         '{}_role__{}'.format(NYM, TRUSTEE):
             {TRUSTEE: []},
-        '{}_role__{}'.format(NYM, TGB):
-            {TRUSTEE: []},
         '{}_role__{}'.format(NYM, STEWARD):
             {TRUSTEE: []},
-        '{}_role__{}'.format(NYM, TRUST_ANCHOR):
+        '{}_role__{}'.format(NYM, ENDORSER):
             {TRUSTEE: [], STEWARD: []},
         '{}_role__'.format(NYM):
-            {TRUSTEE: [], TGB: [], STEWARD: [], TRUST_ANCHOR: []},
+            {TRUSTEE: [], STEWARD: [], ENDORSER: []},
         '{}_role_{}_'.format(NYM, TRUSTEE):
-            {TRUSTEE: []},
-        '{}_role_{}_'.format(NYM, TGB):
             {TRUSTEE: []},
         '{}_role_{}_'.format(NYM, STEWARD):
             {TRUSTEE: []},
-        '{}_role_{}_'.format(NYM, TRUST_ANCHOR):
+        '{}_role_{}_'.format(NYM, ENDORSER):
             {TRUSTEE: []},
         '{}_<any>_<any>_<any>'.format(SCHEMA):
-            {TRUSTEE: [], STEWARD: [], TRUST_ANCHOR: []},
+            {TRUSTEE: [], STEWARD: [], ENDORSER: []},
         '{}_<any>_<any>_<any>'.format(CLAIM_DEF):
-            {TRUSTEE: [OWNER, ], STEWARD: [OWNER, ], TRUST_ANCHOR: [OWNER, ]},
+            {TRUSTEE: [OWNER, ], STEWARD: [OWNER, ], ENDORSER: [OWNER, ]},
         '{}_verkey_<any>_<any>'.format(NYM):
             {r: [OWNER] for r in valid_roles},
         '{}_services__[VALIDATOR]'.format(NODE):
@@ -57,25 +53,21 @@ def generate_auth_map(valid_roles, anyone_can_write=None):
         '{}_blskey_<any>_<any>'.format(NODE):
             {STEWARD: [OWNER, ]},
         '{}_action__start'.format(POOL_UPGRADE):
-            {TRUSTEE: [], TGB: []},
+            {TRUSTEE: []},
         '{}_action_start_cancel'.format(POOL_UPGRADE):
-            {TRUSTEE: [], TGB: []},
+            {TRUSTEE: []},
         '{}_action_<any>_<any>'.format(POOL_RESTART):
             {TRUSTEE: []},
         '{}_action_<any>_<any>'.format(POOL_CONFIG):
-            {TRUSTEE: [], TGB: []},
+            {TRUSTEE: []},
         '{}_<any>_<any>_<any>'.format(VALIDATOR_INFO):
             {TRUSTEE: [], STEWARD: []},
     }
-    if anyone_can_write is True or (anyone_can_write is None and getConfig().ANYONE_CAN_WRITE):
-        auth_map['{}_role__'.format(NYM)][None] = []
-        auth_map['{}_<any>_<any>_<any>'.format(SCHEMA)][None] = []
-        auth_map['{}_<any>_<any>_<any>'.format(CLAIM_DEF)][None] = [OWNER]
     return auth_map
 
 
 class Authoriser:
-    ValidRoles = (TRUSTEE, TGB, STEWARD, TRUST_ANCHOR, None)
+    ValidRoles = (TRUSTEE, STEWARD, ENDORSER, NETWORK_MONITOR, None)
 
     auth_map = None
 

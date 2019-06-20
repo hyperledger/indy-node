@@ -1,21 +1,29 @@
+import json
 from binascii import hexlify
 from copy import deepcopy
+from json import JSONDecodeError
 from typing import List, Callable
 
 import base58
+from indy_common.serialization import attrib_raw_data_serializer
 
+from common.exceptions import LogicError
 from indy_common.auth import Authoriser
+from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
+from indy_common.authorize.auth_request_validator import WriteRequestValidator
+from indy_common.config_util import getConfig
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
     REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TAG, CRED_DEF_ID, \
     GET_REVOC_REG_DEF, ID, GET_REVOC_REG, GET_REVOC_REG_DELTA, REVOC_TYPE, \
     TIMESTAMP, FROM, TO, ISSUED, REVOKED, STATE_PROOF_FROM, ACCUM_FROM, ACCUM_TO, \
-    CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION
+    CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION, REF
 from indy_common.req_utils import get_read_schema_name, get_read_schema_version, \
     get_read_schema_from, get_write_schema_name, get_write_schema_version, get_read_claim_def_from, \
-    get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag
-from indy_common.roles import Roles
+    get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag, \
+    get_write_claim_def_schema_ref, get_write_claim_def_signature_type, get_write_claim_def_tag
 from indy_common.state import domain
+from indy_common.state.domain import make_state_path_for_revoc_def
 from indy_common.types import Request
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
     VERKEY, \
@@ -51,7 +59,7 @@ class DomainReqHandler(PHandler):
     }
 
     def __init__(self, ledger, state, config, requestProcessor,
-                 idrCache, attributeStore, bls_store, ts_store=None):
+                 idrCache, attributeStore, bls_store, write_req_validator, ts_store=None):
         super().__init__(ledger, state, config, requestProcessor, bls_store, ts_store=ts_store)
         self.idrCache = idrCache
         self.attributeStore = attributeStore
@@ -63,6 +71,7 @@ class DomainReqHandler(PHandler):
         self.post_batch_creation_handlers = []
         self.post_batch_commit_handlers = []
         self.post_batch_rejection_handlers = []
+        self.write_req_validator = write_req_validator
 
         self._add_default_handlers()
 
@@ -143,6 +152,7 @@ class DomainReqHandler(PHandler):
         req_ts_to = operation.get(TO, None)
         assert req_ts_to
         req_ts_from = operation.get(FROM, None)
+
         if req_ts_from and req_ts_from > req_ts_to:
             raise InvalidClientRequest(identifier,
                                        reqId,
@@ -160,70 +170,38 @@ class DomainReqHandler(PHandler):
         return len(dataKeys) == 1
 
     def _validateNym(self, req: Request):
-        origin = req.identifier
         op = req.operation
-
-        try:
-            originRole = self.idrCache.getRole(
-                origin, isCommitted=False) or None
-        except BaseException:
-            raise UnknownIdentifier(
-                req.identifier,
-                req.reqId)
 
         nymData = self.idrCache.getNym(op[TARGET_NYM], isCommitted=False)
         if not nymData:
             # If nym does not exist
-            self._validateNewNym(req, op, originRole)
+            self._validateNewNym(req, op)
         else:
-            self._validateExistingNym(req, op, originRole, nymData)
+            self._validateExistingNym(req, op, nymData)
 
-    def _validateNewNym(self, req: Request, op, originRole):
+    def _validateNewNym(self, req: Request, op):
         role = op.get(ROLE)
-        r, msg = Authoriser.authorised(NYM,
-                                       originRole,
-                                       field=ROLE,
-                                       oldVal=None,
-                                       newVal=role)
-        if not r:
-            raise UnauthorizedClientRequest(
-                req.identifier,
-                req.reqId,
-                "{} cannot add {}".format(
-                    Roles.nameFromValue(originRole),
-                    Roles.nameFromValue(role))
-            )
+        self.write_req_validator.validate(req,
+                                          [AuthActionAdd(txn_type=NYM,
+                                                         field=ROLE,
+                                                         value=role)])
 
-    def _validateExistingNym(self, req: Request, op, originRole, nymData):
-        unauthorized = False
-        reason = None
+    def _validateExistingNym(self, req: Request, op, nymData):
         origin = req.identifier
         owner = self.idrCache.getOwnerFor(op[TARGET_NYM], isCommitted=False)
-        isOwner = origin == owner
+        is_owner = origin == owner
 
-        if not originRole == TRUSTEE and not isOwner:
-            reason = '{} is neither Trustee nor owner of {}' \
-                .format(origin, op[TARGET_NYM])
-            unauthorized = True
-
-        if not unauthorized:
-            updateKeys = [ROLE, VERKEY]
-            for key in updateKeys:
-                if key in op:
-                    newVal = op[key]
-                    oldVal = nymData.get(key)
-                    if oldVal != newVal:
-                        r, msg = Authoriser.authorised(NYM, originRole, field=key,
-                                                       oldVal=oldVal, newVal=newVal,
-                                                       isActorOwnerOfSubject=isOwner)
-                        if not r:
-                            unauthorized = True
-                            reason = "{} cannot update {}".\
-                                format(Roles.nameFromValue(originRole), key)
-                            break
-        if unauthorized:
-            raise UnauthorizedClientRequest(
-                req.identifier, req.reqId, reason)
+        updateKeys = [ROLE, VERKEY]
+        for key in updateKeys:
+            if key in op:
+                newVal = op[key]
+                oldVal = nymData.get(key)
+                self.write_req_validator.validate(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=key,
+                                                                  old_value=oldVal,
+                                                                  new_value=newVal,
+                                                                  is_owner=is_owner)])
 
     def _validateAttrib(self, req: Request):
         origin = req.identifier
@@ -236,14 +214,52 @@ class DomainReqHandler(PHandler):
                                        'attribute for it'.
                                        format(TARGET_NYM))
 
-        if op.get(TARGET_NYM) and op[TARGET_NYM] != req.identifier and \
-                not self.idrCache.getOwnerFor(op[TARGET_NYM],
-                                              isCommitted=False) == origin:
-            raise UnauthorizedClientRequest(
-                req.identifier,
-                req.reqId,
-                "Only identity owner/guardian can add attribute "
-                "for that identity")
+        is_owner = self.idrCache.getOwnerFor(op[TARGET_NYM],
+                                             isCommitted=False) == origin
+        field = None
+        value = None
+        for key in (RAW, ENC, HASH):
+            if key in op:
+                field = key
+                value = op[key]
+                break
+        if field is None or value is None:
+            raise LogicError('Attribute data cannot be empty')
+
+        get_key = None
+        if field == RAW:
+            try:
+                get_key = attrib_raw_data_serializer.deserialize(value)
+                if len(get_key) == 0:
+                    raise InvalidClientRequest(origin, req.reqId,
+                                               '"row" attribute field must contain non-empty dict'.
+                                               format(TARGET_NYM))
+                get_key = next(iter(get_key.keys()))
+            except JSONDecodeError:
+                raise InvalidClientRequest(origin, req.reqId,
+                                           'Attribute field must be dict while adding it as a row field'.
+                                           format(TARGET_NYM))
+        else:
+            get_key = value
+
+        if get_key is None:
+            raise LogicError('Attribute data must be parsed')
+
+        old_value, seq_no, _, _ = self.getAttr(op[TARGET_NYM], get_key, field, isCommitted=False)
+
+        if seq_no is not None:
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=ATTRIB,
+                                                              field=field,
+                                                              old_value=old_value,
+                                                              new_value=value,
+                                                              is_owner=is_owner)])
+        else:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=ATTRIB,
+                                                             field=field,
+                                                             value=value,
+                                                             is_owner=is_owner)])
 
     def _validate_schema(self, req: Request):
         # we can not add a Schema with already existent NAME and VERSION
@@ -258,49 +274,55 @@ class DomainReqHandler(PHandler):
             with_proof=False
         )
         if schema:
-            raise InvalidClientRequest(identifier, req.reqId,
-                                       '{} can have one and only one SCHEMA with '
-                                       'name {} and version {}'
-                                       .format(identifier, schema_name, schema_version))
-        try:
-            origin_role = self.idrCache.getRole(
-                req.identifier, isCommitted=False) or None
-        except BaseException:
-            raise UnknownIdentifier(
-                req.identifier,
-                req.reqId)
-        r, msg = Authoriser.authorised(typ=SCHEMA,
-                                       actorRole=origin_role)
-        if not r:
-            raise UnauthorizedClientRequest(
-                req.identifier,
-                req.reqId,
-                "{} cannot add schema".format(
-                    Roles.nameFromValue(origin_role))
-            )
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=SCHEMA,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*')])
+        else:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=SCHEMA,
+                                                             field='*',
+                                                             value='*')])
 
     def _validate_claim_def(self, req: Request):
         # we can not add a Claim Def with existent ISSUER_DID
         # sine a Claim Def needs to be identified by seqNo
+        ref = req.operation[REF]
         try:
-            origin_role = self.idrCache.getRole(
-                req.identifier, isCommitted=False) or None
-        except BaseException:
-            raise UnknownIdentifier(
-                req.identifier,
-                req.reqId)
-        # only owner can update claim_def,
-        # because his identifier is the primary key of claim_def
-        r, msg = Authoriser.authorised(typ=CLAIM_DEF,
-                                       actorRole=origin_role,
-                                       isActorOwnerOfSubject=True)
-        if not r:
-            raise UnauthorizedClientRequest(
-                req.identifier,
-                req.reqId,
-                "{} cannot add claim def".format(
-                    Roles.nameFromValue(origin_role))
-            )
+            txn = self.ledger.get_by_seq_no_uncommitted(ref)
+        except KeyError:
+            raise InvalidClientRequest(req.identifier,
+                                       req.reqId,
+                                       "Mentioned seqNo ({}) doesn't exist.".format(ref))
+        if txn['txn']['type'] != SCHEMA:
+            raise InvalidClientRequest(req.identifier,
+                                       req.reqId,
+                                       "Mentioned seqNo ({}) isn't seqNo of the schema.".format(ref))
+
+        frm = req.identifier
+        signature_type = get_write_claim_def_signature_type(req)
+        schema_ref = get_write_claim_def_schema_ref(req)
+        tag = get_write_claim_def_tag(req)
+        keys, last_seq_no, _, _ = self.getClaimDef(
+            author=frm,
+            schemaSeqNo=schema_ref,
+            signatureType=signature_type,
+            tag=tag,
+            isCommitted=False
+        )
+
+        if last_seq_no:
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=CLAIM_DEF,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*')])
+        else:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=CLAIM_DEF,
+                                                             field='*',
+                                                             value='*')])
 
     def _validate_revoc_reg_def(self, req: Request):
         operation = req.operation
@@ -311,13 +333,30 @@ class DomainReqHandler(PHandler):
         assert revoc_def_tag
         assert revoc_def_type
         tags = cred_def_id.split(":")
+
+        revoc_def_id = make_state_path_for_revoc_def(req.identifier, cred_def_id, revoc_def_type, revoc_def_tag)
+        revoc_def, _, _, _ = self.lookup(revoc_def_id, isCommitted=False)
+
+        if revoc_def is None:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=REVOC_REG_DEF,
+                                                             field='*',
+                                                             value='*')])
+        else:
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=REVOC_REG_DEF,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*')])
+
+        cred_def, _, _, _ = self.lookup(cred_def_id, isCommitted=False, with_proof=False)
+
         if len(tags) != 4 and len(tags) != 5:
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
                                        "Format of {} field is not acceptable. "
                                        "Expected: 'did:marker:signature_type:schema_ref' or "
                                        "'did:marker:signature_type:schema_ref:tag'".format(CRED_DEF_ID))
-        cred_def, _, _, _ = self.lookup(cred_def_id, isCommitted=False, with_proof=False)
         if cred_def is None:
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
@@ -335,11 +374,31 @@ class DomainReqHandler(PHandler):
         return current_entry, revoc_def
 
     def _validate_revoc_reg_entry(self, req: Request):
+        author_did = req.identifier
+        rev_reg_tags = req.operation[REVOC_REG_DEF_ID]
         current_entry, revoc_def = self._get_current_revoc_entry_and_revoc_def(
-            author_did=req.identifier,
+            author_did=author_did,
             revoc_reg_def_id=req.operation[REVOC_REG_DEF_ID],
             req_id=req.reqId
         )
+
+        rev_ref_def_author_did = rev_reg_tags.split(":", 1)[0]
+        is_owner = rev_ref_def_author_did == author_did
+
+        if current_entry:
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=REVOC_REG_ENTRY,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*',
+                                                              is_owner=is_owner)])
+        else:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=REVOC_REG_ENTRY,
+                                                             field='*',
+                                                             value='*',
+                                                             is_owner=is_owner)])
+
         validator_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
         validator = validator_cls(self.state)
         validator.validate(current_entry, req)
@@ -469,11 +528,11 @@ class DomainReqHandler(PHandler):
             update_time = None
 
         # TODO: add update time here!
-        result = self.make_result(request=request,
-                                  data=data,
-                                  last_seq_no=seq_no,
-                                  update_time=update_time,
-                                  proof=proof)
+        result = self.make_domain_result(request=request,
+                                         data=data,
+                                         last_seq_no=seq_no,
+                                         update_time=update_time,
+                                         proof=proof)
 
         result.update(request.operation)
         return result
@@ -496,11 +555,11 @@ class DomainReqHandler(PHandler):
             SCHEMA_NAME: schema_name,
             SCHEMA_VERSION: schema_version
         })
-        return self.make_result(request=request,
-                                data=schema,
-                                last_seq_no=lastSeqNo,
-                                update_time=lastUpdateTime,
-                                proof=proof)
+        return self.make_domain_result(request=request,
+                                       data=schema,
+                                       last_seq_no=lastSeqNo,
+                                       update_time=lastUpdateTime,
+                                       proof=proof)
 
     def handleGetClaimDefReq(self, request: Request):
         frm = get_read_claim_def_from(request)
@@ -513,11 +572,11 @@ class DomainReqHandler(PHandler):
             signatureType=signature_type,
             tag=tag
         )
-        result = self.make_result(request=request,
-                                  data=keys,
-                                  last_seq_no=lastSeqNo,
-                                  update_time=lastUpdateTime,
-                                  proof=proof)
+        result = self.make_domain_result(request=request,
+                                         data=keys,
+                                         last_seq_no=lastSeqNo,
+                                         update_time=lastUpdateTime,
+                                         proof=proof)
         result[CLAIM_DEF_SIGNATURE_TYPE] = signature_type
         return result
 
@@ -528,11 +587,11 @@ class DomainReqHandler(PHandler):
             keys, last_seq_no, last_update_time, proof = self.lookup(state_path, isCommitted=True, with_proof=True)
         except KeyError:
             keys, last_seq_no, last_update_time, proof = None, None, None, None
-        result = self.make_result(request=request,
-                                  data=keys,
-                                  last_seq_no=last_seq_no,
-                                  update_time=last_update_time,
-                                  proof=proof)
+        result = self.make_domain_result(request=request,
+                                         data=keys,
+                                         last_seq_no=last_seq_no,
+                                         update_time=last_update_time,
+                                         proof=proof)
         return result
 
     def handleGetRevocRegReq(self, request: Request):
@@ -556,11 +615,11 @@ class DomainReqHandler(PHandler):
                                          update_time=last_update_time,
                                          proof=proof)
 
-        return self.make_result(request=request,
-                                data=entry_state.value,
-                                last_seq_no=entry_state.seq_no,
-                                update_time=entry_state.update_time,
-                                proof=entry_state.proof)
+        return self.make_domain_result(request=request,
+                                       data=entry_state.value,
+                                       last_seq_no=entry_state.seq_no,
+                                       update_time=entry_state.update_time,
+                                       proof=entry_state.proof)
 
     def _get_reg_entry_by_timestamp(self, timestamp, path_to_reg_entry):
         reg_entry = None
@@ -663,7 +722,7 @@ class DomainReqHandler(PHandler):
 
                 }
                 """If we got "from" timestamp, then add state proof into "data" section of reply"""
-                if req_ts_from and accum_from.value:
+                if req_ts_from:
                     reply[STATE_PROOF_FROM] = accum_from.proof
                     reply[VALUE][ACCUM_FROM] = accum_from.value
 
@@ -671,16 +730,24 @@ class DomainReqHandler(PHandler):
             seq_no = accum_to.seq_no if entry_from.value else entry_to.seq_no
             update_time = accum_to.update_time if entry_from.value else entry_to.update_time
             proof = accum_to.proof if entry_from.value else entry_to.proof
+            if reply is None and req_ts_from is not None:
+                # TODO: change this according to INDY-2115
+                reply = {}
+                accum_from = self._get_reg_entry_accum_by_timestamp(req_ts_from, path_to_reg_entry_accum)
+                reply[STATE_PROOF_FROM] = accum_from.proof
+                reply[VALUE] = {}
+                reply[VALUE][ACCUM_TO] = None
+                reply[VALUE][ACCUM_FROM] = accum_from.value
         else:
             seq_no = None
             update_time = None
             proof = None
 
-        return self.make_result(request=request,
-                                data=reply,
-                                last_seq_no=seq_no,
-                                update_time=update_time,
-                                proof=proof)
+        return self.make_domain_result(request=request,
+                                       data=reply,
+                                       last_seq_no=seq_no,
+                                       update_time=update_time,
+                                       proof=proof)
 
     def handleGetAttrsReq(self, request: Request):
         if not self._validate_attrib_keys(request.operation):
@@ -705,11 +772,11 @@ class DomainReqHandler(PHandler):
                 attr = attr_key
             else:
                 attr = value
-        return self.make_result(request=request,
-                                data=attr,
-                                last_seq_no=lastSeqNo,
-                                update_time=lastUpdateTime,
-                                proof=proof)
+        return self.make_domain_result(request=request,
+                                       data=attr,
+                                       last_seq_no=lastSeqNo,
+                                       update_time=lastUpdateTime,
+                                       proof=proof)
 
     def lookup(self, path, isCommitted=True, with_proof=False) -> (str, int):
         """
@@ -782,9 +849,9 @@ class DomainReqHandler(PHandler):
         writer = writer_cls(self.state)
         writer.write(current_entry, txn)
 
-    def onBatchCreated(self, stateRoot):
+    def onBatchCreated(self, stateRoot, txnTime):
         for handler in self.post_batch_creation_handlers:
-            handler(stateRoot)
+            handler(stateRoot, txnTime)
 
     def onBatchRejected(self):
         for handler in self.post_batch_rejection_handlers:

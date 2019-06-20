@@ -1,46 +1,43 @@
-from datetime import datetime, timedelta
-import dateutil.tz
+from datetime import timedelta
 
 from typing import Iterable, List
 
+from common.exceptions import LogicError
+from common.serializers.serialization import ledger_txn_serializer, domain_state_serializer
+from indy_common.authorize.auth_request_validator import WriteRequestValidator
+from indy_common.authorize.auth_constraints import AbstractConstraintSerializer
+from indy_node.server.node_bootstrap import NodeBootstrap
+from indy_node.server.pool_req_handler import PoolRequestHandler
+
 from indy_node.server.action_req_handler import ActionReqHandler
-from indy_node.server.restarter import Restarter
-from ledger.compact_merkle_tree import CompactMerkleTree
-from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 
-from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
-    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION
-from plenum.common.ledger import Ledger
+from plenum.common.constants import VERSION, \
+    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION, FORCE, POOL_LEDGER_ID
 from plenum.common.txn_util import get_type, get_payload_data, TxnUtilConfig
 from plenum.common.types import f, \
     OPERATION
 from plenum.common.util import get_utc_datetime
-from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
+from state.pruning_state import PruningState
 from storage.helper import initKeyValueStorage
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
-    IN_PROGRESS
+    IN_PROGRESS, AUTH_RULE, AUTH_RULES
 from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
-from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.client_authn import LedgerBasedAuthNr
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
 from indy_node.server.node_authn import NodeAuthNr
-from indy_node.server.pool_manager import HasPoolManager
-from indy_node.server.upgrader import Upgrader
-from indy_node.server.pool_config import PoolConfig
 from stp_core.common.log import getlogger
-
 
 logger = getlogger()
 
 
-class Node(PlenumNode, HasPoolManager):
+class Node(PlenumNode):
     keygenScript = "init_indy_keys"
     client_request_class = SafeRequest
     TxnUtilConfig.client_request_class = Request
@@ -59,9 +56,10 @@ class Node(PlenumNode, HasPoolManager):
                  plugins_dir: str = None,
                  node_info_dir: str = None,
                  primaryDecider=None,
-                 pluginPaths: Iterable[str]=None,
+                 pluginPaths: Iterable[str] = None,
                  storage=None,
-                 config=None):
+                 config=None,
+                 bootstrap_cls=NodeBootstrap):
         config = config or getConfig()
 
         config_helper = config_helper or NodeConfigHelper(name, config)
@@ -93,7 +91,8 @@ class Node(PlenumNode, HasPoolManager):
                          primaryDecider=primaryDecider,
                          pluginPaths=pluginPaths,
                          storage=storage,
-                         config=config)
+                         config=config,
+                         bootstrap_cls=bootstrap_cls)
 
         # TODO: ugly line ahead, don't know how to avoid
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
@@ -101,11 +100,11 @@ class Node(PlenumNode, HasPoolManager):
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
 
-    def getPoolConfig(self):
-        return PoolConfig(self.configLedger)
-
-    def initPoolManager(self, ha, cliname, cliha):
-        HasPoolManager.__init__(self, ha, cliname, cliha)
+        # Will be refactored soon
+        self.get_req_handler(CONFIG_LEDGER_ID).upgrader = self.upgrader
+        self.get_req_handler(CONFIG_LEDGER_ID).poolCfg = self.poolCfg
+        self.actionReqHandler.poolCfg = self.poolCfg
+        self.actionReqHandler.restarter = self.restarter
 
     def on_inconsistent_3pc_state(self):
         timeout = self.config.INCONSISTENCY_WATCHER_NETWORK_TIMEOUT
@@ -115,50 +114,35 @@ class Node(PlenumNode, HasPoolManager):
         when = now + timedelta(seconds=timeout)
         self.restarter.requestRestart(when)
 
-    def getPrimaryStorage(self):
-        """
-        This is usually an implementation of Ledger
-        """
-        if self.config.primaryStorage is None:
-            genesis_txn_initiator = GenesisTxnInitiatorFromFile(
-                self.genesis_dir, self.config.domainTransactionsFile)
-            return Ledger(
-                CompactMerkleTree(
-                    hashStore=self.getHashStore('domain')),
-                dataDir=self.dataLocation,
-                fileName=self.config.domainTransactionsFile,
-                ensureDurability=self.config.EnsureLedgerDurability,
-                genesis_txn_initiator=genesis_txn_initiator)
-        else:
-            return initStorage(self.config.primaryStorage,
-                               name=self.name + NODE_PRIMARY_STORAGE_SUFFIX,
-                               dataDir=self.dataLocation,
-                               config=self.config)
+    def init_pool_req_handler(self):
+        return PoolRequestHandler(self.poolLedger,
+                                  self.states[POOL_LEDGER_ID],
+                                  self.states,
+                                  self.getIdrCache(),
+                                  self.write_req_validator)
 
-    def getUpgrader(self):
-        return Upgrader(self.id,
-                        self.name,
-                        self.dataLocation,
-                        self.config,
-                        self.configLedger,
-                        actionFailedCallback=self.postConfigLedgerCaughtUp,
-                        action_start_callback=self.notify_upgrade_start)
-
-    def getRestarter(self):
-        return Restarter(self.id,
-                         self.name,
-                         self.dataLocation,
-                         self.config)
-
-    def getDomainReqHandler(self):
+    def init_domain_req_handler(self):
         if self.attributeStore is None:
-            self.attributeStore = self.loadAttributeStore()
+            self.attributeStore = self.init_attribute_store()
         return DomainReqHandler(self.domainLedger,
                                 self.states[DOMAIN_LEDGER_ID],
                                 self.config,
                                 self.reqProcessors,
                                 self.getIdrCache(),
                                 self.attributeStore,
+                                self.bls_bft.bls_store,
+                                self.write_req_validator,
+                                self.getStateTsDbStorage())
+
+    def init_config_req_handler(self):
+        return ConfigReqHandler(self.configLedger,
+                                self.states[CONFIG_LEDGER_ID],
+                                self.states[DOMAIN_LEDGER_ID],
+                                self.getIdrCache(),
+                                self.upgrader,
+                                self.poolManager,
+                                self.poolCfg,
+                                self.write_req_validator,
                                 self.bls_bft.bls_store,
                                 self.getStateTsDbStorage())
 
@@ -172,35 +156,13 @@ class Node(PlenumNode, HasPoolManager):
                                      )
         return self.idrCache
 
-    def loadAttributeStore(self):
-        return AttributeStore(
-            initKeyValueStorage(
-                self.config.attrStorage,
-                self.dataLocation,
-                self.config.attrDbName,
-                db_config=self.config.db_attr_db_config)
-        )
-
-    def setup_config_req_handler(self):
-        self.upgrader = self.getUpgrader()
-        self.restarter = self.getRestarter()
-        self.poolCfg = self.getPoolConfig()
-        super().setup_config_req_handler()
-
-    def getConfigReqHandler(self):
-        return ConfigReqHandler(self.configLedger,
-                                self.states[CONFIG_LEDGER_ID],
-                                self.getIdrCache(),
-                                self.upgrader,
-                                self.poolManager,
-                                self.poolCfg)
-
-    def get_action_req_handler(self):
+    def init_action_req_handler(self):
         return ActionReqHandler(self.getIdrCache(),
                                 self.restarter,
                                 self.poolManager,
                                 self.poolCfg,
-                                self._info_tool)
+                                self._info_tool,
+                                self.write_req_validator)
 
     def post_txn_from_catchup_added_to_domain_ledger(self, txn):
         pass
@@ -218,10 +180,22 @@ class Node(PlenumNode, HasPoolManager):
         super().postConfigLedgerCaughtUp(**kwargs)
         self.acknowledge_upgrade()
 
+    def preLedgerCatchUp(self, ledger_id):
+        super().preLedgerCatchUp(ledger_id)
+
+        if len(self.idrCache.un_committed) > 0:
+            raise LogicError('{} idr cache has uncommitted txns before catching up ledger {}'.format(self, ledger_id))
+
+    def postLedgerCatchUp(self, ledger_id):
+        if len(self.idrCache.un_committed) > 0:
+            raise LogicError('{} idr cache has uncommitted txns after catching up ledger {}'.format(self, ledger_id))
+
+        super().postLedgerCatchUp(ledger_id)
+
     def acknowledge_upgrade(self):
         if not self.upgrader.should_notify_about_upgrade_result():
             return
-        lastUpgradeVersion = self.upgrader.lastActionEventInfo[2]
+        lastUpgradeVersion = self.upgrader.lastActionEventInfo.data.version
         action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
         logger.info('{} found the first run after upgrade, sending NODE_UPGRADE {} to version {}'.format(
             self, action, lastUpgradeVersion))
@@ -229,7 +203,7 @@ class Node(PlenumNode, HasPoolManager):
             TXN_TYPE: NODE_UPGRADE,
             DATA: {
                 ACTION: action,
-                VERSION: lastUpgradeVersion
+                VERSION: lastUpgradeVersion.full
             }
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
@@ -242,7 +216,7 @@ class Node(PlenumNode, HasPoolManager):
         self.upgrader.notified_about_action_result()
 
     def notify_upgrade_start(self):
-        scheduled_upgrade_version = self.upgrader.scheduledAction[0]
+        scheduled_upgrade_version = self.upgrader.scheduledAction.version
         action = IN_PROGRESS
         logger.info('{} is about to be upgraded, '
                     'sending NODE_UPGRADE {} to version {}'.format(self, action, scheduled_upgrade_version))
@@ -250,7 +224,7 @@ class Node(PlenumNode, HasPoolManager):
             TXN_TYPE: NODE_UPGRADE,
             DATA: {
                 ACTION: action,
-                VERSION: scheduled_upgrade_version
+                VERSION: scheduled_upgrade_version.full
             }
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
@@ -310,18 +284,19 @@ class Node(PlenumNode, HasPoolManager):
         return c
 
     def can_write_txn(self, txn_type):
-        return self.poolCfg.isWritable() or txn_type in [POOL_UPGRADE, POOL_CONFIG]
+        return self.poolCfg.isWritable() or txn_type in [POOL_UPGRADE,
+                                                         POOL_CONFIG,
+                                                         AUTH_RULE,
+                                                         AUTH_RULES]
 
-    def executeDomainTxns(self, ppTime, reqs: List[Request], stateRoot,
-                          txnRoot) -> List:
+    def execute_domain_txns(self, three_pc_batch) -> List:
         """
         Execute the REQUEST sent to this Node
 
         :param ppTime: the time at which PRE-PREPARE was sent
         :param req: the client REQUEST
         """
-        return self.default_executer(DOMAIN_LEDGER_ID, ppTime, reqs,
-                                     stateRoot, txnRoot)
+        return self.default_executer(three_pc_batch)
 
     def update_txn_with_extra_data(self, txn):
         """
@@ -336,8 +311,7 @@ class Node(PlenumNode, HasPoolManager):
             txn_data = get_payload_data(txn)
             # The key needs to be present and not None
             key = RAW if (RAW in txn_data and txn_data[RAW] is not None) else \
-                ENC if (ENC in txn_data and txn_data[ENC] is not None) else \
-                None
+                ENC if (ENC in txn_data and txn_data[ENC] is not None) else None
             if key:
                 txn_data[key] = self.attributeStore.get(txn_data[key])
         return txn
@@ -348,3 +322,21 @@ class Node(PlenumNode, HasPoolManager):
             self.idrCache.close()
         if self.attributeStore:
             self.attributeStore.close()
+
+    def is_request_need_quorum(self, msg_dict: dict):
+        txn_type = msg_dict.get(OPERATION).get(TXN_TYPE, None) \
+            if OPERATION in msg_dict \
+            else None
+        is_force = OPERATION in msg_dict and msg_dict.get(OPERATION).get(FORCE, False)
+        is_force_upgrade = str(is_force) == 'True' and txn_type == POOL_UPGRADE
+        return txn_type and not is_force_upgrade and super().is_request_need_quorum(msg_dict)
+
+    @staticmethod
+    def add_auth_rules_to_config_state(state: PruningState,
+                                       auth_map: dict,
+                                       serializer: AbstractConstraintSerializer):
+        for rule_id, auth_constraint in auth_map.items():
+            serialized_key = rule_id.encode()
+            serialized_value = serializer.serialize(auth_constraint)
+            if not state.get(serialized_key, isCommitted=False):
+                state.set(serialized_key, serialized_value)

@@ -47,13 +47,13 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
         tdirWithDomainTxns,
         nodeSet,
         sdk_pool_handle,
-        sdk_wallet_trust_anchor,
+        sdk_wallet_endorser,
         allPluginsPath,
         tconf,
         disable_transport_batching):
     """
     Verifies that a batch rejected due to catch-up start can be successfully
-    re-applied and ordered later before ledgers synchronization without any
+    ordered later before ledgers synchronization without any
     warnings.
 
     In the test we perform stashing / unstashing messages and patching /
@@ -75,8 +75,7 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
     since it is not in participating mode.
     11. The slow node receives LEDGER_STATUS messages from the other nodes.
     12. Prior to ledgers synchronization the slow node processes the stashed
-    ORDER messages. When it is processing the ORDER message from the master
-    replica, it re-applies the batch and orders it.
+    Commits messages and orders batch.
     13. The slow node synchronizes its ledgers and completes the catch-up.
     """
 
@@ -86,8 +85,6 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
     slow_node.nodeIbStasher.delay(cDelay(300))
     slow_node.start_catchup = MethodType(patched_start_catchup, slow_node)
 
-    send_random_requests(looper, sdk_pool_handle, sdk_wallet_trust_anchor, 1)
-
     no_more_catchups_needed_call_times_before = \
         slow_node.spylog.count(Node.no_more_catchups_needed.__name__)
     on_batch_rejected_call_times_before = \
@@ -96,6 +93,8 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
         slow_node.spylog.count(Node.onBatchCreated.__name__)
     process_ordered_call_times_before = \
         slow_node.spylog.count(Node.processOrdered.__name__)
+
+    send_random_requests(looper, sdk_pool_handle, sdk_wallet_endorser, 1)
 
     slow_node.start_catchup()
 
@@ -119,15 +118,15 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
            - on_batch_created_call_times_before == 1
 
     assert process_ordered_call_times_after \
-           - process_ordered_call_times_before == 2  # one per replica
+           - process_ordered_call_times_before == 0  # one per replica
     last_2_process_ordered_results = \
         [call.result for call
          in slow_node.spylog.getAll(Node.processOrdered.__name__)[-2:]]
     assert True in last_2_process_ordered_results  # True for master replica
 
 
-def patched_start_catchup(self):
-    Node.start_catchup(self)
+def patched_start_catchup(self, *args, **kwargs):
+    Node.start_catchup(self, *args, **kwargs)
 
     self.nodeIbStasher.reset_delays_and_process_delayeds()
     self.nodeIbStasher.delay(lsDelay(300))
@@ -147,7 +146,7 @@ def patched_try_processing_ordered(self, msg):
             MethodType(Node.try_processing_ordered, self)
 
 
-def send_random_requests(looper, sdk_pool_handle, sdk_wallet_trust_anchor, count: int):
+def send_random_requests(looper, sdk_pool_handle, sdk_wallet_endorser, count: int):
     logger.info('{} random requests will be sent'.format(count))
     for i in range(count):
-        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trust_anchor)
+        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_endorser)

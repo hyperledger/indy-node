@@ -5,7 +5,7 @@ USER=ec2-user
 #
 # The following part of this script was derived from:
 # "Setup Indy SDK build environment for RHEL based distro (Amazon Linux 2017.03)"
-# https://github.com/hyperledger/indy-sdk/blob/master/doc/rhel-build.md
+# https://github.com/hyperledger/indy-sdk/blob/master/docs/build-guides/rhel-build.md
 
 echo "Installing Rust and rustup non-interactively as ${USER}..."
 echo "Note that rustup typically runs interactively and allows you to "

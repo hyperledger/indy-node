@@ -1,0 +1,18 @@
+---
+perf_scripts_build_dir: "{{ namespace_dir | d(inventory_dir, true) | d('.build', true) }}"
+
+perf_scripts_indy_sdk_channel: master
+perf_scripts_libindy_ver: null
+
+perf_scripts_venv_name: perf_venv  # created in user's home
+perf_scripts_ver: master  # branch / tag / sha1
+perf_scripts_python3_indy_ver: null
+
+# configuration parameters
+perf_scripts_configuration: true
+
+perf_scripts_pool_dir_name: "{{ '.pool' if perf_scripts_build_dir == inventory_dir else 'pool' }}"
+perf_scripts_pool_genesis_txns_name: pool_transactions_genesis
+perf_scripts_pool_genesis_txns_path_local: "{{ [perf_scripts_build_dir, perf_scripts_pool_dir_name, perf_scripts_pool_genesis_txns_name]|join('/') }}"
+# TODO as an option we may use ansible_env.HOME but it needs facts gathering
+perf_scripts_pool_genesis_txns_path_remote: '$HOME/{{ perf_scripts_pool_genesis_txns_name }}'

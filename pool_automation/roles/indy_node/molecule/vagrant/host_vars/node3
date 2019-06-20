@@ -1,0 +1,4 @@
+---
+tag_id: 3
+ansible_host: 192.168.33.13
+ansible_port: 22

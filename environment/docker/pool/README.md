@@ -1,7 +1,7 @@
 # Prerequisites
 * Docker
 * Current user added to 'docker' group (not needed for all environments)
-* macOS users will need to install an up to date version of sed using Homebrew `brew install gnu-sed --with-default-names`
+* macOS users will need to install an up to date version of sed using Homebrew `brew install gnu-sed`
 
 # Start pool
 ```
@@ -14,21 +14,6 @@ Defaults:
 * Number of clients is 10
 * Ports are generated consequently starting from 9701
 
-# Start client
-```
-./client_for_pool_start.sh [file with pool data] [client's IP address] [number of clients]
-```
-Defaults:
-* File is pool_data
-* IP address is the next in sequence of IP addresses read from pool data (e.g. 10.0.0.6)
-* Number of clients is 10
-
-Container is retained after indy shell is closed. Executing ```client_stop.sh``` removes the container.
-
-# Start agents (optional)
-
-If you are planning to run the Indy Tutorial (about Alice, her transcripts, job, and bank), start the organization Indy Agents using the instructions in [StartIndyAgents.md](StartIndyAgents.md) in this folder.
-
 # Stop pool
 ```
 ./pool_stop.sh [file with pool data] [pool network name]
@@ -36,12 +21,6 @@ If you are planning to run the Indy Tutorial (about Alice, her transcripts, job,
 Defaults:
 * File is pool_data
 * Network name is pool-network
-
-# Stop client
-```
-./client_stop.sh
-```
-Stopping the indy client removes the client container.
 
 # Running on Windows using git bash
 

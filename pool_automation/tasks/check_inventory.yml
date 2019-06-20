@@ -1,0 +1,12 @@
+---
+- name: Check that 'inventory_dir' is in 'ansible_inventory_sources'
+  fail:
+    msg: >-
+      Unexpected inventory directory {{ inventory_dir }}:
+      not one of specified {{ ansible_inventory_sources }}.
+      Seems as wrongly autodetected.
+  when:
+    - not (skip_inventory_check|d(false)|bool)
+    - inventory_dir|d(false)
+    - (inventory_dir|realpath) not in ansible_inventory_sources
+...

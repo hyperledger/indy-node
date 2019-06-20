@@ -1,8 +1,9 @@
 #!groovy
 
-@Library('SovrinHelpers') _
+@Library('SovrinHelpers@v2.1.1') _
 
-def name = 'indy-node'
+String name = 'indy-node'
+String pkgName = name
 
 def nodeTestUbuntu = {
     try {
@@ -19,29 +20,6 @@ def nodeTestUbuntu = {
             echo 'Ubuntu Test: Test'
             testHelpers.testRunner([resFile: "test-result-node.${NODE_NAME}.txt", testDir: 'indy_node'])
             //testHelpers.testJUnit(resFile: "test-result-node.${NODE_NAME}.xml")
-        }
-    }
-    finally {
-        echo 'Ubuntu Test: Cleanup'
-        step([$class: 'WsCleanup'])
-    }
-}
-
-def clientTestUbuntu = {
-    try {
-        echo 'Ubuntu Test: Checkout csm'
-        checkout scm
-
-        echo 'Ubuntu Test: Build docker image'
-        def testEnv = dockerHelpers.build(name)
-
-        testEnv.inside('--network host') {
-            echo 'Ubuntu Test: Install dependencies'
-            testHelpers.install()
-
-            echo 'Ubuntu Test: Test'
-            testHelpers.testRunner([resFile: "test-result-client.${NODE_NAME}.txt", testDir: 'indy_client'])
-            //testHelpers.testJUnit(resFile: "test-result-client.${NODE_NAME}.xml")
         }
     }
     finally {
@@ -72,23 +50,232 @@ def commonTestUbuntu = {
     }
 }
 
-def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
+def buildDebUbuntu = { releaseVersion, sourcePath, packageVersion=null, missedPkgs=false ->
     def volumeName = "$name-deb-u1604"
+    packageVersion = packageVersion ?: releaseVersion
+
     if (env.BRANCH_NAME != '' && env.BRANCH_NAME != 'master') {
         volumeName = "${volumeName}.${BRANCH_NAME}"
     }
     if (sh(script: "docker volume ls -q | grep -q '^$volumeName\$'", returnStatus: true) == 0) {
         sh "docker volume rm $volumeName"
     }
+
+    // TODO build only missed ones
     dir('build-scripts/ubuntu-1604') {
-        sh "./build-$name-docker.sh \"$sourcePath\" $releaseVersion $volumeName"
-        sh "./build-3rd-parties-docker.sh $volumeName"
+        sh "./build-$name-docker.sh \"$sourcePath\" $releaseVersion $volumeName $packageVersion"
+        if (missedPkgs == [pkgName]) {
+            echo "Skip 3rd parties building"
+        } else {
+            sh "./build-3rd-parties-docker.sh $volumeName"
+        }
     }
     return "$volumeName"
 }
 
-options = new TestAndPublishOptions()
+def systemTests = { component, releaseVersion ->
+
+    String prefix = "System Tests ($component)"
+    String systemTestsNetwork = 'indy-test-automation-network'
+    String systemTestsDir = './system_tests'
+
+    List testsSchema = [
+        ['test_ledger.py'],
+        ['test_vc.py'],
+        ['test_consensus.py', 'TestTAASuite.py'],
+        ['test_upgrade.py', 'test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py']
+    ]
+
+    Map indyPlenumVersions = [:]
+    Map indySDKVersions = [:]
+    Map indyCryptoVersions = [:]
+
+    def dockerClean = {
+        sh "./system/docker/clean.sh $systemTestsNetwork"
+
+        try {
+            sh "docker ps -q --filter network=$systemTestsNetwork | xargs -r docker rm -f"
+        } catch (Exception exc) {
+            echo "$prefix: failed to remove docker containers in $systemTestsNetwork network: $exc"
+            throw exc
+        }
+
+        try {
+            sh "docker network ls -q --filter name=$systemTestsNetwork | xargs -r docker network rm"
+        } catch (Exception exc) {
+            echo "$prefix: failed to remove docker $systemTestsNetwork network: $exc"
+            throw exc
+        }
+
+        sh "docker container prune -f"
+        sh "docker network prune -f"
+    }
+
+    def runTest = { testGroup ->
+
+        stage("[${testGroup}] Checkout system tests") {
+            testHelpers.getSystemTests(tag: 'v0.7.0', targetDir: systemTestsDir)
+        }
+
+        dir(systemTestsDir) {
+            stage("[${testGroup}] Patch system tests python requirements") {
+                sh """
+                    sed -i 's/python3-indy.*/python3-indy==${indySDKVersions.pypi}/g' ./system/requirements.txt
+                    #sed -i 's/indy-plenum.*/indy-plenum==${indyPlenumVersions.pypi}/g' ./system/requirements.txt
+                    #sed -i 's/indy-crypto.*/indy-crypto==${indyCryptoVersions.pypi}/g' ./system/requirements.txt
+                """
+            }
+
+            stage("[${testGroup}] Cleanup docker") {
+                dockerClean()
+            }
+
+            stage("[${testGroup}] Prepare docker env") {
+                withEnv([
+                    "INDY_NODE_REPO_COMPONENT=$component",
+                    "LIBINDY_CRYPTO_VERSION=${indyCryptoVersions.debian}",
+                    "PYTHON3_LIBINDY_CRYPTO_VERSION=${indyCryptoVersions.debian}",
+                    "INDY_PLENUM_VERSION=${indyPlenumVersions.debian}",
+                    "INDY_NODE_VERSION=$releaseVersion",
+                    "LIBINDY_REPO_COMPONENT=${indySDKVersions.debian == indySDKVersions.pypi ? 'stable' : 'master'}",
+                    "LIBINDY_VERSION=${indySDKVersions.debian}",
+                ]) {
+                    sh "./system/docker/prepare.sh $systemTestsNetwork"
+                }
+            }
+
+            try {
+                def err
+                String testReportFileNameXml = "system_tests_${testGroup}_report.${component}.xml"
+                String testReportFileNamePlain = "system_tests_${testGroup}_report.${component}.txt"
+                String testTargets = testsSchema[testGroup].collect{"system/indy-node-tests/$it"}.join(' ')
+                try {
+                    stage("[${testGroup}] Run tests") {
+                        sh """
+                            bash -c "\
+                                set -o pipefail; \
+                                ./system/docker/run.sh \
+                                    \\"$testTargets\\" \
+                                    \\"-l -vv --junit-xml=$testReportFileNameXml\\" \
+                                    \\"$systemTestsNetwork\\" 2>&1 | tee $testReportFileNamePlain;\
+                            "
+                        """
+                    }
+                } catch (_err) {
+                    err = _err
+                    throw _err
+                } finally {
+                    stage("[${testGroup}] Upload test report") {
+                        sh "ls -la *report* || true"
+                        if (err) {
+                            archiveArtifacts artifacts: testReportFileNamePlain, allowEmptyArchive: true
+                        }
+                        junit testResults: testReportFileNameXml, allowEmptyResults: true
+                    }
+                }
+            } catch (Exception exc) {
+                echo "$prefix: fail: $exc"
+                throw exc
+            } finally {
+                stage("[${testGroup}] Cleanup docker") {
+                    dockerClean()
+                }
+            }
+        }
+    }
+
+    nodeWrapper("ubuntu") {
+        stage("Checkout SCM") {
+            checkout scm
+        }
+
+        stage("Get versions of dependencies") {
+            String pipLogName = "pip.intsall.log"
+            def uid = sh(returnStdout: true, script: 'id -u').trim()
+            docker.build("hyperledger/indy-node-ci", "--build-arg uid=$uid -f ci/ubuntu.dockerfile ci").inside {
+                sh """
+                    pip install .[tests] >$pipLogName
+                """
+
+                indyPlenumVersions.pypi = sh(returnStdout: true, script: """
+                    grep "^Collecting indy-plenum==" $pipLogName | awk '{print \$2}' | awk -F'==' '{print \$2}'
+                """).trim()
+                indyPlenumVersions.debian = indyPlenumVersions.pypi.replaceAll(/\.?(dev|rc)(.*)/, "~\$1\$2")
+                echo "indy-plenum versions: $indyPlenumVersions"
+
+                indySDKVersions.pypi = sh(returnStdout: true, script: """
+                    grep "^Collecting python3-indy==" $pipLogName | awk '{print \$2}' | awk -F'==' '{print \$2}'
+                """).trim()
+                indySDKVersions.debian = indySDKVersions.pypi.replaceAll(/-(dev|rc)-(.*)/, "~\$2")
+                echo "indy-sdk version: ${indySDKVersions}"
+
+                indyCryptoVersions.pypi = sh(returnStdout: true, script: """
+                    grep "^Collecting indy-crypto==" $pipLogName | awk '{print \$2}' | awk -F'==' '{print \$2}'
+                """).trim()
+                indyCryptoVersions.debian = indyCryptoVersions.pypi.replaceAll(/-(dev|rc)-(.*)/, "~\$2")
+                echo "indy-crypto version: ${indyCryptoVersions}"
+            }
+
+            if (!(indyPlenumVersions.debian && indySDKVersions.debian && indyCryptoVersions.debian)) {
+                error "Failed to get versions for indy-plenum or indy-crypto or indy-sdk"
+            }
+        }
+
+        Map builds = [:]
+        for (int i = 0; i < testsSchema.size(); i++) {
+            String testNames = testsSchema[i].join(' ')
+            Boolean isFirst = (i == 0)
+            int testGroup = i
+            builds[testNames] = {
+                stage("Run ${testNames}") {
+                    if (isFirst) {
+                        runTest(testGroup)
+                    } else {
+                        nodeWrapper('ubuntu') {
+                            runTest(testGroup)
+                        }
+                    }
+                }
+            }
+        }
+        builds.failFast = false
+
+        parallel builds
+    }
+}
+
+def options = new TestAndPublishOptions()
+options.setPkgName(pkgName)
+options.setApprovers(['QA'])
+options.setNotifEmails([
+    QA: [
+        to: "${env.INDY_NODE_QA_RECIPIENTS ?: ''}",
+        cc: "${env.INDY_NODE_RECIPIENTS ?: ''}"
+    ],
+    success: [
+        to: "${env.INDY_NODE_RECIPIENTS ?: ''}"
+    ],
+    fail: [
+        to: "${env.INDY_NODE_RECIPIENTS ?: ''}"
+    ]
+])
+
+// TODO duplicates list from build scripts
+options.setBuiltPkgs([
+    'python3-timeout-decorator': '0.4.0',
+    'python3-distro': '1.3.0',
+])
+
+
 options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
 options.setCopyWithDeps(true)
+options.setSystemTestsCb(systemTests)
 options.setPrContexts([env.INDY_GITHUB_PR_REQUIRED_CONTEXT ?: "ci/hyperledger-jenkins/pr-merge"])
-testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])
+
+testAndPublish(
+    name,
+    [
+        ubuntu: [node: nodeTestUbuntu, common: commonTestUbuntu]
+    ],
+    true, options, [ubuntu: buildDebUbuntu], 'indy_node'
+)

@@ -1,0 +1,47 @@
+---
+- name: Check that required variables are specified
+  assert:
+    that:
+      - lookup('vars', item, default='')
+    msg: "{{ lookup('vars', item, default='undefined')|string }}"
+  loop:
+    - indy_node_build_dir
+    - indy_node_channel
+    - indy_node_ver
+    - indy_plenum_ver
+    - python_indy_crypto_ver
+    - libindy_crypto_ver
+    - network_name
+    - indy_node_pool_dir_name
+    - indy_node_pool_genesis_txns_name
+    - indy_node_pool_genesis_txns_path
+
+- name: Install indy node repo
+  import_role:
+    name: indy_repo
+  vars:
+    indy_repo_node_channels: "{{ indy_node_channel }}"
+
+- name: Install indy node
+  apt:
+    name:
+      - "indy-node={{ indy_node_ver }}"
+      - "indy-plenum={{ indy_plenum_ver }}"
+      - "libindy-crypto={{ libindy_crypto_ver }}"
+      - "python3-indy-crypto={{ python_indy_crypto_ver }}"
+    update_cache: true
+  become: true
+
+- name: Install plugins
+  import_role:
+    name: plugins
+
+- name: Enable node service
+  service:
+    name: indy-node
+    enabled: true
+  become: true
+
+- name: Configuration tasks
+  include_tasks: configure.yml
+  when: indy_node_configuration

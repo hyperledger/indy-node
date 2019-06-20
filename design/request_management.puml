@@ -1,0 +1,94 @@
+@startuml
+class RequestManager{
+static_validation(request: Request)
+dynamic_validation(request: Request)
+}
+
+class WriteRequestManager{
+  List<WriteRequestHandler>
+  List<BatchRequestHandler>
+}
+
+class ReadRequestManager{
+  List<ReadRequestHandler>
+}
+
+class ActionRequestManager{
+  List<ActionRequestHandler>
+}
+
+class WriteRequestManager{
+apply_request(request: Request, batch_ts)
+commit_batch(ledger_id, txn_count, state_root, txn_root, pp_time)
+post_batch_applied(three_pc_batch)
+post_batch_rejected(ledger_id)
+}
+
+class WriteRequestHandler{
+update_state(txn, prev_result, request: Request, is_committed)
+dynamic_validation(request: Request)
+}
+
+class BatchRequestHandler{
+database_manager: DatabaseManager
+ledger_id: int
+commit_batch(ledger_id, txn_count, state_root, txn_root, pp_time, prev_handler_result)
+post_batch_applied(three_pc_batch, prev_handler_result)
+post_batch_rejected(ledger_id, prev_handler_result)
+}
+
+class ReadRequestManager{
+get_result(request: Request)
+}
+
+class ReadRequestHandler{
+get_result(request: Request)
+}
+
+class ActionRequestManager{
+process_action(request: Request)
+}
+
+class ActionRequestHandler{
+process_action(request: Request)
+}
+
+class RequestHandler{
+database_manager: DatabaseManager
+txn_type: int
+ledger_id: int
+static_validation(request: Request)
+}
+
+RequestHandler <|-- ActionRequestHandler
+RequestHandler <|-- ReadRequestHandler
+RequestHandler <|-- WriteRequestHandler
+
+RequestManager <|-- WriteRequestManager
+RequestManager <|-- ReadRequestManager
+RequestManager <|-- ActionRequestManager
+
+BatchRequestHandler <|-- DomainBatchReqHandler
+BatchRequestHandler <|-- IdrCacheBatchHandler
+BatchRequestHandler <|-- PoolBatchReqHandler
+BatchRequestHandler <|-- ConfigBatchReqHandler
+
+WriteRequestManager o-- WriteRequestHandler
+WriteRequestManager o-- BatchRequestHandler
+
+ReadRequestManager o-- ReadRequestHandler
+
+ActionRequestManager o-- ActionRequestHandler
+
+WriteRequestHandler<|-- NymHandler
+WriteRequestHandler<|-- IdrCacheHandler
+WriteRequestHandler<|-- NodeHandler
+WriteRequestHandler<|-- AttributteHandler
+WriteRequestHandler<|-- SchemaHandler
+
+ReadRequestHandler<|-- GetTxnHandler
+ReadRequestHandler<|-- GetNymHandler
+
+ActionRequestHandler <|-- PoolRestartHandler
+ActionRequestHandler <|-- ValidatorInfoHandler
+@enduml

@@ -23,12 +23,6 @@ echo 'Installing libsodium...'
 sudo apt-get install -y libsodium13
 echo 'Installed libsodium'
 
-
-echo 'Installing Charm Crypto...'
-sudo apt-get install -y python3-charm-crypto
-echo 'Installed Charm Crypto'
-
-
 echo 'Installing Libindy and Libindy Crypto...'
 sudo apt-get install -y libindy libindy-crypto
 echo 'Installed Libindy and Libindy Crypto'

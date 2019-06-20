@@ -26,14 +26,17 @@ def tconf(tconf, request):
     old_freq = tconf.PerfCheckFreq
     old_bt = tconf.Max3PCBatchWait
     old_bs = tconf.Max3PCBatchSize
+    old_bf = tconf.Max3PCBatchesInFlight
     tconf.PerfCheckFreq = 50
     tconf.Max3PCBatchWait = .01
     tconf.Max3PCBatchSize = 1
+    tconf.Max3PCBatchesInFlight = 5
 
     def reset():
         tconf.PerfCheckFreq = old_freq
         tconf.Max3PCBatchWait = old_bt
         tconf.Max3PCBatchSize = old_bs
+        tconf.Max3PCBatchesInFlight = old_bf
 
     request.addfinalizer(reset)
     return tconf
@@ -75,7 +78,7 @@ def test_successive_batch_do_no_change_state(looper,
             assert len(node.idrCache.un_committed) == count
 
     for node in nodeSet:
-        for rpl in node.replicas:
+        for rpl in node.replicas.values():
             monkeypatch.setattr(rpl, '_request_missing_three_phase_messages',
                                 lambda *x, **y: None)
 
@@ -162,9 +165,9 @@ def test_successive_batch_do_no_change_state(looper,
 
         # Patch methods to record and check roots after commit
 
-        def patched_cre(self, stateRoot):
+        def patched_cre(self, stateRoot, ppTime):
             uncommitteds[self._name].append(stateRoot)
-            return methods[self._name][0](stateRoot)
+            return methods[self._name][0](stateRoot, ppTime)
 
         def patched_com(self, stateRoot):
             assert uncommitteds[self._name][0] == stateRoot

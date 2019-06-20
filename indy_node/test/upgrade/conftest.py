@@ -3,15 +3,18 @@ from datetime import datetime, timedelta
 import dateutil.tz
 import pytest
 
-from indy_node.utils.node_control_utils import NodeControlUtil
+from stp_core.loop.eventually import eventually
 from plenum.common.constants import VERSION
+from plenum.test.helper import randomText
 
 from indy_common.constants import START, FORCE, APP_NAME
+from indy_common.version import src_version_cls
+from indy_node.utils.node_control_utils import NodeControlUtil, DebianVersion
+from indy_node.server.upgrader import Upgrader
+
 from indy_node.test import waits
 from indy_node.test.upgrade.helper import bumpedVersion, \
     checkUpgradeScheduled, bumpVersion, sdk_ensure_upgrade_sent
-from plenum.test.helper import randomText
-from stp_core.loop.eventually import eventually
 
 
 @pytest.fixture(scope='module')
@@ -23,31 +26,31 @@ EXT_PKT_NAME = 'SomeTopLevelPkt'
 EXT_PKT_VERSION = '7.88.999'
 
 
-def patch_packet_mgr_output(monkeypatch, pkg_name, pkg_version):
+# TODO review and improve: which contexts are goinig to be satisfied
+# by the following mocks
+def patch_packet_mgr_output(monkeypatch, pkg_name, pkg_version, new_version):
     if pkg_name != APP_NAME:
         node_package = (APP_NAME, '0.0.1')
         EXT_TOP_PKT_DEPS = [("aa", "1.1.1"), ("bb", "2.2.2")]
-        PACKAGE_MNG_EXT_PTK_OUTPUT = "Package: {}\nStatus: install ok installed\nPriority: extra\nSection: default\n" \
-                                     "Installed-Size: 21\nMaintainer: EXT_PKT_NAME-fond\nArchitecture: amd64\nVersion: {}\n" \
-                                     "Depends: {}, {} (= {}), {} (= {})\nDescription: EXT_PKT_DEPS-desc\n" \
-                                     "License: EXT_PKT_DEPS-lic\nVendor: none\n". \
-            format(pkg_name, pkg_version, APP_NAME, *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1])
+        PACKAGE_MNG_EXT_PTK_OUTPUT = (
+            "Package: {}\nVersion: {}\n"
+            "Depends: {}, {} (= {}), {} (= {})\n"
+            .format(pkg_name, pkg_version, APP_NAME,
+                    *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1])
+        )
         top_level_package = (pkg_name, pkg_version)
-        anoncreds_package = ('indy-anoncreds', '0.0.2')
         plenum_package = ('indy-plenum', '0.0.3')
         top_level_package_with_version = '{}={}'.format(*top_level_package)
         top_level_package_dep1_with_version = '{}={}'.format(*EXT_TOP_PKT_DEPS[0])
         top_level_package_dep2_with_version = '{}={}'.format(*EXT_TOP_PKT_DEPS[1])
         node_package_with_version = '{}={}'.format(*node_package)
         plenum_package_with_version = '{}={}'.format(*plenum_package)
-        anoncreds_package_with_version = '{}={}'.format(*anoncreds_package)
         mock_info = {
             top_level_package_with_version: "{}{} (= {}) {} (= {}), {} (= {})".format(
                 randomText(100), *node_package, *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1]),
-            node_package_with_version: '{}{} (= {}){}{} (= {}){}'.format(
-                randomText(100), *plenum_package, randomText(100), *anoncreds_package, randomText(100)),
+            node_package_with_version: '{}{} (= {}){}{}'.format(
+                randomText(100), *plenum_package, randomText(100), randomText(100)),
             plenum_package_with_version: '{}'.format(randomText(100)),
-            anoncreds_package_with_version: '{}'.format(randomText(100)),
             top_level_package_dep1_with_version: '{}{} (= {})'.format(randomText(100), *plenum_package),
             top_level_package_dep2_with_version: '{}{} (= {})'.format(randomText(100), *node_package)
         }
@@ -57,14 +60,37 @@ def patch_packet_mgr_output(monkeypatch, pkg_name, pkg_version):
                 return mock_info.get(top_level_package_with_version, "")
             return mock_info.get(package, "")
 
-        monkeypatch.setattr(NodeControlUtil, 'update_package_cache', lambda *x: None)
-        monkeypatch.setattr(NodeControlUtil, '_get_info_from_package_manager',
-                            lambda x: mock_get_info_from_package_manager(x))
+        #monkeypatch.setattr(NodeControlUtil, '_get_info_from_package_manager',
+        #                    lambda x: mock_get_info_from_package_manager(x))
         monkeypatch.setattr(NodeControlUtil, '_get_curr_info', lambda *x: PACKAGE_MNG_EXT_PTK_OUTPUT)
+    else:
+        #monkeypatch.setattr(
+        #    NodeControlUtil, '_get_info_from_package_manager',
+        #    lambda package: "Package: {}\nVersion: {}\n".format(APP_NAME, pkg_version) if package == APP_NAME else ""
+        #)
+        monkeypatch.setattr(
+            NodeControlUtil, '_get_curr_info',
+            lambda *x: "Package: {}\nVersion: {}\n".format(APP_NAME, pkg_version)
+        )
+
+    monkeypatch.setattr(NodeControlUtil, 'update_package_cache', lambda *x: None)
+    monkeypatch.setattr(
+        NodeControlUtil, 'get_latest_pkg_version',
+        lambda *x, **y: DebianVersion(
+            new_version, upstream_cls=src_version_cls(pkg_name))
+    )
 
 
-@pytest.fixture(scope='function', params=[(EXT_PKT_NAME, EXT_PKT_VERSION), (APP_NAME, None)])
-def validUpgrade(nodeIds, tconf, monkeypatch, request):
+@pytest.fixture(scope='function', params=[
+    (EXT_PKT_NAME, EXT_PKT_VERSION),
+    (APP_NAME, Upgrader.get_src_version(APP_NAME).release)
+])
+def pckg(request):
+    return request.param
+
+
+@pytest.fixture(scope='function')
+def validUpgrade(nodeIds, tconf, monkeypatch, pckg):
     schedule = {}
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     startAt = unow + timedelta(seconds=100)
@@ -73,10 +99,11 @@ def validUpgrade(nodeIds, tconf, monkeypatch, request):
         schedule[i] = datetime.isoformat(startAt)
         startAt = startAt + timedelta(seconds=acceptableDiff + 3)
 
-    patch_packet_mgr_output(monkeypatch, request.param[0], request.param[1])
+    new_version = bumpedVersion(pckg[1])
+    patch_packet_mgr_output(monkeypatch, pckg[0], pckg[1], new_version)
 
-    return dict(name='upgrade-{}'.format(randomText(3)), version=bumpedVersion(request.param[1]),
-                action=START, schedule=schedule, timeout=1, package=request.param[0],
+    return dict(name='upgrade-{}'.format(randomText(3)), version=new_version,
+                action=START, schedule=schedule, timeout=1, package=pckg[0],
                 sha256='db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55')
 
 

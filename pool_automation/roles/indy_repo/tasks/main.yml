@@ -1,0 +1,34 @@
+---
+# TODO it might make sense to split the role into indy_node_repo and indy_sdk_repo
+- name: Common installation steps
+  block:
+    - name: Install HTTPS support for apt
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+        update_cache: true
+      become: true
+
+    - name: Add indy repo key
+      apt_key:
+        keyserver: keyserver.ubuntu.com
+        id: 3B75B82CF342D9FB
+      become: true
+  when: (indy_repo_node_channels|d(False, True) or
+        indy_repo_sdk_channels|d(False, True))
+
+- name: Add repository for indy node
+  apt_repository:
+    repo: "deb https://repo.sovrin.org/deb xenial {{ indy_repo_node_channels }}"
+    state: present
+  become: true
+  when: indy_repo_node_channels|d(False, True)
+
+- name: Add repository for indy sdk
+  apt_repository:
+    repo: "deb https://repo.sovrin.org/sdk/deb xenial {{ indy_repo_sdk_channels }}"
+    state: present
+  become: true
+  when: indy_repo_sdk_channels|d(False, True)
+...

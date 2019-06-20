@@ -1,21 +1,21 @@
 pool connect AS-01-02-steward-pool
-[1;32mPool "AS-01-02-steward-pool" has been connected[0m
+Pool "AS-01-02-steward-pool" has been connected
 
 wallet open AS-01-02-steward-wallet key=testkey
-[1;32mWallet "AS-01-02-steward-wallet" has been opened[0m
+Wallet "AS-01-02-steward-wallet" has been opened
 
 did use Q4sXZA2FF8ePpnCbaWiNGP
-[1;32mDid "Q4sXZA2FF8ePpnCbaWiNGP" has been set as active[0m
+Did "Q4sXZA2FF8ePpnCbaWiNGP" has been set as active
 
 ledger nym did=Q4sXZA2FF8ePpnCbaWiNGP verkey=~RiX2km3TqJwmVNXj8WwcM6
-[1;32mNym request has been sent to Ledger.[0m
-[1;32mMetadata:[0m
+Nym request has been sent to Ledger.
+Metadata:
 +---------------------+---------------------+
 | Request ID          | Transaction time    |
 +---------------------+---------------------+
 | 1523199301032507406 | 2018-04-08 14:55:01 |
 +---------------------+---------------------+
-[1;32mData:[0m
+Data:
 +------------------------+-------------------------+------+
 | Did                    | Verkey                  | Role |
 +------------------------+-------------------------+------+
@@ -23,14 +23,14 @@ ledger nym did=Q4sXZA2FF8ePpnCbaWiNGP verkey=~RiX2km3TqJwmVNXj8WwcM6
 +------------------------+-------------------------+------+
 
 did new seed=0000000000000000000NewSteward123 metadata="new steward3"
-[1;32mDid "Q4sXZA2FF8ePpnCbaWiNGP" has been created with "~RiX2km3TqJwmVNXj8WwcM6" verkey[0m
-[1;32mMetadata has been saved for DID "Q4sXZA2FF8ePpnCbaWiNGP"[0m
+Did "Q4sXZA2FF8ePpnCbaWiNGP" has been created with "~RiX2km3TqJwmVNXj8WwcM6" verkey
+Metadata has been saved for DID "Q4sXZA2FF8ePpnCbaWiNGP"
 
 wallet close
-[1;32mWallet "AS-01-02-steward-wallet" has been closed[0m
+Wallet "AS-01-02-steward-wallet" has been closed
 
 pool disconnect
-[1;32mPool "AS-01-02-steward-pool" has been disconnected[0m
+Pool "AS-01-02-steward-pool" has been disconnected
 
 wallet list
 +-------------------------+-----------------------+---------+
@@ -52,4 +52,4 @@ pool list
 
 exit
 
-[1;32mGoodbye...[0m
+Goodbye...

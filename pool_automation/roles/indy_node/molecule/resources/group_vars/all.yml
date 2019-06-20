@@ -1,0 +1,6 @@
+---
+indy_node_ver: 1.6.563
+indy_plenum_ver: 1.6.501
+python_indy_crypto_ver: 0.4.1
+libindy_crypto_ver: 0.4.0
+...

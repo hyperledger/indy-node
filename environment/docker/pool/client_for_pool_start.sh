@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 POOL_DATA_FILE="$1"
 IP="$2"
 CLI_CNT="$3"
@@ -61,5 +63,3 @@ $SCRIPT_DIR/client_build.sh "$IPS" $CNT $CLI_CNT
 
 echo "Starting client"
 $SCRIPT_DIR/client_start.sh $IP $POOL_NETWORK_NAME
-
-echo "Client is closed."
