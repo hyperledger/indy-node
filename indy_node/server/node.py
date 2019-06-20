@@ -261,7 +261,10 @@ class Node(PlenumNode):
             return super().authNr(req)
 
     def init_core_authenticator(self):
-        return LedgerBasedAuthNr(self.idrCache)
+        return LedgerBasedAuthNr(self.write_manager.txn_types,
+                                 self.read_manager.txn_types,
+                                 self.action_manager.txn_types,
+                                 self.idrCache)
 
     def defaultNodeAuthNr(self):
         return NodeAuthNr(self.poolLedger)
