@@ -4,6 +4,7 @@ from indy_common.constants import CONFIG_LEDGER_ID
 from indy_node.server.upgrader import Upgrader
 from plenum.common.txn_util import is_forced
 from plenum.server.batch_handlers.batch_request_handler import BatchRequestHandler
+from plenum.server.batch_handlers.three_pc_batch import ThreePcBatch
 from plenum.server.database_manager import DatabaseManager
 
 
@@ -14,8 +15,8 @@ class ConfigBatchHandler(BatchRequestHandler):
         self.upgrader = upgrader
         self.pool_config = pool_config
 
-    def commit_batch(self, txn_count, state_root, txn_root, pp_time, prev_result):
-        committed_txns = super().commit_batch(txn_count, state_root, txn_root, pp_time, prev_result)
+    def commit_batch(self, three_pc_batch: ThreePcBatch, prev_result=None):
+        committed_txns = super().commit_batch(three_pc_batch, prev_result)
         for txn in committed_txns:
             # Handle POOL_UPGRADE or POOL_CONFIG transaction here
             # only in case it is not forced.

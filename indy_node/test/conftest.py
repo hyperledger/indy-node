@@ -2,6 +2,7 @@ import logging
 import warnings
 import pytest
 
+from indy_node.server.node_bootstrap import NodeBootstrap
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_pool_refresh, prepare_new_node_data, \
     create_and_start_new_node, prepare_node_request, sdk_sign_and_send_prepared_request
 from stp_core.common.log import Logger
@@ -35,7 +36,7 @@ from indy_common.config_helper import NodeConfigHelper
 from indy_common.test.conftest import general_conf_tdir, tconf, poolTxnTrusteeNames, \
     domainTxnOrderedFields, looper, setTestLogLevel, node_config_helper_class, config_helper_class
 
-from indy_node.test.helper import TestNode
+from indy_node.test.helper import TestNode, TestNodeBootstrap
 
 from indy_node.server.upgrader import Upgrader
 from indy_node.utils.node_control_utils import NodeControlUtil
@@ -178,6 +179,11 @@ def nodeSet(txnPoolNodeSet):
 @pytest.fixture(scope="module")
 def testNodeClass():
     return TestNode
+
+
+@pytest.fixture(scope="module")
+def testNodeBootstrapClass():
+    return TestNodeBootstrap
 
 
 @pytest.fixture(scope="module")
