@@ -22,8 +22,7 @@ class StartUpgradeTest(AuthTest):
         self.default_auth_rule = self.get_default_auth_rule()
         self.changed_auth_rule = self.get_changed_auth_rule()
         for n in self.env.txnPoolNodeSet:
-            cfr = n.ledger_to_req_handler[CONFIG_LEDGER_ID]
-            cfr.upgrader.handleUpgradeTxn = lambda *args, **kwargs: True
+            n.upgrader.handleUpgradeTxn = lambda *args, **kwargs: True
 
     def run(self):
 
@@ -72,8 +71,7 @@ class CancelUpgradeTest(AuthTest):
         self.default_auth_rule = self.get_default_auth_rule()
         self.changed_auth_rule = self.get_changed_auth_rule()
         for n in self.env.txnPoolNodeSet:
-            cfr = n.ledger_to_req_handler[CONFIG_LEDGER_ID]
-            cfr.upgrader.handleUpgradeTxn = lambda *args, **kwargs: True
+            n.upgrader.handleUpgradeTxn = lambda *args, **kwargs: True
 
     def run(self):
 

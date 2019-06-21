@@ -33,7 +33,7 @@ class ClaimDefHandler(WriteRequestHandler):
         identifier, req_id, operation = get_request_data(request)
         ref = operation[REF]
         try:
-            txn = self.ledger.getBySeqNo(ref)
+            txn = self.ledger.get_by_seq_no_uncommitted(ref)
         except KeyError:
             raise InvalidClientRequest(identifier,
                                        req_id,

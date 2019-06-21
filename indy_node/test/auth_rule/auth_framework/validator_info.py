@@ -1,5 +1,6 @@
 import pytest
 
+from indy_node.server.request_handlers.action_req_handlers.validator_info_handler import ValidatorInfoHandler
 from indy_node.test.validator_info.helper import sdk_get_validator_info
 
 from indy_common.authorize.auth_actions import ADD_PREFIX
@@ -28,7 +29,9 @@ class ValidatorInfoTest(AuthTest):
                 extractions={},
                 node_disk_size={}
             )
-            n.actionReqHandler.info_tool = info_tool
+            for h in n.action_manager.request_handlers.values():
+                if isinstance(h, ValidatorInfoHandler):
+                    h.info_tool = info_tool
 
     def run(self):
         # Step 1. Check default auth rule

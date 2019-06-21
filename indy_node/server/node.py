@@ -3,8 +3,6 @@ from datetime import timedelta
 from typing import Iterable, List
 
 from common.exceptions import LogicError
-from common.serializers.serialization import ledger_txn_serializer, domain_state_serializer
-from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.authorize.auth_constraints import AbstractConstraintSerializer
 from indy_node.server.node_bootstrap import NodeBootstrap
 from indy_node.server.pool_req_handler import PoolRequestHandler
@@ -13,21 +11,19 @@ from indy_node.server.action_req_handler import ActionReqHandler
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 
 from plenum.common.constants import VERSION, \
-    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION, FORCE, POOL_LEDGER_ID
+    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION, FORCE, POOL_LEDGER_ID, TS_LABEL, ATTRIB_LABEL, IDR_CACHE_LABEL
 from plenum.common.txn_util import get_type, get_payload_data, TxnUtilConfig
 from plenum.common.types import f, \
     OPERATION
 from plenum.common.util import get_utc_datetime
 from plenum.server.node import Node as PlenumNode
 from state.pruning_state import PruningState
-from storage.helper import initKeyValueStorage
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
     IN_PROGRESS, AUTH_RULE, AUTH_RULES
 from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
-from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.client_authn import LedgerBasedAuthNr
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
@@ -71,8 +67,8 @@ class Node(PlenumNode):
         node_info_dir = node_info_dir or config_helper.node_info_dir
 
         # TODO: 4 ugly lines ahead, don't know how to avoid
-        self.idrCache = None
-        self.attributeStore = None
+        # self.idrCache = None
+        # self.attributeStore = None
         self.upgrader = None
         self.restarter = None
         self.poolCfg = None
@@ -100,11 +96,13 @@ class Node(PlenumNode):
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
 
-        # Will be refactored soon
-        self.get_req_handler(CONFIG_LEDGER_ID).upgrader = self.upgrader
-        self.get_req_handler(CONFIG_LEDGER_ID).poolCfg = self.poolCfg
-        self.actionReqHandler.poolCfg = self.poolCfg
-        self.actionReqHandler.restarter = self.restarter
+    @property
+    def attributeStore(self):
+        return self.db_manager.get_store(ATTRIB_LABEL)
+
+    @property
+    def idrCache(self):
+        return self.db_manager.get_store(IDR_CACHE_LABEL)
 
     def on_inconsistent_3pc_state(self):
         timeout = self.config.INCONSISTENCY_WATCHER_NETWORK_TIMEOUT
@@ -118,46 +116,37 @@ class Node(PlenumNode):
         return PoolRequestHandler(self.poolLedger,
                                   self.states[POOL_LEDGER_ID],
                                   self.states,
-                                  self.getIdrCache(),
+                                  self.idrCache,
                                   self.write_req_validator)
 
     def init_domain_req_handler(self):
-        if self.attributeStore is None:
-            self.attributeStore = self.init_attribute_store()
         return DomainReqHandler(self.domainLedger,
                                 self.states[DOMAIN_LEDGER_ID],
                                 self.config,
                                 self.reqProcessors,
-                                self.getIdrCache(),
+                                self.idrCache,
                                 self.attributeStore,
                                 self.bls_bft.bls_store,
                                 self.write_req_validator,
-                                self.getStateTsDbStorage())
+                                self.db_manager.get_store(TS_LABEL))
 
     def init_config_req_handler(self):
         return ConfigReqHandler(self.configLedger,
                                 self.states[CONFIG_LEDGER_ID],
                                 self.states[DOMAIN_LEDGER_ID],
-                                self.getIdrCache(),
+                                self.idrCache,
                                 self.upgrader,
                                 self.poolManager,
                                 self.poolCfg,
                                 self.write_req_validator,
                                 self.bls_bft.bls_store,
-                                self.getStateTsDbStorage())
+                                self.db_manager.get_store(TS_LABEL))
 
     def getIdrCache(self):
-        if self.idrCache is None:
-            self.idrCache = IdrCache(self.name,
-                                     initKeyValueStorage(self.config.idrCacheStorage,
-                                                         self.dataLocation,
-                                                         self.config.idrCacheDbName,
-                                                         db_config=self.config.db_idr_cache_db_config)
-                                     )
         return self.idrCache
 
     def init_action_req_handler(self):
-        return ActionReqHandler(self.getIdrCache(),
+        return ActionReqHandler(self.idrCache,
                                 self.restarter,
                                 self.poolManager,
                                 self.poolCfg,
@@ -272,7 +261,10 @@ class Node(PlenumNode):
             return super().authNr(req)
 
     def init_core_authenticator(self):
-        return LedgerBasedAuthNr(self.idrCache)
+        return LedgerBasedAuthNr(self.write_manager.txn_types,
+                                 self.read_manager.txn_types,
+                                 self.action_manager.txn_types,
+                                 self.idrCache)
 
     def defaultNodeAuthNr(self):
         return NodeAuthNr(self.poolLedger)
@@ -315,13 +307,6 @@ class Node(PlenumNode):
             if key:
                 txn_data[key] = self.attributeStore.get(txn_data[key])
         return txn
-
-    def closeAllKVStores(self):
-        super().closeAllKVStores()
-        if self.idrCache:
-            self.idrCache.close()
-        if self.attributeStore:
-            self.attributeStore.close()
 
     def is_request_need_quorum(self, msg_dict: dict):
         txn_type = msg_dict.get(OPERATION).get(TXN_TYPE, None) \
