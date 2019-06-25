@@ -1,14 +1,33 @@
 import logging
+import time
 import warnings
 import pytest
 
+from common.serializers import serialization
+from common.serializers.serialization import domain_state_serializer
+from indy_common.authorize.auth_constraints import ConstraintsSerializer
+from indy_common.authorize.auth_map import auth_map
+from indy_common.authorize.auth_request_validator import WriteRequestValidator
+from indy_common.test.auth.conftest import IDENTIFIERS
+from indy_node.persistence.attribute_store import AttributeStore
+from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.node_bootstrap import NodeBootstrap
+from ledger.compact_merkle_tree import CompactMerkleTree
+from plenum.bls.bls_store import BlsStore
+from plenum.common.ledger import Ledger
+from plenum.server.database_manager import DatabaseManager
+from plenum.server.request_managers.read_request_manager import ReadRequestManager
+from plenum.server.request_managers.write_request_manager import WriteRequestManager
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_pool_refresh, prepare_new_node_data, \
     create_and_start_new_node, prepare_node_request, sdk_sign_and_send_prepared_request
+from plenum.test.testing_utils import FakeSomething
+from state.pruning_state import PruningState
+from storage.kv_in_memory import KeyValueStorageInMemory
 from stp_core.common.log import Logger
 
 from plenum.common.util import randomString
-from plenum.common.constants import VALIDATOR, STEWARD_STRING
+from plenum.common.constants import VALIDATOR, STEWARD_STRING, POOL_LEDGER_ID, DOMAIN_LEDGER_ID, IDR_CACHE_LABEL, \
+    ATTRIB_LABEL, TRUSTEE, STEWARD, KeyValueStorageType, BLS_LABEL
 from plenum.test.helper import sdk_get_and_check_replies
 from plenum.test.test_node import checkNodesConnected
 
@@ -29,7 +48,7 @@ from plenum.test.conftest import sdk_pool_handle as plenum_pool_handle, sdk_pool
     sdk_wallet_stewards, create_node_and_not_start, sdk_wallet_handle
 
 from indy_common import strict_types
-from indy_common.constants import APP_NAME
+from indy_common.constants import APP_NAME, CONFIG_LEDGER_ID, CONFIG_LEDGER_AUTH_POLICY, NETWORK_MONITOR, ENDORSER
 from indy_common.config_helper import NodeConfigHelper
 
 # noinspection PyUnresolvedReferences
@@ -205,3 +224,185 @@ def newNodeAdded(looper, nodeSet, tdir, tconf, sdk_pool_handle,
 @pytest.fixture(scope='module')
 def nodeIds(nodeSet):
     return next(iter(nodeSet)).poolManager.nodeIds
+
+
+@pytest.fixture(scope="module")
+def pool_ledger(tconf, tmpdir_factory):
+    tdir = tmpdir_factory.mktemp('').strpath
+    return Ledger(CompactMerkleTree(),
+                  dataDir=tdir)
+
+
+@pytest.fixture(scope="module")
+def domain_ledger(tconf, tmpdir_factory):
+    tdir = tmpdir_factory.mktemp('').strpath
+    return Ledger(CompactMerkleTree(),
+                  dataDir=tdir)
+
+
+@pytest.fixture(scope="module")
+def config_ledger(tconf, tmpdir_factory):
+    tdir = tmpdir_factory.mktemp('').strpath
+    return Ledger(CompactMerkleTree(),
+                  dataDir=tdir)
+
+
+@pytest.fixture(scope="module")
+def config_state():
+    return PruningState(KeyValueStorageInMemory())
+
+
+@pytest.fixture(scope="module")
+def domain_state():
+    return PruningState(KeyValueStorageInMemory())
+
+
+@pytest.fixture(scope="module")
+def pool_state():
+    return PruningState(KeyValueStorageInMemory())
+
+
+@pytest.fixture(scope="module")
+def idr_cache_store(idr_cache):
+    return idr_cache
+
+
+@pytest.fixture(scope="module")
+def attrib_store():
+    return AttributeStore(KeyValueStorageInMemory())
+
+
+@pytest.fixture(scope="module")
+def bls_store():
+    return BlsStore(key_value_type=KeyValueStorageType.Memory,
+                    data_location=None,
+                    key_value_storage_name="BlsInMemoryStore",
+                    serializer=serialization.multi_sig_store_serializer)
+
+
+@pytest.fixture(scope='module')
+def idr_cache():
+    cache = IdrCache("Cache",
+                     KeyValueStorageInMemory())
+    i = 0
+
+    for id in IDENTIFIERS[TRUSTEE]:
+        i += 1
+        cache.set(id, i, int(time.time()), role=TRUSTEE,
+                  verkey="trustee_identifier_verkey", isCommitted=False)
+
+    for id in IDENTIFIERS[STEWARD]:
+        i += 1
+        cache.set(id, i, int(time.time()), role=STEWARD,
+                  verkey="steward_identifier_verkey", isCommitted=False)
+
+    for id in IDENTIFIERS[ENDORSER]:
+        i += 1
+        cache.set(id, i, int(time.time()), role=ENDORSER,
+                  verkey="endorser_identifier_verkey", isCommitted=False)
+
+    for id in IDENTIFIERS[NETWORK_MONITOR]:
+        i += 1
+        cache.set(id, i, int(time.time()), role=NETWORK_MONITOR,
+                  verkey="network_monitor_identifier_verkey", isCommitted=False)
+
+    for id in IDENTIFIERS["OtherRole"]:
+        i += 1
+        cache.set(id, i, int(time.time()), role='OtherRole',
+                  verkey="other_verkey", isCommitted=False)
+
+    for id in IDENTIFIERS[None]:
+        i += 1
+        cache.set(id, i, int(time.time()), role=None,
+                  verkey="identity_owner_verkey", isCommitted=False)
+
+    return cache
+
+
+@pytest.fixture(scope="module")
+def constraint_serializer():
+    return ConstraintsSerializer(domain_state_serializer)
+
+
+@pytest.fixture(scope='module')
+def write_auth_req_validator(idr_cache,
+                             constraint_serializer,
+                             config_state):
+    validator = WriteRequestValidator(config=FakeSomething(authPolicy=CONFIG_LEDGER_AUTH_POLICY),
+                                      auth_map=auth_map,
+                                      cache=idr_cache,
+                                      config_state=config_state,
+                                      state_serializer=constraint_serializer)
+    return validator
+
+
+
+@pytest.fixture(scope="module")
+def db_manager(pool_state, domain_state, config_state,
+               pool_ledger, domain_ledger, config_ledger,
+               idr_cache_store,
+               attrib_store,
+               bls_store):
+    dbm = DatabaseManager()
+    dbm.register_new_database(POOL_LEDGER_ID, pool_ledger, pool_state)
+    dbm.register_new_database(DOMAIN_LEDGER_ID, domain_ledger, domain_state)
+    dbm.register_new_database(CONFIG_LEDGER_ID, config_ledger, config_state)
+    dbm.register_new_store(IDR_CACHE_LABEL, idr_cache_store)
+    dbm.register_new_store(ATTRIB_LABEL, attrib_store)
+    dbm.register_new_store(BLS_LABEL, bls_store)
+    return dbm
+
+
+@pytest.fixture(scope="module")
+def fake_pool_cfg():
+    return FakeSomething()
+
+
+@pytest.fixture(scope="module")
+def fake_upgrader():
+    return FakeSomething()
+
+
+@pytest.fixture(scope="module")
+def fake_restarter():
+    return FakeSomething()
+
+@pytest.fixture(scope="module")
+def fake_pool_manager():
+    return FakeSomething()
+
+
+@pytest.fixture(scope="module")
+def fake_node(db_manager, fake_pool_cfg, fake_upgrader, fake_restarter, fake_pool_manager):
+    wm = WriteRequestManager(database_manager=db_manager)
+    rm = ReadRequestManager()
+    return FakeSomething(write_manager=wm,
+                         read_manager=rm,
+                         db_manager=db_manager,
+                         write_req_validator=write_auth_req_validator,
+                         config=FakeSomething(stewardThreshold=20),
+                         poolCfg=fake_pool_cfg,
+                         upgrader=fake_upgrader,
+                         restarter=fake_restarter,
+                         poolManager=fake_pool_manager)
+
+
+@pytest.fixture(scope="module")
+def _managers(write_auth_req_validator,
+              fake_node):
+    nbs = TestNodeBootstrap(fake_node)
+    nbs.register_domain_req_handlers()
+    nbs.register_domain_batch_handlers()
+    nbs.register_config_req_handlers()
+    nbs.register_config_batch_handlers()
+    return fake_node.write_manager, fake_node.read_manager
+
+
+@pytest.fixture(scope="module")
+def write_manager(_managers):
+    return _managers[0]
+
+
+@pytest.fixture(scope="module")
+def read_manager(_managers):
+    return _managers[1]

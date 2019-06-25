@@ -52,50 +52,6 @@ def action_edit():
                           new_value='new_value')
 
 
-@pytest.fixture(scope='module')
-def idr_cache():
-    cache = IdrCache("Cache",
-                     KeyValueStorageInMemory())
-    i = 0
-
-    for id in IDENTIFIERS[TRUSTEE]:
-        i += 1
-        cache.set(id, i, int(time.time()), role=TRUSTEE,
-                  verkey="trustee_identifier_verkey", isCommitted=False)
-
-    for id in IDENTIFIERS[STEWARD]:
-        i += 1
-        cache.set(id, i, int(time.time()), role=STEWARD,
-                  verkey="steward_identifier_verkey", isCommitted=False)
-
-    for id in IDENTIFIERS[ENDORSER]:
-        i += 1
-        cache.set(id, i, int(time.time()), role=ENDORSER,
-                  verkey="endorser_identifier_verkey", isCommitted=False)
-
-    for id in IDENTIFIERS[NETWORK_MONITOR]:
-        i += 1
-        cache.set(id, i, int(time.time()), role=NETWORK_MONITOR,
-                  verkey="network_monitor_identifier_verkey", isCommitted=False)
-
-    for id in IDENTIFIERS["OtherRole"]:
-        i += 1
-        cache.set(id, i, int(time.time()), role='OtherRole',
-                  verkey="other_verkey", isCommitted=False)
-
-    for id in IDENTIFIERS[None]:
-        i += 1
-        cache.set(id, i, int(time.time()), role=None,
-                  verkey="identity_owner_verkey", isCommitted=False)
-
-    return cache
-
-
-@pytest.fixture(scope="module")
-def constraint_serializer():
-    return ConstraintsSerializer(domain_state_serializer)
-
-
 @pytest.fixture(scope="module")
 def config_state(constraint_serializer):
     state = PruningState(KeyValueStorageInMemory())
@@ -103,18 +59,6 @@ def config_state(constraint_serializer):
                                         auth_map=auth_map,
                                         serializer=constraint_serializer)
     return state
-
-
-@pytest.fixture(scope='module')
-def write_auth_req_validator(idr_cache,
-                             constraint_serializer,
-                             config_state):
-    validator = WriteRequestValidator(config=FakeSomething(authPolicy=CONFIG_LEDGER_AUTH_POLICY),
-                                      auth_map=auth_map,
-                                      cache=idr_cache,
-                                      config_state=config_state,
-                                      state_serializer=constraint_serializer)
-    return validator
 
 
 @pytest.fixture(scope='module', params=[v[0] for v in IDENTIFIERS.values()])
