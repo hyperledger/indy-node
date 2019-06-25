@@ -4,8 +4,11 @@
 
 String name = 'indy-node'
 String pkgName = name
+String mainModuleName = 'indy_node'
 
 Boolean isNightly = env.INDY_NODE_BUILD_MODE == 'nightly'
+String indyNodeRepoUrl = env.INDY_NODE_REPO ?: 'https://github.com/hyperledger/indy-node.git'
+
 Map nightlySettings = [
     releaseVersion: null,
     sha1: null
@@ -80,17 +83,19 @@ def buildDebUbuntu = { releaseVersion, sourcePath, packageVersion=null, missedPk
 }
 
 def configNightlyBuild = {
-    nodeWrapper('ubuntu') {
-        docker.image('hyperledger/indy-core-baseci:0.0.1').inside('-u 0') {
-            sh "apt-get update && apt-get install indy-node"
-            nightlySettings.releaseVersion = getReleaseVersion(moduleName)
-            nightlySettings.sha1 = sh(returnStdout: true, script: """
-                python3 -c "from indy_node import load_manifest; print(load_manifest()['sha1'])"
-            """).trim()
+    stage("Nightly build configuration") {
+        nodeWrapper('ubuntu') {
+            docker.image('hyperledger/indy-core-baseci:0.0.1').inside('-u 0') {
+                sh "apt-get update && apt-get install -y indy-node"
+                nightlySettings.releaseVersion = getReleaseVersion(mainModuleName, false)
+                nightlySettings.sha1 = sh(returnStdout: true, script: """
+                    python3 -c "from $mainModuleName import load_manifest; print(load_manifest()['sha1'])"
+                """).trim()
+            }
         }
-    }
 
-    echo "Nightly settings: $nightlySettings"
+        echo "Nightly settings: $nightlySettings"
+    }
 }
 
 def systemTests = { component, releaseVersion ->
@@ -207,12 +212,20 @@ def systemTests = { component, releaseVersion ->
     nodeWrapper("ubuntu") {
         stage("Checkout SCM") {
             if (isNightly) {
-                checkout scm
-            } else {
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: nightlySettings.sha1]],
+                    userRemoteConfigs: [[
+                        url: indyNodeRepoUrl,
+                    ]]
                 ])
+                // TODO update shared library to accept releaseVersion
+                // settings set from the pipeline as-is
+                // a workaround to patch that for now
+                Map releaseData = nightlySettings.releaseVersion
+                releaseVersion = "${releaseData.release}~${releaseData.pre}${releaseData.revision}"
+            } else {
+                checkout scm
             }
         }
 
@@ -295,6 +308,8 @@ options.setBuiltPkgs([
 
 
 if (isNightly) {
+    configNightlyBuild()
+
     env.BRANCH_NAME = 'master'
 
     options.skip([
@@ -328,5 +343,5 @@ testAndPublish(
     [
         ubuntu: [node: nodeTestUbuntu, common: commonTestUbuntu]
     ],
-    true, options, [ubuntu: buildDebUbuntu], 'indy_node'
+    true, options, [ubuntu: buildDebUbuntu], mainModuleName
 )
