@@ -73,6 +73,7 @@ class RevocRegEntryHandler(WriteRequestHandler):
             revoc_def[VALUE][ISSUANCE_TYPE])
         writer = writer_cls(self.state)
         writer.write(current_entry, txn)
+        return txn
 
     def _get_current_revoc_entry_and_revoc_def(self, author_did, revoc_reg_def_id, req_id):
         assert revoc_reg_def_id
