@@ -60,7 +60,6 @@ class ClaimDefHandler(WriteRequestHandler):
         self.state.set(path, value_bytes)
         return txn
 
-
     @staticmethod
     def prepare_claim_def_for_state(txn, path_only=False):
         origin = get_from(txn)

@@ -14,7 +14,6 @@ from plenum.server.request_handlers.utils import encode_state_value
 
 
 class RevocRegDefHandler(WriteRequestHandler):
-
     revocation_strategy_map = {
         ISSUANCE_BY_DEFAULT: RevokedStrategy,
         ISSUANCE_ON_DEMAND: IssuedStrategy,
