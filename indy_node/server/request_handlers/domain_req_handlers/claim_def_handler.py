@@ -58,6 +58,7 @@ class ClaimDefHandler(WriteRequestHandler):
         self._validate_txn_type(txn)
         path, value_bytes = self.prepare_claim_def_for_state(txn)
         self.state.set(path, value_bytes)
+        return txn
 
     @staticmethod
     def prepare_claim_def_for_state(txn, path_only=False):
