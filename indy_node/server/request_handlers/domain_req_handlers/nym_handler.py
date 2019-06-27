@@ -3,28 +3,27 @@ from binascii import hexlify
 from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.state import domain
 from indy_common.constants import NYM
 from indy_common.auth import Authoriser
 from ledger.util import F
 
-from plenum.common.constants import ROLE, TARGET_NYM, VERKEY, DOMAIN_LEDGER_ID, TXN_TIME
+from plenum.common.constants import ROLE, TARGET_NYM, VERKEY, TXN_TIME
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import get_payload_data, get_seq_no, get_txn_time, get_request_data, get_from
 from plenum.common.types import f
 from plenum.server.database_manager import DatabaseManager
+from plenum.server.request_handlers.nym_handler import NymHandler as PNymHandler
 from plenum.server.request_handlers.utils import nym_to_state_key, get_nym_details
-from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 
 
-class NymHandler(WriteRequestHandler):
+class NymHandler(PNymHandler):
     state_serializer = domain_state_serializer
 
-    def __init__(self, database_manager: DatabaseManager,
-                 write_request_validator: WriteRequestValidator):
-        super().__init__(database_manager, NYM, DOMAIN_LEDGER_ID)
-        self.write_request_validator = write_request_validator
+    def __init__(self, config, database_manager: DatabaseManager,
+                 write_req_validator: WriteRequestValidator):
+        super().__init__(config, database_manager)
+        self.write_req_validator = write_req_validator
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
@@ -53,13 +52,13 @@ class NymHandler(WriteRequestHandler):
         else:
             self._validate_existing_nym(request, operation, nym_data)
 
-    def gen_state_key(self, txn):
+    def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
         nym = get_payload_data(txn).get(TARGET_NYM)
-        binary_digest = domain.make_state_path_for_nym(nym)
+        binary_digest = self.make_state_path_for_nym(nym)
         return hexlify(binary_digest).decode()
 
-    def update_state(self, txn, prev_result, is_committed=False):
+    def update_state(self, txn, prev_result, request, is_committed=False):
         self._validate_txn_type(txn)
         nym = get_payload_data(txn).get(TARGET_NYM)
         existing_data = get_nym_details(self.state, nym,
@@ -85,10 +84,10 @@ class NymHandler(WriteRequestHandler):
 
     def _validate_new_nym(self, request, operation):
         role = operation.get(ROLE)
-        self.write_request_validator.validate(request,
-                                              [AuthActionAdd(txn_type=NYM,
-                                                             field=ROLE,
-                                                             value=role)])
+        self.write_req_validator.validate(request,
+                                          [AuthActionAdd(txn_type=NYM,
+                                                         field=ROLE,
+                                                         value=role)])
 
     def _validate_existing_nym(self, request, operation, nym_data):
         origin = request.identifier
@@ -100,9 +99,14 @@ class NymHandler(WriteRequestHandler):
             if key in operation:
                 newVal = operation[key]
                 oldVal = nym_data.get(key)
-                self.write_request_validator.validate(request,
-                                                      [AuthActionEdit(txn_type=NYM,
-                                                                      field=key,
-                                                                      old_value=oldVal,
-                                                                      new_value=newVal,
-                                                                      is_owner=is_owner)])
+                self.write_req_validator.validate(request,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=key,
+                                                                  old_value=oldVal,
+                                                                  new_value=newVal,
+                                                                  is_owner=is_owner)])
+
+    def _decode_state_value(self, encoded):
+        if encoded:
+            return domain_state_serializer.deserialize(encoded)
+        return None, None, None

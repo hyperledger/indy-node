@@ -6,7 +6,7 @@ from plenum.test.node_catchup.helper import ensure_all_nodes_have_same_data, \
     waitNodeDataEquality
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.test_node import checkNodesConnected, ensure_node_disconnected
-from indy_common.constants import TRUST_ANCHOR_STRING
+from indy_common.constants import ENDORSER_STRING
 from indy_common.config_helper import NodeConfigHelper
 from indy_node.test.helper import TestNode, sdk_add_raw_attribute
 
@@ -22,18 +22,18 @@ def test_state_regenerated_from_ledger(looper,
     Node loses its state database but recreates it from ledger after start.
     Checking ATTRIB txns too since they store some data off ledger too
     """
-    trust_anchors = []
+    endorsers = []
     for i in range(5):
-        trust_anchors.append(sdk_add_new_nym(looper, sdk_pool_handle,
+        endorsers.append(sdk_add_new_nym(looper, sdk_pool_handle,
                                              sdk_wallet_trustee,
                                              'TA' + str(i),
-                                             TRUST_ANCHOR_STRING))
+                                             ENDORSER_STRING))
         sdk_add_raw_attribute(looper, sdk_pool_handle,
-                              trust_anchors[-1],
+                              endorsers[-1],
                               randomString(6),
                               randomString(10))
 
-    for wh in trust_anchors:
+    for wh in endorsers:
         for i in range(3):
             sdk_add_new_nym(looper, sdk_pool_handle,
                             wh, 'NP1' + str(i))
@@ -68,7 +68,7 @@ def test_state_regenerated_from_ledger(looper,
     waitNodeDataEquality(looper, restarted_node, *nodeSet[:-1])
 
     # Pool is still functional
-    for wh in trust_anchors:
+    for wh in endorsers:
         sdk_add_new_nym(looper, sdk_pool_handle,
                         wh, 'NP--' + randomString(5))
 

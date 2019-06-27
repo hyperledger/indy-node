@@ -26,11 +26,11 @@ did new seed=TestSteward300000000000000000001 metadata="test steward 3"
 Did "CEJJcfjNGt7YcNLyXaszaq" has been created with "~AAGGsLT3yQtTmNdKrHXtC2" verkey
 Metadata has been saved for DID "CEJJcfjNGt7YcNLyXaszaq"
 
-did new seed=TestTrustAnchor00000000000000001 metadata="test trust anchor 0"
+did new seed=TestEndorser00000000000000000001 metadata="test endorser 0"
 Did "CDcGtKx1boRYFwPBaGkMmk" has been created with "~PuCGfSiTB3NZGi1SH8w7H" verkey
 Metadata has been saved for DID "CDcGtKx1boRYFwPBaGkMmk"
 
-did new seed=TestTrustAnchor10000000000000001 metadata="test trust anchor 1"
+did new seed=TestEndorser10000000000000000001 metadata="test endorser 1"
 Did "Bhe7Uh5E1LYLgpLcbuVjj2" has been created with "~NMpYrG7tAXYV4ujYZjddKu" verkey
 Metadata has been saved for DID "Bhe7Uh5E1LYLgpLcbuVjj2"
 
@@ -195,7 +195,7 @@ Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is r
 did use CEJJcfjNGt7YcNLyXaszaq
 Did "CEJJcfjNGt7YcNLyXaszaq" has been set as active
 
-ledger nym did=Bhe7Uh5E1LYLgpLcbuVjj2 role=TRUST_ANCHOR verkey=~NMpYrG7tAXYV4ujYZjddKu
+ledger nym did=Bhe7Uh5E1LYLgpLcbuVjj2 role=ENDORSER verkey=~NMpYrG7tAXYV4ujYZjddKu
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -207,7 +207,7 @@ Data:
 +------------------------+-------------------------+--------------+
 | Did                    | Verkey                  | Role         |
 +------------------------+-------------------------+--------------+
-| Bhe7Uh5E1LYLgpLcbuVjj2 | ~NMpYrG7tAXYV4ujYZjddKu | TRUST_ANCHOR |
+| Bhe7Uh5E1LYLgpLcbuVjj2 | ~NMpYrG7tAXYV4ujYZjddKu | ENDORSER |
 +------------------------+-------------------------+--------------+
 
 - ledger get-nym did=Bhe7Uh5E1LYLgpLcbuVjj2
@@ -222,13 +222,13 @@ Data:
 +------------------------+------------------------+-------------------------+--------------+
 | Identifier             | Dest                   | Verkey                  | Role         |
 +------------------------+------------------------+-------------------------+--------------+
-| CEJJcfjNGt7YcNLyXaszaq | Bhe7Uh5E1LYLgpLcbuVjj2 | ~NMpYrG7tAXYV4ujYZjddKu | TRUST_ANCHOR |
+| CEJJcfjNGt7YcNLyXaszaq | Bhe7Uh5E1LYLgpLcbuVjj2 | ~NMpYrG7tAXYV4ujYZjddKu | ENDORSER |
 +------------------------+------------------------+-------------------------+--------------+
 
 did use 7qFmEyYCXcmUFVied5Sp3b
 Did "7qFmEyYCXcmUFVied5Sp3b" has been set as active
 
-ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=TRUST_ANCHOR verkey=~PuCGfSiTB3NZGi1SH8w7H
+ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=ENDORSER verkey=~PuCGfSiTB3NZGi1SH8w7H
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -240,7 +240,7 @@ Data:
 +------------------------+------------------------+--------------+
 | Did                    | Verkey                 | Role         |
 +------------------------+------------------------+--------------+
-| CDcGtKx1boRYFwPBaGkMmk | ~PuCGfSiTB3NZGi1SH8w7H | TRUST_ANCHOR |
+| CDcGtKx1boRYFwPBaGkMmk | ~PuCGfSiTB3NZGi1SH8w7H | ENDORSER |
 +------------------------+------------------------+--------------+
 
 - ledger get-nym did=CDcGtKx1boRYFwPBaGkMmk
@@ -255,7 +255,7 @@ Data:
 +------------------------+------------------------+------------------------+--------------+
 | Identifier             | Dest                   | Verkey                 | Role         |
 +------------------------+------------------------+------------------------+--------------+
-| 7qFmEyYCXcmUFVied5Sp3b | CDcGtKx1boRYFwPBaGkMmk | ~PuCGfSiTB3NZGi1SH8w7H | TRUST_ANCHOR |
+| 7qFmEyYCXcmUFVied5Sp3b | CDcGtKx1boRYFwPBaGkMmk | ~PuCGfSiTB3NZGi1SH8w7H | ENDORSER |
 +------------------------+------------------------+------------------------+--------------+
 
 did use CDcGtKx1boRYFwPBaGkMmk
@@ -351,7 +351,7 @@ Data:
 did use 7qFmEyYCXcmUFVied5Sp3b
 Did "7qFmEyYCXcmUFVied5Sp3b" has been set as active
 
-ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=TRUST_ANCHOR
+ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=ENDORSER
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -363,7 +363,7 @@ Data:
 +------------------------+--------------+
 | Did                    | Role         |
 +------------------------+--------------+
-| CDcGtKx1boRYFwPBaGkMmk | TRUST_ANCHOR |
+| CDcGtKx1boRYFwPBaGkMmk | ENDORSER |
 +------------------------+--------------+
 
 did use CDcGtKx1boRYFwPBaGkMmk
@@ -438,7 +438,7 @@ Did "7qFmEyYCXcmUFVied5Sp3b" has been set as active
 - ledger nym did=7qFmEyYCXcmUFVied5Sp3b role=
 Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required
 
-ledger nym did=Jt7aMnw77aoaBMyhXUNjt1 verkey=~DT5pLP1wcvsgAzM78sqiR1 role=TRUST_ANCHOR
+ledger nym did=Jt7aMnw77aoaBMyhXUNjt1 verkey=~DT5pLP1wcvsgAzM78sqiR1 role=ENDORSER
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -450,7 +450,7 @@ Data:
 +------------------------+-------------------------+--------------+
 | Did                    | Verkey                  | Role         |
 +------------------------+-------------------------+--------------+
-| Jt7aMnw77aoaBMyhXUNjt1 | ~DT5pLP1wcvsgAzM78sqiR1 | TRUST_ANCHOR |
+| Jt7aMnw77aoaBMyhXUNjt1 | ~DT5pLP1wcvsgAzM78sqiR1 | ENDORSER |
 +------------------------+-------------------------+--------------+
 
 - ledger get-nym did=Jt7aMnw77aoaBMyhXUNjtt

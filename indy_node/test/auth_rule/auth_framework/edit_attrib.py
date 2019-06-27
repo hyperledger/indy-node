@@ -7,7 +7,6 @@ from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER
 from indy_common.constants import ATTRIB
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
-from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from indy_node.test.helper import (
     sdk_add_attribute_and_check, build_auth_rule_request_json
 )

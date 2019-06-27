@@ -112,7 +112,7 @@ def logger():
 @pytest.mark.skip('Unskip if you need to debug')
 def test_memory_debugging(looper,
                           nodeSet,
-                          sdk_wallet_trust_anchor,
+                          sdk_wallet_endorser,
                           sdk_pool_handle,
                           logger):
     # Settings
@@ -133,7 +133,7 @@ def test_memory_debugging(looper,
     memory_dicts['After starting'] = asizeof.asized(primary, detail=15)
 
     while primary.master_replica.lastPrePrepareSeqNo < requests_count:
-        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trust_anchor)
+        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_endorser)
 
     memory_dicts['After ordering'] = asizeof.asized(primary, detail=15)
 
@@ -144,7 +144,7 @@ def test_memory_debugging(looper,
 
     # Sending requests until nodes generate `unordered_requests_count` 3pc batches
     while primary.master_replica.lastPrePrepareSeqNo < requests_count * 2:
-        sdk_add_new_nym_without_waiting(looper, sdk_pool_handle, sdk_wallet_trust_anchor)
+        sdk_add_new_nym_without_waiting(looper, sdk_pool_handle, sdk_wallet_endorser)
 
     memory_dicts['After {} unordered'.format(requests_count)] = asizeof.asized(primary, detail=15)
 
@@ -175,7 +175,7 @@ def test_memory_debugging(looper,
     dont_send_commit_to(set3, nodeSet[2].name)
 
     while primary.master_replica.lastPrePrepareSeqNo < requests_count * 3:
-        sdk_add_new_nym_without_waiting(looper, sdk_pool_handle, sdk_wallet_trust_anchor)
+        sdk_add_new_nym_without_waiting(looper, sdk_pool_handle, sdk_wallet_endorser)
 
     memory_dicts['After {} unordered again'.format(requests_count)] = asizeof.asized(primary, detail=15)
 

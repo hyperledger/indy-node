@@ -1,8 +1,7 @@
-from indy_common.state import domain
-
 from indy_common.constants import CLAIM_DEF_SIGNATURE_TYPE, GET_CLAIM_DEF
 from indy_common.req_utils import get_read_claim_def_from, get_read_claim_def_signature_type, \
     get_read_claim_def_schema_ref, get_read_claim_def_tag
+from indy_node.server.request_handlers.domain_req_handlers.claim_def_handler import ClaimDefHandler
 
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.request import Request
@@ -43,7 +42,7 @@ class GetClaimDefHandler(ReadRequestHandler):
                       is_committed=True) -> (str, int, int, list):
         assert author is not None
         assert schema_seq_no is not None
-        path = domain.make_state_path_for_claim_def(author, schema_seq_no, signature_type, tag)
+        path = ClaimDefHandler.make_state_path_for_claim_def(author, schema_seq_no, signature_type, tag)
         try:
             keys, seq_no, last_update_time, proof = self.lookup(path, is_committed, with_proof=True)
             return keys, seq_no, last_update_time, proof

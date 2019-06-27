@@ -4,11 +4,17 @@ import base58
 from indy.did import replace_keys_start, replace_keys_apply
 from indy.ledger import (
     build_attrib_request, build_get_attrib_request,
-    build_get_auth_rule_request, build_auth_rule_request
-)
+    build_get_auth_rule_request, build_auth_rule_request,
+    build_auth_rules_request)
 from libnacl import randombytes
 
+from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
+from indy_common.authorize.auth_constraints import ROLE, CONSTRAINT_ID, ConstraintsEnum, SIG_COUNT, NEED_TO_BE_OWNER, \
+    METADATA
 from indy_common.config_helper import NodeConfigHelper
+from indy_common.constants import NYM, ENDORSER, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, OLD_VALUE
+from indy_node.server.node_bootstrap import NodeBootstrap
+from plenum.common.constants import TRUSTEE
 from plenum.common.signer_did import DidSigner
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.util import rawToFriendly
@@ -31,6 +37,14 @@ class TestUpgrader(Upgrader):
     pass
 
 
+class TestNodeBootstrap(NodeBootstrap):
+    def init_upgrader(self):
+        return TestUpgrader(self.node.id, self.node.name, self.node.dataLocation, self.node.config,
+                            self.node.configLedger,
+                            actionFailedCallback=self.node.postConfigLedgerCaughtUp,
+                            action_start_callback=self.node.notify_upgrade_start)
+
+
 # noinspection PyShadowingNames,PyShadowingNames
 @spyable(
     methods=[Node.handleOneNodeMsg, Node.processRequest, Node.processOrdered,
@@ -47,16 +61,12 @@ class TestNode(TempStorage, TestNodeCore, Node):
         from plenum.common.stacks import nodeStackClass, clientStackClass
         self.NodeStackClass = nodeStackClass
         self.ClientStackClass = clientStackClass
+        if kwargs.get('bootstrap_cls', None) is None:
+            kwargs['bootstrap_cls'] = TestNodeBootstrap
 
         Node.__init__(self, *args, **kwargs)
         TestNodeCore.__init__(self, *args, **kwargs)
         self.cleanupOnStopping = True
-
-    def init_upgrader(self):
-        return TestUpgrader(self.id, self.name, self.dataLocation, self.config,
-                            self.configLedger,
-                            actionFailedCallback=self.postConfigLedgerCaughtUp,
-                            action_start_callback=self.notify_upgrade_start)
 
     def init_domain_req_handler(self):
         return Node.init_domain_req_handler(self)
@@ -177,6 +187,20 @@ def sdk_send_and_check_auth_rule_request(
     )
 
 
+def sdk_send_and_check_auth_rules_request(looper, sdk_pool_handle,
+                                          sdk_wallet, rules=None, no_wait=False):
+    if rules is None:
+        rules = [generate_auth_rule(ADD_PREFIX, NYM,
+                                    ROLE, ENDORSER),
+                 generate_auth_rule(EDIT_PREFIX, NYM,
+                                    ROLE, ENDORSER, TRUSTEE)]
+    req_json = looper.loop.run_until_complete(
+        build_auth_rules_request(submitter_did=sdk_wallet[1], data=json.dumps(rules)))
+    return sdk_send_and_check_req_json(
+        looper, sdk_pool_handle, sdk_wallet, req_json, no_wait=no_wait
+    )
+
+
 def sdk_send_and_check_get_auth_rule_request(
     looper, sdk_pool_handle, sdk_wallet,
     auth_type=None,
@@ -196,6 +220,34 @@ def sdk_send_and_check_get_auth_rule_request(
     return sdk_send_and_check_req_json(
         looper, sdk_pool_handle, sdk_wallet, req_json
     )
+
+
+def generate_auth_rule(auth_action=ADD_PREFIX, auth_type=NYM,
+                       field=ROLE, new_value=ENDORSER,
+                       old_value=None, constraint=None):
+    if constraint is None:
+        constraint = generate_constraint_entity()
+    rule = {CONSTRAINT: constraint,
+            AUTH_ACTION: auth_action,
+            AUTH_TYPE: auth_type,
+            FIELD: field,
+            NEW_VALUE: new_value
+            }
+    if old_value or auth_action == EDIT_PREFIX:
+        rule[OLD_VALUE] = old_value
+    return rule
+
+
+def generate_constraint_entity(constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID,
+                               role=TRUSTEE,
+                               sig_count=1,
+                               need_to_be_owner=False,
+                               metadata={}):
+    return {CONSTRAINT_ID: constraint_id,
+            ROLE: role,
+            SIG_COUNT: sig_count,
+            NEED_TO_BE_OWNER: need_to_be_owner,
+            METADATA: metadata}
 
 
 base58_alphabet = set(base58.alphabet.decode("utf-8"))

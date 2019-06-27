@@ -2,12 +2,16 @@ import json
 import os
 import argparse
 from collections import Sequence
+from typing import Dict, List
+
 import base58
 import libnacl
 import logging
 import time
 
 PUB_XFER_TXN_ID = "10001"
+
+logger = logging.getLogger()
 
 
 def logger_init(out_dir, f_name, log_lvl):
@@ -91,6 +95,16 @@ def response_get_type(req):
         raise RuntimeError("Response of unsupported type")
     txn_type = dict_resp.get("result", {}).get("txn", {}).get("type", "")
     return txn_type
+
+
+def log_addr_txos_update(context: str, addr_txos: Dict[str, List], amount: int = 0):
+    total = sum(len(txos) for txos in addr_txos.values())
+    if amount > 0:
+        logger.info("{}: added {} txos, {} total in addr_txos".format(context, amount, total))
+    elif amount < 0:
+        logger.info("{}: removed {} txos, {} total in addr_txos".format(context, -amount, total))
+    else:
+        logger.info("{}: {} txos total in addr_txos".format(context, total))
 
 
 def gen_input_output(addr_txos, val):

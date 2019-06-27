@@ -33,9 +33,9 @@
     <td><sub>ADD</sub></td>
     <td><sub><code>role</code></sub></td>
     <td><sub><code>*</code></sub></td>
-    <td><sub>TRUST_ANCHOR</sub></td>
+    <td><sub>ENDORSER</sub></td>
     <td><sub>1 TRUSTEE OR 1 STEWARD</sub></td>
-    <td><sub>Adding a new TRUST_ANCHOR</sub></td>
+    <td><sub>Adding a new ENDORSER</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
@@ -52,7 +52,7 @@
     <td><sub><code>role</code></sub></td>
     <td><sub><code>*</code></sub></td>
     <td><sub><code>&lt;None&gt;</code></sub></td>
-    <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 TRUST_ANCHOR</sub></td>
+    <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 ENDORSER</sub></td>
     <td><sub>Adding a new Identity Owner</sub></td>
   </tr>
 
@@ -70,9 +70,9 @@
     <td><sub>EDIT</sub></td>
     <td><sub><code>role</code></sub></td>
     <td><sub>TRUSTEE</sub></td>
-    <td><sub>TRUST_ANCHOR</sub></td>
+    <td><sub>ENDORSER</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>Changing Trustee to Trust Anchor</sub></td>
+    <td><sub>Changing Trustee to Endorser</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
@@ -107,9 +107,9 @@
     <td><sub>EDIT</sub></td>
     <td><sub><code>role</code></sub></td>
     <td><sub>STEWARD</sub></td>
-    <td><sub>TRUST_ANCHOR</sub></td>
+    <td><sub>ENDORSER</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>Changing Steward to Trust Anchor</sub></td>
+    <td><sub>Changing Steward to Endorser</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
@@ -134,37 +134,37 @@
     <td><sub>NYM</sub></td>
     <td><sub>EDIT</sub></td>
     <td><sub><code>role</code></sub></td>
-    <td><sub>TRUST_ANCHOR</sub></td>
+    <td><sub>ENDORSER</sub></td>
     <td><sub>TRUSTEE</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>Changing Trust Anchor to Trustee</sub></td>
+    <td><sub>Changing Endorser to Trustee</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
     <td><sub>EDIT</sub></td>
     <td><sub><code>role</code></sub></td>
-    <td><sub>TRUST_ANCHOR</sub></td>
+    <td><sub>ENDORSER</sub></td>
     <td><sub>STEWARD</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>Changing Trust Anchor to Steward</sub></td>
+    <td><sub>Changing Endorser to Steward</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
     <td><sub>EDIT</sub></td>
     <td><sub><code>role</code></sub></td>
-    <td><sub>TRUST_ANCHOR</sub></td>
+    <td><sub>ENDORSER</sub></td>
     <td><sub>NETWORK_MONITOR</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>Changing Trust Anchor to Network Monitor</sub></td>
+    <td><sub>Changing Endorser to Network Monitor</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
     <td><sub>EDIT</sub></td>
     <td><sub><code>role</code></sub></td>
-    <td><sub>TRUST_ANCHOR</sub></td>
+    <td><sub>ENDORSER</sub></td>
     <td><sub><code>&lt;None&gt;</code></sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>Demoting a Trust Anchor</sub></td>
+    <td><sub>Demoting a Endorser</sub></td>
   </tr>
 
   <tr>
@@ -190,9 +190,9 @@
     <td><sub>EDIT</sub></td>
     <td><sub><code>role</code></sub></td>
     <td><sub>NETWORK_MONITOR</sub></td>
-    <td><sub>TRUST_ANCHOR</sub></td>
+    <td><sub>ENDORSER</sub></td>
     <td><sub>1 TRUSTEE OR 1 STEWARD</sub></td>
-    <td><sub>Changing Network Monitor to Trust Anchor</sub></td>
+    <td><sub>Changing Network Monitor to Endorser</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
@@ -227,9 +227,9 @@
     <td><sub>EDIT</sub></td>
     <td><sub><code>role</code></sub></td>
     <td><sub><code>&lt;None&gt;</code></sub></td>
-    <td><sub>TRUST_ANCHOR</sub></td>
+    <td><sub>ENDORSER</sub></td>
     <td><sub>1 TRUSTEE OR 1 STEWARD</sub></td>
-    <td><sub>Promoting Identity Owner to Trust Anchor</sub></td>
+    <td><sub>Promoting Identity Owner to Endorser</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
@@ -273,7 +273,7 @@
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
-    <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 TRUST_ANCHOR</sub></td>
+    <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 ENDORSER</sub></td>
     <td><sub>Adding a new Schema</sub></td>
   </tr>
   <tr>
@@ -283,7 +283,7 @@
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
     <td><sub>No one can edit existing Schema</sub></td>
-    <td><sub>Editing a Schema: not supported by auth constraints yet (INDY-2077)</sub></td>
+    <td><sub>Editing a Schema</sub></td>
   </tr>
   <tr>
     <td><sub>CLAIM_DEF</sub></td>
@@ -291,7 +291,7 @@
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
-    <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 TRUST_ANCHOR</sub></td>
+    <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 ENDORSER</sub></td>
     <td><sub>Adding a new CLAIM_DEF</sub></td>
   </tr>
   <tr>
@@ -300,7 +300,7 @@
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
-    <td><sub>1 owner TRUSTEE OR 1 owner STEWARD OR 1 owner TRUST_ANCHOR</sub></td>
+    <td><sub>1 owner TRUSTEE OR 1 owner STEWARD OR 1 owner ENDORSER</sub></td>
     <td><sub>Editing a CLAIM_DEF: INDY-2078 - can not be configured by auth rule; ADD CLAIM_DEF rule is currently used for editing where owner is always true as it's part of the primary key</sub></td>
   </tr>
     <tr>
@@ -309,7 +309,7 @@
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
-    <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 TRUST_ANCHOR</sub></td>
+    <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 ENDORSER</sub></td>
     <td><sub>Adding a new REVOC_REG_DEF</sub></td>
   </tr>
   <tr>
@@ -464,6 +464,15 @@
     <td><sub><code>*</code></sub></td>
     <td><sub>1 TRUSTEE</sub></td>
     <td><sub>Changing an authentification rule</sub></td>
+  </tr>
+  <tr>
+    <td><sub>AUTH_RULES</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>1 TRUSTEE</sub></td>
+    <td><sub>Changing a number of authentification rules</sub></td>
   </tr>
   <tr>
     <td><sub>TRANSACTION_AUTHOR_AGREEMENT</sub></td>

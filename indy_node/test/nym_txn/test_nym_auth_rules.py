@@ -18,9 +18,9 @@ from indy_common.roles import Roles
 
 from indy_node.test.helper import createUuidIdentifierAndFullVerkey
 
+
 #   TODO
 #   - more specific string patterns for auth exc check
-#   - ANYONE_CAN_WRITE=True case
 
 
 class DID(object):
@@ -77,10 +77,10 @@ NYMEditSignerTypes = Enum(
 NYMEditDestRoles = NYMAddDestRoles
 NYMEditDestVerkeys = Enum('NYMEditDestVerkeys', 'same new demote omitted', type=EnumBase)
 
-
 dids = {}
 did_editor_others = {}
 did_provisioners = did_editor_others
+
 
 # FIXTURES
 
@@ -251,20 +251,20 @@ def auth_check(action_id, signer, op, did_ledger=None):
     def check_promotion():
         # omitted role means IDENTITY_OWNER
         if op_role in (None, Roles.IDENTITY_OWNER):
-            return signer.role in (Roles.TRUSTEE, Roles.STEWARD, Roles.TRUST_ANCHOR)
+            return signer.role in (Roles.TRUSTEE, Roles.STEWARD, Roles.ENDORSER)
         elif op_role in (Roles.TRUSTEE, Roles.STEWARD):
             return signer.role == Roles.TRUSTEE
-        elif op_role in (Roles.TRUST_ANCHOR, Roles.NETWORK_MONITOR):
+        elif op_role in (Roles.ENDORSER, Roles.NETWORK_MONITOR):
             return signer.role in (Roles.TRUSTEE, Roles.STEWARD)
 
     def check_demotion():
         if did_ledger.role in (Roles.TRUSTEE, Roles.STEWARD):
             return signer.role == Roles.TRUSTEE
-        elif did_ledger.role == Roles.TRUST_ANCHOR:
+        elif did_ledger.role == Roles.ENDORSER:
             return (signer.role == Roles.TRUSTEE)
             # FIXME INDY-1968: uncomment when the task is addressed
             # return ((signer.role == Roles.TRUSTEE) or
-            #        (signer.role == Roles.TRUST_ANCHOR and
+            #        (signer.role == Roles.ENDORSER and
             #            is_self and is_owner))
         elif did_ledger.role == Roles.NETWORK_MONITOR:
             return signer.role in (Roles.TRUSTEE, Roles.STEWARD)
@@ -275,7 +275,7 @@ def auth_check(action_id, signer, op, did_ledger=None):
     elif action_id == ActionIds.edit:
         # is_self = signer.did == did_ledger.did
         is_owner = signer == (did_ledger if did_ledger.verkey is not None else
-                              did_ledger.creator)
+        did_ledger.creator)
 
         if (VERKEY in op) and (not is_owner):
             return False
@@ -307,10 +307,10 @@ def sign_and_validate(looper, node, action_id, signer, op, did_ledger=None):
     request = Request(**json.loads(s_req))
 
     if auth_check(action_id, signer, op, did_ledger):
-        node.get_req_handler(txn_type=NYM).validate(request)
+        node.write_manager.dynamic_validation(request)
     else:
         with pytest.raises(UnauthorizedClientRequest):
-            node.get_req_handler(txn_type=NYM).validate(request)
+            node.write_manager.dynamic_validation(request)
 
 
 # TESTS
@@ -328,7 +328,6 @@ def test_nym_edit(
         edited_nym_role, edited_nym_verkey,
         looper, txnPoolNodeSet,
         editor, edited, edit_op):
-
     if edit_op is None:  # might be None, means a duplicate test case
         return
 

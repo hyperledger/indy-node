@@ -3,7 +3,7 @@ import pytest
 from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.authorize import auth_map
-from indy_common.constants import NYM, ROLE, TRUST_ANCHOR
+from indy_common.constants import NYM, ROLE, ENDORSER
 from indy_node.test.auth_rule.auth_framework.basic import roles_to_string, AuthTest
 from indy_node.test.auth_rule.helper import create_verkey_did
 from plenum.common.exceptions import RequestRejectedException
@@ -70,8 +70,8 @@ class AddNewRoleTest(AuthTest):
                                skipverkey=False)
 
     def get_changed_auth_rule(self):
-        self.checker_wallet = self.env.role_to_wallet[TRUST_ANCHOR]
-        constraint = AuthConstraint(role=TRUST_ANCHOR,
+        self.checker_wallet = self.env.role_to_wallet[ENDORSER]
+        constraint = AuthConstraint(role=ENDORSER,
                                     sig_count=1,
                                     need_to_be_owner=False)
         return build_auth_rule_request_json(
@@ -94,8 +94,8 @@ class AddNewStewardTest(AddNewRoleTest):
         super().__init__(action_id, env.sdk_wallet_trustee, env)
 
 
-class AddNewTrustAnchorTest(AddNewRoleTest):
-    def __init__(self, env, action_id=auth_map.add_new_trust_anchor.get_action_id()):
+class AddNewEndorserTest(AddNewRoleTest):
+    def __init__(self, env, action_id=auth_map.add_new_endorser.get_action_id()):
         super().__init__(action_id, env.sdk_wallet_trustee, env)
 
 

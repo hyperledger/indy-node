@@ -5,7 +5,7 @@ import os
 
 from indy_common.authorize.auth_actions import AbstractAuthAction
 from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AuthConstraint, \
-    AuthConstraintAnd, ConstraintsEnum
+    AuthConstraintAnd, ConstraintsEnum, AuthConstraintOr, AuthConstraintForbidden
 from indy_common.authorize.helper import get_named_role
 from indy_common.constants import NYM, CLAIM_DEF
 from indy_common.roles import Roles
@@ -160,7 +160,7 @@ class OrAuthorizer(AbstractAuthorizer):
 
     def authorize(self,
                   request: Request,
-                  auth_constraint: AuthConstraintAnd,
+                  auth_constraint: AuthConstraintOr,
                   auth_action: AbstractAuthAction):
         successes = []
         fails = []
@@ -181,3 +181,12 @@ class OrAuthorizer(AbstractAuthorizer):
                                  os.linesep.join(fails)])
             )
         return True, ""
+
+
+class ForbiddenAuthorizer(AbstractAuthorizer):
+
+    def authorize(self,
+                  request: Request,
+                  auth_constraint: AuthConstraintForbidden,
+                  auth_action: AbstractAuthAction):
+        return False, str(auth_constraint)

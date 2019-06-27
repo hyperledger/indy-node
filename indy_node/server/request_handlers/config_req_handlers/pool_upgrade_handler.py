@@ -20,11 +20,11 @@ class PoolUpgradeHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
                  upgrader: Upgrader,
-                 write_request_validator: WriteRequestValidator,
+                 write_req_validator: WriteRequestValidator,
                  pool_manager: TxnPoolManager):
         super().__init__(database_manager, POOL_UPGRADE, CONFIG_LEDGER_ID)
         self.upgrader = upgrader
-        self.write_request_validator = write_request_validator
+        self.write_req_validator = write_req_validator
         self.pool_manager = pool_manager
 
     def static_validation(self, request: Request):
@@ -94,8 +94,8 @@ class PoolUpgradeHandler(WriteRequestHandler):
                                          field=ACTION,
                                          old_value=status,
                                          new_value=action)
-        self.write_request_validator.validate(request,
-                                              [auth_action])
+        self.write_req_validator.validate(request,
+                                          [auth_action])
 
     def apply_forced_request(self, req: Request):
         super().apply_forced_request(req)
@@ -103,8 +103,5 @@ class PoolUpgradeHandler(WriteRequestHandler):
         self.upgrader.handleUpgradeTxn(txn)
 
     # Config handler don't use state for any validation for now
-    def update_state(self, txn, prev_result, is_committed=False):
-        pass
-
-    def gen_state_key(self, txn):
+    def update_state(self, txn, prev_result, request, is_committed=False):
         pass

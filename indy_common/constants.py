@@ -34,6 +34,7 @@ NEW_VALUE = "new_value"
 AUTH_ACTION = "auth_action"
 AUTH_TYPE = "auth_type"
 FIELD = "field"
+RULES = "rules"
 
 ROLE = 'role'
 NONCE = 'nonce'
@@ -134,8 +135,8 @@ ENDPOINT = "endpoint"
 
 # FIXME can be automated by iteration through Roles
 # but it would be less self-descriptive
-TRUST_ANCHOR = Roles.TRUST_ANCHOR.value
-TRUST_ANCHOR_STRING = 'TRUST_ANCHOR'
+ENDORSER = Roles.ENDORSER.value
+ENDORSER_STRING = 'ENDORSER'
 
 NETWORK_MONITOR = Roles.NETWORK_MONITOR.value
 NETWORK_MONITOR_STRING = 'NETWORK_MONITOR'
@@ -166,6 +167,7 @@ VALIDATOR_INFO = IndyTransactions.VALIDATOR_INFO.value
 
 POOL_CONFIG = IndyTransactions.POOL_CONFIG.value
 AUTH_RULE = IndyTransactions.AUTH_RULE.value
+AUTH_RULES = IndyTransactions.AUTH_RULES.value
 GET_AUTH_RULE = IndyTransactions.GET_AUTH_RULE.value
 
 CONFIG_LEDGER_ID = 2

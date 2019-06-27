@@ -1,5 +1,6 @@
-from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER, AuthConstraintOr, AuthConstraintAnd
-from indy_common.constants import TRUST_ANCHOR
+from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER, AuthConstraintOr, AuthConstraintAnd, \
+    AuthConstraintForbidden
+from indy_common.constants import ENDORSER
 from indy_common.test.auth.metadata.helper import validate, PLUGIN_FIELD
 from plenum.common.constants import TRUSTEE, STEWARD
 
@@ -67,7 +68,7 @@ def test_plugin_simple_rule_0_sig(write_auth_req_validator, write_request_valida
 def test_plugin_simple_rule_not_allowed(write_auth_req_validator, write_request_validation,
                                         signatures, is_owner, amount):
     validate(
-        auth_constraint=None,
+        auth_constraint=AuthConstraintForbidden(),
         valid_actions=[],
         all_signatures=signatures, is_owner=is_owner, amount=amount,
         write_auth_req_validator=write_auth_req_validator,
