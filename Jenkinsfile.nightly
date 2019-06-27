@@ -13,6 +13,8 @@ String buildSrcVersion
 String scmRepoUrl
 String scmSha1
 
+String emailRecipients = params.INDY_NODE_RECIPIENTS ?: env.INDY_NODE_RECIPIENTS ?: ''
+
 echo "$env.INDY_NODE_RECIPIENTS"
 env.INDY_NODE_RECIPIENTS = 'andrey.kononykhin@dsr-corporation.com'
 
@@ -61,7 +63,7 @@ try {
 } finally {
     stage('Build result notification') {
         sendNotification.email {
-            to = this.env.INDY_NODE_RECIPIENTS ?: ''
+            to = emailRecipients
             subject = "[${pkgName}][nightly] Build #${this.env.BUILD_NUMBER} ${err ? 'failed' : 'succeed'} for version ${buildPkgVersion} (${buildSrcVersion})"
             srcUrl = "${scmRepoUrl}/tree/${scmSha1}"
         }
