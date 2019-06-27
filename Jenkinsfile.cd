@@ -308,7 +308,6 @@ if (isNightly) {
         StagesEnum.PACK_RELEASE_COPY,
         StagesEnum.GITHUB_RELEASE,
         StagesEnum.POOL_UPDATE_NOTIF,
-        StagesEnum.BUILD_RESULT_NOTIF
     ])
 
     options.releaseVersion = nightlySettings.releaseVersion
