@@ -20,11 +20,11 @@ def check_no_data_and_valid_proof(result):
 def test_state_proof_returned_for_missing_attr(looper, nodeSetWithOneNodeResponding,
                                                attributeName,
                                                sdk_pool_handle,
-                                               sdk_wallet_trust_anchor):
+                                               sdk_wallet_endorser):
     """
     Tests that state proof is returned in the reply for GET_ATTR transactions
     """
-    _, dest = sdk_wallet_trust_anchor
+    _, dest = sdk_wallet_endorser
 
     get_attr_operation = {
         TARGET_NYM: dest,
@@ -32,13 +32,13 @@ def test_state_proof_returned_for_missing_attr(looper, nodeSetWithOneNodeRespond
         RAW: attributeName
     }
     result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
-                                                 sdk_wallet_trust_anchor, get_attr_operation)
+                                                 sdk_wallet_endorser, get_attr_operation)
     check_no_data_and_valid_proof(result)
 
 
 def test_state_proof_returned_for_missing_nym(looper, nodeSetWithOneNodeResponding,
                                               sdk_pool_handle,
-                                              sdk_wallet_trust_anchor,
+                                              sdk_wallet_endorser,
                                               sdk_user_wallet_a):
     """
     Tests that state proof is returned in the reply for GET_NYM transactions
@@ -54,17 +54,17 @@ def test_state_proof_returned_for_missing_nym(looper, nodeSetWithOneNodeRespondi
     }
 
     result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
-                                                 sdk_wallet_trust_anchor, get_nym_operation)
+                                                 sdk_wallet_endorser, get_nym_operation)
     check_no_data_and_valid_proof(result)
 
 
 def test_state_proof_returned_for_missing_schema(looper, nodeSetWithOneNodeResponding,
                                                  sdk_pool_handle,
-                                                 sdk_wallet_trust_anchor):
+                                                 sdk_wallet_endorser):
     """
     Tests that state proof is returned in the reply for GET_SCHEMA transactions
     """
-    _, dest = sdk_wallet_trust_anchor
+    _, dest = sdk_wallet_endorser
     schema_name = "test_schema"
     schema_version = "1.0"
     get_schema_operation = {
@@ -76,7 +76,7 @@ def test_state_proof_returned_for_missing_schema(looper, nodeSetWithOneNodeRespo
         }
     }
     result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
-                                                 sdk_wallet_trust_anchor,
+                                                 sdk_wallet_endorser,
                                                  get_schema_operation)
     assert SCHEMA_ATTR_NAMES not in result[DATA]
     check_valid_proof(result)
@@ -84,12 +84,12 @@ def test_state_proof_returned_for_missing_schema(looper, nodeSetWithOneNodeRespo
 
 def test_state_proof_returned_for_missing_claim_def(looper, nodeSetWithOneNodeResponding,
                                                     sdk_pool_handle,
-                                                    sdk_wallet_trust_anchor):
+                                                    sdk_wallet_endorser):
     """
     Tests that state proof is returned in the reply for GET_CLAIM_DEF
     transactions
     """
-    _, dest = sdk_wallet_trust_anchor
+    _, dest = sdk_wallet_endorser
     get_claim_def_operation = {
         CLAIM_DEF_FROM: dest,
         TXN_TYPE: GET_CLAIM_DEF,
@@ -97,6 +97,6 @@ def test_state_proof_returned_for_missing_claim_def(looper, nodeSetWithOneNodeRe
         CLAIM_DEF_SIGNATURE_TYPE: 'CL'
     }
     result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
-                                                 sdk_wallet_trust_anchor,
+                                                 sdk_wallet_endorser,
                                                  get_claim_def_operation)
     check_no_data_and_valid_proof(result)

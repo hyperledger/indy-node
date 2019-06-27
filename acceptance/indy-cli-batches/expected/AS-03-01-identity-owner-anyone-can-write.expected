@@ -30,15 +30,15 @@ did new seed=TestSteward200000000000000000003 metadata="test steward 2"
 Did "CbPwHxKEibPhV4pgXWpu26" has been created with "~MviYa49QADQXAM68WSiLPD" verkey
 Metadata has been saved for DID "CbPwHxKEibPhV4pgXWpu26"
 
-did new seed=TestTrustAnchor10000000000000003 metadata="test trust anchor 1"
+did new seed=TestEndorser10000000000000000003 metadata="test endorser 1"
 Did "DriVwCMbtEgkmoEHKin6Ah" has been created with "~YPZot1kM4DLwvsX6mtcKd9" verkey
 Metadata has been saved for DID "DriVwCMbtEgkmoEHKin6Ah"
 
-did new seed=TestTrustAnchor20000000000000003 metadata="test trust anchor 2"
+did new seed=TestEndorser20000000000000000003 metadata="test endorser 2"
 Did "2b6xTx2HniDU77nxHm6zWB" has been created with "~HF34ymwfTJngb8zFDmCyvX" verkey
 Metadata has been saved for DID "2b6xTx2HniDU77nxHm6zWB"
 
-did new seed=TestTrustAnchor30000000000000003 metadata="test trust anchor 3"
+did new seed=TestEndorser30000000000000000003 metadata="test endorser 3"
 Did "4xuWDwsQSqzQmYSheSWFyg" has been created with "~BmnEpJMi6kJHUcxcVJa2R4" verkey
 Metadata has been saved for DID "4xuWDwsQSqzQmYSheSWFyg"
 
@@ -90,7 +90,7 @@ Data:
 did use V4SGRU86Z58d6TV7PBUe6f
 Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
 
-ledger nym did=DriVwCMbtEgkmoEHKin6Ah role=TRUST_ANCHOR verkey=~YPZot1kM4DLwvsX6mtcKd9
+ledger nym did=DriVwCMbtEgkmoEHKin6Ah role=ENDORSER verkey=~YPZot1kM4DLwvsX6mtcKd9
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -102,7 +102,7 @@ Data:
 +------------------------+-------------------------+--------------+
 | Did                    | Verkey                  | Role         |
 +------------------------+-------------------------+--------------+
-| DriVwCMbtEgkmoEHKin6Ah | ~YPZot1kM4DLwvsX6mtcKd9 | TRUST_ANCHOR |
+| DriVwCMbtEgkmoEHKin6Ah | ~YPZot1kM4DLwvsX6mtcKd9 | ENDORSER |
 +------------------------+-------------------------+--------------+
 
 - ledger get-nym did=DriVwCMbtEgkmoEHKin6Ah
@@ -117,7 +117,7 @@ Data:
 +------------------------+------------------------+-------------------------+--------------+
 | Identifier             | Dest                   | Verkey                  | Role         |
 +------------------------+------------------------+-------------------------+--------------+
-| V4SGRU86Z58d6TV7PBUe6f | DriVwCMbtEgkmoEHKin6Ah | ~YPZot1kM4DLwvsX6mtcKd9 | TRUST_ANCHOR |
+| V4SGRU86Z58d6TV7PBUe6f | DriVwCMbtEgkmoEHKin6Ah | ~YPZot1kM4DLwvsX6mtcKd9 | ENDORSER |
 +------------------------+------------------------+-------------------------+--------------+
 
 did use V4SGRU86Z58d6TV7PBUe6f
@@ -210,7 +210,7 @@ Transaction has been rejected: LBbKEeczA9iL21p4Kgxcuf is neither Trustee nor own
 did use AhqUV2zHYdNaWLFCCe7xCn
 Did "AhqUV2zHYdNaWLFCCe7xCn" has been set as active
 
-ledger nym did=4xuWDwsQSqzQmYSheSWFyg role=TRUST_ANCHOR verkey=~BmnEpJMi6kJHUcxcVJa2R4
+ledger nym did=4xuWDwsQSqzQmYSheSWFyg role=ENDORSER verkey=~BmnEpJMi6kJHUcxcVJa2R4
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -222,7 +222,7 @@ Data:
 +------------------------+-------------------------+--------------+
 | Did                    | Verkey                  | Role         |
 +------------------------+-------------------------+--------------+
-| 4xuWDwsQSqzQmYSheSWFyg | ~BmnEpJMi6kJHUcxcVJa2R4 | TRUST_ANCHOR |
+| 4xuWDwsQSqzQmYSheSWFyg | ~BmnEpJMi6kJHUcxcVJa2R4 | ENDORSER |
 +------------------------+-------------------------+--------------+
 
 - ledger get-nym did=4xuWDwsQSqzQmYSheSWFyg
@@ -237,7 +237,7 @@ Data:
 +------------------------+------------------------+-------------------------+--------------+
 | Identifier             | Dest                   | Verkey                  | Role         |
 +------------------------+------------------------+-------------------------+--------------+
-| AhqUV2zHYdNaWLFCCe7xCn | 4xuWDwsQSqzQmYSheSWFyg | ~BmnEpJMi6kJHUcxcVJa2R4 | TRUST_ANCHOR |
+| AhqUV2zHYdNaWLFCCe7xCn | 4xuWDwsQSqzQmYSheSWFyg | ~BmnEpJMi6kJHUcxcVJa2R4 | ENDORSER |
 +------------------------+------------------------+-------------------------+--------------+
 
 did use LBbKEeczA9iL21p4Kgxcuf
@@ -291,8 +291,8 @@ Data:
 did use LBbKEeczA9iL21p4Kgxcuf
 Did "LBbKEeczA9iL21p4Kgxcuf" has been set as active
 
-- ledger nym did=2b6xTx2HniDU77nxHm6zWB role=TRUST_ANCHOR verkey=~HF34ymwfTJngb8zFDmCyvX
-Transaction has been rejected: None role cannot add TRUST_ANCHOR
+- ledger nym did=2b6xTx2HniDU77nxHm6zWB role=ENDORSER verkey=~HF34ymwfTJngb8zFDmCyvX
+Transaction has been rejected: None role cannot add ENDORSER
 
 - ledger get-nym did=2b6xTx2HniDU77nxHm6zWB
 NYM not found
@@ -333,7 +333,7 @@ Data:
 did use LBbKEeczA9iL21p4Kgxcuf
 Did "LBbKEeczA9iL21p4Kgxcuf" has been set as active
 
-- ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=TRUST_ANCHOR
+- ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=ENDORSER
 Transaction has been rejected: LBbKEeczA9iL21p4Kgxcuf is neither Trustee nor owner of Q8uxmCGdXgLHHtaTwYtVJG
 
 - ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=STEWARD

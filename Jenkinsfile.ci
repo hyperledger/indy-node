@@ -97,9 +97,9 @@ def test(options=[:]) {
 
     try {
         if (options.useRunner) {
-            sh "PYTHONASYNCIODEBUG='0' $options.python runner.py --pytest \"$options.python -m pytest -l -v\" --dir $options.testDir --output \"$options.resFile\" --test-only-slice \"$options.testOnlySlice\""
+            sh "PYTHONASYNCIODEBUG='0' $options.python runner.py --pytest \"$options.python -m pytest -l -vv\" --dir $options.testDir --output \"$options.resFile\" --test-only-slice \"$options.testOnlySlice\""
         } else {
-            sh "$options.python -m pytest -l -v --junitxml=$options.resFile $options.testDir"
+            sh "$options.python -m pytest -l -vv --junitxml=$options.resFile $options.testDir"
         }
     }
     finally {

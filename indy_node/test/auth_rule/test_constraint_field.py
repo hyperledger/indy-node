@@ -2,7 +2,8 @@ import pytest
 
 from indy_common.constants import CONSTRAINT, AUTH_ACTION
 from indy_common.types import ClientAuthRuleOperation
-from indy_node.test.auth_rule.helper import generate_constraint_entity, generate_constraint_list, \
+from indy_node.test.helper import generate_constraint_entity
+from indy_node.test.auth_rule.helper import generate_constraint_list, \
     generate_auth_rule_operation
 from indy_common.authorize.auth_constraints import ROLE, AUTH_CONSTRAINTS, CONSTRAINT_ID
 

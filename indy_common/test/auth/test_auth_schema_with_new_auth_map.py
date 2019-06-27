@@ -3,7 +3,7 @@ from indy_common.constants import SCHEMA
 
 
 def test_schema_adding(write_request_validation, req, is_owner):
-    authorized = req.identifier in ("trustee_identifier", "steward_identifier", "trust_anchor_identifier")
+    authorized = req.identifier in ("trustee_identifier", "steward_identifier", "endorser_identifier")
     assert authorized == write_request_validation(req,
                                                   [AuthActionAdd(txn_type=SCHEMA,
                                                                  field='some_field',

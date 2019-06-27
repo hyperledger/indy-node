@@ -1,5 +1,9 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.8.1](#181)
+
+* [1.8.0](#180)
+
 * [1.7.1](#171)
 
 * [1.6.83](#1683)
@@ -16,13 +20,13 @@
 
 * [1.6.70](#1670)
 
-* [1.5.67](#1567)
+* [1.5.68](#1568)
 
 * [1.4.66](#1466)
 
 * [1.3.62](#1362)
 
-* [1.3.56](#1356)
+* [1.3.57](#1357)
 
 * [1.3.55](#1355)
 
@@ -37,6 +41,72 @@
 #### Disclosure
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
+
+## 1.8.1
+### Release date: June 06th, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.8.1 |
+| indy-node | 1.8.1 |
+| sovrin | 1.1.46 |
+
+
+### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| All BuilderNet nodes are restarting every 30-50 seconds | |[INDY-2128](https://jira.hyperledger.org/browse/INDY-2128) |
+| Primaries are not updated in audit ledger if one of the primaries is demoted | |[INDY-2129](https://jira.hyperledger.org/browse/INDY-2129) |
+| A client may receive NACK for a payment transfer request, but the transaction will be eventually ordered (payment transferred) | |[INDY-2122](https://jira.hyperledger.org/browse/INDY-2122) |
+
+## 1.8.0 
+### Release date: May 31th, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.8.0 |
+| indy-node | 1.8.0 |
+| sovrin | 1.1.45 |
+
+### Additional Information:
+**Payment transaction can return NACK from the pool but in fact it will be eventually ordered (see more details below).**
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+**Pool upgrade to sovrin 1.1.32 and above should be performed simultaneously for all nodes due to txn format changes.**
+**Pool upgrade to indy-node 1.8.0 should be performed simultaneously for all nodes due to audit ledger.**
+
+### Major Changes
+- Add Transaction Author Agreement Acceptance Mechanisms and Transaction Author Agreement support
+- Configurable Auth rules improvements
+- Stability fixes
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Issues with catch up and ordering under the load |  | [INDY-2064](https://jira.hyperledger.org/browse/INDY-2064) |
+| Editing of CLAIM_DEF uses auth rules for Adding a Claim Def |  | [INDY-2078](https://jira.hyperledger.org/browse/INDY-2078) |
+| Faulty primary can order and write already ordered and written request |  | [INDY-1709](https://jira.hyperledger.org/browse/INDY-1709) |
+
+#### Changes and Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| As a Network Admin, I would like to use GET_AUTH_RULE output as an input for AUTH_RULE |  | [INDY-2102](https://jira.hyperledger.org/browse/INDY-2102) |
+| Get Transaction Author Agreement Acceptance Mechanisms from the Config Ledger |  | [INDY-2071](https://jira.hyperledger.org/browse/INDY-2071) |
+| Support Transaction Author Agreement in Write Requests |  | [INDY-2072](https://jira.hyperledger.org/browse/INDY-2072) |
+| Validate transaction author agreement as part of consensus |  | [INDY-2073](https://jira.hyperledger.org/browse/INDY-2073) |
+| Write Transaction Author Agreement to Config Ledger |  | [INDY-2066](https://jira.hyperledger.org/browse/INDY-2066) |
+| Get Transaction Author Agreement from the config ledger |  | [INDY-2067](https://jira.hyperledger.org/browse/INDY-2067) |
+| Write Transaction Author Agreement Acceptance Mechanisms to the Config Ledger |  | [INDY-2068](https://jira.hyperledger.org/browse/INDY-2068) |
+| Catch-up should take into account state of other nodes when sending requests |  | [INDY-2053](https://jira.hyperledger.org/browse/INDY-2053) |
+
+#### Known Issues
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| A client may receive NACK for a payment transfer request, but the transaction will be eventually ordered (payment transferred) |  | [INDY-2122](https://jira.hyperledger.org/browse/INDY-2122) |
+| Incorrect auth constraint for node demotion |  | [INDY-2024](https://jira.hyperledger.org/browse/INDY-2024) |
 
 ## 1.7.1 
 ### Release date: Apr 30th, 2019
@@ -141,10 +211,10 @@ Although every attempt has been made to make this information as accurate as pos
 | There should always be fresh enough signature of a state |  | [INDY-933](https://jira.hyperledger.org/browse/INDY-933) |
 | Node stops working without any services failure |  | [INDY-1949](https://jira.hyperledger.org/browse/INDY-1949) |
 | As a user of Valdiator Info script, I need to know whether the pool has write consensus and when the state was updated the last time |  | [INDY-1928](https://jira.hyperledger.org/browse/INDY-1928) |
-| Trust anchor permission not needed for ledger writes |  | [INDY-1528](https://jira.hyperledger.org/browse/INDY-1528) |
+| Endorser permission not needed for ledger writes |  | [INDY-1528](https://jira.hyperledger.org/browse/INDY-1528) |
 
 ## 1.6.82 
-### Release date: Dec 20th, 2018
+### Release date: Dec 24th, 2018
 
 ### Component Version Information
 | Components | Version Numbers |
@@ -422,7 +492,7 @@ No further action is required
 | Updated revocation registry delta value during REG\_ENTRY\_REVOC writing. |   | [INDY-1378](https://jira.hyperledger.org/browse/INDY-1378) |
 | Support latest SDK in Indy Plenum and Node. |   | [INDY-1480](https://jira.hyperledger.org/browse/INDY-1480) |
 | Latency measurements in monitor are windowed. |   | [INDY-1468](https://jira.hyperledger.org/browse/INDY-1468) |
-| Trust anchor permissions are not needed for ledger writes. |   | [INDY-1528](https://jira.hyperledger.org/browse/INDY-1528) |
+| Endorser permissions are not needed for ledger writes. |   | [INDY-1528](https://jira.hyperledger.org/browse/INDY-1528) |
 |   |   |   |
 | **Known Issue:** Docker pool can&#39;t be built because of new python3-indy-crypto in sdk repo. The problem described in INDY-1517 will be fixed in the next release of indy-node. | Workaround for this problem is to add python3-indy-crypto=0.4.1 to the list of packages to be installed. | [INDY-1517](https://jira.hyperledger.org/browse/INDY-1517) |
 | **Known Issue:** Upgrade failed on pool from 1.3.62 to 1.4.66. Note that INDY-1447 was fixed in indy-node 1.5.68, but it still presents in indy-node 1.3.62 and 1.4.66 code. | **So, some of the nodes may not to be upgraded during simultaneous pool-upgrade.** If this problem will appear, stewards should perform manual upgrade of indy-node in accordance with this [instruction:](https://docs.google.com/document/d/1vUvbioL5OsmZMSkwRcu0p0jdttJO5VS8K3GhDLdNaoI)**(!)** To reduce the risk of reproducing INDY-1447, it is **recommended to use old CLI for pool upgrade.** | [INDY-1447](https://jira.hyperledger.org/browse/INDY-1447) |
@@ -439,16 +509,16 @@ No further action is required
 **For more details about txn format changes see** [**INDY-1421**](https://jira.hyperledger.org/browse/INDY-1421) **.**
 
 
-## 1.5.67
+## 1.5.68
 
 
 ### Component Version Information
 
 | Components | Version Numbers |
 | --- | --- |
-| indy-plenum | 1.5.47 |
+| indy-plenum | 1.5.48 |
 | indy-anoncreds | 1.0.11 |
-| indy-node | 1.5.67 |
+| indy-node | 1.5.68 |
 |   |   |    |
 
 ### Major Fixes
@@ -655,13 +725,13 @@ None for this release.
 None at this time.
 
 
-## 1.3.56
+## 1.3.57
 
 ### Component Version Information
 
 | Components | Version Numbers |
 | --- | --- |
-| indy-node | 1.3.56 |
+| indy-node | 1.3.57 |
 |   |   |   |
 
 ### Major Fixes

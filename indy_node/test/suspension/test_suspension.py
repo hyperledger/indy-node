@@ -9,7 +9,7 @@ from stp_core.common.log import getlogger
 from plenum.common.constants import STEWARD_STRING, TRUSTEE_STRING
 from plenum.test.pool_transactions.test_suspend_node import \
     checkNodeNotInNodeReg
-from indy_common.constants import TRUST_ANCHOR_STRING
+from indy_common.constants import ENDORSER_STRING
 
 logger = getlogger()
 
@@ -33,15 +33,15 @@ def another_steward1(looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee):
 
 
 @pytest.fixture(scope="module")
-def another_trust_anchor(looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee):
+def another_endorser(looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee):
     return sdk_add_new_nym(looper, sdk_pool_handle,
-                           sdk_wallet_trustee, 'newTrustAnchor', TRUST_ANCHOR_STRING)
+                           sdk_wallet_trustee, 'newEndorser', ENDORSER_STRING)
 
 
 @pytest.fixture(scope="module")
-def another_trust_anchor1(looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee):
+def another_endorser1(looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee):
     return sdk_add_new_nym(looper, sdk_pool_handle,
-                           sdk_wallet_trustee, 'newTrustAnchor1', TRUST_ANCHOR_STRING)
+                           sdk_wallet_trustee, 'newEndorser1', ENDORSER_STRING)
 
 
 def testTrusteeAddingAnotherTrustee(another_trustee):
@@ -49,13 +49,13 @@ def testTrusteeAddingAnotherTrustee(another_trustee):
 
 
 def testTrusteeAddingSteward(looper, sdk_pool_handle, another_steward):
-    # The new Steward adds a TRUST_ANCHOR
-    sdk_add_new_nym(looper, sdk_pool_handle, another_steward, role=TRUST_ANCHOR_STRING)
+    # The new Steward adds a ENDORSER
+    sdk_add_new_nym(looper, sdk_pool_handle, another_steward, role=ENDORSER_STRING)
 
 
-def testTrusteeAddingTrustAnchor(looper, sdk_pool_handle, another_trust_anchor):
-    # The new TTrustAnchor adds a NYM
-    sdk_add_new_nym(looper, sdk_pool_handle, another_trust_anchor)
+def testTrusteeAddingEndorser(looper, sdk_pool_handle, another_endorser):
+    # The new TEndorser adds a NYM
+    sdk_add_new_nym(looper, sdk_pool_handle, another_endorser)
 
 
 def testStewardSuspensionByTrustee(looper, sdk_pool_handle,
@@ -64,16 +64,16 @@ def testStewardSuspensionByTrustee(looper, sdk_pool_handle,
     sdk_suspend_role(looper, sdk_pool_handle, another_trustee, did_stew)
     with pytest.raises(RequestRejectedException):
         sdk_add_new_nym(looper, sdk_pool_handle,
-                        another_steward, role=TRUST_ANCHOR_STRING)
+                        another_steward, role=ENDORSER_STRING)
 
 
-def testTrustAnchorSuspensionByTrustee(
-        looper, sdk_pool_handle, another_trustee, another_trust_anchor):
-    _, did_ta = another_trust_anchor
+def testEndorserSuspensionByTrustee(
+        looper, sdk_pool_handle, another_trustee, another_endorser):
+    _, did_ta = another_endorser
     sdk_suspend_role(looper, sdk_pool_handle, another_trustee, did_ta)
     with pytest.raises(RequestRejectedException):
         sdk_add_new_nym(looper, sdk_pool_handle,
-                        another_trust_anchor, alias=randomString())
+                        another_endorser, alias=randomString())
 
 
 def testTrusteeSuspensionByTrustee(looper, sdk_pool_handle, sdk_wallet_trustee,

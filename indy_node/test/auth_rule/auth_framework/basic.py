@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 
 from indy_common.authorize.auth_actions import EDIT_PREFIX, split_action_id
 from indy_common.authorize.auth_map import auth_map
-from indy_common.constants import TRUST_ANCHOR, NETWORK_MONITOR, NETWORK_MONITOR_STRING, TRUST_ANCHOR_STRING
+from indy_common.constants import ENDORSER, NETWORK_MONITOR, NETWORK_MONITOR_STRING, ENDORSER_STRING
 from plenum.common.constants import TRUSTEE, TRUSTEE_STRING, STEWARD_STRING, STEWARD, IDENTITY_OWNER, \
     IDENTITY_OWNER_STRING, VALIDATOR
 from plenum.common.util import randomString
@@ -21,7 +21,7 @@ from indy_node.test.helper import (
 roles_to_string = {
     TRUSTEE: TRUSTEE_STRING,
     STEWARD: STEWARD_STRING,
-    TRUST_ANCHOR: TRUST_ANCHOR_STRING,
+    ENDORSER: ENDORSER_STRING,
     NETWORK_MONITOR: NETWORK_MONITOR_STRING,
     IDENTITY_OWNER: '',
     '': '',

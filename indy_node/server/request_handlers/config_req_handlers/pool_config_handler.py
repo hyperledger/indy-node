@@ -11,10 +11,10 @@ from plenum.server.request_handlers.handler_interfaces.write_request_handler imp
 class PoolConfigHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
-                 write_request_validator: WriteRequestValidator,
+                 write_req_validator: WriteRequestValidator,
                  pool_config: PoolConfig):
         super().__init__(database_manager, POOL_CONFIG, CONFIG_LEDGER_ID)
-        self.write_request_validator = write_request_validator
+        self.write_req_validator = write_req_validator
         self.pool_config = pool_config
 
     def static_validation(self, request: Request):
@@ -24,11 +24,11 @@ class PoolConfigHandler(WriteRequestHandler):
         self._validate_request_type(request)
         action = '*'
         status = '*'
-        self.write_request_validator.validate(request,
-                                              [AuthActionEdit(txn_type=self.txn_type,
-                                                              field=ACTION,
-                                                              old_value=status,
-                                                              new_value=action)])
+        self.write_req_validator.validate(request,
+                                          [AuthActionEdit(txn_type=self.txn_type,
+                                                          field=ACTION,
+                                                          old_value=status,
+                                                          new_value=action)])
 
     def apply_forced_request(self, req: Request):
         super().apply_forced_request(req)
@@ -36,8 +36,5 @@ class PoolConfigHandler(WriteRequestHandler):
         self.pool_config.handleConfigTxn(txn)
 
     # Config handler don't use state for any validation for now
-    def update_state(self, txn, prev_result, is_committed=False):
-        pass
-
-    def gen_state_key(self, txn):
+    def update_state(self, txn, prev_result, request, is_committed=False):
         pass

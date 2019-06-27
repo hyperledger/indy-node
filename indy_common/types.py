@@ -36,8 +36,9 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
     GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
-    CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, \
-    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE
+    CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
+    AUTH_TYPE, \
+    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
 from indy_common.version import SchemaVersion
 
 
@@ -101,7 +102,8 @@ class ClaimDefField(MessageValidator):
 
 class RevocDefValueField(MessageValidator):
     schema = (
-        (ISSUANCE_TYPE, NonEmptyStringField()),
+        (ISSUANCE_TYPE, ChooseField(values=(ISSUANCE_BY_DEFAULT,
+                                            ISSUANCE_ON_DEMAND))),
         (MAX_CRED_NUM, IntegerField()),
         (PUBLIC_KEYS, AnyMapField()),
         (TAILS_HASH, NonEmptyStringField()),
@@ -324,9 +326,12 @@ class ConstraintField(FieldBase):
                    "be an empty list.".format(AUTH_CONSTRAINTS, CONSTRAINT)
         if CONSTRAINT_ID not in val:
             return "Field {} is required".format(CONSTRAINT_ID)
-        return self._constraint_entity.validate(val) \
-            if val[CONSTRAINT_ID] == ConstraintsEnum.ROLE_CONSTRAINT_ID \
-            else self._constraint_list.validate(val)
+        if val[CONSTRAINT_ID] == ConstraintsEnum.FORBIDDEN_CONSTRAINT_ID:
+            return
+        elif val[CONSTRAINT_ID] == ConstraintsEnum.ROLE_CONSTRAINT_ID:
+            return self._constraint_entity.validate(val)
+        else:
+            return self._constraint_list.validate(val)
 
 
 class ConstraintEntityField(MessageValidator):
@@ -363,9 +368,8 @@ class AuthRuleValueField(LimitedLengthStringField):
         super().__init__(max_length, can_be_empty=True, **kwargs)
 
 
-class ClientAuthRuleOperation(MessageValidator):
+class AuthRuleField(MessageValidator):
     schema = (
-        (TXN_TYPE, ConstantField(AUTH_RULE)),
         (CONSTRAINT, ConstraintField(ConstraintEntityField(),
                                      ConstraintListField())),
         (AUTH_ACTION, ChooseField(values=(ADD_PREFIX, EDIT_PREFIX))),
@@ -373,6 +377,20 @@ class ClientAuthRuleOperation(MessageValidator):
         (FIELD, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (OLD_VALUE, AuthRuleValueField(optional=True)),
         (NEW_VALUE, AuthRuleValueField())
+    )
+
+
+class ClientAuthRuleOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(AUTH_RULE)),
+        *AuthRuleField.schema
+    )
+
+
+class ClientAuthRulesOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(AUTH_RULES)),
+        (RULES, IterableField(AuthRuleField(), min_length=1))
     )
 
 
@@ -400,6 +418,7 @@ class ClientOperationField(PClientOperationField):
         POOL_UPGRADE: ClientPoolUpgradeOperation(),
         POOL_CONFIG: ClientPoolConfigOperation(),
         AUTH_RULE: ClientAuthRuleOperation(),
+        AUTH_RULES: ClientAuthRulesOperation(),
         GET_AUTH_RULE: ClientGetAuthRuleOperation(),
         POOL_RESTART: ClientPoolRestartOperation(),
         VALIDATOR_INFO: ClientValidatorInfoOperation(),

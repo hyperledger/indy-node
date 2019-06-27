@@ -20,6 +20,7 @@
     * [NODE_UPGRADE](#node_upgrade)
     * [POOL_CONFIG](#pool_config)
     * [AUTH_RULE](#auth_rule)
+    * [AUTH_RULES](#auth_rules)
     * [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)
     * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)    
     
@@ -123,6 +124,7 @@ transaction specific data:
         - REVOC_REG_DEF = "113"
         - REVOC_REG_DEF = "114"
         - AUTH_RULE = "120"
+        - AUTH_RULES = "122"
 
     - `protocolVersion` (integer; optional):
 
@@ -144,7 +146,7 @@ transaction specific data:
              It may differ from `did` field for some of transaction (for example NYM), where `did` is a
              target identifier (for example, a newly created DID identifier).
 
-             *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
+             *Example*: `from` is a DID of a Endorser creating a new DID, and `did` is a newly created DID.
 
         - `reqId` (integer):
             Unique ID number of the request with transaction.
@@ -204,8 +206,8 @@ Please note that all these metadata fields may be absent for genesis transaction
 ## Domain Ledger
 
 #### NYM
-Creates a new NYM record for a specific user, trust anchor, steward or trustee.
-Note that only trustees and stewards can create new trust anchors and a trustee can be created only by other trustees (see [roles](auth_rules.md)).
+Creates a new NYM record for a specific user, endorser, steward or trustee.
+Note that only trustees and stewards can create new endorsers and a trustee can be created only by other trustees (see [roles](auth_rules.md)).
 
 The transaction can be used for
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
@@ -215,7 +217,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from the `from` metadata field, where `from` is the DID of the submitter.
 
-    *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
+    *Example*: `from` is a DID of a Endorser creating a new DID, and `dest` is a newly created DID.
 
 - `role` (enum number as integer; optional):
 
@@ -224,7 +226,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     - None (common USER)
     - "0" (TRUSTEE)
     - "2" (STEWARD)
-    - "101" (TRUST_ANCHOR)
+    - "101" (ENDORSER)
     - "201" (NETWORK_MONITOR)
     
   A TRUSTEE can change any Nym's role to None, thus stopping it from making any further writes (see [roles](auth_rules.md)).
@@ -303,7 +305,7 @@ Adds an attribute to a NYM record
     Target DID we set an attribute for as base58-encoded string for 16 or 32 byte DID value.
     It differs from `from` metadata field, where `from` is the DID of the submitter.
 
-    *Example*: `from` is a DID of a Trust Anchor setting an attribute for a DID, and `dest` is the DID we set an attribute for.
+    *Example*: `from` is a DID of a Endorser setting an attribute for a DID, and `dest` is the DID we set an attribute for.
 
 - `raw` (sha256 hash string; mutually exclusive with `hash` and `enc`):
 
@@ -912,7 +914,7 @@ The list of actions is static and can be found in [auth_rules.md](auth_rules.md)
 There is a default Auth Constraint for every action (defined in [auth_rules.md](auth_rules.md)). 
 
 The `AUTH_RULE` command allows to change the Auth Constraint.
-So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action.
+So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for the given action.
 
 Please note, that list elements of `GET_AUTH_RULE` output can be used as an input (with a required changes) for `AUTH_RULE`.
 
@@ -923,7 +925,7 @@ The following input parameters must match an auth rule from the [auth_rules.md](
 
 - `auth_action` (enum: `ADD` or `EDIT`)
 
-    Whether this is addign of a new transaction, or editting of an existing one.
+    Whether this is adding of a new transaction, or editing of an existing one.
     
 - `field` (string)
  
@@ -976,7 +978,10 @@ The `constraint_id` fields is where one can define the desired auth constraint f
         - `metadata` (dict; optional):
         
             Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
+        
+    - fields if `'constraint_id': 'FORBIDDEN'`:
     
+        no fields
 
 
 **Example:**
@@ -1011,6 +1016,143 @@ Let's consider an example of changing a value of a NODE transaction's `service` 
                                    ]
         }, 
       },
+      'metadata':{  
+         'reqId':252174114,
+         'from':'M9BJDuS24bqbJNvBRsoGg3',
+         'digest':'6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c',
+         'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
+      }
+   },
+   'txnMetadata':{  
+      'txnTime':1551785798,
+      'seqNo':1
+   },   
+   'reqSignature':{  
+      'type':'ED25519',
+      'values':[  
+         {  
+            'value':'4wpLLAtkT6SeiKEXPVsMcCirx9KvkeKKd11Q4VsMXmSv2tnJrRw1TQKFyov4m2BuPP4C5oCiZ6RUwS9w3EPdywnz',
+            'from':'M9BJDuS24bqbJNvBRsoGg3'
+         }
+      ]
+   },
+   'ver':'1'
+}
+```
+
+#### AUTH_RULES
+
+A command to set multiple AUTH_RULEs by one transaction. 
+Transaction AUTH_RULES is not divided into a few AUTH_RULE transactions, and is written to the ledger with one transaction with the full set of rules that come in the request.
+Internally authentication rules are stored as a key-value dictionary: `{action} -> {auth_constraint}`.
+
+The list of actions is static and can be found in [auth_rules.md](auth_rules.md).
+There is a default Auth Constraint for every action (defined in [auth_rules.md](auth_rules.md)). 
+
+The `AUTH_RULES` command allows to change the Auth Constraints.
+So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for the given action.
+
+Please note, that list elements of `GET_AUTH_RULE` output can be used as an input (with a required changes) for the field `rules` in `AUTH_RULES`.
+
+- The `rules` field contains a list of auth rules. One rule has the following list of parameters which must match an auth rule from the [auth_rules.md](auth_rules.md):
+
+  - `auth_type` (string enum)
+ 
+     The type of transaction to change the auth constraints to. (Example: "0", "1", ...). See transactions description to find the txn type enum value.
+
+  - `auth_action` (enum: `ADD` or `EDIT`)
+
+    Whether this is adding of a new transaction, or editing of an existing one.
+    
+  - `field` (string)
+ 
+    Set the auth constraint of editing the given specific field. `*` can be used to specify that an auth rule is applied to all fields.
+    
+  - `old_value` (string; optional)
+
+    Old value of a field, which can be changed to a new_value. Must be present for EDIT `auth_action` only.
+    `*` can be used if it doesn't matter what was the old value.
+    
+  - `new_value` (string)
+
+    New value that can be used to fill the field.
+    `*` can be used if it doesn't matter what was the old value.
+
+  The `constraint_id` fields is where one can define the desired auth constraint for the action:
+
+  - `constraint` (dict)
+
+    - `constraint_id` (string enum)
+    
+        Constraint Type. As of now, the following constraint types are supported:
+            
+            - 'ROLE': a constraint defining how many siganatures of a given role are required
+            - 'OR': logical disjunction for all constraints from `auth_constraints` 
+            - 'AND': logical conjunction for all constraints from `auth_constraints`
+            - 'FORBIDDEN': a constraint for not allowed actions
+            
+    - fields if `'constraint_id': 'OR'` or `'constraint_id': 'AND'`
+    
+        - `auth_constraints` (list)
+        
+            A list of constraints. Any number of nested constraints is supported recursively
+        
+    - fields if `'constraint_id': 'ROLE'`:
+                
+        - `role` (string enum)    
+            
+            Who (what role) can perform the action
+            Please have a look at [NYM](#nym) transaction description for a mapping between role codes and names.
+                
+        - `sig_count` (int):
+        
+            The number of signatures that is needed to do the action
+            
+        - `need_to_be_owner` (boolean):
+        
+            Flag to check if the user must be the owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
+            The notion of the `owner` is different for every auth rule. Please reference to [auth_rules.md](auth_rules.md) for details.
+            
+        - `metadata` (dict; optional):
+        
+            Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
+    
+    - fields if `'constraint_id': 'FORBIDDEN'`:
+    
+        no fields
+
+**Example:**
+
+```
+{  
+   'txn':{  
+      'type':'120',
+      'protocolVersion':2,
+      'data':{
+        rules: [
+           {'auth_type': '0', 
+            'auth_action': 'EDIT',
+            'field' :'services',
+            'old_value': [VALIDATOR],
+            'new_value': []
+            'constraint':{
+                  'constraint_id': 'OR',
+                  'auth_constraints': [{'constraint_id': 'ROLE', 
+                                        'role': '0',
+                                        'sig_count': 2, 
+                                        'need_to_be_owner': False, 
+                                        'metadata': {}}, 
+                                       
+                                       {'constraint_id': 'ROLE', 
+                                        'role': '2',
+                                        'sig_count': 1, 
+                                        'need_to_be_owner': True, 
+                                        'metadata': {}}
+                                       ]
+            }, 
+          },
+          ...
+        ]
       'metadata':{  
          'reqId':252174114,
          'from':'M9BJDuS24bqbJNvBRsoGg3',
