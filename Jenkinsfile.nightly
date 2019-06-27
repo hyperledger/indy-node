@@ -45,10 +45,12 @@ try {
             ['test_ledger.py'],
             ['test_vc.py'],
             ['test_consensus.py', 'TestTAASuite.py'],
-            ['test_upgrade.py', 'test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py']
+            ['test_upgrade.py', 'test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py'],
+            ['TestAuditSuite.py'],
+            ['TestAuthMapSuite.py']
         ]
-        testVersion = 'v0.7.0'
-        testVersionByTag = true
+        testVersion = 'master'
+        testVersionByTag = false
     }
 } catch(Exception _err) {
     currentBuild.result = "FAILED"
