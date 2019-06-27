@@ -1,18 +1,33 @@
 #!groovy
 
-def systemTests(String repoChannel, String debianPkgVersion, List testsSchema, String sha1) {
-    String indyNodeRepoUrl = env.INDY_NODE_REPO ?: 'https://github.com/hyperledger/indy-node.git'
-    String prefix = "System Tests ($repoChannel)"
+def systemTests(Closure body) {
+    String prefix = "System Tests"
     String systemTestsNetwork = 'indy-test-automation-network'
     String systemTestsDir = './system_tests'
 
-    // TODO create tests groups defined globally
-    testsSchema = testsSchema ?: [
-        ['test_ledger.py'],
-        ['test_vc.py'],
-        ['test_consensus.py', 'TestTAASuite.py'],
-        ['test_upgrade.py', 'test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py']
+    def config = delegateConfig([
+            repoChannel: 'master',
+            pkgVersion: null,
+            indyNodeRepoUrl: 'https://github.com/hyperledger/indy-node.git',
+            srcSha1: null,
+            testSchema: [['.']],
+            testVersion: null,
+            testVersionByTag: false
+        ],
+        body, ['pkgVersion'], {}, prefix
+    )
+
+    Map systemTestsParams = [
+        targetDir: systemTestsDir
     ]
+
+    if (config.testVersion) {
+        if (!!config.testVersionByTag) {
+            systemTestsParams.tag = config.testVersion
+        } else {
+            systemTestsParams.branch = config.testVersion
+        }
+    }
 
     Map indyPlenumVersions = [:]
     Map indySDKVersions = [:]
@@ -42,7 +57,7 @@ def systemTests(String repoChannel, String debianPkgVersion, List testsSchema, S
     def runTest = { testGroup ->
 
         stage("[${testGroup}] Checkout system tests") {
-            testHelpers.getSystemTests(tag: 'v0.7.0', targetDir: systemTestsDir)
+            testHelpers.getSystemTests(systemTestsParams)
         }
 
         dir(systemTestsDir) {
@@ -60,11 +75,11 @@ def systemTests(String repoChannel, String debianPkgVersion, List testsSchema, S
 
             stage("[${testGroup}] Prepare docker env") {
                 withEnv([
-                    "INDY_NODE_REPO_COMPONENT=$repoChannel",
+                    "INDY_NODE_REPO_COMPONENT=${config.repoChannel}",
                     "LIBINDY_CRYPTO_VERSION=${indyCryptoVersions.debian}",
                     "PYTHON3_LIBINDY_CRYPTO_VERSION=${indyCryptoVersions.debian}",
                     "INDY_PLENUM_VERSION=${indyPlenumVersions.debian}",
-                    "INDY_NODE_VERSION=$debianPkgVersion",
+                    "INDY_NODE_VERSION=${config.pkgVersion}",
                     "LIBINDY_REPO_COMPONENT=${indySDKVersions.debian == indySDKVersions.pypi ? 'stable' : 'master'}",
                     "LIBINDY_VERSION=${indySDKVersions.debian}",
                 ]) {
@@ -74,9 +89,9 @@ def systemTests(String repoChannel, String debianPkgVersion, List testsSchema, S
 
             try {
                 def err
-                String testReportFileNameXml = "system_tests_${testGroup}_report.${repoChannel}.xml"
-                String testReportFileNamePlain = "system_tests_${testGroup}_report.${repoChannel}.txt"
-                String testTargets = testsSchema[testGroup].collect{"system/indy-node-tests/$it"}.join(' ')
+                String testReportFileNameXml = "system_tests_${testGroup}_report.${config.repoChannel}.xml"
+                String testReportFileNamePlain = "system_tests_${testGroup}_report.${config.repoChannel}.txt"
+                String testTargets = config.testSchema[testGroup].collect{"system/indy-node-tests/$it"}.join(' ')
                 try {
                     stage("[${testGroup}] Run tests") {
                         sh """
@@ -114,12 +129,12 @@ def systemTests(String repoChannel, String debianPkgVersion, List testsSchema, S
 
     nodeWrapper("ubuntu") {
         stage("Checkout SCM") {
-            if (sha1) {
+            if (config.srcSha1) {
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: sha1]],
+                    branches: [[name: config.srcSha1]],
                     userRemoteConfigs: [[
-                        url: indyNodeRepoUrl,
+                        url: config.indyNodeRepoUrl,
                     ]]
                 ])
             } else {
@@ -160,8 +175,8 @@ def systemTests(String repoChannel, String debianPkgVersion, List testsSchema, S
         }
 
         Map builds = [:]
-        for (int i = 0; i < testsSchema.size(); i++) {
-            String testNames = testsSchema[i].join(' ')
+        for (int i = 0; i < config.testSchema.size(); i++) {
+            String testNames = config.testSchema[i].join(' ')
             Boolean isFirst = (i == 0)
             int testGroup = i
             builds[testNames] = {

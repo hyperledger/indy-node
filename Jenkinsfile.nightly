@@ -6,7 +6,6 @@ String pkgName = 'indy-node'
 String mainModuleName = 'indy_node'
 
 def localLib
-
 String pkgVersion
 String srcSha1
 
@@ -32,4 +31,16 @@ nodeWrapper('ubuntu') {
     }
 }
 
-localLib.systemTests('master', pkgVersion, null, srcSha1)
+localLib.systemTests {
+    repoChannel = 'master'
+    delegate.pkgVersion = pkgVersion
+    delegate.srcSha1 = srcSha1
+    testSchema = [
+        ['test_ledger.py'],
+        ['test_vc.py'],
+        ['test_consensus.py', 'TestTAASuite.py'],
+        ['test_upgrade.py', 'test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py']
+    ]
+    testVersion = 'v0.7.0'
+    testVersionByTag = true
+}
