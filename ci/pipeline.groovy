@@ -9,7 +9,7 @@ def systemTests(Closure body) {
             repoChannel: 'master',
             pkgVersion: null,
             indyNodeRepoUrl: 'https://github.com/hyperledger/indy-node.git',
-            srcSha1: null,
+            srcVersion: null,
             testSchema: [['.']],
             testVersion: null,
             testVersionByTag: false
@@ -129,10 +129,10 @@ def systemTests(Closure body) {
 
     nodeWrapper("ubuntu") {
         stage("Checkout SCM") {
-            if (config.srcSha1) {
+            if (config.srcVersion) {
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: config.srcSha1]],
+                    branches: [[name: config.srcVersion]],
                     userRemoteConfigs: [[
                         url: config.indyNodeRepoUrl,
                     ]]

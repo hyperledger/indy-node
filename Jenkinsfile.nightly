@@ -6,41 +6,65 @@ String pkgName = 'indy-node'
 String mainModuleName = 'indy_node'
 
 def localLib
-String pkgVersion
-String srcSha1
+def err
+String buildPkgVersion
+String buildSrcVersion
 
-nodeWrapper('ubuntu') {
-    stage('Load latest dev release info') {
-        docker.image('hyperledger/indy-core-baseci:0.0.1').inside('-u 0') {
-            sh "apt-get update && apt-get install -y $pkgName"
-            releaseVersion = getReleaseVersion(mainModuleName, false)
-            pkgVersion = "${releaseVersion.release}~${releaseVersion.pre}${releaseVersion.revision}"
-            srcSha1 = sh(returnStdout: true, script: """
-                python3 -c "from $mainModuleName import load_manifest; print(load_manifest()['sha1'])"
-            """).trim()
+String scmRepoUrl
+String scmSha1
+
+try {
+    nodeWrapper('ubuntu') {
+        stage('Resolve version to build') {
+            docker.image('hyperledger/indy-core-baseci:0.0.1').inside('-u 0') {
+                sh "apt-get update && apt-get install -y $pkgName"
+                releaseVersion = getReleaseVersion(mainModuleName, false)
+                buildPkgVersion = "${releaseVersion.release}~${releaseVersion.pre}${releaseVersion.revision}"
+                buildSrcVersion = sh(returnStdout: true, script: """
+                    python3 -c "from $mainModuleName import load_manifest; print(load_manifest()['sha1'])"
+                """).trim()
+            }
+            echo "Version to build: buildSrcVersion=$buildSrcVersion, buildPkgVersion=$buildPkgVersion"
         }
-        echo "Nightly settings: pkgVersion=$pkgVersion, scrSha1=$srcSha1"
+
+        stage('Load local shared library') {
+            checkout scm
+            localLib = load 'ci/pipeline.groovy'
+
+            scmRepoUrl = gitHelper.repoUrl()
+            scmSha1 = gitHelper.sha1()
+        }
     }
 
-    stage('Checkout SCM') {
-        checkout scm
+    localLib.systemTests {
+        repoChannel = 'master'
+        pkgVersion = buildPkgVersion
+        srcVersion = buildSrcVersion
+        testSchema = [
+            ['test_ledger.py'],
+            ['test_vc.py'],
+            ['test_consensus.py', 'TestTAASuite.py'],
+            ['test_upgrade.py', 'test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py']
+        ]
+        testVersion = 'v0.7.0'
+        testVersionByTag = true
+    }
+} catch(Exception _err) {
+    currentBuild.result = "FAILED"
+    err = _err
+    throw _err
+} finally {
+    stage('Build result notification') {
+        sendNotification.email {
+            to = this.env.INDY_NODE_RECIPIENTS ?: ''
+            subject = "[${pkgName}][nightly] Build #${this.env.BUILD_NUMBER} ${err ? 'failed' : 'succeed'} for version ${buildPkgVersion} (${buildSrcVersion})"
+            srcUrl = "${scmRepoUrl}/tree/${scmSha1}"
+        }
     }
 
-    stage('Load local shared library') {
-        localLib = load 'ci/pipeline.groovy'
+    if (err) {
+        stage('Error dump') {
+            echo "Pipeline failed: $err"
+        }
     }
-}
-
-localLib.systemTests {
-    repoChannel = 'master'
-    delegate.pkgVersion = pkgVersion
-    delegate.srcSha1 = srcSha1
-    testSchema = [
-        ['test_ledger.py'],
-        ['test_vc.py'],
-        ['test_consensus.py', 'TestTAASuite.py'],
-        ['test_upgrade.py', 'test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py']
-    ]
-    testVersion = 'v0.7.0'
-    testVersionByTag = true
 }
