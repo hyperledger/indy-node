@@ -4,6 +4,7 @@
 
 String name = 'indy-node'
 String pkgName = name
+String mainModuleName = 'indy_node'
 
 def nodeTestUbuntu = {
     try {
@@ -277,5 +278,5 @@ testAndPublish(
     [
         ubuntu: [node: nodeTestUbuntu, common: commonTestUbuntu]
     ],
-    true, options, [ubuntu: buildDebUbuntu], 'indy_node'
+    true, options, [ubuntu: buildDebUbuntu], mainModuleName
 )
