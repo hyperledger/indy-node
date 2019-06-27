@@ -1,0 +1,35 @@
+#!groovy
+
+@Library('SovrinHelpers@v2.1.1') _
+
+String pkgName = 'indy-node'
+String mainModuleName = 'indy_node'
+
+def localLib
+
+String pkgVersion
+String srcSha1
+
+nodeWrapper('ubuntu') {
+    stage('Load latest dev release info') {
+        docker.image('hyperledger/indy-core-baseci:0.0.1').inside('-u 0') {
+            sh "apt-get update && apt-get install -y $pkgName"
+            releaseVersion = getReleaseVersion(mainModuleName, false)
+            pkgVersion = "${releaseVersion.release}~${releaseVersion.pre}${releaseVersion.revision}"
+            srcSha1 = sh(returnStdout: true, script: """
+                python3 -c "from $mainModuleName import load_manifest; print(load_manifest()['sha1'])"
+            """).trim()
+        }
+        echo "Nightly settings: pkgVersion=$pkgVersion, scrSha1=$srcSha1"
+    }
+
+    stage('Checkout SCM') {
+        checkout scm
+    }
+
+    stage('Load local shared library') {
+        localLib = load 'ci/pipeline.groovy'
+    }
+}
+
+localLib.systemTests('master', pkgVersion, null, srcSha1)
