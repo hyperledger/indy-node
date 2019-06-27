@@ -5,12 +5,6 @@
 String name = 'indy-node'
 String pkgName = name
 
-Boolean isNightly = env.INDY_NODE_BUILD_MODE == 'nightly'
-Map nightlySettings = [
-    releaseVersion: null,
-    sha1: null
-]
-
 def nodeTestUbuntu = {
     try {
         echo 'Ubuntu Test: Checkout csm'
@@ -77,20 +71,6 @@ def buildDebUbuntu = { releaseVersion, sourcePath, packageVersion=null, missedPk
         }
     }
     return "$volumeName"
-}
-
-def configNightlyBuild = {
-    nodeWrapper('ubuntu') {
-        docker.image('hyperledger/indy-core-baseci:0.0.1').inside('-u 0') {
-            sh "apt-get update && apt-get install indy-node"
-            nightlySettings.releaseVersion = getReleaseVersion(moduleName)
-            nightlySettings.sha1 = sh(returnStdout: true, script: """
-                python3 -c "from indy_node import load_manifest; print(load_manifest()['sha1'])"
-            """).trim()
-        }
-    }
-
-    echo "Nightly settings: $nightlySettings"
 }
 
 def systemTests = { component, releaseVersion ->
@@ -206,14 +186,7 @@ def systemTests = { component, releaseVersion ->
 
     nodeWrapper("ubuntu") {
         stage("Checkout SCM") {
-            if (isNightly) {
-                checkout scm
-            } else {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: nightlySettings.sha1]],
-                ])
-            }
+            checkout scm
         }
 
         stage("Get versions of dependencies") {
@@ -294,30 +267,7 @@ options.setBuiltPkgs([
 ])
 
 
-if (isNightly) {
-    env.BRANCH_NAME = 'master'
-
-    options.skip([
-        StagesEnum.IS_TESTED,
-        StagesEnum.STATIC_CODE_VALIDATION,
-        StagesEnum.TEST,
-        StagesEnum.AUTOMERGE,
-        StagesEnum.GET_RELEASE_VERSION,
-        StagesEnum.PYPI_RELEASE,
-        StagesEnum.PACK_RELEASE,
-        StagesEnum.PACK_RELEASE_COPY,
-        StagesEnum.GITHUB_RELEASE,
-        StagesEnum.POOL_UPDATE_NOTIF,
-    ])
-
-    options.releaseVersion = nightlySettings.releaseVersion
-} else {
-    options.enable([
-        StagesEnum.PACK_RELEASE_COPY,
-        StagesEnum.PACK_RELEASE_COPY_ST
-    ])
-}
-
+options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
 options.setCopyWithDeps(true)
 options.setSystemTestsCb(systemTests)
 options.setPrContexts([env.INDY_GITHUB_PR_REQUIRED_CONTEXT ?: "ci/hyperledger-jenkins/pr-merge"])
