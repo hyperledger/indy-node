@@ -31,7 +31,7 @@ from indy_common.config import controlServiceHost, controlServicePort
 import indy_node
 from indy_node.server.upgrade_log import UpgradeLogData, UpgradeLog
 from indy_node.server.upgrader import Upgrader
-from indy_node.test.helper import TestNode
+from indy_node.test.helper import TestNode, TestNodeBootstrap
 from indy_node.utils.node_control_tool import NodeControlTool
 from indy_common.config_helper import NodeConfigHelper
 
@@ -222,7 +222,8 @@ def check_node_sent_acknowledges_upgrade(
 
 def emulate_restart_pool_for_upgrade(nodes):
     for node in nodes:
-        node.upgrader = node.init_upgrader()
+        bootstrap = TestNodeBootstrap(node)
+        node.upgrader = bootstrap.init_upgrader()
         node.acknowledge_upgrade()
 
 
@@ -263,11 +264,11 @@ def check_ledger_after_upgrade(
         assert len(node.configLedger) == ledger_size
         ids = set()
         for _, txn in node.configLedger.getAllTxn():
-            type = get_type(txn)
-            assert type in allowed_txn_types
+            typ = get_type(txn)
+            assert typ in allowed_txn_types
             txn_data = get_payload_data(txn)
             data = txn_data
-            if type == NODE_UPGRADE:
+            if typ == NODE_UPGRADE:
                 data = txn_data[DATA]
 
             assert data[ACTION]

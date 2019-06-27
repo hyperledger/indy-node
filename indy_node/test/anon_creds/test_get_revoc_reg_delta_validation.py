@@ -25,9 +25,8 @@ def test_revoc_reg_delta_schema_validation_missed_fields(build_get_revoc_reg_del
 def test_revoc_reg_delta_from_greater_then_to(create_node_and_not_start,
                                               build_get_revoc_reg_delta):
     node = create_node_and_not_start
-    req_handler = node.get_req_handler(DOMAIN_LEDGER_ID)
     req = build_get_revoc_reg_delta
     req['operation'][FROM] = 100
     req['operation'][TO] = 20
     with pytest.raises(InvalidClientRequest, match="Timestamp FROM more then TO"):
-        req_handler.doStaticValidation(Request(**req))
+        node.read_manager.static_validation(Request(**req))

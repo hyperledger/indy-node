@@ -4,7 +4,7 @@ from indy_common.constants import CLAIM_DEF
 
 
 def test_claim_def_adding(write_request_validation, req, is_owner):
-    authorized = req.identifier in ("trustee_identifier", "steward_identifier", "trust_anchor_identifier")
+    authorized = req.identifier in ("trustee_identifier", "steward_identifier", "endorser_identifier")
     assert authorized == write_request_validation(req,
                                                   [AuthActionAdd(txn_type=CLAIM_DEF,
                                                                  field='some_field',

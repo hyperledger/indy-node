@@ -1,6 +1,6 @@
 import rlp
 
-from indy_common.constants import ROLE, TRUST_ANCHOR
+from indy_common.constants import ROLE, ENDORSER
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, THREE_PC_PREFIX, \
     TXN_TIME
 from plenum.common.types import f
@@ -16,7 +16,7 @@ class IdrCache(OptimisticKVStore):
     A cache to store a role and verkey of an identifier, the db is only used to
     store committed data, uncommitted data goes to memory
     The key is the identifier and value is a pack of fields in rlp
-    The first item is the trust anchor, the second item is verkey and the
+    The first item is the endorser, the second item is verkey and the
     third item is role
     """
 
@@ -148,8 +148,8 @@ class IdrCache(OptimisticKVStore):
     def getSteward(self, nym, isCommitted=True):
         return self.getNym(nym, STEWARD, isCommitted=isCommitted)
 
-    def getTrustAnchor(self, nym, isCommitted=True):
-        return self.getNym(nym, TRUST_ANCHOR, isCommitted=isCommitted)
+    def getEndorser(self, nym, isCommitted=True):
+        return self.getNym(nym, ENDORSER, isCommitted=isCommitted)
 
     def hasTrustee(self, nym, isCommitted=True):
         return bool(self.getTrustee(nym, isCommitted=isCommitted))
@@ -157,8 +157,8 @@ class IdrCache(OptimisticKVStore):
     def hasSteward(self, nym, isCommitted=True):
         return bool(self.getSteward(nym, isCommitted=isCommitted))
 
-    def hasTrustAnchor(self, nym, isCommitted=True):
-        return bool(self.getTrustAnchor(nym, isCommitted=isCommitted))
+    def hasEndorser(self, nym, isCommitted=True):
+        return bool(self.getEndorser(nym, isCommitted=isCommitted))
 
     def hasNym(self, nym, isCommitted=True):
         return bool(self.getNym(nym, isCommitted=isCommitted))

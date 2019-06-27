@@ -30,11 +30,11 @@ did new seed=TestSteward200000000000000000000 metadata="test steward 2"
 Did "3JauiZvnHv6oSBi4DTikg4" has been created with "~5EhgzbpoKEH6f7rQgyUbjJ" verkey
 Metadata has been saved for DID "3JauiZvnHv6oSBi4DTikg4"
 
-did new seed=TestTrustAnchor00000000000000000 metadata="test trust anchor 1"
+did new seed=TestEndorser00000000000000000000 metadata="test endorser 1"
 Did "AWwweaRGGCa4hfvW9WLmeb" has been created with "~D8gYyv77VvdkXguu7mHKfR" verkey
 Metadata has been saved for DID "AWwweaRGGCa4hfvW9WLmeb"
 
-did new seed=TestTrustAnchor10000000000000000 metadata="test trust anchor 2"
+did new seed=TestEndorser10000000000000000000 metadata="test endorser 2"
 Did "EAvxCBmoYzkojBtgX1SVh8" has been created with "~HXn8bHcAYuaDAsCdjdLxLc" verkey
 Metadata has been saved for DID "EAvxCBmoYzkojBtgX1SVh8"
 
@@ -283,7 +283,7 @@ Data:
 did use YLs2LfEvHoSdS6euixMAe8 
 Did "YLs2LfEvHoSdS6euixMAe8" has been set as active
 
-- ledger nym did=EAvxCBmoYzkojBtgX1SVh8 role=TRUST_ANCHOR verkey=~HXn8bHcAYuaDAsCdjdLxLc
+- ledger nym did=EAvxCBmoYzkojBtgX1SVh8 role=ENDORSER verkey=~HXn8bHcAYuaDAsCdjdLxLc
 Transaction has been rejected: Rule for this action is: 1 STEWARD signature is required OR 1 TRUSTEE signature is required
 
 - ledger get-nym did=EAvxCBmoYzkojBtgX1SVh8
@@ -310,7 +310,7 @@ Data:
 did use YLs2LfEvHoSdS6euixMAe8 
 Did "YLs2LfEvHoSdS6euixMAe8" has been set as active
 
-ledger nym did=EAvxCBmoYzkojBtgX1SVh8 role=TRUST_ANCHOR verkey=~HXn8bHcAYuaDAsCdjdLxLc
+ledger nym did=EAvxCBmoYzkojBtgX1SVh8 role=ENDORSER verkey=~HXn8bHcAYuaDAsCdjdLxLc
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -322,7 +322,7 @@ Data:
 +------------------------+-------------------------+--------------+
 | Did                    | Verkey                  | Role         |
 +------------------------+-------------------------+--------------+
-| EAvxCBmoYzkojBtgX1SVh8 | ~HXn8bHcAYuaDAsCdjdLxLc | TRUST_ANCHOR |
+| EAvxCBmoYzkojBtgX1SVh8 | ~HXn8bHcAYuaDAsCdjdLxLc | ENDORSER |
 +------------------------+-------------------------+--------------+
 
 - ledger get-nym did=EAvxCBmoYzkojBtgX1SVh8
@@ -337,13 +337,13 @@ Data:
 +------------------------+------------------------+-------------------------+--------------+
 | Identifier             | Dest                   | Verkey                  | Role         |
 +------------------------+------------------------+-------------------------+--------------+
-| YLs2LfEvHoSdS6euixMAe8 | EAvxCBmoYzkojBtgX1SVh8 | ~HXn8bHcAYuaDAsCdjdLxLc | TRUST_ANCHOR |
+| YLs2LfEvHoSdS6euixMAe8 | EAvxCBmoYzkojBtgX1SVh8 | ~HXn8bHcAYuaDAsCdjdLxLc | ENDORSER |
 +------------------------+------------------------+-------------------------+--------------+
 
 did use V4SGRU86Z58d6TV7PBUe6f
 Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
 
-ledger nym did=AWwweaRGGCa4hfvW9WLmeb role=TRUST_ANCHOR verkey=~D8gYyv77VvdkXguu7mHKfR
+ledger nym did=AWwweaRGGCa4hfvW9WLmeb role=ENDORSER verkey=~D8gYyv77VvdkXguu7mHKfR
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -355,7 +355,7 @@ Data:
 +------------------------+-------------------------+--------------+
 | Did                    | Verkey                  | Role         |
 +------------------------+-------------------------+--------------+
-| AWwweaRGGCa4hfvW9WLmeb | ~D8gYyv77VvdkXguu7mHKfR | TRUST_ANCHOR |
+| AWwweaRGGCa4hfvW9WLmeb | ~D8gYyv77VvdkXguu7mHKfR | ENDORSER |
 +------------------------+-------------------------+--------------+
 
 - ledger get-nym did=AWwweaRGGCa4hfvW9WLmeb
@@ -370,7 +370,7 @@ Data:
 +------------------------+------------------------+-------------------------+--------------+
 | Identifier             | Dest                   | Verkey                  | Role         |
 +------------------------+------------------------+-------------------------+--------------+
-| V4SGRU86Z58d6TV7PBUe6f | AWwweaRGGCa4hfvW9WLmeb | ~D8gYyv77VvdkXguu7mHKfR | TRUST_ANCHOR |
+| V4SGRU86Z58d6TV7PBUe6f | AWwweaRGGCa4hfvW9WLmeb | ~D8gYyv77VvdkXguu7mHKfR | ENDORSER |
 +------------------------+------------------------+-------------------------+--------------+
 
 did use AWwweaRGGCa4hfvW9WLmeb
@@ -428,7 +428,7 @@ did use AWwweaRGGCa4hfvW9WLmeb
 Did "AWwweaRGGCa4hfvW9WLmeb" has been set as active
 
 - ledger nym did=NhF3hPZyV715sfmvsjhj1h verkey=~EjjPJGQcnFGhuyS35bVMGA
-Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required OR 1 STEWARD signature is required OR 1 TRUST_ANCHOR signature is required
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required OR 1 STEWARD signature is required OR 1 ENDORSER signature is required
 
 - ledger get-nym did=NhF3hPZyV715sfmvsjhj1h
 NYM not found
@@ -436,7 +436,7 @@ NYM not found
 did use V4SGRU86Z58d6TV7PBUe6f
 Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
 
-ledger nym did=AWwweaRGGCa4hfvW9WLmeb role=TRUST_ANCHOR
+ledger nym did=AWwweaRGGCa4hfvW9WLmeb role=ENDORSER
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -448,7 +448,7 @@ Data:
 +------------------------+--------------+
 | Did                    | Role         |
 +------------------------+--------------+
-| AWwweaRGGCa4hfvW9WLmeb | TRUST_ANCHOR |
+| AWwweaRGGCa4hfvW9WLmeb | ENDORSER |
 +------------------------+--------------+
 
 did use AWwweaRGGCa4hfvW9WLmeb 
@@ -602,7 +602,7 @@ Data:
 +------------------------+------+
 
 - ledger nym did=X25X1vKgEkwRDNgj1zJ1Xg verkey=~5TR49msrun2AgCKQZsstRX
-Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required OR 1 STEWARD signature is required OR 1 TRUST_ANCHOR signature is required
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required OR 1 STEWARD signature is required OR 1 ENDORSER signature is required
 
 - ledger get-nym did=X25X1vKgEkwRDNgj1zJ1Xg
 NYM not found

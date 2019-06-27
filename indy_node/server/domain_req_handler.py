@@ -274,14 +274,16 @@ class DomainReqHandler(PHandler):
             with_proof=False
         )
         if schema:
-            raise InvalidClientRequest(identifier, req.reqId,
-                                       '{} can have one and only one SCHEMA with '
-                                       'name {} and version {}'
-                                       .format(identifier, schema_name, schema_version))
-        self.write_req_validator.validate(req,
-                                          [AuthActionAdd(txn_type=SCHEMA,
-                                                         field='*',
-                                                         value='*')])
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=SCHEMA,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*')])
+        else:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=SCHEMA,
+                                                             field='*',
+                                                             value='*')])
 
     def _validate_claim_def(self, req: Request):
         # we can not add a Claim Def with existent ISSUER_DID
@@ -720,7 +722,7 @@ class DomainReqHandler(PHandler):
 
                 }
                 """If we got "from" timestamp, then add state proof into "data" section of reply"""
-                if req_ts_from and accum_from.value:
+                if req_ts_from:
                     reply[STATE_PROOF_FROM] = accum_from.proof
                     reply[VALUE][ACCUM_FROM] = accum_from.value
 
@@ -728,6 +730,14 @@ class DomainReqHandler(PHandler):
             seq_no = accum_to.seq_no if entry_from.value else entry_to.seq_no
             update_time = accum_to.update_time if entry_from.value else entry_to.update_time
             proof = accum_to.proof if entry_from.value else entry_to.proof
+            if reply is None and req_ts_from is not None:
+                # TODO: change this according to INDY-2115
+                reply = {}
+                accum_from = self._get_reg_entry_accum_by_timestamp(req_ts_from, path_to_reg_entry_accum)
+                reply[STATE_PROOF_FROM] = accum_from.proof
+                reply[VALUE] = {}
+                reply[VALUE][ACCUM_TO] = None
+                reply[VALUE][ACCUM_FROM] = accum_from.value
         else:
             seq_no = None
             update_time = None

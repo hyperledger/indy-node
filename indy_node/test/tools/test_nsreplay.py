@@ -89,10 +89,10 @@ def test_end_to_end_replay(looper,
                            tdirWithDomainTxns,
                            nodeSet,
                            sdk_pool_handle,
-                           sdk_wallet_trust_anchor
+                           sdk_wallet_endorser
                            ):
     some_transactions_done(looper, nodeSet, sdk_pool_handle,
-                           sdk_wallet_trust_anchor)
+                           sdk_wallet_endorser)
 
     for node in nodeSet:
         node.cleanupOnStopping = False

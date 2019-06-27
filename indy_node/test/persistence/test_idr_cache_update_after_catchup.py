@@ -34,13 +34,12 @@ def test_idr_cache_update_after_catchup(txnPoolNodeSet,
                                         tconf, tdir, allPluginsPath)
     txnPoolNodeSet[-1] = restarted_node
     waitNodeDataEquality(looper, restarted_node, *txnPoolNodeSet[:-1])
-    req_handler = restarted_node.get_req_handler(DOMAIN_LEDGER_ID)
-    root_hash = req_handler.ts_store.get_equal_or_prev(get_txn_time(result['result']))
+    root_hash = restarted_node.db_manager.ts_store.get_equal_or_prev(get_txn_time(result['result']))
     key = domain.make_state_path_for_nym(idr)
-    from_state = req_handler.state.get_for_root_hash(root_hash=root_hash,
-                                                     key=key)
+    from_state = restarted_node.getState(DOMAIN_LEDGER_ID).get_for_root_hash(root_hash=root_hash,
+                                                                                   key=key)
     assert from_state
-    deserialized = req_handler.stateSerializer.deserialize(from_state)
+    deserialized = restarted_node.write_manager.state_serializer.deserialize(from_state)
     assert deserialized
-    items_after = req_handler.idrCache.get(idr)
+    items_after = restarted_node.db_manager.idr_cache.get(idr)
     assert items_after
