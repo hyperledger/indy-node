@@ -13,6 +13,9 @@ String buildSrcVersion
 String scmRepoUrl
 String scmSha1
 
+echo "$env.INDY_NODE_RECIPIENTS"
+env.INDY_NODE_RECIPIENTS = 'andrey.kononykhin@dsr-corporation.com'
+
 try {
     nodeWrapper('ubuntu') {
         stage('Resolve version to build') {
@@ -36,6 +39,7 @@ try {
         }
     }
 
+/*
     localLib.systemTests {
         repoChannel = 'master'
         pkgVersion = buildPkgVersion
@@ -49,6 +53,7 @@ try {
         testVersion = 'v0.7.0'
         testVersionByTag = true
     }
+*/
 } catch(Exception _err) {
     currentBuild.result = "FAILED"
     err = _err
