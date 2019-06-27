@@ -1,28 +1,38 @@
-import json
-import time
-
-import pytest
-from plenum.common.exceptions import RequestNackedException
-
-from indy_common.constants import NODE_UPGRADE
-from plenum.test.helper import sdk_get_and_check_replies
-from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request
-
-from plenum.common.constants import TXN_TYPE, CURRENT_PROTOCOL_VERSION
-from plenum.common.types import OPERATION, f
+from indy_node.test.did.conftest import nym_get
+from indy_node.test.helper import sdk_rotate_verkey
 
 
-def test_send_audit_txn1(looper, sdk_wallet_client, sdk_pool_handle):
-    req = {
-        OPERATION: {
-            TXN_TYPE: NODE_UPGRADE,
-            'data': 'data1'
-        },
-        f.IDENTIFIER.nm: sdk_wallet_client[1],
-        f.REQ_ID.nm: int(time.time()),
-        f.PROTOCOL_VERSION.nm: CURRENT_PROTOCOL_VERSION
-    }
+def testAddDidWithVerkey(nym_abbrv_vk):
+    pass
 
-    rep = sdk_sign_and_send_prepared_request(looper, sdk_wallet_client, sdk_pool_handle, json.dumps(req))
-    with pytest.raises(RequestNackedException):
-        sdk_get_and_check_replies(looper, [rep])
+
+def testRetrieveAbbrvVerkey(looper, tconf, nodeSet, sdk_pool_handle, sdk_wallet_trustee, nym_abbrv_vk):
+    nwh, ndid, nvk = nym_abbrv_vk
+    resp_data = nym_get(looper, sdk_pool_handle, sdk_wallet_trustee, ndid)
+    assert ndid == resp_data[0]
+    assert nvk == resp_data[1]
+
+
+def testChangeVerkeyToNewVerkey(looper, tconf, nodeSet, sdk_pool_handle, nym_abbrv_vk):
+    wh, did, nvk = nym_abbrv_vk
+    new_verkey = sdk_rotate_verkey(looper, sdk_pool_handle, wh, did, did)
+    assert nvk != new_verkey
+
+
+def testRetrieveChangedVerkey(looper, tconf, nodeSet, sdk_pool_handle, sdk_wallet_trustee, nym_abbrv_vk):
+    wh, did, vk = nym_abbrv_vk
+    new_vk = sdk_rotate_verkey(looper, sdk_pool_handle, wh, did, did)
+    resp_data = nym_get(looper, sdk_pool_handle, sdk_wallet_trustee, did)
+    assert did == resp_data[0]
+    assert vk != resp_data[1]
+    assert new_vk == resp_data[1]
+
+
+def testVerifySigWithChangedVerkey(looper, tconf, nodeSet, sdk_pool_handle, nym_abbrv_vk):
+    wh, did, vk = nym_abbrv_vk
+    new_vk = sdk_rotate_verkey(looper, sdk_pool_handle, wh, did, did)
+    # check sign by getting nym from ledger - if succ then sign is ok
+    resp_data = nym_get(looper, sdk_pool_handle, (wh, did), did)
+    assert did == resp_data[0]
+    assert vk != resp_data[1]
+    assert new_vk == resp_data[1]
