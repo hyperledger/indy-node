@@ -40,6 +40,7 @@ class LoadClient:
         self._wallet_handle = None
         self._trustee_dids = []
         self._req_num_of_trustees = kwargs.get("trustees_num", 1)
+        self._set_auth_rule = kwargs.get("set_auth_rules", False)
         self._test_did = None
         self._test_verk = None
         self._taa_text = None
@@ -248,6 +249,11 @@ class LoadClient:
         return result['data']['text'], result['data']['version'], result['txnTime']
 
     async def _pool_auth_rules_init(self):
+        if not self._set_auth_rule:
+            self._logger.info("Auth rules are not required to be set")
+            return
+
+        self._logger.info("Setting auth rules...")
         get_auth_rule_req = await ledger.build_get_auth_rule_request(self._test_did, None, None, None, None, None)
         get_auth_rule_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, get_auth_rule_req)
         ensure_is_reply(get_auth_rule_resp)
@@ -380,8 +386,9 @@ class LoadClient:
         try:
             req_did = self._req_generator.req_did() or self._test_did
             sig_req = await self.ledger_sign_req(self._wallet_handle, req_did, req)
-            self._stat.signed(req_data)
-            self._load_client_reqs.append((req_data, sig_req))
+            if sig_req:
+                self._stat.signed(req_data)
+                self._load_client_reqs.append((req_data, sig_req))
         except Exception as e:
             self._stat.reply(req_data, e)
             self._loop.stop()

@@ -9,13 +9,16 @@ from indy_common.authorize.auth_constraints import AuthConstraint, ConstraintsSe
 from indy_common.state import config
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.node import Node
+from indy_node.server.node_bootstrap import NodeBootstrap
 from ledger.compact_merkle_tree import CompactMerkleTree
 from plenum.common.constants import TXN_TYPE, NYM, ROLE, TRUSTEE, STEWARD, CONFIG_LEDGER_ID, TXN_METADATA, \
     TXN_METADATA_SEQ_NO
 from plenum.common.ledger import Ledger
 from plenum.common.txn_util import reqToTxn, get_payload_data
+from plenum.server.database_manager import DatabaseManager
 from plenum.server.replica import Replica
 from plenum.common.request import Request
+from plenum.server.request_managers.write_request_manager import WriteRequestManager
 from plenum.test.testing_utils import FakeSomething
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
@@ -160,8 +163,13 @@ def test_init_state_from_ledger(config_ledger,
     """Add txn to ledger"""
     config_ledger.appendTxns([txn])
     config_ledger.commitTxns(req_count)
-    init_state_from_ledger = functools.partial(Node.init_state_from_ledger,
-                                               FakeSomething(update_txn_with_extra_data=lambda txn: txn))
+    # ToDo: ugly fix... Refactor this on pluggable req handler integration phase
+    init_state_from_ledger = functools.partial(
+        NodeBootstrap.init_state_from_ledger,
+        FakeSomething(
+            node=FakeSomething(update_txn_with_extra_data=lambda txn: txn,
+                write_manager=FakeSomething(
+                update_state=lambda txn, isCommitted: config_req_handler.updateState([txn], isCommitted=isCommitted)))))
     """Check that txn is not exist in state"""
     assert config_state.get(config.make_state_path_for_auth_rule(action.get_action_id()),
                             isCommitted=False) is None
@@ -173,8 +181,7 @@ def test_init_state_from_ledger(config_ledger,
     assert get_payload_data(txns_from_ledger[0][1]) == get_payload_data(txn)
     """Emulating node starting"""
     init_state_from_ledger(config_state,
-                           config_ledger,
-                           config_req_handler)
+                           config_ledger)
     """Check that txn was added into state"""
     from_state = config_state.get(
         config.make_state_path_for_auth_rule(action.get_action_id()),

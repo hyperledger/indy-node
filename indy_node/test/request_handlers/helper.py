@@ -23,6 +23,7 @@ def get_fake_ledger():
     ledger.getBySeqNo = lambda seq_no: ledger.txn_list[seq_no]
     ledger.appendTxns = lambda txns: ledger.txn_list.update({get_seq_no(txn): txn
                                                              for txn in txns})
+    ledger.get_by_seq_no_uncommitted = lambda seq_no: ledger.txn_list[seq_no]
     return ledger
 
 

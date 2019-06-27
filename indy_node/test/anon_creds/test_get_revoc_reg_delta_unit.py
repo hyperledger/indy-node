@@ -1,4 +1,6 @@
 import pytest
+
+from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_delta_handler import GetRevocRegDeltaHandler
 from plenum.common.txn_util import reqToTxn, append_txn_metadata, get_txn_time
 from plenum.common.types import f
 from indy_common.types import Request
@@ -37,11 +39,10 @@ def add_another_reg_id(looper,
     }
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
     looper.runFor(2)
-    req_handler = node.get_req_handler(DOMAIN_LEDGER_ID)
     txn = append_txn_metadata(reqToTxn(Request(**req)),
                               txn_time=FIRST_ID_TS,
                               seq_no=node.domainLedger.seqNo + 1)
-    req_handler._addRevocDef(txn)
+    node.write_manager.update_state(txn)
     return req
 
 
@@ -55,12 +56,11 @@ def reg_entry_with_other_reg_id(looper,
     data = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_txn)
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
     looper.runFor(2)
-    req_handler = node.get_req_handler(DOMAIN_LEDGER_ID)
     txn = append_txn_metadata(reqToTxn(Request(**req)),
                               txn_time=FIRST_ID_TS,
                               seq_no=node.domainLedger.seqNo + 1)
-    req_handler._addRevocRegEntry(txn)
-    req_handler.ts_store.set(get_txn_time(txn), req_handler.state.headHash)
+    node.write_manager.update_state(txn)
+    node.db_manager.ts_store.set(get_txn_time(txn), node.db_manager.get_state(DOMAIN_LEDGER_ID).headHash)
     return txn
 
 
@@ -74,17 +74,22 @@ def test_get_delta_with_other_reg_def_in_state(looper,
     node = create_node_and_not_start
     # need for different txnTime
     looper.runFor(2)
-    req_handler = node.get_req_handler(DOMAIN_LEDGER_ID)
     txn = append_txn_metadata(reqToTxn(entry_second_id),
                               txn_time=SECOND_TS_ID,
                               seq_no=node.domainLedger.seqNo + 1)
-    req_handler._addRevocRegEntry(txn)
-    req_handler.ts_store.set(get_txn_time(txn), req_handler.state.headHash)
+    node.write_manager.update_state(txn)
+    node.db_manager.ts_store.set(get_txn_time(txn), node.getState(DOMAIN_LEDGER_ID).headHash)
 
     # timestamp beetween FIRST_ID_TS and SECOND_ID_TS
     delta_req['operation'][FROM] = FIRST_ID_TS + 10
     path_to_reg_entry = domain.make_state_path_for_revoc_reg_entry(
         revoc_reg_def_id=entry_second_id['operation'][REVOC_REG_DEF_ID])
+
+    req_handler = None
+    for h in node.read_manager.request_handlers.values():
+        if isinstance(h, GetRevocRegDeltaHandler):
+            req_handler = h
+
     reg_entry = req_handler._get_reg_entry_by_timestamp(
         delta_req['operation'][FROM],
         path_to_reg_entry)

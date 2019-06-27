@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from enum import Enum
 from typing import List
 from indy_common.authorize.helper import get_named_role
-from indy_common.constants import NETWORK_MONITOR, TRUST_ANCHOR
+from indy_common.constants import NETWORK_MONITOR, ENDORSER
 from plenum.common.constants import STEWARD, TRUSTEE
 
 CONSTRAINT_ID = "constraint_id"
@@ -14,7 +14,7 @@ NEED_TO_BE_OWNER = "need_to_be_owner"
 
 IDENTITY_OWNER = None
 
-accepted_roles = [IDENTITY_OWNER, NETWORK_MONITOR, TRUST_ANCHOR, STEWARD, TRUSTEE, '*']
+accepted_roles = [IDENTITY_OWNER, NETWORK_MONITOR, ENDORSER, STEWARD, TRUSTEE, '*']
 
 
 class ConstraintEnum(Enum):
@@ -26,12 +26,14 @@ class ConstraintsEnum:
     ROLE_CONSTRAINT_ID = 'ROLE'
     AND_CONSTRAINT_ID = 'AND'
     OR_CONSTRAINT_ID = 'OR'
+    FORBIDDEN_CONSTRAINT_ID = 'FORBIDDEN'
 
     @staticmethod
     def values():
         return [ConstraintsEnum.ROLE_CONSTRAINT_ID,
                 ConstraintsEnum.AND_CONSTRAINT_ID,
-                ConstraintsEnum.OR_CONSTRAINT_ID]
+                ConstraintsEnum.OR_CONSTRAINT_ID,
+                ConstraintsEnum.FORBIDDEN_CONSTRAINT_ID]
 
 
 class AbstractAuthConstraint(metaclass=ABCMeta):
@@ -56,6 +58,26 @@ class AbstractAuthConstraint(metaclass=ABCMeta):
     @staticmethod
     def from_dict(as_dict):
         raise NotImplementedError()
+
+
+class AuthConstraintForbidden(AbstractAuthConstraint):
+
+    def __init__(self):
+        self.constraint_id = ConstraintsEnum.FORBIDDEN_CONSTRAINT_ID
+
+    @property
+    def as_dict(self):
+        return {CONSTRAINT_ID: self.constraint_id}
+
+    def __str__(self):
+        return "The action is forbidden"
+
+    def set_metadata(self, metadata: dict):
+        pass
+
+    @staticmethod
+    def from_dict(as_dict):
+        return AuthConstraintForbidden()
 
 
 class AuthConstraint(AbstractAuthConstraint):
@@ -245,4 +267,5 @@ constraint_to_class_map = {
     ConstraintsEnum.ROLE_CONSTRAINT_ID: AuthConstraint,
     ConstraintsEnum.AND_CONSTRAINT_ID: AuthConstraintAnd,
     ConstraintsEnum.OR_CONSTRAINT_ID: AuthConstraintOr,
+    ConstraintsEnum.FORBIDDEN_CONSTRAINT_ID: AuthConstraintForbidden,
 }

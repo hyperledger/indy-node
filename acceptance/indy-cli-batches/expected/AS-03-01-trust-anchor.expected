@@ -1,60 +1,60 @@
-- pool create AS-0301-anchor gen_txn_file=./pool_transactions_genesis
-Pool config "AS-0301-anchor" has been created
+- pool create AS-0301-endorser gen_txn_file=./pool_transactions_genesis
+Pool config "AS-0301-endorser" has been created
 
-pool connect AS-0301-anchor
-Pool "AS-0301-anchor" has been connected
+pool connect AS-0301-endorser
+Pool "AS-0301-endorser" has been connected
 
-- wallet create AS-03-wallet-anchor key=testkey storage_config={"pool":"AS-0301-anchor"}
-Wallet "AS-03-wallet-anchor" has been created
+- wallet create AS-03-wallet-endorser key=testkey storage_config={"pool":"AS-0301-endorser"}
+Wallet "AS-03-wallet-endorser" has been created
 
-wallet open AS-03-wallet-anchor key=testkey
-Wallet "AS-03-wallet-anchor" has been opened
+wallet open AS-03-wallet-endorser key=testkey
+Wallet "AS-03-wallet-endorser" has been opened
 
 did new seed=000000000000000000000000Trustee1 metadata="Default Trustee"
 Did "V4SGRU86Z58d6TV7PBUe6f" has been created with "~CoRER63DVYnWZtK8uAzNbx" verkey
 Metadata has been saved for DID "V4SGRU86Z58d6TV7PBUe6f"
 
-did new seed=TestTrustAnchorTrustee1000000002 metadata="Trustee 1"
+did new seed=TestEndorserTrustee1000000000002 metadata="Trustee 1"
 Did "HUBDajRyCvTGR18ETzEGEB" has been created with "~DriCN8uMxoA8tiBazmkBWk" verkey
 Metadata has been saved for DID "HUBDajRyCvTGR18ETzEGEB"
 
-did new seed=TestTrustAnchorTrustee2000000002 metadata="Trustee 2"
+did new seed=TestEndorserTrustee2000000000002 metadata="Trustee 2"
 Did "KY4VDKjHUPTnxtF2zfJnNP" has been created with "~WUktVVQHL7saxaNochggZR" verkey
 Metadata has been saved for DID "KY4VDKjHUPTnxtF2zfJnNP"
 
-did new seed=TestTrustAnchorSteward1000000002 metadata="Steward 1"
+did new seed=TestEndorserSteward1000000000002 metadata="Steward 1"
 Did "23LxaWGVajU7vMn7zcrHGK" has been created with "~UgkZ1ktZV2DQg1sJn3tjdP" verkey
 Metadata has been saved for DID "23LxaWGVajU7vMn7zcrHGK"
 
-did new seed=TestTrustAnchorSteward2000000002 metadata="Steward 2"
+did new seed=TestEndorserSteward2000000000002 metadata="Steward 2"
 Did "BhJXbKYGm9ZkHF3jjhDrPJ" has been created with "~R7RAboPbpw5ycURytkcASB" verkey
 Metadata has been saved for DID "BhJXbKYGm9ZkHF3jjhDrPJ"
 
-did new seed=TestTrustAnchorCreateTrustAncho1 metadata="Trust Anchor 1"
+did new seed=TestEndorserCreateEndorser000001 metadata="Endorser 1"
 Did "T6XTs3nSU3J7ptAcxSnaVo" has been created with "~5izgZjWpw3gxeDB9KRS7BN" verkey
 Metadata has been saved for DID "T6XTs3nSU3J7ptAcxSnaVo"
 
-did new seed=TestTrustAnchorCreateTrustAncho2 metadata="Trust Anchor 2"
+did new seed=TestEndorserCreateEndorser000002 metadata="Endorser 2"
 Did "TPrMRHHSunP3cEtpkY8gi7" has been created with "~ANMdNhQ3uuyXDmn7cxi8df" verkey
 Metadata has been saved for DID "TPrMRHHSunP3cEtpkY8gi7"
 
-did new seed=TestTrustAnchorCreateTrustAncho3 metadata="Trust Anchor 3"
+did new seed=TestEndorserCreateEndorser000003 metadata="Endorser 3"
 Did "Xw1QKjyG938oV5gUnLoBhm" has been created with "~3iC9GEndzoEYcruyhTLWDc" verkey
 Metadata has been saved for DID "Xw1QKjyG938oV5gUnLoBhm"
 
-did new seed=TestTrustAnchorCreateTrustAncho4 metadata="Trust Anchor 4"
+did new seed=TestEndorserCreateEndorser000004 metadata="Endorser 4"
 Did "3KghQejG1HZU5MbpQL5Cuk" has been created with "~6DWoz55wzC77CDEYkZzytR" verkey
 Metadata has been saved for DID "3KghQejG1HZU5MbpQL5Cuk"
 
-did new seed=TestTrustAnchorRandomUser1000002 metadata="Random User 1"
+did new seed=TestEndorserRandomUser1000000002 metadata="Random User 1"
 Did "MXYSvpB5e549z6nqa1nTEh" has been created with "~PR7BXc75UwtiPvKjtDn26N" verkey
 Metadata has been saved for DID "MXYSvpB5e549z6nqa1nTEh"
 
-did new seed=TestTrustAnchorRandomUser2000002 metadata="Random User 2"
+did new seed=TestEndorserRandomUser2000000002 metadata="Random User 2"
 Did "WDLETDtBugFiJvtkghHoH" has been created with "~QdAhvFaZ81ZZ1DxwqZ5i8i" verkey
 Metadata has been saved for DID "WDLETDtBugFiJvtkghHoH"
 
-did new seed=TestTrustAnchorRandomUser3000002 metadata="Random User 3"
+did new seed=TestEndorserRandomUser3000000002 metadata="Random User 3"
 Did "3B1g9f3vC4pR8bTfi21z91" has been created with "~5RtP3dPmQdNmz75TvQPK9k" verkey
 Metadata has been saved for DID "3B1g9f3vC4pR8bTfi21z91"
 
@@ -106,7 +106,7 @@ Data:
 did use V4SGRU86Z58d6TV7PBUe6f
 Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
 
-ledger nym did=T6XTs3nSU3J7ptAcxSnaVo role=TRUST_ANCHOR verkey=~5izgZjWpw3gxeDB9KRS7BN
+ledger nym did=T6XTs3nSU3J7ptAcxSnaVo role=ENDORSER verkey=~5izgZjWpw3gxeDB9KRS7BN
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -118,7 +118,7 @@ Data:
 +------------------------+-------------------------+--------------+
 | Did                    | Verkey                  | Role         |
 +------------------------+-------------------------+--------------+
-| T6XTs3nSU3J7ptAcxSnaVo | ~5izgZjWpw3gxeDB9KRS7BN | TRUST_ANCHOR |
+| T6XTs3nSU3J7ptAcxSnaVo | ~5izgZjWpw3gxeDB9KRS7BN | ENDORSER |
 +------------------------+-------------------------+--------------+
 
 - ledger get-nym did=T6XTs3nSU3J7ptAcxSnaVo
@@ -133,13 +133,13 @@ Data:
 +------------------------+------------------------+-------------------------+--------------+
 | Identifier             | Dest                   | Verkey                  | Role         |
 +------------------------+------------------------+-------------------------+--------------+
-| V4SGRU86Z58d6TV7PBUe6f | T6XTs3nSU3J7ptAcxSnaVo | ~5izgZjWpw3gxeDB9KRS7BN | TRUST_ANCHOR |
+| V4SGRU86Z58d6TV7PBUe6f | T6XTs3nSU3J7ptAcxSnaVo | ~5izgZjWpw3gxeDB9KRS7BN | ENDORSER |
 +------------------------+------------------------+-------------------------+--------------+
 
 did use V4SGRU86Z58d6TV7PBUe6f
 Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
 
-ledger nym did=TPrMRHHSunP3cEtpkY8gi7 role=TRUST_ANCHOR verkey=~ANMdNhQ3uuyXDmn7cxi8df
+ledger nym did=TPrMRHHSunP3cEtpkY8gi7 role=ENDORSER verkey=~ANMdNhQ3uuyXDmn7cxi8df
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -151,7 +151,7 @@ Data:
 +------------------------+-------------------------+--------------+
 | Did                    | Verkey                  | Role         |
 +------------------------+-------------------------+--------------+
-| TPrMRHHSunP3cEtpkY8gi7 | ~ANMdNhQ3uuyXDmn7cxi8df | TRUST_ANCHOR |
+| TPrMRHHSunP3cEtpkY8gi7 | ~ANMdNhQ3uuyXDmn7cxi8df | ENDORSER |
 +------------------------+-------------------------+--------------+
 
 - ledger get-nym did=TPrMRHHSunP3cEtpkY8gi7
@@ -166,7 +166,7 @@ Data:
 +------------------------+------------------------+-------------------------+--------------+
 | Identifier             | Dest                   | Verkey                  | Role         |
 +------------------------+------------------------+-------------------------+--------------+
-| V4SGRU86Z58d6TV7PBUe6f | TPrMRHHSunP3cEtpkY8gi7 | ~ANMdNhQ3uuyXDmn7cxi8df | TRUST_ANCHOR |
+| V4SGRU86Z58d6TV7PBUe6f | TPrMRHHSunP3cEtpkY8gi7 | ~ANMdNhQ3uuyXDmn7cxi8df | ENDORSER |
 +------------------------+------------------------+-------------------------+--------------+
 
 did use V4SGRU86Z58d6TV7PBUe6f
@@ -325,7 +325,7 @@ Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is r
 did use 23LxaWGVajU7vMn7zcrHGK
 Did "23LxaWGVajU7vMn7zcrHGK" has been set as active
 
-ledger nym did=3KghQejG1HZU5MbpQL5Cuk role=TRUST_ANCHOR verkey=~6DWoz55wzC77CDEYkZzytR
+ledger nym did=3KghQejG1HZU5MbpQL5Cuk role=ENDORSER verkey=~6DWoz55wzC77CDEYkZzytR
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -337,7 +337,7 @@ Data:
 +------------------------+-------------------------+--------------+
 | Did                    | Verkey                  | Role         |
 +------------------------+-------------------------+--------------+
-| 3KghQejG1HZU5MbpQL5Cuk | ~6DWoz55wzC77CDEYkZzytR | TRUST_ANCHOR |
+| 3KghQejG1HZU5MbpQL5Cuk | ~6DWoz55wzC77CDEYkZzytR | ENDORSER |
 +------------------------+-------------------------+--------------+
 
 - ledger get-nym did=3KghQejG1HZU5MbpQL5Cuk
@@ -352,7 +352,7 @@ Data:
 +------------------------+------------------------+-------------------------+--------------+
 | Identifier             | Dest                   | Verkey                  | Role         |
 +------------------------+------------------------+-------------------------+--------------+
-| 23LxaWGVajU7vMn7zcrHGK | 3KghQejG1HZU5MbpQL5Cuk | ~6DWoz55wzC77CDEYkZzytR | TRUST_ANCHOR |
+| 23LxaWGVajU7vMn7zcrHGK | 3KghQejG1HZU5MbpQL5Cuk | ~6DWoz55wzC77CDEYkZzytR | ENDORSER |
 +------------------------+------------------------+-------------------------+--------------+
 
 did use T6XTs3nSU3J7ptAcxSnaVo
@@ -406,7 +406,7 @@ Data:
 did use T6XTs3nSU3J7ptAcxSnaVo
 Did "T6XTs3nSU3J7ptAcxSnaVo" has been set as active
 
-- ledger nym did=Xw1QKjyG938oV5gUnLoBhm role=TRUST_ANCHOR verkey=~3iC9GEndzoEYcruyhTLWDc
+- ledger nym did=Xw1QKjyG938oV5gUnLoBhm role=ENDORSER verkey=~3iC9GEndzoEYcruyhTLWDc
 Transaction has been rejected: Rule for this action is: 1 STEWARD signature is required OR 1 TRUSTEE signature is required
 
 - ledger get-nym did=Xw1QKjyG938oV5gUnLoBhm
@@ -472,7 +472,7 @@ Validator Info:
 did use T6XTs3nSU3J7ptAcxSnaVo
 Did "T6XTs3nSU3J7ptAcxSnaVo" has been set as active
 
-- ledger nym did=WDLETDtBugFiJvtkghHoH role=TRUST_ANCHOR
+- ledger nym did=WDLETDtBugFiJvtkghHoH role=ENDORSER
 Transaction has been rejected: Rule for this action is: 1 STEWARD signature is required OR 1 TRUSTEE signature is required
 
 - ledger nym did=WDLETDtBugFiJvtkghHoH role=STEWARD
@@ -490,7 +490,7 @@ Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
 did new seed=RandomAttribOwner000000000000002
 Did "LoZB9o2PFfSjrpnkugqunZ" has been created with "~X2yUYuMgCaaPSEyudS8jnT" verkey
 
-ledger nym did=LoZB9o2PFfSjrpnkugqunZ verkey=~X2yUYuMgCaaPSEyudS8jnT role=TRUST_ANCHOR
+ledger nym did=LoZB9o2PFfSjrpnkugqunZ verkey=~X2yUYuMgCaaPSEyudS8jnT role=ENDORSER
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -502,13 +502,13 @@ Data:
 +------------------------+-------------------------+--------------+
 | Did                    | Verkey                  | Role         |
 +------------------------+-------------------------+--------------+
-| LoZB9o2PFfSjrpnkugqunZ | ~X2yUYuMgCaaPSEyudS8jnT | TRUST_ANCHOR |
+| LoZB9o2PFfSjrpnkugqunZ | ~X2yUYuMgCaaPSEyudS8jnT | ENDORSER |
 +------------------------+-------------------------+--------------+
 
 did new seed=RandomUserForRotateKey0000000002
 Did "ETcbLj612u9oXr7adZSWZV" has been created with "~UUMiscx15SsxekQtLfVVLh" verkey
 
-ledger nym did=ETcbLj612u9oXr7adZSWZV verkey=~UUMiscx15SsxekQtLfVVLh role=TRUST_ANCHOR
+ledger nym did=ETcbLj612u9oXr7adZSWZV verkey=~UUMiscx15SsxekQtLfVVLh role=ENDORSER
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -520,7 +520,7 @@ Data:
 +------------------------+-------------------------+--------------+
 | Did                    | Verkey                  | Role         |
 +------------------------+-------------------------+--------------+
-| ETcbLj612u9oXr7adZSWZV | ~UUMiscx15SsxekQtLfVVLh | TRUST_ANCHOR |
+| ETcbLj612u9oXr7adZSWZV | ~UUMiscx15SsxekQtLfVVLh | ENDORSER |
 +------------------------+-------------------------+--------------+
 
 did use LoZB9o2PFfSjrpnkugqunZ
@@ -534,7 +534,7 @@ did use ETcbLj612u9oXr7adZSWZV
 Did "ETcbLj612u9oXr7adZSWZV" has been set as active
 
 - ledger nym did=LoZB9o2PFfSjrpnkugqunZ verkey=~X2yUYuMgCaaPSEyudS8jnT
-Transaction has been rejected: TRUST_ANCHOR can not touch verkey field since only the owner can modify it
+Transaction has been rejected: ENDORSER can not touch verkey field since only the owner can modify it
 
 did use LoZB9o2PFfSjrpnkugqunZ
 Did "LoZB9o2PFfSjrpnkugqunZ" has been set as active
@@ -581,7 +581,7 @@ Did "ETcbLj612u9oXr7adZSWZV" has been set as active
 - ledger attrib did=LoZB9o2PFfSjrpnkugqunZ raw={"endpoint":{"ha":"127.0.0.1:5555"}}
 Transaction has been rejected: Only identity owner/guardian can add attribute for that identity
 
-ledger schema name=TrustAnchorSchema version=1.0 attr_names=name,age
+ledger schema name=EndorserSchema version=1.0 attr_names=name,age
 Schema request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
@@ -593,7 +593,7 @@ Data:
 +-------------------+---------+--------------+
 | Name              | Version | Attributes   |
 +-------------------+---------+--------------+
-| TrustAnchorSchema | 1.0     | "name","age" |
+| EndorserSchema | 1.0     | "name","age" |
 +-------------------+---------+--------------+
 
 - ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=2
@@ -616,6 +616,6 @@ Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is r
 
 }
 
-Pool "AS-0301-anchor" has been disconnected
-Wallet "AS-03-wallet-anchor" has been closed
+Pool "AS-0301-endorser" has been disconnected
+Wallet "AS-03-wallet-endorser" has been closed
 Goodbye...

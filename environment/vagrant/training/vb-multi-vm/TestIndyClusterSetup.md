@@ -187,23 +187,23 @@ Now that the CLI client can authenticate as the `Steward1` user, we can put
 transactions into the Indy validator cluster that will register each agent
 and establish its endpoint attribute.  To register the agents used in the
 Getting Started Guide, first, as the Steward, add each of the three agent's
-Trust Anchor to the ledger.:
+Endorser to the ledger.:
 
 ```
-indy@sandbox> send NYM dest=ULtgFQJe6bjiFbs7ke3NJD role=TRUST_ANCHOR verkey=~5kh3FB4H3NKq7tUDqeqHc1
-indy@sandbox> send NYM dest=CzkavE58zgX7rUMrzSinLr role=TRUST_ANCHOR verkey=~WjXEvZ9xj4Tz9sLtzf7HVP
-indy@sandbox> send NYM dest=H2aKRiDeq8aLZSydQMDbtf role=TRUST_ANCHOR verkey=~3sphzTb2itL2mwSeJ1Ji28
+indy@sandbox> send NYM dest=ULtgFQJe6bjiFbs7ke3NJD role=ENDORSER verkey=~5kh3FB4H3NKq7tUDqeqHc1
+indy@sandbox> send NYM dest=CzkavE58zgX7rUMrzSinLr role=ENDORSER verkey=~WjXEvZ9xj4Tz9sLtzf7HVP
+indy@sandbox> send NYM dest=H2aKRiDeq8aLZSydQMDbtf role=ENDORSER verkey=~3sphzTb2itL2mwSeJ1Ji28
 ```
 
 In the first of the above commands, `~5kh3FB4H3NKq7tUDqeqHc1` is the
-verification key of the "Faber College" Trust Anchor.  A corresponding private
+verification key of the "Faber College" Endorser.  A corresponding private
 key is retained by the agent process. `ULtgFQJe6bjiFbs7ke3NJD` is the "Faber
-College" Trust Anchor ID.  The other two lines put the Trust Anchors for "Acme
+College" Endorser ID.  The other two lines put the Endorsers for "Acme
 Corp" and "Thrift Bank" onto the ledger as well.
 
-Next, we provide information on the nodes that these Trust Anchors will use to
+Next, we provide information on the nodes that these Endorsers will use to
 interact with clients.  If necessary, replace the IP addresses and ports in
-these commands with what you are using.  Since only the Trust Anchor can modify
+these commands with what you are using.  Since only the Endorser can modify
 his information on the ledger, we must assume the proper identity before
 posting each transaction.
 

@@ -4,7 +4,7 @@ from indy.did import create_and_store_my_did
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.constants import AUTH_RULE, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, OLD_VALUE, NYM, \
-    TRUST_ANCHOR, GET_AUTH_RULE
+    ENDORSER, RULES, AUTH_RULES, GET_AUTH_RULE
 from plenum.common.constants import TRUSTEE, TXN_TYPE
 
 from indy_common.authorize.auth_constraints import CONSTRAINT_ID, ROLE, SIG_COUNT, NEED_TO_BE_OWNER, METADATA, \
@@ -15,24 +15,11 @@ from plenum.test.helper import sdk_sign_and_submit_req_obj, sdk_get_and_check_re
     sdk_multi_sign_request_objects, sdk_json_to_request_object, sdk_send_signed_requests
 from plenum.test.pool_transactions.helper import prepare_nym_request
 
-from indy_node.test.helper import sdk_send_and_check_req_json
 from indy_node.test.helper import (
-    build_auth_rule_request_json,
+    sdk_send_and_check_req_json,
     sdk_send_and_check_auth_rule_request as _sdk_send_and_check_auth_rule_request,
-    sdk_send_and_check_get_auth_rule_request as _sdk_send_and_check_get_auth_rule_request
-)
-
-
-def generate_constraint_entity(constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID,
-                               role=TRUSTEE,
-                               sig_count=1,
-                               need_to_be_owner=False,
-                               metadata={}):
-    return {CONSTRAINT_ID: constraint_id,
-            ROLE: role,
-            SIG_COUNT: sig_count,
-            NEED_TO_BE_OWNER: need_to_be_owner,
-            METADATA: metadata}
+    sdk_send_and_check_get_auth_rule_request as _sdk_send_and_check_get_auth_rule_request,
+    generate_auth_rule, generate_constraint_entity)
 
 
 def generate_constraint_list(constraint_id=ConstraintsEnum.AND_CONSTRAINT_ID,
@@ -48,21 +35,12 @@ def generate_constraint_list(constraint_id=ConstraintsEnum.AND_CONSTRAINT_ID,
 # DO NOT USE it for valid cases, use 'build_auth_rule_request_json'
 # instead.
 def generate_auth_rule_operation(auth_action=ADD_PREFIX, auth_type=NYM,
-                                 field=ROLE, new_value=TRUST_ANCHOR,
+                                 field=ROLE, new_value=ENDORSER,
                                  old_value=None, constraint=None):
-    # TODO relates to INDY-2077
-    constraint = generate_constraint_entity() \
-        if constraint is None \
-        else constraint
-    op = {TXN_TYPE: AUTH_RULE,
-          CONSTRAINT: constraint,
-          AUTH_ACTION: auth_action,
-          AUTH_TYPE: auth_type,
-          FIELD: field,
-          NEW_VALUE: new_value
-          }
-    if old_value or auth_action == EDIT_PREFIX:
-        op[OLD_VALUE] = old_value
+    op = generate_auth_rule(auth_action, auth_type,
+                            field, new_value,
+                            old_value, constraint)
+    op[TXN_TYPE] = AUTH_RULE
     return op
 
 
@@ -78,7 +56,7 @@ def sdk_send_and_check_auth_rule_request(
     auth_type=NYM,
     field=ROLE,
     old_value=None,
-    new_value=TRUST_ANCHOR,
+    new_value=ENDORSER,
     constraint=None,
     no_wait=False
 ):
@@ -137,6 +115,27 @@ def sdk_send_and_check_auth_rule_invalid_request(
     )
 
 
+def sdk_send_and_check_auth_rules_request_invalid(looper, sdk_pool_handle, sdk_wallet_trustee,
+                                          rules=None, no_wait=False):
+    if rules is None:
+        rules = [generate_auth_rule(ADD_PREFIX, NYM,
+                                    ROLE, ENDORSER),
+                 generate_auth_rule(EDIT_PREFIX, NYM,
+                                    ROLE, ENDORSER, TRUSTEE)]
+    op = {RULES: rules,
+          TXN_TYPE: AUTH_RULES}
+
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+    req = sdk_sign_and_submit_req_obj(looper,
+                                      sdk_pool_handle,
+                                      sdk_wallet_trustee,
+                                      req_obj)
+    if no_wait:
+        return req
+    resp = sdk_get_and_check_replies(looper, [req])
+    return resp
+
+
 def add_new_nym(looper, sdk_pool_handle, creators_wallets,
                 alias=None, role=None, seed=None,
                 dest=None, verkey=None, skipverkey=False, no_wait=False):
@@ -162,7 +161,7 @@ def add_new_nym(looper, sdk_pool_handle, creators_wallets,
 
 
 def generate_key(auth_action=ADD_PREFIX, auth_type=NYM,
-                 field=ROLE, new_value=TRUST_ANCHOR,
+                 field=ROLE, new_value=ENDORSER,
                  old_value=None):
     key = {AUTH_ACTION: auth_action,
            AUTH_TYPE: auth_type,

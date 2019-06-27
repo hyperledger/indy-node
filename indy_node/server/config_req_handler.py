@@ -11,8 +11,9 @@ from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append
 from plenum.server.config_req_handler import ConfigReqHandler as PConfigReqHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
-    REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE
-from indy_common.types import Request, ClientGetAuthRuleOperation
+    REINSTALL, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE, \
+    RULES
+from indy_common.types import Request, ClientGetAuthRuleOperation, AuthRuleField
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
 from indy_node.server.pool_config import PoolConfig
@@ -21,7 +22,7 @@ from storage.state_ts_store import StateTsDbStorage
 
 class ConfigReqHandler(PConfigReqHandler):
     write_types = \
-        {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, AUTH_RULE} | \
+        {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, AUTH_RULE, AUTH_RULES} | \
         PConfigReqHandler.write_types
     query_types = \
         {GET_AUTH_RULE, } | \
@@ -49,11 +50,17 @@ class ConfigReqHandler(PConfigReqHandler):
             self._doStaticValidationPoolConfig(identifier, req_id, operation)
         elif operation[TXN_TYPE] == AUTH_RULE:
             self._doStaticValidationAuthRule(identifier, req_id, operation)
+        elif operation[TXN_TYPE] == AUTH_RULES:
+            self._doStaticValidationAuthRules(identifier, req_id, operation)
         elif operation[TXN_TYPE] == GET_AUTH_RULE:
             self._doStaticValidationGetAuthRule(identifier, req_id, operation)
 
     def _doStaticValidationPoolConfig(self, identifier, reqId, operation):
         pass
+
+    def _doStaticValidationAuthRules(self, identifier, reqId, operation):
+        for rule in operation[RULES]:
+            self._doStaticValidationAuthRule(identifier, reqId, rule)
 
     def _doStaticValidationAuthRule(self, identifier, reqId, operation):
         try:
@@ -174,6 +181,12 @@ class ConfigReqHandler(PConfigReqHandler):
                                                               field="*",
                                                               old_value="*",
                                                               new_value="*")])
+        elif typ == AUTH_RULES:
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=typ,
+                                                              field="*",
+                                                              old_value="*",
+                                                              new_value="*")])
         elif typ == TXN_AUTHOR_AGREEMENT:
             self.write_req_validator.validate(req,
                                               [AuthActionAdd(txn_type=typ,
@@ -245,10 +258,16 @@ class ConfigReqHandler(PConfigReqHandler):
 
         typ = get_type(txn)
         if typ == AUTH_RULE:
+            self._update_auth_rule_state(get_payload_data(txn))
+        elif typ == AUTH_RULES:
             payload = get_payload_data(txn)
-            constraint = self.get_auth_constraint(payload)
-            auth_key = self.get_auth_key(payload)
-            self.update_auth_constraint(auth_key, constraint)
+            for rule in payload.get(RULES):
+                self._update_auth_rule_state(rule)
+
+    def _update_auth_rule_state(self, payload):
+        constraint = self.get_auth_constraint(payload)
+        auth_key = self.get_auth_key(payload)
+        self.update_auth_constraint(auth_key, constraint)
 
     def handle_get_auth_rule(self, request: Request):
         proof = None
@@ -296,10 +315,6 @@ class ConfigReqHandler(PConfigReqHandler):
 
     def _check_auth_key(self, operation, identifier, req_id):
         auth_key = self.get_auth_key(operation)
-
-        # review in scope of INDY-1956
-        # if auth_key not in self.write_req_validator.auth_map and \
-        #        auth_key not in self.write_req_validator.anyone_can_write_map:
         if auth_key not in self.write_req_validator.auth_map:
             raise InvalidClientRequest(identifier, req_id,
                                        "Unknown authorization rule: key '{}' is not "
@@ -307,7 +322,7 @@ class ConfigReqHandler(PConfigReqHandler):
 
     @staticmethod
     def make_get_auth_rule_result(constraint, action_obj):
-        result = {CONSTRAINT: constraint.as_dict if constraint is not None else {},
+        result = {CONSTRAINT: constraint.as_dict,
                   AUTH_TYPE: action_obj.txn_type,
                   AUTH_ACTION: action_obj.prefix,
                   FIELD: action_obj.field,

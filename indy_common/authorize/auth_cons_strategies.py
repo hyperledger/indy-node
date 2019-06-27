@@ -11,9 +11,8 @@ logger = getlogger()
 
 
 class AbstractAuthStrategy(metaclass=ABCMeta):
-    def __init__(self, auth_map, anyone_can_write_map={}):
+    def __init__(self, auth_map):
         self.auth_map = auth_map
-        self.anyone_can_write_map = anyone_can_write_map
 
     @abstractmethod
     def get_auth_constraint(self, action_id) -> AbstractAuthConstraint:
@@ -46,10 +45,6 @@ class AbstractAuthStrategy(metaclass=ABCMeta):
 class LocalAuthStrategy(AbstractAuthStrategy):
 
     def get_auth_constraint(self, action_id) -> AbstractAuthConstraint:
-        if self.anyone_can_write_map:
-            am_id = self._find_auth_constraint_key(action_id, self.anyone_can_write_map)
-            if am_id:
-                return self.anyone_can_write_map.get(am_id)
         am_id = self._find_auth_constraint_key(action_id, self.auth_map)
         return self.auth_map.get(am_id)
 
@@ -65,10 +60,8 @@ class ConfigLedgerAuthStrategy(AbstractAuthStrategy):
                  auth_map,
                  state: PruningState,
                  serializer: AbstractConstraintSerializer,
-                 anyone_can_write_map={},
-                 metrics: MetricsCollector=None):
-        super().__init__(auth_map=auth_map,
-                         anyone_can_write_map=anyone_can_write_map)
+                 metrics: MetricsCollector = None):
+        super().__init__(auth_map=auth_map)
         self.state = state
         self.serializer = serializer
         self.metrics = metrics
@@ -78,19 +71,11 @@ class ConfigLedgerAuthStrategy(AbstractAuthStrategy):
         """
         Find rule_id for incoming action_id and return AuthConstraint instance
         """
-        if self.anyone_can_write_map:
-            return self._find_auth_constraint(action_id, self.anyone_can_write_map, from_local=True)
-
         return self._find_auth_constraint(action_id, self.auth_map)
 
-    def _find_auth_constraint(self, action_id, auth_map, from_local=False):
+    def _find_auth_constraint(self, action_id, auth_map):
         am_id = self._find_auth_constraint_key(action_id, auth_map)
         if am_id:
-            # ToDo: ugly fix for case if ANYONE_CAN_WRITE set to True.
-            # There is a similar key for anyone_can_write map and auth_map too.
-            # In future we erase anyone_can_write map.
-            if from_local:
-                return auth_map.get(am_id)
             constraint = self.get_from_state(key=config.make_state_path_for_auth_rule(am_id))
             if not constraint:
                 return auth_map.get(am_id)

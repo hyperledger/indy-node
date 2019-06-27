@@ -72,7 +72,7 @@ What artifacts are produced after each push
         - indy-node release tag (https://github.com/hyperledger/indy-node/releases)
 
 Use cases for artifacts
-- Pypi artifacts can be used for development experiments, but not intended to be used for production.
+- PyPI artifacts can be used for development experiments, but not intended to be used for production.
 - Using deb packages is recommended way to be used for a test/production pool on Ubuntu.
     - indy-node deb package from [`https://repo.sovrin.org/deb xenial stable`](https://repo.sovrin.org/lib/apt/xenial/stable/)
     is one and the only official stable release that can be used for production (stable version).
@@ -127,33 +127,36 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
 
 ## Release workflow
 
-1.  [Maintainer] Creates a new release branch `release-X.Y.0` based on `stable`
-2.  [Contributor]
-  - creates a new release candidate branch (e.g. `rc-X.Y.0.rc1`) based on that release branch
-  - merges `master` branch
-  - sets stable version of `indy-plenum` in `setup.py` (for `indy-node` only)
-  - sets new version `X.Y.0.rc1` (`./bump_version.sh X.Y.0.rc1`)
-  - commits and pushes changes
-  - creates a release candidate PR to `release-X.Y.0`
-3. [Maintainer] Waits for CI, reviews the PR and either merges the PR or asks for changes.
-  - Once the PR is merged the maintainer starts release candidate pipeline manually.
-4. [build server] Once the PR is merged CD pipeline is triggered for branch `release-X.Y.0` and it does the following:
-  - creates and pushes release commit to `release-X.Y.0`
-  - publish release candidates packages
-  - performs system testing (`indy-node` only)
-  - creates PR to merge `release-X.Y.0` to `stable`
-  - waits for approval to proceed
-5. [Maintainer/QA] Waits for CI, reviews the PR and either approves or rejects:
-  - QA may run additional tests against the release candidate before approval
-  - in case of approval it also lets build server to proceed
-  - otherwise stops the pipeline and previous steps are repeated for new release candidate `X.Y.0.rc1` and possible future ones
-6. [build server]
-  - once it is approved to proceed performs fast-forward merging to stable and creates tag `vX.Y.0`.
-  - otherwise rollbacks release commit pushed to release branch `release-X.Y.0`
-7. [build server] Once release PR is merged stable pipeline is triggered and it:
-  - publishes to Pypi
-  - re-packs rc debian package and publishes to debian stable components
+1. Release candidate preparation
+    1. [**Maintainer**] Creates a new release branch `release-X.Y.Z` based on `stable`.
+    2. [**Contributor**]
+        - Creates a new release candidate branch (e.g. `rc-X.Y.Z.rc1`) based on that release branch.
+        - Merges `master` branch.
+        - Sets stable version of `indy-plenum` in `setup.py` (for `indy-node` only).
+        - Sets new version `X.Y.Z.rc1` (`./bump_version.sh X.Y.Z.rc1`).
+        - Commits and pushes changes.
+        - Creates a release candidate PR to `release-X.Y.Z`.
+    3. [**Maintainer**] Waits for CI, reviews the release candidate PR and either merges the PR or asks for changes.
+2. Release candidate acceptance
+    1. [**Maintainer**] Once the release candidate PR is merged the maintainer **starts release candidate pipeline manually**.
+    2. [**build server**] Once the CD pipeline is started (manually triggered) for branch `release-X.Y.Z` it does the following:
+        - creates and pushes release commit to `release-X.Y.Z`;
+        - publishes release candidates packages to PyPI and debian `rc` components;
+        - performs system testing (`indy-node` only);
+        - creates a release PR to merge `release-X.Y.Z` to `stable`;
+        - waits for an approval to proceed.
+    3. [**Maintainer/QA**] Waits for CI, reviews the release PR and either approves or rejects:
+        - may run additional tests against the release candidate before approval;
+        - in case of approval lets build server to proceed but **does not merge the release PR manually**;
+        - otherwise stops the pipeline and previous steps are repeated for new release candidate `X.Y.Z.rc1` and possible future ones.
+    4. [**build server**]
+        - once it is approved to proceed performs fast-forward merging to stable and creates tag `vX.Y.Z`;
+        - otherwise rollbacks release commit pushed to release branch `release-X.Y.Z`.
+3. Publishing
+    1. [**build server**] Once the release PR is merged stable pipeline is triggered and it:
+        - publishes to PyPI;
+        - re-packs `rc` debian package and publishes to debian `stable` components.
 
 Hotfix releases are quite similar except the following difference:
-  - hotifx branches `hotfix-X.Y.Z` are created from git tag `vX.Y.(Z-1)`
-  - `master` is not merged since hotfixes (as a rule) should include only fixes for stable code
+  - hotifx branches `hotfix-X.Y.Z` are created from git tag `vX.Y.(Z-1)`;
+  - `master` is not merged since hotfixes (as a rule) should include only fixes for stable code.

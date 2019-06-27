@@ -1,13 +1,15 @@
 import pytest
 
+from indy_common.state import config
+from indy_common.types import AuthRuleField
 from plenum.common.types import OPERATION
 from plenum.common.constants import TXN_TYPE, TRUSTEE, STEWARD, DATA, STATE_PROOF
 from plenum.common.exceptions import RequestNackedException
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
-from indy_common.authorize.auth_constraints import ROLE
+from indy_common.authorize.auth_constraints import ROLE, AuthConstraintForbidden
 from indy_common.authorize.auth_map import auth_map
-from indy_common.constants import NYM, TRUST_ANCHOR, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, \
+from indy_common.constants import NYM, ENDORSER, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, \
     OLD_VALUE, SCHEMA, CONSTRAINT, AUTH_RULE
 from indy_node.server.config_req_handler import ConfigReqHandler
 
@@ -15,8 +17,8 @@ from plenum.test.helper import (
     sdk_gen_request, sdk_sign_and_submit_req, sdk_get_and_check_replies,
     sdk_sign_and_submit_req_obj
 )
-from indy_node.test.helper import build_auth_rule_request_json
-from indy_node.test.auth_rule.helper import generate_constraint_list, generate_constraint_entity, \
+from indy_node.test.helper import build_auth_rule_request_json, generate_constraint_entity
+from indy_node.test.auth_rule.helper import generate_constraint_list, \
     sdk_send_and_check_auth_rule_request, generate_key, sdk_send_and_check_get_auth_rule_request, \
     sdk_send_and_check_get_auth_rule_invalid_request
 
@@ -67,7 +69,7 @@ def test_get_one_auth_rule_transaction(looper,
         assert auth_map.get(str_key).as_dict == resp_rule[CONSTRAINT]
 
 
-def test_get_auth_rule_transaction_unique_for_anyone_can_write_map_is_rejected(
+def test_get_unknown_auth_rule_transaction_is_rejected(
     looper, sdk_wallet_trustee, sdk_pool_handle
 ):
     key = generate_key(auth_action=ADD_PREFIX, auth_type=NYM,
@@ -82,7 +84,6 @@ def test_get_auth_rule_transaction_unique_for_anyone_can_write_map_is_rejected(
         )
 
 
-@pytest.mark.skip('INDY-2077')
 def test_get_one_disabled_auth_rule_transaction(looper,
                                                 sdk_wallet_trustee,
                                                 sdk_pool_handle):
@@ -95,7 +96,7 @@ def test_get_one_disabled_auth_rule_transaction(looper,
     result = resp["result"][DATA]
     assert len(result) == 1
     _check_key(key, result[0])
-    assert {} == result[0][CONSTRAINT]
+    assert AuthConstraintForbidden().as_dict == result[0][CONSTRAINT]
 
 
 def test_get_all_auth_rule_transactions(looper,
@@ -121,7 +122,7 @@ def test_get_one_auth_rule_transaction_after_write(looper,
     auth_action = ADD_PREFIX
     auth_type = NYM
     field = ROLE
-    new_value = TRUST_ANCHOR
+    new_value = ENDORSER
     constraint = generate_constraint_list(auth_constraints=[generate_constraint_entity(role=TRUSTEE),
                                                             generate_constraint_entity(role=STEWARD)])
     resp = sdk_send_and_check_auth_rule_request(looper,
@@ -148,7 +149,7 @@ def test_get_all_auth_rule_transactions_after_write(looper,
     auth_action = ADD_PREFIX
     auth_type = NYM
     field = ROLE
-    new_value = TRUST_ANCHOR
+    new_value = ENDORSER
     constraint = generate_constraint_list(auth_constraints=[generate_constraint_entity(role=TRUSTEE),
                                                             generate_constraint_entity(role=STEWARD)])
     resp = sdk_send_and_check_auth_rule_request(looper,
@@ -167,9 +168,7 @@ def test_get_all_auth_rule_transactions_after_write(looper,
     result = resp[0][1]["result"][DATA]
     for rule in result:
         key = ConfigReqHandler.get_auth_key(rule)
-        if auth_map[key] is None:
-            assert {} == rule[CONSTRAINT]
-        elif key == str_auth_key:
+        if key == str_auth_key:
             assert constraint == rule[CONSTRAINT]
         else:
             assert auth_map[key].as_dict == rule[CONSTRAINT]

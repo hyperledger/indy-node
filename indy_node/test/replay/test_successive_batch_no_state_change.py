@@ -42,6 +42,7 @@ def tconf(tconf, request):
     return tconf
 
 
+@pytest.mark.skip(reason="get_req_handler is not supported yet")
 def test_successive_batch_do_no_change_state(looper,
                                              tconf, nodeSet,
                                              sdk_pool_handle,

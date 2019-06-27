@@ -5,7 +5,7 @@ import pytest
 from common.serializers.serialization import ledger_txn_serializer, domain_state_serializer
 from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr, AuthConstraintAnd, \
     ConstraintsSerializer, ROLE, CONSTRAINT_ID, ConstraintsEnum, NEED_TO_BE_OWNER, SIG_COUNT, METADATA, \
-    ConstraintCreator, AUTH_CONSTRAINTS
+    ConstraintCreator, AUTH_CONSTRAINTS, AuthConstraintForbidden
 from plenum.common.constants import TRUSTEE, STEWARD
 
 
@@ -89,6 +89,11 @@ def test_str_for_auth_constraint_and():
                               '1 STEWARD signature is required and needs to be owner'
 
 
+def test_str_for_auth_constraint_forbidden():
+    constraint = AuthConstraintForbidden()
+    assert str(constraint) == 'The action is forbidden'
+
+
 @pytest.fixture
 def constraints():
     role_constraints = [AuthConstraint(role=TRUSTEE,
@@ -99,11 +104,12 @@ def constraints():
                                        need_to_be_owner=True)]
     and_constraint = AuthConstraintAnd(role_constraints)
     or_constraint = AuthConstraintOr(role_constraints)
-    return role_constraints[0], and_constraint, or_constraint
+    forbidden_constraint = AuthConstraintForbidden()
+    return role_constraints[0], and_constraint, or_constraint, forbidden_constraint
 
 
 def test_check_equal(constraints):
-    same_role, same_and, same_or = constraints
+    same_role, same_and, same_or, same_forbidden = constraints
     """
     The same constraints as from fixture but should have not the same id
     """
@@ -115,13 +121,16 @@ def test_check_equal(constraints):
                                        need_to_be_owner=True)]
     and_constraint = AuthConstraintAnd(role_constraints)
     or_constraint = AuthConstraintOr(role_constraints)
+    forbidden_constraint = AuthConstraintForbidden()
 
     assert id(same_role) != id(role_constraints[0])
     assert id(same_or) != id(or_constraint)
     assert id(same_and) != id(and_constraint)
+    assert id(same_forbidden) != id(forbidden_constraint)
     assert same_role == role_constraints[0]
     assert same_or == or_constraint
     assert same_and == and_constraint
+    assert same_forbidden == forbidden_constraint
 
 
 def test_constraint_serialization(constraints):
@@ -164,7 +173,10 @@ def constraints_as_dict():
             copy.copy(steward_role_as_dict)
         ]
     }
-    return trustee_role_as_dict, and_as_dict, or_as_dict
+    forbidden_as_dict = {
+        CONSTRAINT_ID: ConstraintsEnum.FORBIDDEN_CONSTRAINT_ID
+    }
+    return trustee_role_as_dict, and_as_dict, or_as_dict, forbidden_as_dict
 
 
 # def test_error_on_deserialize():
