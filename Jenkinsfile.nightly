@@ -4,6 +4,7 @@
 
 String pkgName = 'indy-node'
 String mainModuleName = 'indy_node'
+String emailRecipients = params.INDY_NODE_RECIPIENTS ?: env.INDY_NODE_RECIPIENTS ?: ''
 
 def localLib
 def err
@@ -12,11 +13,6 @@ String buildSrcVersion
 
 String scmRepoUrl
 String scmSha1
-
-String emailRecipients = params.INDY_NODE_RECIPIENTS ?: env.INDY_NODE_RECIPIENTS ?: ''
-
-echo "$env.INDY_NODE_RECIPIENTS"
-env.INDY_NODE_RECIPIENTS = 'andrey.kononykhin@dsr-corporation.com'
 
 try {
     nodeWrapper('ubuntu') {
@@ -41,7 +37,6 @@ try {
         }
     }
 
-/*
     localLib.systemTests {
         repoChannel = 'master'
         pkgVersion = buildPkgVersion
@@ -55,7 +50,6 @@ try {
         testVersion = 'v0.7.0'
         testVersionByTag = true
     }
-*/
 } catch(Exception _err) {
     currentBuild.result = "FAILED"
     err = _err
