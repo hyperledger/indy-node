@@ -55,8 +55,8 @@ class StateValue:
 
 
 class DomainReqHandler(PHandler):
-    write_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY}
-    query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF,
+    write_types = {NYM, ATTRIB, SCHEMA, SET_CONTEXT, CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY}
+    query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CONTEXT, GET_CLAIM_DEF,
                    GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA}
     revocation_strategy_map = {
         ISSUANCE_BY_DEFAULT: RevokedStrategy,
@@ -105,6 +105,9 @@ class DomainReqHandler(PHandler):
             return path.decode()
         elif txn_type == SCHEMA:
             path = domain.prepare_schema_for_state(txn, path_only=True)
+            return path.decode()
+        elif txn_type == SET_CONTEXT:
+            path = domain.prepare_context_for_state(txn, path_only=True)
             return path.decode()
         elif txn_type == CLAIM_DEF:
             path = domain.prepare_claim_def_for_state(txn, path_only=True)
@@ -289,6 +292,30 @@ class DomainReqHandler(PHandler):
                                               [AuthActionAdd(txn_type=SCHEMA,
                                                              field='*',
                                                              value='*')])
+    def _validate_context(self, req: Request):
+        # we can not add a Context with already existent NAME and VERSION
+        # sine a Context needs to be identified by seqNo
+        identifier = req.identifier
+        context_name = get_write_schema_name(req)
+        context_version = get_write_schema_version(req)
+        schema, _, _, _ = self.getSchema(
+            author=identifier,
+            schemaName=schema_name,
+            schemaVersion=schema_version,
+            with_proof=False
+        )
+        if schema:
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=SCHEMA,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*')])
+        else:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=SCHEMA,
+                                                             field='*',
+                                                             value='*')])
+
 
     def _validate_claim_def(self, req: Request):
         # we can not add a Claim Def with existent ISSUER_DID
@@ -448,6 +475,8 @@ class DomainReqHandler(PHandler):
                                             self._validateAttrib)
         self.add_dynamic_validation_handler(SCHEMA,
                                             self._validate_schema)
+        self.add_dynamic_validation_handler(SET_CONTEXT,
+                                            self._validate_context)
         self.add_dynamic_validation_handler(CLAIM_DEF,
                                             self._validate_claim_def)
         self.add_dynamic_validation_handler(REVOC_REG_DEF,
