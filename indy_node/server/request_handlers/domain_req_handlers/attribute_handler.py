@@ -117,6 +117,7 @@ class AttributeHandler(WriteRequestHandler):
         self.state.set(path, value_bytes)
         if attr_type != HASH:
             self.database_manager.attribute_store.set(hashed_value, value)
+        return txn
 
     def _get_attr(self,
                   did: str,

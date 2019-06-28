@@ -56,6 +56,7 @@ class SchemaHandler(WriteRequestHandler):
         self._validate_txn_type(txn)
         path, value_bytes = SchemaHandler.prepare_schema_for_state(txn)
         self.state.set(path, value_bytes)
+        return txn
 
     @staticmethod
     def prepare_schema_for_state(txn, path_only=False):
