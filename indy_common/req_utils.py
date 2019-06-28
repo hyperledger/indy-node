@@ -33,7 +33,7 @@ def get_write_context_context_array(req: Request):
     return req.operation[DATA][CONTEXT_CONTEXT_ARRAY]
 
 
-def get_txn_context_attr_names(txn):
+def get_txn_context_context_array(txn):
     return get_payload_data(txn)[DATA][CONTEXT_CONTEXT_ARRAY]
 
 
