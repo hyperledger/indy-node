@@ -1,3 +1,4 @@
+from plenum.common.exceptions import InvalidClientRequest
 from indy_common.constants import NODE_UPGRADE, CONFIG_LEDGER_ID
 from indy_common.types import Request
 from plenum.server.database_manager import DatabaseManager
@@ -17,4 +18,5 @@ class NodeUpgradeHandler(WriteRequestHandler):
         pass
 
     def static_validation(self, request: Request):
-        pass
+        raise InvalidClientRequest(request.identifier, request.reqId,
+                                   "External NODE_UPGRADE requests are not allowed")
