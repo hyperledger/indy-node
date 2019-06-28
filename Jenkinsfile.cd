@@ -1,8 +1,6 @@
 #!groovy
 
-library(identifier: 'sovrin@v2.1.1', retriever: modernSCM(
-    github(credentialsId: 'sovbot-github', repoOwner: 'sovrin-foundation', repository: 'jenkins-shared')
-))
+@Library('SovrinHelpers@v2.1.1') _
 
 String name = 'indy-node'
 String pkgName = name
@@ -99,10 +97,21 @@ def systemTests = { component, releaseVersion ->
     }
 }
 
-def options = TestAndPublishOptions
+def options = new TestAndPublishOptions()
 options.setPkgName(pkgName)
-options.setApprovers([])
-
+options.setApprovers(['QA'])
+options.setNotifEmails([
+    QA: [
+        to: "${env.INDY_NODE_QA_RECIPIENTS ?: ''}",
+        cc: "${env.INDY_NODE_RECIPIENTS ?: ''}"
+    ],
+    success: [
+        to: "${env.INDY_NODE_RECIPIENTS ?: ''}"
+    ],
+    fail: [
+        to: "${env.INDY_NODE_RECIPIENTS ?: ''}"
+    ]
+])
 
 // TODO duplicates list from build scripts
 options.setBuiltPkgs([
@@ -111,32 +120,8 @@ options.setBuiltPkgs([
 ])
 
 
-options.skip([StagesEnum.IS_TESTED])
-options.skip([StagesEnum.STATIC_CODE_VALIDATION])
-options.skip([StagesEnum.TEST])
-options.skip([StagesEnum.AUTOMERGE])
-options.skip([StagesEnum.GET_RELEASE_VERSION])
-options.skip([StagesEnum.PYPI_RELEASE])
-options.skip([StagesEnum.PACK_RELEASE])
-options.skip([StagesEnum.PACK_RELEASE_COPY])
-//options.skip([StagesEnum.SYSTEM_TESTS])
-options.skip([StagesEnum.GITHUB_RELEASE])
-options.skip([StagesEnum.PACK_RELEASE_ST])
-options.skip([StagesEnum.PACK_RELEASE_COPY_ST])
-options.skip([StagesEnum.SYSTEM_TESTS_ST])
-options.skip([StagesEnum.GITHUB_RELEASE_ST])
-options.skip([StagesEnum.POOL_UPDATE_NOTIF])
-options.skip([StagesEnum.BUILD_RESULT_NOTIF])
-
-env.BRANCH_NAME = 'master'
-options.releaseVersion = [
-    full: '1.9.0.dev1010',
-    release: '1.9.0',
-    pre: 'dev',
-    revision: '1010'
-]
-
-
+options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
+options.setCopyWithDeps(true)
 options.setSystemTestsCb(systemTests)
 options.setPrContexts([env.INDY_GITHUB_PR_REQUIRED_CONTEXT ?: "ci/hyperledger-jenkins/pr-merge"])
 
