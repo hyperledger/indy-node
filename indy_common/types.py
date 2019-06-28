@@ -39,7 +39,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
     FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
-from indy_common.version import SchemaVersion
+from indy_common.version import SchemaVersion, ContextVersion
 
 
 class Request(PRequest):
@@ -90,6 +90,27 @@ class SchemaField(MessageValidator):
             LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
             min_length=1,
             max_length=SCHEMA_ATTRIBUTES_LIMIT)),
+    )
+
+# Rich Schema
+# This should work if URIs are passed
+# FIXME This will break if dictionary entries are passed
+# FIXME Replace LimitedLengthStringField with something that can validate a context.
+class SetContextField(MessageValidator):
+    context = (
+        (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
+        (CONTEXT_CONTEXT_ARRAY, IterableField(
+            LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
+            min_length=1,
+            max_length=CONTEXT_ATTRIBUTES_LIMIT)),
+    )
+
+class GetContextField(MessageValidator):
+    context = (
+        (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
+        (ORIGIN, IdentifierField(optional=True))
     )
 
 
@@ -152,6 +173,21 @@ class ClientGetSchemaOperation(MessageValidator):
         (TXN_TYPE, ConstantField(GET_SCHEMA)),
         (SCHEMA_FROM, IdentifierField()),
         (DATA, GetSchemaField()),
+    )
+
+
+#Rich Schema
+class ClientSetContextOperation(MessageValidator):
+    context = (
+        (TXN_TYPE, ConstantField(SET_CONTEXT)),
+        (DATA, SetContextField()),
+    )
+
+class ClientGetContextOperation(MessageValidator):
+    context = (
+        (TXN_TYPE, ConstantField(GET_CONTEXT)),
+        (CONTEXT_FROM, IdentifierField()),
+        (DATA, GetContextField()),
     )
 
 
@@ -427,6 +463,8 @@ class ClientOperationField(PClientOperationField):
         GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
         GET_REVOC_REG: ClientGetRevocRegField(),
         GET_REVOC_REG_DELTA: ClientGetRevocRegDeltaField(),
+        SET_CONTEXT: ClientSetContextOperation(), #Rich Schema 
+        GET_CONTEXT: ClientGetContextOperation(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class
