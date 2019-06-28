@@ -13,15 +13,20 @@ from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.config_util import getConfig
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, \
-    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
+    GET_NYM, GET_ATTR, GET_SCHEMA, \
+    CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT_ARRAY, CONTEXT_FROM, \
+    GET_CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
     REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TAG, CRED_DEF_ID, \
     GET_REVOC_REG_DEF, ID, GET_REVOC_REG, GET_REVOC_REG_DELTA, REVOC_TYPE, \
     TIMESTAMP, FROM, TO, ISSUED, REVOKED, STATE_PROOF_FROM, ACCUM_FROM, ACCUM_TO, \
     CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION, REF
 from indy_common.req_utils import get_read_schema_name, get_read_schema_version, \
-    get_read_schema_from, get_write_schema_name, get_write_schema_version, get_read_claim_def_from, \
+    get_read_schema_from, get_write_schema_name, get_write_schema_version, \
+    get_read_claim_def_from, \
     get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag, \
-    get_write_claim_def_schema_ref, get_write_claim_def_signature_type, get_write_claim_def_tag
+    get_write_claim_def_schema_ref, get_write_claim_def_signature_type, get_write_claim_def_tag, \
+    get_write_context_name, get_write_context_version, get_txn_context_name, \
+    get_txn_context_version, get_txn_context_context_array
 from indy_common.state import domain
 from indy_common.state.domain import make_state_path_for_revoc_def
 from indy_common.types import Request
