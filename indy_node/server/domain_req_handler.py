@@ -14,7 +14,7 @@ from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.config_util import getConfig
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, \
-    CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT_ARRAY, CONTEXT_FROM, SET_CONTEXT, \
+    CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT_ARRAY, CONTEXT_FROM, SET_CONTEXT, GET_CONTEXT, \
     GET_CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
     REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TAG, CRED_DEF_ID, \
     GET_REVOC_REG_DEF, ID, GET_REVOC_REG, GET_REVOC_REG_DELTA, REVOC_TYPE, \
@@ -296,23 +296,23 @@ class DomainReqHandler(PHandler):
         # we can not add a Context with already existent NAME and VERSION
         # sine a Context needs to be identified by seqNo
         identifier = req.identifier
-        context_name = get_write_schema_name(req)
-        context_version = get_write_schema_version(req)
-        schema, _, _, _ = self.getSchema(
+        context_name = get_write_context_name(req)
+        context_version = get_write_context_version(req)
+        context, _, _, _ = self.getContext(
             author=identifier,
-            schemaName=schema_name,
-            schemaVersion=schema_version,
+            contextName=context_name,
+            contextVersion=context_version,
             with_proof=False
         )
-        if schema:
+        if context:
             self.write_req_validator.validate(req,
-                                              [AuthActionEdit(txn_type=SCHEMA,
+                                              [AuthActionEdit(txn_type=SET_CONTEXT,
                                                               field='*',
                                                               old_value='*',
                                                               new_value='*')])
         else:
             self.write_req_validator.validate(req,
-                                              [AuthActionAdd(txn_type=SCHEMA,
+                                              [AuthActionAdd(txn_type=SET_CONTEXT,
                                                              field='*',
                                                              value='*')])
 
@@ -494,6 +494,7 @@ class DomainReqHandler(PHandler):
         self.add_state_update_handler(NYM, self._addNym)
         self.add_state_update_handler(ATTRIB, self._addAttr)
         self.add_state_update_handler(SCHEMA, self._addSchema)
+        self.add_state_update_handler(SET_CONTEXT, self._addSetContext)
         self.add_state_update_handler(CLAIM_DEF, self._addClaimDef)
         self.add_state_update_handler(REVOC_REG_DEF, self._addRevocDef)
         self.add_state_update_handler(REVOC_REG_ENTRY, self._addRevocRegEntry)
@@ -862,6 +863,11 @@ class DomainReqHandler(PHandler):
         path, value_bytes = domain.prepare_schema_for_state(txn)
         self.state.set(path, value_bytes)
 
+    def _addSetContext(self, txn, isCommitted=False) -> None:
+        assert get_type(txn) == SET_CONTEXT
+        path, value_bytes = domain.prepare_context_for_state(txn)
+        self.state.set(path, value_bytes)
+
     def _addClaimDef(self, txn, isCommitted=False) -> None:
         assert get_type(txn) == CLAIM_DEF
         path, value_bytes = domain.prepare_claim_def_for_state(txn)
@@ -935,6 +941,24 @@ class DomainReqHandler(PHandler):
             return keys, seqno, lastUpdateTime, proof
         except KeyError:
             return None, None, None, None
+
+
+    def getContext(self,
+                  author: str,
+                  contextName: str,
+                  contextVersion: str,
+                  isCommitted=True,
+                  with_proof=True) -> (str, int, int, list):
+        assert author is not None
+        assert contextName is not None
+        assert contextVersion is not None
+        path = domain.make_state_path_for_context(author, contextName, contextVersion)
+        try:
+            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, with_proof=with_proof)
+            return keys, seqno, lastUpdateTime, proof
+        except KeyError:
+            return None, None, None, None
+
 
     def getClaimDef(self,
                     author: str,
