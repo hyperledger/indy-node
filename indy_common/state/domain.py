@@ -8,7 +8,9 @@ from indy_common.constants import ATTRIB, GET_ATTR, SIGNATURE_TYPE, REVOC_TYPE, 
 from indy_common.req_utils import get_txn_schema_name, get_txn_claim_def_schema_ref, \
     get_txn_claim_def_public_keys, get_txn_claim_def_signature_type, get_txn_claim_def_tag, get_txn_schema_version, \
     get_txn_schema_attr_names, get_reply_schema_from, get_reply_schema_name, get_reply_schema_version, \
-    get_reply_schema_attr_names
+    get_reply_schema_attr_names, \
+    get_write_context_name, get_write_context_version, get_txn_context_name, \
+    get_txn_context_version, get_txn_context_context_array
 from indy_common.serialization import attrib_raw_data_serializer
 from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, \
     TARGET_NYM, DATA, TYPE
@@ -48,6 +50,14 @@ def make_state_path_for_schema(authors_did, schema_name, schema_version) -> byte
                 MARKER=MARKER_SCHEMA,
                 SCHEMA_NAME=schema_name,
                 SCHEMA_VERSION=schema_version).encode()
+
+# Rich Schema
+def make_state_path_for_context(authors_did, context_name, context_version) -> bytes:
+    return "{DID}:{MARKER}:{CONTEXT_NAME}:{CONTEXT_VERSION}" \
+        .format(DID=authors_did,
+                MARKER=MARKER_CONTEXT,
+                CONTEXT_NAME=context_name,
+                CONTEXT_VERSION=context_version).encode()
 
 
 def make_state_path_for_claim_def(authors_did, schema_seq_no, signature_type, tag) -> bytes:
@@ -276,6 +286,22 @@ def prepare_schema_for_state(txn, path_only=False):
         SCHEMA_ATTR_NAMES: get_txn_schema_attr_names(txn)
     }
     path = make_state_path_for_schema(origin, schema_name, schema_version)
+    if path_only:
+        return path
+    seq_no = get_seq_no(txn)
+    txn_time = get_txn_time(txn)
+    value_bytes = encode_state_value(value, seq_no, txn_time)
+    return path, value_bytes
+
+
+def prepare_context_for_state(txn, path_only=False):
+    origin = get_from(txn)
+    context_name = get_txn_context_name(txn)
+    context_version = get_txn_context_version(txn)
+    value = {
+        CONTEXT_CONTEXT_ARRAY: get_txn_context_context_array(txn)
+    }
+    path = make_state_path_for_context(origin, context_name, context_version)
     if path_only:
         return path
     seq_no = get_seq_no(txn)
