@@ -1,4 +1,5 @@
 from indy_common.constants import SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES, SCHEMA_FROM, \
+    CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT_ARRAY, CONTEXT_FROM, \
     CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_TAG, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_FROM, \
     CLAIM_DEF_TAG_DEFAULT, CLAIM_DEF_CL
 
@@ -8,6 +9,62 @@ from plenum.common.txn_util import get_payload_data
 
 
 # TODO: use data classes instead
+
+#Rich Schema
+# CONTEXT
+
+def get_write_context_name(req):
+    return req.operation[DATA][CONTEXT_NAME]
+
+
+def get_txn_context_name(txn):
+    return get_payload_data(txn)[DATA][CONTEXT_NAME]
+
+
+def get_write_context_version(req: Request):
+    return req.operation[DATA][CONTEXT_VERSION]
+
+
+def get_txn_context_version(txn):
+    return get_payload_data(txn)[DATA][CONTEXT_VERSION]
+
+
+def get_write_context_context_array(req: Request):
+    return req.operation[DATA][CONTEXT_CONTEXT_ARRAY]
+
+
+def get_txn_context_attr_names(txn):
+    return get_payload_data(txn)[DATA][CONTEXT_CONTEXT_ARRAY]
+
+
+def get_read_context_name(req: Request):
+    return req.operation[DATA][CONTEXT_NAME]
+
+
+def get_read_context_version(req: Request):
+    return req.operation[DATA][CONTEXT_VERSION]
+
+
+def get_read_context_from(req: Request):
+    return req.operation[CONTEXT_FROM]
+
+
+def get_reply_context_name(reply):
+    return reply[DATA][CONTEXT_NAME]
+
+
+def get_reply_context_version(reply):
+    return reply[DATA][CONTEXT_VERSION]
+
+
+def get_reply_context_context_array(reply):
+    return reply[DATA].get(CONTEXT_CONTEXT_ARRAY)
+
+
+def get_reply_context_from(reply):
+    return reply[CONTEXT_FROM]
+
+
 
 # SCHEMA
 
