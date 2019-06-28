@@ -209,3 +209,57 @@ def sdk_write_schema_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
     req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, request)
     rep = sdk_get_and_check_replies(looper, [req])
     return rep
+
+#Rich Schema
+def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, multi_attribute=[], name="", version=""):
+    _, identifier = sdk_wallet_steward
+
+    if multi_attribute:
+        _, schema_json = looper.loop.run_until_complete(
+            issuer_create_schema(identifier, name, version, json.dumps(multi_attribute)))
+    else:
+        _, schema_json = looper.loop.run_until_complete(
+            issuer_create_schema(identifier, "name", "1.0", json.dumps(["first", "last"])))
+
+    request = looper.loop.run_until_complete(build_schema_request(identifier, schema_json))
+
+    return schema_json, \
+           sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, request))[1]
+
+
+def sdk_write_context_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
+                               context_array=[], name="", version=""):
+    _wh, did = sdk_wallet_steward
+
+    '''_, context_json = looper.loop.run_until_complete(
+        issuer_create_context(
+            did, name,
+            version, json.dumps(context_array)
+        ))
+    '''
+    # create json
+    SET_CONTEXT = "200"
+    raw_json = {
+        'operation': {
+            'type': SET_CONTEXT,
+            'data': {
+                'name': name,
+                'version': version,
+                'context_array': context_array
+            }
+        },
+        "identifier": did,
+        "reqId": 'b0b',
+        "protocolVersion": 2,
+    }
+
+    get_context_txn_json = json.dumps(raw_json)
+
+
+    '''request = looper.loop.run_until_complete(
+        build_schema_request(did, schema_json)
+    )
+    '''
+    req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, get_context_txn_json)
+    rep = sdk_get_and_check_replies(looper, [req])
+    return rep
