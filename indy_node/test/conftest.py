@@ -8,7 +8,7 @@ from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_constraints import ConstraintsSerializer
 from indy_common.authorize.auth_map import auth_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.test.auth.conftest import IDENTIFIERS
+from indy_common.test.constants import IDENTIFIERS
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.node_bootstrap import NodeBootstrap

@@ -6,6 +6,7 @@ from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_constraints import ConstraintsSerializer
 from indy_common.authorize.auth_map import auth_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
+from indy_common.test.constants import IDENTIFIERS
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.node import Node
@@ -17,19 +18,7 @@ from plenum.test.helper import randomOperation
 from plenum.test.testing_utils import FakeSomething
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
-
-OTHER_ROLE = "OtherRole"
-OTHER_IDENTIFIER = "some_other_identifier"
-
-IDENTIFIERS = {TRUSTEE: ["trustee_identifier", "trustee_identifier2", "trustee_identifier3", "trustee_identifier4"],
-               STEWARD: ["steward_identifier", "steward_identifier2", "steward_identifier3", "steward_identifier4"],
-               ENDORSER: ["endorser_identifier", "endorser_identifier2", "endorser_identifier3",
-                          "endorser_identifier4"],
-               NETWORK_MONITOR: ["network_monitor_identifier"],
-               None: ["identity_owner_identifier", "identity_owner_identifier2", "identity_owner_identifier3",
-                      "identity_owner_identifier4"],
-               OTHER_ROLE: [OTHER_IDENTIFIER, "some_other_identifier2", "some_other_identifier3",
-                            "some_other_identifier4"]}
+from indy_node.test.conftest import write_auth_req_validator, constraint_serializer, config_state, idr_cache
 
 
 @pytest.fixture(scope='function', params=[True, False])
