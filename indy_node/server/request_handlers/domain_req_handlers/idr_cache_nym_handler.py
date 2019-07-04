@@ -12,7 +12,6 @@ class IdrCacheNymHandler(WriteRequestHandler):
         super().__init__(database_manager, NYM, DOMAIN_LEDGER_ID)
 
     def apply_request(self, request: Request, batch_ts, prev_result):
-
         txn = self._req_to_txn(request)
         txn = append_txn_metadata(txn,
                                   seq_no=prev_result.get(f.SEQ_NO.nm),
