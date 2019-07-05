@@ -34,7 +34,7 @@ cp $TIMEZONE /etc/localtime
 echo "Installing Required Packages"
 apt-get update
 apt-get install -y software-properties-common python-software-properties
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88
 add-apt-repository "deb https://repo.sovrin.org/deb xenial master"
 apt-get update
 #DEBIAN_FRONTEND=noninteractive apt-get upgrade -y

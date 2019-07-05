@@ -6,7 +6,7 @@ In order to run your own Network, you need to do the following for each Node:
 1. Install Indy Node
     - A recommended way for ubuntu is installing from deb packages
     ```
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88
     sudo bash -c 'echo "deb https://repo.sovrin.org/deb xenial stable" >> /etc/apt/sources.list'
     sudo apt-get update
     sudo apt-get install indy-node
