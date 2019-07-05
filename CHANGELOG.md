@@ -56,6 +56,7 @@ Although every attempt has been made to make this information as accurate as pos
 
 ### Additional Information:
 **There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+**Some nodes can fail to send a REJECT or REPLY to client under specific network conditions. See Know Issues for more details.**
 
 ### Major Changes
 - Pluggable Request Handlers have been implemented 
@@ -86,6 +87,11 @@ Although every attempt has been made to make this information as accurate as pos
 | Update Pluggable Req Handlers | | [INDY-2097](https://jira.hyperledger.org/browse/INDY-2097) |
 | As a Network Admin, I need to be able to forbid an action in AUTH_RULE, so that no changes in code are needed | | [INDY-2077](https://jira.hyperledger.org/browse/INDY-2077) |
 | Create Builders for handlers | | [INDY-1860](https://jira.hyperledger.org/browse/INDY-1860) |
+
+#### Known Issues
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Incorrect request validation || [INDY-2164](https://jira.hyperledger.org/browse/INDY-2164) |
 
 ## 1.8.1
 ### Release date: June 06th, 2019
