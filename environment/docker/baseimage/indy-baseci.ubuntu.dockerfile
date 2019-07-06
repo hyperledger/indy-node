@@ -1,8 +1,8 @@
-FROM __NS__/indy-baseimage:0.0.1
+FROM __NS__/indy-baseimage:0.0.3-master
 LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
 # indy repos
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88 && \
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88 && \
     echo "deb https://repo.sovrin.org/deb xenial master" >> /etc/apt/sources.list && \
     apt-get update
 
