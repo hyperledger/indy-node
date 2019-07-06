@@ -18,7 +18,7 @@ from plenum.test.helper import randomOperation
 from plenum.test.testing_utils import FakeSomething
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
-from indy_node.test.conftest import write_auth_req_validator, constraint_serializer, config_state, idr_cache
+from indy_node.test.conftest import write_request_validation, write_auth_req_validator, idr_cache
 
 
 @pytest.fixture(scope='function', params=[True, False])
@@ -42,6 +42,11 @@ def action_edit():
 
 
 @pytest.fixture(scope="module")
+def constraint_serializer():
+    return ConstraintsSerializer(domain_state_serializer)
+
+
+@pytest.fixture(scope="module")
 def config_state(constraint_serializer):
     state = PruningState(KeyValueStorageInMemory())
     Node.add_auth_rules_to_config_state(state=state,
@@ -60,15 +65,3 @@ def req(identifier):
     return Request(identifier=identifier,
                    operation=randomOperation(),
                    signature='signature')
-
-
-@pytest.fixture(scope='module')
-def write_request_validation(write_auth_req_validator):
-    def wrapped(*args, **kwargs):
-        try:
-            write_auth_req_validator.validate(*args, **kwargs)
-        except UnauthorizedClientRequest:
-            return False
-        return True
-
-    return wrapped

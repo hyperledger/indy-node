@@ -14,6 +14,7 @@ from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.node_bootstrap import NodeBootstrap
 from ledger.compact_merkle_tree import CompactMerkleTree
 from plenum.bls.bls_store import BlsStore
+from plenum.common.exceptions import UnauthorizedClientRequest
 from plenum.common.ledger import Ledger
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_managers.read_request_manager import ReadRequestManager
@@ -406,3 +407,16 @@ def write_manager(_managers):
 @pytest.fixture(scope="module")
 def read_manager(_managers):
     return _managers[1]
+
+
+
+@pytest.fixture(scope='module')
+def write_request_validation(write_auth_req_validator):
+    def wrapped(*args, **kwargs):
+        try:
+            write_auth_req_validator.validate(*args, **kwargs)
+        except UnauthorizedClientRequest:
+            return False
+        return True
+
+    return wrapped
