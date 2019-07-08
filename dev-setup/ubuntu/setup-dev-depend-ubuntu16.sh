@@ -8,7 +8,7 @@ echo 'Set up https for apt'
 
 echo 'Adding repositories and keys...'
 sudo add-apt-repository "deb http://us.archive.ubuntu.com/ubuntu xenial main universe"
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88
 
 sudo add-apt-repository "deb https://repo.sovrin.org/deb xenial master"
 sudo add-apt-repository "deb https://repo.sovrin.org/sdk/deb xenial stable"

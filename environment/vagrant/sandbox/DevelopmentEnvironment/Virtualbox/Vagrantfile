@@ -300,7 +300,7 @@ echo "Installing Required Packages"
 apt-get update
 apt-get install -y software-properties-common python-software-properties
 # The following two lines are required to install a indy cli
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88
 add-apt-repository "deb https://repo.sovrin.org/deb xenial stable"
 # Download the package lists from added repos
 apt-get update
