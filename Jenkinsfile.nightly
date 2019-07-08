@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('SovrinHelpers@v2.1.1') _
+@Library('SovrinHelpers@v2.2.1') _
 
 String pkgName = 'indy-node'
 String mainModuleName = 'indy_node'
@@ -17,7 +17,7 @@ String scmSha1
 try {
     nodeWrapper('ubuntu') {
         stage('Resolve version to build') {
-            docker.image('hyperledger/indy-core-baseci:0.0.1').inside('-u 0') {
+            docker.image('hyperledger/indy-core-baseci:0.0.3-master').inside('-u 0') {
                 sh "apt-get update && apt-get install -y $pkgName"
                 releaseVersion = getReleaseVersion(mainModuleName, false)
                 buildPkgVersion = "${releaseVersion.release}~${releaseVersion.pre}${releaseVersion.revision}"
