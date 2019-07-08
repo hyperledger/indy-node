@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('SovrinHelpers@v2.2.1') _
+@Library('SovrinHelpers@v2.1.1') _
 
 String name = 'indy-node'
 String pkgName = name
@@ -92,7 +92,7 @@ def systemTests = { component, releaseVersion ->
             ['test_consensus.py', 'TestTAASuite.py'],
             ['test_upgrade.py', 'test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py']
         ]
-        testVersion = 'v0.7.0'
+        testVersion = 'v0.8.3'
         testVersionByTag = true
     }
 }
