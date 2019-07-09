@@ -49,7 +49,7 @@ try {
 //            ['TestAuditSuite.py'],
 //            ['TestAuthMapSuite.py']
         ]
-        testVersion = 'v0.8.0'
+        testVersion = 'v0.8.4'
         testVersionByTag = true
     }
 } catch(Exception _err) {
