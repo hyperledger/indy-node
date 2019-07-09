@@ -89,8 +89,7 @@ def systemTests = { component, releaseVersion ->
         testSchema = [
             ['test_ledger.py'],
             ['test_vc.py'],
-            ['test_consensus.py', 'TestTAASuite.py'],
-            ['test_upgrade.py', 'test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py']
+            ['test_consensus.py']
         ]
         testVersion = 'v0.8.4'
         testVersionByTag = true
