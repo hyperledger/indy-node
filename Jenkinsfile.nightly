@@ -47,8 +47,17 @@ try {
             ['test_consensus.py', 'TestTAASuite.py'],
             ['test_upgrade.py', 'test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py'],
             ['TestAuditSuite.py'],
-            ['TestAuthMapAttribSuite.py', 'TestAuthMapCredDefSuite.py', 'TestAuthMapMiscSuite.py', 'TestAuthMapNymSuite.py'],
-            ['TestAuthMapPluginsSuite.py', 'TestAuthMapRevocRegDefSuite.py', 'TestAuthMapRevocRegEntrySuite.py', 'TestAuthMapSchemaSuite.py', 'TestAuthMapUpgradeSuite.py']
+            // set of authmap tests
+            // TODO might be groupped in parts once https://github.com/docker/docker-py/issues/2278 is resolved
+            ['TestAuthMapAttribSuite.py'],
+            ['TestAuthMapCredDefSuite.py'],
+            ['TestAuthMapMiscSuite.py'],
+            ['TestAuthMapNymSuite.py'],
+            ['TestAuthMapPluginsSuite.py'],
+            ['TestAuthMapRevocRegDefSuite.py'],
+            ['TestAuthMapRevocRegEntrySuite.py'],
+            ['TestAuthMapSchemaSuite.py'],
+            ['TestAuthMapUpgradeSuite.py']
         ]
         testVersion = 'ST-610-promote-payments-tests'
         testVersionByTag = false
