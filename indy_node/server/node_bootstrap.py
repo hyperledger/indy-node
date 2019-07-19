@@ -39,6 +39,8 @@ from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_def_handl
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_delta_handler import GetRevocRegDeltaHandler
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_handler import GetRevocRegHandler
 from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
+from indy_node.server.request_handlers.read_req_handlers.get_context_handler import GetContextHandler
+
 from indy_node.server.restarter import Restarter
 from indy_node.server.upgrader import Upgrader
 from ledger.compact_merkle_tree import CompactMerkleTree
@@ -94,6 +96,7 @@ class NodeBootstrap(PNodeBootstrap):
         get_nym_handler = GetNymHandler(database_manager=self.node.db_manager)
         get_attribute_handler = GetAttributeHandler(database_manager=self.node.db_manager)
         get_schema_handler = GetSchemaHandler(database_manager=self.node.db_manager)
+        get_context_handler = GetContextHandler(database_manager=self.node.db_manager)
         get_claim_def_handler = GetClaimDefHandler(database_manager=self.node.db_manager)
         get_revoc_reg_def_handler = GetRevocRegDefHandler(database_manager=self.node.db_manager)
         get_revoc_reg_handler = GetRevocRegHandler(database_manager=self.node.db_manager)
@@ -130,6 +133,7 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.read_manager.register_req_handler(get_nym_handler)
         self.node.read_manager.register_req_handler(get_attribute_handler)
         self.node.read_manager.register_req_handler(get_schema_handler)
+        self.node.read_manager.register_req_handler(get_context_handler)
         self.node.read_manager.register_req_handler(get_claim_def_handler)
         self.node.read_manager.register_req_handler(get_revoc_reg_def_handler)
         self.node.read_manager.register_req_handler(get_revoc_reg_handler)
