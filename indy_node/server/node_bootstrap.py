@@ -19,6 +19,7 @@ from indy_node.server.request_handlers.read_req_handlers.get_auth_rule_handler i
 from indy_node.server.request_handlers.domain_req_handlers.claim_def_handler import ClaimDefHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handler import RevocRegEntryHandler
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
+from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
 
 from indy_node.server.request_handlers.domain_req_handlers.attribute_handler import AttributeHandler
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
@@ -106,6 +107,8 @@ class NodeBootstrap(PNodeBootstrap):
                                           write_req_validator=self.node.write_req_validator)
         schema_handler = SchemaHandler(database_manager=self.node.db_manager,
                                        write_req_validator=self.node.write_req_validator)
+        context_handler = ContextHandler(database_manager=self.node.db_manager,
+                                       write_req_validator=self.node.write_req_validator)
         claim_def_handler = ClaimDefHandler(database_manager=self.node.db_manager,
                                             write_req_validator=self.node.write_req_validator)
         revoc_reg_def_handler = RevocRegDefHandler(database_manager=self.node.db_manager,
@@ -117,6 +120,7 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.write_manager.register_req_handler(nym_handler)
         self.node.write_manager.register_req_handler(attrib_handler)
         self.node.write_manager.register_req_handler(schema_handler)
+        self.node.write_manager.register_req_handler(context_handler)
         self.node.write_manager.register_req_handler(claim_def_handler)
         self.node.write_manager.register_req_handler(revoc_reg_def_handler)
         self.node.write_manager.register_req_handler(revoc_reg_entry_handler)
