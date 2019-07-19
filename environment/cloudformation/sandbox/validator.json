@@ -997,7 +997,7 @@
                 "repo": "deb https://repo.evernym.com/deb xenial stable"
             },
             "indy": {
-                "key": "68DB5E88",
+                "key": "CE7709D068DB5E88",
                 "repo": "deb https://repo.sovrin.org/deb xenial stable"
             }
         }

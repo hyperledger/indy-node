@@ -1,4 +1,4 @@
-FROM hyperledger/indy-core-baseci:0.0.1
+FROM hyperledger/indy-core-baseci:0.0.3-master
 LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
 ARG uid=1000
@@ -8,7 +8,7 @@ ARG venv=venv
 RUN apt-get update -y && apt-get install -y \
     python3-nacl \
     libindy-crypto=0.4.5 \
-    libindy=1.9.0~1139 \
+    libindy=1.10.0~1167 \
 # rocksdb python wrapper
     libbz2-dev \
     zlib1g-dev \
