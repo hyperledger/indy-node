@@ -12,7 +12,26 @@ from plenum.common.util import randomString
 from plenum.config import NAME_FIELD_LIMIT
 
 
-def test_send_context_multiple_attrib(looper, sdk_pool_handle,
+def test_send_context_multiple_links_with_object(looper, sdk_pool_handle,
+                                     sdk_wallet_endorser):
+    test_context_object = {
+        "name": "did:sov:11111111111111111111111;content-id=ctx:UVj5w8DRzcmPVDpUMr4AZhJ",
+        "address": "did:sov:11111111111111111111111;content-id=ctx:UVj5w8DRzcmPVDpUMr4AZhJ"
+    }
+    sdk_write_context_and_check(
+        looper, sdk_pool_handle,
+        sdk_wallet_endorser,
+        [
+            "did:sov:11111111111111111111111;content-id=ctx:UVj5w8DRzcmPVDpUMr4AZhJ",
+            "did:sov:11111111111111111111111;content-id=ctx:AZKWUJ3zArXPG36kyTJZZm",
+            "did:sov:11111111111111111111111;content-id=ctx:9TDvb9PPgKQUWNQcWAFMo4",
+            test_context_object
+        ],
+        "ISO18013_DriverLicenseContextr",
+        "1.9"
+    )
+
+def test_send_context_multiple_links(looper, sdk_pool_handle,
                                      sdk_wallet_endorser):
     sdk_write_context_and_check(
         looper, sdk_pool_handle,
@@ -27,17 +46,19 @@ def test_send_context_multiple_attrib(looper, sdk_pool_handle,
     )
 
 
-'''def test_send_schema_one_attrib(looper, sdk_pool_handle,
+def test_send_context_one_link(looper, sdk_pool_handle,
                                 sdk_wallet_endorser):
-    sdk_write_schema_and_check(
+    sdk_write_context_and_check(
         looper, sdk_pool_handle,
         sdk_wallet_endorser,
-        ["attrib1"],
-        "University of Saber",
-        "1.0"
+        [
+            "did:sov:11111111111111111111111;content-id=ctx:9TDvb9PPgKQUWNQcWAFMo4"
+        ],
+        "ISO18013_DriverLicenseContextr",
+        "1.9"
     )
 
-
+'''
 def test_can_not_send_same_schema(looper, sdk_pool_handle,
                                   sdk_wallet_endorser):
     sdk_write_schema_and_check(

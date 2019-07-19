@@ -249,7 +249,7 @@ def sdk_write_context_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
             }
         },
         "identifier": did,
-        "reqId": 'b0b',
+        "reqId": 12345678,
         "protocolVersion": 2,
     }
 
