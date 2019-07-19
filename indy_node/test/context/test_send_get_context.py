@@ -15,7 +15,14 @@ from indy_node.test.helper import createUuidIdentifier, modify_field
 
 @pytest.fixture(scope="module")
 def send_context(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
-    context_json, _ = sdk_write_context(looper, sdk_pool_handle, sdk_wallet_trustee)
+    context_json, _ = sdk_write_context(looper, sdk_pool_handle, sdk_wallet_trustee,
+        [
+            "did:sov:11111111111111111111111;content-id=ctx:UVj5w8DRzcmPVDpUMr4AZhJ",
+            "did:sov:11111111111111111111111;content-id=ctx:AZKWUJ3zArXPG36kyTJZZm",
+            "did:sov:11111111111111111111111;content-id=ctx:9TDvb9PPgKQUWNQcWAFMo4"
+        ],
+        "ISO18013_DriverLicenseContext",
+        "1.9")
     return json.loads(context_json)['id']
 
 
@@ -35,7 +42,7 @@ def send_context_req(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
             "did:sov:11111111111111111111111;content-id=ctx:AZKWUJ3zArXPG36kyTJZZm",
             "did:sov:11111111111111111111111;content-id=ctx:9TDvb9PPgKQUWNQcWAFMo4"
         ],
-        "ISO18013_DriverLicenseContextr",
+        "ISO18013_DriverLicenseContext",
         "1.9")
     return context_json, reply
 
@@ -50,12 +57,12 @@ def test_send_get_context_succeeds(
             'type': GET_CONTEXT,
             'dest': did,
             'data': {
-                'name': "ISO18013_DriverLicenseContextr",
+                'name': "ISO18013_DriverLicenseContext",
                 'version': "1.9"
             }
         },
         "identifier": did,
-        "reqId": 123456789,
+        "reqId": 12345678,
         "protocolVersion": 2,
     }
 
