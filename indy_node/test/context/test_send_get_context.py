@@ -1,7 +1,6 @@
 import json
 
 import pytest
-from indy.ledger import build_get_schema_request
 from plenum.common.exceptions import RequestNackedException
 
 from plenum.common.constants import DATA, NAME, VERSION, TXN_METADATA, TXN_METADATA_SEQ_NO
@@ -10,43 +9,63 @@ from plenum.common.types import OPERATION
 
 from plenum.test.helper import sdk_sign_and_submit_req, sdk_get_and_check_replies
 
-from indy_node.test.api.helper import sdk_write_schema
+from indy_node.test.api.helper import sdk_write_context
 from indy_node.test.helper import createUuidIdentifier, modify_field
 
 
 @pytest.fixture(scope="module")
-def send_schema(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
-    schema_json, _ = sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_trustee)
-    return json.loads(schema_json)['id']
+def send_context(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
+    context_json, _ = sdk_write_context(looper, sdk_pool_handle, sdk_wallet_trustee)
+    return json.loads(context_json)['id']
 
 
 @pytest.fixture(scope="module")
-def send_schema_seq_no(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
-    _, reply = sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_trustee)
+def send_context_seq_no(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
+    _, reply = sdk_write_context(looper, sdk_pool_handle, sdk_wallet_trustee)
     return reply['result'][TXN_METADATA][TXN_METADATA_SEQ_NO]
 
 
 @pytest.fixture(scope="module")
-def send_schema_req(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
-    schema_json, reply = sdk_write_schema(
+def send_context_req(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
+    context_json, reply = sdk_write_context(
         looper, sdk_pool_handle,
         sdk_wallet_trustee,
-        ["attrib1", "attrib2"],
-        "some_name_ajf",
-        "1.0")
-    return schema_json, reply
+        [
+            "did:sov:11111111111111111111111;content-id=ctx:UVj5w8DRzcmPVDpUMr4AZhJ",
+            "did:sov:11111111111111111111111;content-id=ctx:AZKWUJ3zArXPG36kyTJZZm",
+            "did:sov:11111111111111111111111;content-id=ctx:9TDvb9PPgKQUWNQcWAFMo4"
+        ],
+        "ISO18013_DriverLicenseContextr",
+        "1.9")
+    return context_json, reply
 
 
-def test_send_get_schema_succeeds(
-        looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, send_schema):
+def test_send_get_context_succeeds(
+        looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, send_context):
     _, did = sdk_wallet_trustee
 
-    request = looper.loop.run_until_complete(build_get_schema_request(did, send_schema))
-    rep = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
+    GET_CONTEXT = "300"
+    raw_json = {
+        'operation': {
+            'type': GET_CONTEXT,
+            'dest': did
+            'data': {
+                'name': "ISO18013_DriverLicenseContextr",
+                'version': "1.9"
+            }
+        },
+        "identifier": did,
+        "reqId": 123456789,
+        "protocolVersion": 2,
+    }
+
+    get_context_txn_json = json.dumps(raw_json)
+
+    rep = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, get_context_txn_json)])
     assert rep[0][1]['result']['seqNo']
 
 
-def test_send_get_schema_as_client(
+'''def test_send_get_schema_as_client(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_client, send_schema):
     _, did = sdk_wallet_client
 
@@ -134,3 +153,4 @@ def test_send_get_schema_fails_without_dest(
     with pytest.raises(RequestNackedException) as e:
         sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
     e.match('missed fields - dest')
+'''
