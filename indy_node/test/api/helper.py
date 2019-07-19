@@ -211,7 +211,7 @@ def sdk_write_schema_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
     return rep
 
 #Rich Schema
-def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, multi_attribute=[], name="", version=""):
+def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context_array=[], name="", version=""):
     _wh, did = sdk_wallet_steward
 
     '''_, context_json = looper.loop.run_until_complete(
