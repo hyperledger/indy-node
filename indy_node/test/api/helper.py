@@ -238,7 +238,7 @@ def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context_array
 
     set_context_txn_json = json.dumps(raw_json)
 
-    return schema_json, \
+    return json.dumps({'id': did + ':7:' + name + ':' + version}), \
            sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, set_context_txn_json))[1]
 
 
