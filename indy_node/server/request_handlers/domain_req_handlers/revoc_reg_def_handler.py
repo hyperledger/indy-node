@@ -14,7 +14,6 @@ from plenum.server.request_handlers.utils import encode_state_value
 
 
 class RevocRegDefHandler(WriteRequestHandler):
-
     revocation_strategy_map = {
         ISSUANCE_BY_DEFAULT: RevokedStrategy,
         ISSUANCE_ON_DEMAND: IssuedStrategy,
@@ -82,6 +81,7 @@ class RevocRegDefHandler(WriteRequestHandler):
         self._validate_txn_type(txn)
         path, value_bytes = RevocRegDefHandler.prepare_revoc_def_for_state(txn)
         self.state.set(path, value_bytes)
+        return txn
 
     @staticmethod
     def prepare_revoc_def_for_state(txn, path_only=False):

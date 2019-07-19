@@ -7,9 +7,9 @@ from plenum.server.request_handlers.txn_author_agreement_handler import TxnAutho
 
 class TxnAuthorAgreementHandler(PTxnAuthorAgreementHandler):
 
-    def __init__(self, database_manager: DatabaseManager, bls_crypto_verifier,
+    def __init__(self, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator):
-        super().__init__(database_manager, bls_crypto_verifier)
+        super().__init__(database_manager)
         self.write_req_validator = write_req_validator
 
     def authorize(self, request):
