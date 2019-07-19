@@ -11,7 +11,6 @@ from plenum.test.testing_utils import FakeSomething
 from indy_common.version import src_version_cls
 from indy_node.server.upgrader import Upgrader
 from indy_node.utils.node_control_utils import NodeControlUtil, DebianVersion
-from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
 
 
 @pytest.fixture(scope='function')

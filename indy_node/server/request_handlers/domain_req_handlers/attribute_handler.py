@@ -1,4 +1,5 @@
 from _sha256 import sha256
+from copy import deepcopy
 from json import JSONDecodeError
 
 from common.exceptions import LogicError
@@ -116,6 +117,7 @@ class AttributeHandler(WriteRequestHandler):
         self.state.set(path, value_bytes)
         if attr_type != HASH:
             self.database_manager.attribute_store.set(hashed_value, value)
+        return txn
 
     def _get_attr(self,
                   did: str,
@@ -133,7 +135,7 @@ class AttributeHandler(WriteRequestHandler):
             # Its a HASH attribute
             return hashed_val, lastSeqNo, lastUpdateTime
         else:
-            value = self.database_manager.attribute_store.get(hashed_val, None)
+            value = self.database_manager.attribute_store.get(hashed_val)
         return value, lastSeqNo, lastUpdateTime
 
     def __has_nym(self, nym, is_committed: bool = True):
@@ -198,3 +200,17 @@ class AttributeHandler(WriteRequestHandler):
             .format(DID=did,
                     MARKER=MARKER_ATTR,
                     ATTR_NAME=nameHash).encode()
+
+    def transform_txn_for_ledger(self, txn):
+        """
+        Creating copy of result so that `RAW`, `ENC` or `HASH` can be
+        replaced by their hashes. We do not insert actual attribute data
+        in the ledger but only the hash of it.
+        """
+        txn = deepcopy(txn)
+        txn_data = get_payload_data(txn)
+        attr_type, _, value = self.parse_attr_txn(txn_data)
+        if attr_type in [RAW, ENC]:
+            txn_data[attr_type] = domain.hash_of(value) if value else ''
+
+        return txn

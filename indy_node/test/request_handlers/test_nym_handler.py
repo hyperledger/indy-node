@@ -6,14 +6,12 @@ from indy_common.constants import NYM, ROLE
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.test.request_handlers.helper import add_to_idr, get_exception
 from ledger.util import F
-from plenum.common.constants import STEWARD, TARGET_NYM, IDENTIFIER, TXN_TIME, VERKEY
+from plenum.common.constants import STEWARD, TARGET_NYM, IDENTIFIER, VERKEY
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import reqToTxn, append_txn_metadata
 from plenum.common.util import randomString
 from plenum.server.request_handlers.utils import nym_to_state_key
-from plenum.test.testing_utils import FakeSomething
-from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
 
 
 @pytest.fixture(scope="module")

@@ -61,8 +61,10 @@ class TestNode(TempStorage, TestNodeCore, Node):
         from plenum.common.stacks import nodeStackClass, clientStackClass
         self.NodeStackClass = nodeStackClass
         self.ClientStackClass = clientStackClass
+        if kwargs.get('bootstrap_cls', None) is None:
+            kwargs['bootstrap_cls'] = TestNodeBootstrap
 
-        Node.__init__(self, *args, **kwargs, bootstrap_cls=TestNodeBootstrap)
+        Node.__init__(self, *args, **kwargs)
         TestNodeCore.__init__(self, *args, **kwargs)
         self.cleanupOnStopping = True
 

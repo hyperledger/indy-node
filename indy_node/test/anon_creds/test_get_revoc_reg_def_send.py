@@ -58,7 +58,7 @@ def test_get_revoc_reg_def_from_uncommited(looper,
     # We apply transacttion, which will be not commited
 
     for node in txnPoolNodeSet:
-        node.get_req_handler(DOMAIN_LEDGER_ID).apply(Request(**revoc_req), int(time.time()))
+        node.write_manager.apply_request(Request(**revoc_req), int(time.time()))
     get_revoc_reg_def_req = {
         ID: ":".join([author_did,
                       domain.MARKER_REVOC_DEF,

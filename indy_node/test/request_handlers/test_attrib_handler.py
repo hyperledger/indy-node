@@ -6,7 +6,6 @@ from indy_node.persistence.attribute_store import AttributeStore
 
 from indy_node.server.request_handlers.domain_req_handlers.attribute_handler import AttributeHandler
 from indy_node.test.request_handlers.helper import add_to_idr
-from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
 from plenum.common.constants import ENC, ATTRIB_LABEL
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
@@ -21,7 +20,6 @@ from storage.kv_in_memory import KeyValueStorageInMemory
 
 @pytest.fixture(scope="module")
 def attrib_handler(db_manager, write_auth_req_validator):
-    db_manager.register_new_store(ATTRIB_LABEL, AttributeStore(KeyValueStorageInMemory()))
     return AttributeHandler(db_manager, write_auth_req_validator)
 
 

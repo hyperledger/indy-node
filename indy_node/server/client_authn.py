@@ -18,19 +18,9 @@ class LedgerBasedAuthNr(CoreAuthMixin, NaclAuthNr):
     Transaction-based client authenticator.
     """
 
-    write_types = CoreAuthMixin.write_types.union({ATTRIB, SCHEMA, CLAIM_DEF,
-                                                   POOL_CONFIG, POOL_UPGRADE, AUTH_RULE,
-                                                   AUTH_RULES,
-                                                   REVOC_REG_DEF, REVOC_REG_ENTRY})
-    query_types = CoreAuthMixin.query_types.union({GET_NYM, GET_ATTR, GET_SCHEMA,
-                                                   GET_CLAIM_DEF, GET_REVOC_REG_DEF,
-                                                   GET_REVOC_REG, GET_REVOC_REG_DELTA,
-                                                   GET_AUTH_RULE})
-    action_types = CoreAuthMixin.action_types.union({POOL_RESTART, VALIDATOR_INFO})
-
-    def __init__(self, cache: IdrCache):
+    def __init__(self, write_types, query_types, action_types, cache: IdrCache):
         NaclAuthNr.__init__(self)
-        CoreAuthMixin.__init__(self)
+        CoreAuthMixin.__init__(self, write_types, query_types, action_types)
         self.cache = cache
 
     def serializeForSig(self, msg, identifier=None, topLevelKeysToIgnore=None):

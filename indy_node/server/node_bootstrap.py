@@ -1,12 +1,17 @@
 from indy_node.persistence.attribute_store import AttributeStore
+from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.pool_config import PoolConfig
 from indy_node.server.request_handlers.action_req_handlers.pool_restart_handler import PoolRestartHandler
 from indy_node.server.request_handlers.action_req_handlers.validator_info_handler import ValidatorInfoHandler
 from indy_node.server.request_handlers.config_batch_handler import ConfigBatchHandler
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rule_handler import AuthRuleHandler
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rules_handler import AuthRulesHandler
+from indy_node.server.request_handlers.config_req_handlers.node_upgrade_handler import NodeUpgradeHandler
 from indy_node.server.request_handlers.config_req_handlers.pool_config_handler import PoolConfigHandler
 from indy_node.server.request_handlers.config_req_handlers.pool_upgrade_handler import PoolUpgradeHandler
+from indy_node.server.request_handlers.config_req_handlers.txn_author_agreement_aml_handler import \
+    TxnAuthorAgreementAmlHandler
+from indy_node.server.request_handlers.config_req_handlers.txn_author_agreement_handler import TxnAuthorAgreementHandler
 from indy_node.server.request_handlers.domain_req_handlers.idr_cache_nym_handler import IdrCacheNymHandler
 from indy_node.server.request_handlers.idr_cache_batch_handler import IdrCacheBatchHandler
 from indy_node.server.request_handlers.read_req_handlers.get_auth_rule_handler import GetAuthRuleHandler
@@ -37,17 +42,25 @@ from indy_node.server.restarter import Restarter
 from indy_node.server.upgrader import Upgrader
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
-from plenum.common.constants import IDR_CACHE_LABEL, ATTRIB_LABEL, NODE_PRIMARY_STORAGE_SUFFIX
+from plenum.common.constants import IDR_CACHE_LABEL, ATTRIB_LABEL, NODE_PRIMARY_STORAGE_SUFFIX, \
+    TS_LABEL
 from plenum.common.ledger import Ledger
 from plenum.persistence.storage import initStorage
 from plenum.server.node_bootstrap import NodeBootstrap as PNodeBootstrap
+from plenum.server.request_handlers.get_txn_author_agreement_aml_handler import GetTxnAuthorAgreementAmlHandler
+from plenum.server.request_handlers.get_txn_author_agreement_handler import GetTxnAuthorAgreementHandler
 from storage.helper import initKeyValueStorage
 
 
 class NodeBootstrap(PNodeBootstrap):
 
     def init_idr_cache_storage(self):
-        idr_cache = self.node.getIdrCache()
+        idr_cache = IdrCache(self.node.name,
+                             initKeyValueStorage(self.node.config.idrCacheStorage,
+                                                 self.node.dataLocation,
+                                                 self.node.config.idrCacheDbName,
+                                                 db_config=self.node.config.db_idr_cache_db_config)
+                             )
         self.node.db_manager.register_new_store(IDR_CACHE_LABEL, idr_cache)
 
     def init_attribute_store(self):
@@ -61,9 +74,8 @@ class NodeBootstrap(PNodeBootstrap):
 
     def init_attribute_storage(self):
         # ToDo: refactor this on pluggable handlers integration phase
-        if self.node.attributeStore is None:
-            self.node.attributeStore = self.init_attribute_store()
-        self.node.db_manager.register_new_store(ATTRIB_LABEL, self.node.attributeStore)
+        attr_store = self.init_attribute_store()
+        self.node.db_manager.register_new_store(ATTRIB_LABEL, attr_store)
 
     def init_storages(self, storage=None):
         super().init_storages()
@@ -135,13 +147,26 @@ class NodeBootstrap(PNodeBootstrap):
                                                   upgrader=self.node.upgrader,
                                                   write_req_validator=self.node.write_req_validator,
                                                   pool_manager=self.node.poolManager)
+        taa_aml_handler = TxnAuthorAgreementAmlHandler(database_manager=self.node.db_manager,
+                                                       write_req_validator=self.node.write_req_validator)
+        taa_handler = TxnAuthorAgreementHandler(database_manager=self.node.db_manager,
+                                                write_req_validator=self.node.write_req_validator)
+
+        get_taa_aml_handler = GetTxnAuthorAgreementAmlHandler(database_manager=self.node.db_manager)
+        get_taa_handler = GetTxnAuthorAgreementHandler(database_manager=self.node.db_manager)
+        node_upgrade_handler = NodeUpgradeHandler(database_manager=self.node.db_manager)
         # Register write handlers
         self.node.write_manager.register_req_handler(auth_rule_handler)
         self.node.write_manager.register_req_handler(auth_rules_handler)
         self.node.write_manager.register_req_handler(pool_config_handler)
         self.node.write_manager.register_req_handler(pool_upgrade_handler)
+        self.node.write_manager.register_req_handler(taa_aml_handler)
+        self.node.write_manager.register_req_handler(taa_handler)
+        self.node.write_manager.register_req_handler(node_upgrade_handler)
         # Register read handlers
         self.node.read_manager.register_req_handler(get_auth_rule_handler)
+        self.node.read_manager.register_req_handler(get_taa_aml_handler)
+        self.node.read_manager.register_req_handler(get_taa_handler)
 
     def register_action_req_handlers(self):
         # Action handlers
@@ -222,7 +247,7 @@ class NodeBootstrap(PNodeBootstrap):
         config_state = self.node.states[CONFIG_LEDGER_ID]
         self.node.write_req_validator = WriteRequestValidator(config=self.node.config,
                                                               auth_map=auth_map,
-                                                              cache=self.node.getIdrCache(),
+                                                              cache=self.node.idrCache,
                                                               config_state=config_state,
                                                               state_serializer=constraint_serializer,
                                                               metrics=self.node.metrics)

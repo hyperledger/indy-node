@@ -9,7 +9,6 @@ from indy_common.constants import NYM, AUTH_RULE, OLD_VALUE, AUTH_TYPE, ROLE, EN
 
 from indy_node.server.request_handlers.read_req_handlers.get_auth_rule_handler import GetAuthRuleHandler
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation, generate_key
-from indy_common.test.auth.conftest import write_auth_req_validator
 from indy_node.test.request_handlers.helper import add_to_idr, get_exception
 from plenum.common.constants import STEWARD, TRUSTEE, TXN_TYPE
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest

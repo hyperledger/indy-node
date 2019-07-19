@@ -12,7 +12,7 @@ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B9316A7BC7917B12
 echo "deb http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main" | sudo tee -a /etc/apt/sources.list
 echo "deb-src http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main" | sudo tee -a /etc/apt/sources.list
 
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88
 echo "deb https://repo.sovrin.org/deb xenial stable" | sudo tee -a /etc/apt/sources.list
 echo "deb https://repo.sovrin.org/sdk/deb xenial stable"  | sudo tee -a /etc/apt/sources.list
 
