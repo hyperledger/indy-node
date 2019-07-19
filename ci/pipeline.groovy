@@ -176,28 +176,24 @@ def systemTests(Closure body) {
                 error "Failed to get versions for indy-plenum or indy-crypto or indy-sdk"
             }
         }
+    }
 
-        Map builds = [:]
-        for (int i = 0; i < config.testSchema.size(); i++) {
-            String testNames = config.testSchema[i].join(' ')
-            Boolean isFirst = (i == 0)
-            int testGroup = i
-            builds[testNames] = {
-                stage("Run ${testNames}") {
-                    if (isFirst) {
-                        runTest(testGroup)
-                    } else {
-                        nodeWrapper('ubuntu') {
-                            runTest(testGroup)
-                        }
-                    }
+    Map builds = [:]
+    for (int i = 0; i < config.testSchema.size(); i++) {
+        String testNames = config.testSchema[i].join(' ')
+        Boolean isFirst = (i == 0)
+        int testGroup = i
+        builds[testNames] = {
+            stage("Run ${testNames}") {
+                nodeWrapper('ubuntu') {
+                    runTest(testGroup)
                 }
             }
         }
-        builds.failFast = false
-
-        parallel builds
     }
+    builds.failFast = false
+
+    parallel builds
 }
 
 return this;
