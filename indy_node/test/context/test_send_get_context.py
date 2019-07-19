@@ -48,7 +48,7 @@ def test_send_get_context_succeeds(
     raw_json = {
         'operation': {
             'type': GET_CONTEXT,
-            'dest': did
+            'dest': did,
             'data': {
                 'name': "ISO18013_DriverLicenseContextr",
                 'version': "1.9"
