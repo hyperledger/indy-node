@@ -153,6 +153,7 @@ NODE = IndyTransactions.NODE.value
 NYM = IndyTransactions.NYM.value
 ATTRIB = IndyTransactions.ATTRIB.value
 SCHEMA = IndyTransactions.SCHEMA.value
+SET_CONTEXT = IndyTransactions.SET_CONTEXT.value
 CLAIM_DEF = IndyTransactions.CLAIM_DEF.value
 REVOC_REG_DEF = IndyTransactions.REVOC_REG_DEF.value
 REVOC_REG_ENTRY = IndyTransactions.REVOC_REG_ENTRY.value
