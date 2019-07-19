@@ -92,6 +92,8 @@ def systemTests(Closure body) {
                 String testReportFileNameXml = "system_tests_${testGroup}_report.${config.repoChannel}.xml"
                 String testReportFileNamePlain = "system_tests_${testGroup}_report.${config.repoChannel}.txt"
                 String testTargets = config.testSchema[testGroup].collect{"system/indy-node-tests/$it"}.join(' ')
+                String buildLogsDir = "_build/logs"
+
                 try {
                     stage("[${testGroup}] Run tests") {
                         sh """
@@ -99,7 +101,7 @@ def systemTests(Closure body) {
                                 set -o pipefail; \
                                 ./system/docker/run.sh \
                                     \\"$testTargets\\" \
-                                    \\"-l -vv --junit-xml=$testReportFileNameXml\\" \
+                                    \\"-l -vv --junit-xml=$testReportFileNameXml --gatherlogs --logsdir=${buildLogsDir}\\" \
                                     \\"$systemTestsNetwork\\" 2>&1 | tee $testReportFileNamePlain;\
                             "
                         """
@@ -112,6 +114,7 @@ def systemTests(Closure body) {
                         sh "ls -la *report* || true"
                         if (err) {
                             archiveArtifacts artifacts: testReportFileNamePlain, allowEmptyArchive: true
+                            archiveArtifacts artifacts: "$buildLogsDir/**/*", allowEmptyArchive: true
                         }
                         junit testResults: testReportFileNameXml, allowEmptyResults: true
                     }
