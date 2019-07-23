@@ -31,8 +31,8 @@ Transaction Author must have a DID on the ledger. The only possible exception is
 ///
 ///
 /// #Params
-/// request_json - original request
-/// text and endorser_did - DID of the Endorser that will submit the transaction. 
+/// request_json: original request
+/// endorser_did: DID of the Endorser that will submit the transaction. 
 ///                         The Endorser's DID must be present on the ledger.
 /// cb: Callback that takes command result as parameter. 
 ///     The command result is a request JSON with Endorser field appended.
