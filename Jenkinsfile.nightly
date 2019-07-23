@@ -5,6 +5,7 @@
 String pkgName = 'indy-node'
 String mainModuleName = 'indy_node'
 String emailRecipients = params.INDY_NODE_RECIPIENTS ?: env.INDY_NODE_RECIPIENTS ?: ''
+Boolean gatherLogs = (params.GATHER_LOGS ?: env.GATHER_LOGS) != 'false'
 
 def localLib
 def err
@@ -47,10 +48,21 @@ try {
             ['test_consensus.py', 'TestTAASuite.py'],
             ['test_upgrade.py', 'test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py'],
             ['TestAuditSuite.py'],
-            ['TestAuthMapSuite.py']
+            // set of authmap tests
+            // TODO might be groupped in parts once https://github.com/docker/docker-py/issues/2278 is resolved
+            ['TestAuthMapAttribSuite.py'],
+            ['TestAuthMapCredDefSuite.py'],
+            ['TestAuthMapMiscSuite.py'],
+            ['TestAuthMapNymSuite.py'],
+            ['TestAuthMapPluginsSuite.py'],
+            ['TestAuthMapRevocRegDefSuite.py'],
+            ['TestAuthMapRevocRegEntrySuite.py'],
+            ['TestAuthMapSchemaSuite.py'],
+            ['TestAuthMapUpgradeSuite.py']
         ]
-        testVersion = 'v0.8.4'
+        testVersion = 'v0.8.7'
         testVersionByTag = true
+        delegate.gatherLogs = gatherLogs
     }
 } catch(Exception _err) {
     currentBuild.result = "FAILED"
