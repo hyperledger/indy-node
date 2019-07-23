@@ -32,29 +32,29 @@ def test_send_context_multiple_links_with_object(looper, sdk_pool_handle,
     )
 
 def test_send_context_multiple_links(looper, sdk_pool_handle,
-                                     sdk_wallet_endorser):
+                                     sdk_wallet_trustee):
     sdk_write_context_and_check(
         looper, sdk_pool_handle,
-        sdk_wallet_endorser,
+        sdk_wallet_trustee,
         [
             "did:sov:11111111111111111111111;content-id=ctx:UVj5w8DRzcmPVDpUMr4AZhJ",
             "did:sov:11111111111111111111111;content-id=ctx:AZKWUJ3zArXPG36kyTJZZm",
             "did:sov:11111111111111111111111;content-id=ctx:9TDvb9PPgKQUWNQcWAFMo4"
         ],
-        "ISO18013_DriverLicenseContextr",
+        "ISO18013_DriverLicenseContext",
         "1.9"
     )
 
 
 def test_send_context_one_link(looper, sdk_pool_handle,
-                                sdk_wallet_endorser):
+                                sdk_wallet_trustee):
     sdk_write_context_and_check(
         looper, sdk_pool_handle,
-        sdk_wallet_endorser,
+        sdk_wallet_trustee,
         [
             "did:sov:11111111111111111111111;content-id=ctx:9TDvb9PPgKQUWNQcWAFMo4"
         ],
-        "ISO18013_DriverLicenseContextr",
+        "ISO18013_DriverLicenseContext2",
         "1.9"
     )
 
