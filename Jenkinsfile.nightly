@@ -5,6 +5,7 @@
 String pkgName = 'indy-node'
 String mainModuleName = 'indy_node'
 String emailRecipients = params.INDY_NODE_RECIPIENTS ?: env.INDY_NODE_RECIPIENTS ?: ''
+Boolean gatherLogs = (params.GATHER_LOGS ?: env.GATHER_LOGS) != 'false'
 
 def localLib
 def err
@@ -61,6 +62,7 @@ try {
         ]
         testVersion = 'v0.8.7'
         testVersionByTag = true
+        delegate.gatherLogs = gatherLogs
     }
 } catch(Exception _err) {
     currentBuild.result = "FAILED"

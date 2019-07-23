@@ -12,7 +12,8 @@ def systemTests(Closure body) {
             srcVersion: null,
             testSchema: [['.']],
             testVersion: null,
-            testVersionByTag: false
+            testVersionByTag: false,
+            gatherLogs: true
         ],
         body, ['pkgVersion'], {}, prefix
     )
@@ -93,6 +94,7 @@ def systemTests(Closure body) {
                 String testReportFileNamePlain = "system_tests_${testGroup}_report.${config.repoChannel}.txt"
                 String testTargets = config.testSchema[testGroup].collect{"system/indy-node-tests/$it"}.join(' ')
                 String buildLogsDir = "_build/logs"
+                String gatherLogsOpt = config.gatherLogs ? ' --gatherlogs' : ''
 
                 try {
                     stage("[${testGroup}] Run tests") {
@@ -101,7 +103,7 @@ def systemTests(Closure body) {
                                 set -o pipefail; \
                                 ./system/docker/run.sh \
                                     \\"$testTargets\\" \
-                                    \\"-l -vv --junit-xml=$testReportFileNameXml --gatherlogs --logsdir=${buildLogsDir}\\" \
+                                    \\"-l -vv --junit-xml=$testReportFileNameXml ${gatherLogsOpt} --logsdir=${buildLogsDir}\\" \
                                     \\"$systemTestsNetwork\\" 2>&1 | tee $testReportFileNamePlain;\
                             "
                         """
