@@ -11,8 +11,8 @@ As a transaction author, I need my transactions to be written to the ledger pres
 ## Proposed workflow
 1. Transaction Author builds a new request (`indy_build_xxx_reqeust`).
 1. If no endorser is needed for a transaction (for example, the transaction author is an endorser, or auth rules are configured in a way that transaction author can send requests in permissionless mode), then the author signs and submits the transaction.
-1. Otherwise the author chooses an Endorser and adds Endorser's DID into the request calling `indy_append_endorser`. 
-1. Transaction author signs the request (`indy_multi_sign_request` or `indy_sign_request`) with the added endorser field (output of `indy_append_endorser`).
+1. Otherwise the author chooses an Endorser and adds Endorser's DID into the request calling `indy_append_request_endorser`. 
+1. Transaction author signs the request (`indy_multi_sign_request` or `indy_sign_request`) with the added endorser field (output of `indy_append_request_endorser`).
 1. Transaction author sends the request to the Endorser (out of scope).
 1. Transaction Endorser signs the request (as of now `indy_multi_sign_request` must be called, not `indy_sign_request`) and submits it to the ledger.
 
@@ -37,12 +37,12 @@ Transaction Author must have a DID on the ledger. The only possible exception is
 /// cb: Callback that takes command result as parameter. 
 ///     The command result is a request JSON with Endorser field appended.
 #[no_mangle]
-pub extern fn indy_append_endorser(command_handle: CommandHandle,
-                                   request_json:*const c_char,
-                                   endorser_did: *const c_char,
-                                   cb: Option<extern fn(command_handle_: CommandHandle,
-                                                        err: ErrorCode,
-                                                        request_json: *const c_char)>) -> ErrorCode
+pub extern fn indy_append_request_endorser(command_handle: CommandHandle,
+                                           request_json:*const c_char,
+                                           endorser_did: *const c_char,
+                                           cb: Option<extern fn(command_handle_: CommandHandle,
+                                                                err: ErrorCode,
+                                                                request_json: *const c_char)>) -> ErrorCode
 ```
 
 
