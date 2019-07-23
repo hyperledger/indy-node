@@ -193,6 +193,7 @@ class TestAuthRuleUsing():
         test = test_cls(env, action_id)
         return action_id, test
 
+    @pytest.mark.skip("Waiting libindy fix for sending constraints with an IDENTITY_OWNER role.")
     def test_auth_rule_using(self, auth_rule_tests):
         descr, test = auth_rule_tests
         print("Running test: {}".format(descr))
