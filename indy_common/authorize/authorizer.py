@@ -68,11 +68,6 @@ class RolesAuthorizer(AbstractAuthorizer):
                 sig_count += 1
         return sig_count
 
-    def is_non_ledger_allowed(self, constraint: AuthConstraint, action: AbstractAuthAction):
-        if not constraint.need_to_be_on_ledger and action.non_ledger_did:
-            return True
-        return False
-
     def is_owner_accepted(self, constraint: AuthConstraint, action: AbstractAuthAction):
         if constraint.need_to_be_owner and not action.is_owner:
             return False
@@ -102,8 +97,8 @@ class RolesAuthorizer(AbstractAuthorizer):
                   request: Request,
                   auth_constraint: AuthConstraint,
                   auth_action: AbstractAuthAction = None):
-        if auth_constraint.sig_count > 0 and not self.is_non_ledger_allowed(
-                auth_constraint, auth_action) and self.get_role(request) is None:
+        if auth_constraint.sig_count > 0 and auth_constraint.need_to_be_on_ledger and self.get_role(
+                request) is None:
             return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
         if not self.is_sig_count_accepted(request, auth_constraint):
             role = Roles(auth_constraint.role).name if auth_constraint.role != '*' else '*'

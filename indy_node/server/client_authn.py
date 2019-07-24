@@ -45,8 +45,8 @@ class LedgerBasedAuthNr(CoreAuthMixin, NaclAuthNr):
         try:
             verkey = self.cache.getVerkey(ident, isCommitted=False)
         except KeyError:
-            # If DID wasn't found in idr cache, it might be
-            # non-ledger request, so we need to look for verkey in request
+            # If DID wasn't found in idr cache, then it can be
+            # creation of a new DID signed by a verkey for this new DID
             verkey = self.get_verkey_specific(request)
             if not verkey:
                 return None

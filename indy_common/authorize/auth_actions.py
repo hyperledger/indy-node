@@ -47,13 +47,11 @@ class AuthActionAdd(AbstractAuthAction):
                  txn_type,
                  field=None,
                  value=None,
-                 is_owner: bool = True,
-                 non_ledger_did: bool = False):
+                 is_owner: bool = True):
         self.txn_type = txn_type
         self.field = str(field) if field is not None else ''
         self.value = str(value) if value is not None else ''
         self.is_owner = is_owner
-        self.non_ledger_did = non_ledger_did
 
     def get_action_id(self) -> str:
         return compile_action_id(txn_type=self.txn_type,
@@ -69,14 +67,12 @@ class AuthActionEdit(AbstractAuthAction):
                  field=None,
                  old_value=None,
                  new_value=None,
-                 is_owner: bool = True,
-                 non_ledger_did: bool = False):
+                 is_owner: bool = True):
         self.txn_type = txn_type
         self.field = str(field) if field is not None else ''
         self.old_value = str(old_value) if old_value is not None else ''
         self.new_value = str(new_value) if new_value is not None else ''
         self.is_owner = is_owner
-        self.non_ledger_did = non_ledger_did
 
     def get_action_id(self) -> str:
         return compile_action_id(txn_type=self.txn_type,

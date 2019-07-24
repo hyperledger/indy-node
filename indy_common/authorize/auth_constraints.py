@@ -110,8 +110,8 @@ class AuthConstraint(AbstractAuthConstraint):
         if role not in accepted_roles:
             raise ValueError("Role {} is not acceptable".format(role))
         if not need_to_be_on_ledger and role != "*":
-            raise ValueError("It has point to set 'need_to_be_on_ledger' flag, only if '*' role set. "
-                             "Got {} role instead".format(role))
+            raise ValueError("'need_to_be_on_ledger' can be set to False only if any role is accepted (role='*'). "
+                             "Got {} role instead.".format(role))
 
     def __str__(self):
         role = get_named_role(self.role) if self.role != '*' else 'ALL'
