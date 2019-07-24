@@ -198,10 +198,13 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
 #### 4. New Development Cycle Start
 
 1. [**Contributor**]:
-    - Create PR to `master` with version bump to `X'.Y'.Z'.dev0`, where `X'.Y'.Z'` is next target release version which is usually `X.Y+1.0` or `X+1.Y.0`.
+    - Create PR to `master` with version bump to `X'.Y'.Z'.dev0`, where `X'.Y'.Z'` is next target release version. Usually it increments one of `X`, `Y` or `Z` and resets lower parts (check [SemVer](https://semver.org/) for more details), e.g.:
+        - `X.Y.Z+1` - bugfix release
+        - `X.Y+1.0` - feature release, backwards compatible API additions/changes
+        - `X+1.0.0` - major release, backwards incompatible API changes
 
 ### Hotfix Release
 
 Hotfix release is quite similar except the following difference:
-  - hotfix branches `hotfix-X.Y.Z` are created from git tag `vX.Y.(Z-1)`;
+  - hotfix branches named `hotfix-X.Y.Z`;
   - `master` usually is not merged since hotfixes (as a rule) should include only fixes for stable code.
