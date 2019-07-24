@@ -1,14 +1,13 @@
 from typing import NamedTuple
 
-
 from abc import ABCMeta, abstractmethod
-
 
 RULE_DELIMETER = "--"
 ADD_PREFIX = "ADD"
 EDIT_PREFIX = "EDIT"
 
-ActionDef = NamedTuple('ActionDef', [('txn_type', str), ('prefix', str), ('field', str), ('old_value', str), ('new_value', str)])
+ActionDef = NamedTuple('ActionDef',
+                       [('txn_type', str), ('prefix', str), ('field', str), ('old_value', str), ('new_value', str)])
 
 
 def compile_action_id(txn_type,
@@ -44,11 +43,17 @@ class AbstractAuthAction(metaclass=ABCMeta):
 
 
 class AuthActionAdd(AbstractAuthAction):
-    def __init__(self, txn_type, field=None, value=None, is_owner: bool=True):
+    def __init__(self,
+                 txn_type,
+                 field=None,
+                 value=None,
+                 is_owner: bool = True,
+                 non_ledger_did: bool = False):
         self.txn_type = txn_type
         self.field = str(field) if field is not None else ''
         self.value = str(value) if value is not None else ''
         self.is_owner = is_owner
+        self.non_ledger_did = non_ledger_did
 
     def get_action_id(self) -> str:
         return compile_action_id(txn_type=self.txn_type,
@@ -64,12 +69,14 @@ class AuthActionEdit(AbstractAuthAction):
                  field=None,
                  old_value=None,
                  new_value=None,
-                 is_owner: bool=True):
+                 is_owner: bool = True,
+                 non_ledger_did: bool = False):
         self.txn_type = txn_type
         self.field = str(field) if field is not None else ''
         self.old_value = str(old_value) if old_value is not None else ''
         self.new_value = str(new_value) if new_value is not None else ''
         self.is_owner = is_owner
+        self.non_ledger_did = non_ledger_did
 
     def get_action_id(self) -> str:
         return compile_action_id(txn_type=self.txn_type,

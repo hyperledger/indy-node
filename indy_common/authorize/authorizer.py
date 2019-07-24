@@ -12,6 +12,7 @@ from indy_common.roles import Roles
 from indy_common.transactions import IndyTransactions
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
+
 logger = getLogger()
 
 
@@ -31,7 +32,7 @@ class AbstractAuthorizer(metaclass=ABCMeta):
     def authorize(self,
                   request: Request,
                   auth_constraint: AbstractAuthConstraint,
-                  auth_action: AbstractAuthAction)-> (bool, str):
+                  auth_action: AbstractAuthAction) -> (bool, str):
         raise NotImplementedError()
 
 
@@ -50,10 +51,10 @@ class RolesAuthorizer(AbstractAuthorizer):
             return None
         return self._get_role(idr)
 
-    def get_sig_count(self, request: Request, role: str="*"):
+    def get_sig_count(self, request: Request, role: str = "*", need_to_be_on_ledger=True):
         if request.signature:
             return 1 \
-                if self.is_role_accepted(self._get_role(request.identifier), role)\
+                if not need_to_be_on_ledger or self.is_role_accepted(self._get_role(request.identifier), role) \
                 else 0
         elif not request.signatures:
             return 0
@@ -63,9 +64,14 @@ class RolesAuthorizer(AbstractAuthorizer):
         sig_count = 0
         for identifier, _ in request.signatures.items():
             signer_role = self._get_role(identifier)
-            if self.is_role_accepted(signer_role, role):
+            if not need_to_be_on_ledger or self.is_role_accepted(signer_role, role):
                 sig_count += 1
         return sig_count
+
+    def is_non_ledger_allowed(self, constraint: AuthConstraint, action: AbstractAuthAction):
+        if not constraint.need_to_be_on_ledger and action.non_ledger_did:
+            return True
+        return False
 
     def is_owner_accepted(self, constraint: AuthConstraint, action: AbstractAuthAction):
         if constraint.need_to_be_owner and not action.is_owner:
@@ -86,7 +92,7 @@ class RolesAuthorizer(AbstractAuthorizer):
 
     def is_sig_count_accepted(self, request: Request, auth_constraint: AuthConstraint):
         role = auth_constraint.role
-        sig_count = self.get_sig_count(request, role=role)
+        sig_count = self.get_sig_count(request, role=role, need_to_be_on_ledger=auth_constraint.need_to_be_on_ledger)
         return sig_count >= auth_constraint.sig_count
 
     def get_named_role_from_req(self, request: Request):
@@ -95,19 +101,20 @@ class RolesAuthorizer(AbstractAuthorizer):
     def authorize(self,
                   request: Request,
                   auth_constraint: AuthConstraint,
-                  auth_action: AbstractAuthAction=None):
-        if auth_constraint.sig_count > 0 and self.get_role(request) is None:
+                  auth_action: AbstractAuthAction = None):
+        if auth_constraint.sig_count > 0 and not self.is_non_ledger_allowed(
+                auth_constraint, auth_action) and self.get_role(request) is None:
             return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
         if not self.is_sig_count_accepted(request, auth_constraint):
             role = Roles(auth_constraint.role).name if auth_constraint.role != '*' else '*'
             return False, "Not enough {} signatures".format(role)
         if not self.is_owner_accepted(auth_constraint, auth_action):
             if auth_action.field != '*':
-                return False, "{} can not touch {} field since only the owner can modify it".\
+                return False, "{} can not touch {} field since only the owner can modify it". \
                     format(self.get_named_role_from_req(request),
                            auth_action.field)
             else:
-                return False, "{} can not edit {} txn since only owner can modify it".\
+                return False, "{} can not edit {} txn since only owner can modify it". \
                     format(self.get_named_role_from_req(request),
                            IndyTransactions.get_name_from_code(auth_action.txn_type))
         return True, ""
