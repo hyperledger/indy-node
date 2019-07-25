@@ -210,7 +210,6 @@ def sdk_write_schema_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
     rep = sdk_get_and_check_replies(looper, [req])
     return rep
 
-#Rich Schema
 def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context_array=[], name="", version=""):
     _wh, did = sdk_wallet_steward
 
