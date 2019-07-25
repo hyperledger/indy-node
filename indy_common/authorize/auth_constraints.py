@@ -11,7 +11,7 @@ ROLE = "role"
 METADATA = "metadata"
 SIG_COUNT = "sig_count"
 NEED_TO_BE_OWNER = "need_to_be_owner"
-NEED_TO_BE_ON_LEDGER = "need_to_be_on_ledger"
+OFF_LEDGER_ENDORSER = "off_ledger_endorser"
 
 IDENTITY_OWNER = None
 
@@ -84,13 +84,13 @@ class AuthConstraintForbidden(AbstractAuthConstraint):
 class AuthConstraint(AbstractAuthConstraint):
     def __init__(self, role, sig_count,
                  need_to_be_owner=False,
-                 need_to_be_on_ledger=True,
+                 off_ledger_endorser=False,
                  metadata={}):
-        self._role_validation(role, need_to_be_on_ledger)
+        self._role_validation(role, off_ledger_endorser)
         self.role = role
         self.sig_count = sig_count
         self.need_to_be_owner = need_to_be_owner
-        self.need_to_be_on_ledger = need_to_be_on_ledger
+        self.off_ledger_endorser = off_ledger_endorser
         self.metadata = metadata
         self.constraint_id = ConstraintsEnum.ROLE_CONSTRAINT_ID
 
@@ -101,25 +101,25 @@ class AuthConstraint(AbstractAuthConstraint):
             ROLE: self.role,
             SIG_COUNT: self.sig_count,
             NEED_TO_BE_OWNER: self.need_to_be_owner,
-            NEED_TO_BE_ON_LEDGER: self.need_to_be_on_ledger,
+            OFF_LEDGER_ENDORSER: self.off_ledger_endorser,
             METADATA: self.metadata
         }
 
     @staticmethod
-    def _role_validation(role, need_to_be_on_ledger):
+    def _role_validation(role, off_ledger_endorser):
         if role not in accepted_roles:
             raise ValueError("Role {} is not acceptable".format(role))
-        if not need_to_be_on_ledger and role != "*":
-            raise ValueError("'need_to_be_on_ledger' can be set to False only if any role is accepted (role='*'). "
+        if off_ledger_endorser and role != "*":
+            raise ValueError("'off_ledger_endorser' can be set to False only if any role is accepted (role='*'). "
                              "Got {} role instead.".format(role))
 
     def __str__(self):
         role = get_named_role(self.role) if self.role != '*' else 'ALL'
         error_msg = ""
 
-        if not self.need_to_be_on_ledger and self.sig_count > 1:
+        if self.off_ledger_endorser and self.sig_count > 1:
             error_msg = "{} signatures of any role (non-ledger included) are required".format(self.sig_count, role)
-        elif not self.need_to_be_on_ledger and self.sig_count == 1:
+        elif self.off_ledger_endorser and self.sig_count == 1:
             error_msg = "1 signature of any role (non-ledger included) is required".format(self.sig_count, role)
 
         elif role != 'ALL' and self.need_to_be_owner and self.sig_count > 1:
