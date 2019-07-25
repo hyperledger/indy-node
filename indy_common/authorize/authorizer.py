@@ -51,10 +51,10 @@ class RolesAuthorizer(AbstractAuthorizer):
             return None
         return self._get_role(idr)
 
-    def get_sig_count(self, request: Request, role: str = "*", off_ledger_endorser=False):
+    def get_sig_count(self, request: Request, role: str = "*", off_ledger_signature=False):
         if request.signature:
             return 1 \
-                if off_ledger_endorser or self.is_role_accepted(self._get_role(request.identifier), role) \
+                if off_ledger_signature or self.is_role_accepted(self._get_role(request.identifier), role) \
                 else 0
         elif not request.signatures:
             return 0
@@ -64,7 +64,7 @@ class RolesAuthorizer(AbstractAuthorizer):
         sig_count = 0
         for identifier, _ in request.signatures.items():
             signer_role = self._get_role(identifier)
-            if off_ledger_endorser or self.is_role_accepted(signer_role, role):
+            if off_ledger_signature or self.is_role_accepted(signer_role, role):
                 sig_count += 1
         return sig_count
 
@@ -87,7 +87,7 @@ class RolesAuthorizer(AbstractAuthorizer):
 
     def is_sig_count_accepted(self, request: Request, auth_constraint: AuthConstraint):
         role = auth_constraint.role
-        sig_count = self.get_sig_count(request, role=role, off_ledger_endorser=auth_constraint.off_ledger_endorser)
+        sig_count = self.get_sig_count(request, role=role, off_ledger_signature=auth_constraint.off_ledger_signature)
         return sig_count >= auth_constraint.sig_count
 
     def get_named_role_from_req(self, request: Request):
@@ -97,7 +97,7 @@ class RolesAuthorizer(AbstractAuthorizer):
                   request: Request,
                   auth_constraint: AuthConstraint,
                   auth_action: AbstractAuthAction = None):
-        if auth_constraint.sig_count > 0 and not auth_constraint.off_ledger_endorser and self.get_role(
+        if auth_constraint.sig_count > 0 and not auth_constraint.off_ledger_signature and self.get_role(
                 request) is None:
             return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
         if not self.is_sig_count_accepted(request, auth_constraint):

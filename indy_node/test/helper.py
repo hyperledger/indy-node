@@ -10,7 +10,7 @@ from libnacl import randombytes
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ROLE, CONSTRAINT_ID, ConstraintsEnum, SIG_COUNT, NEED_TO_BE_OWNER, \
-    METADATA, OFF_LEDGER_ENDORSER
+    METADATA, OFF_LEDGER_SIGNATURE
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.constants import NYM, ENDORSER, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, OLD_VALUE
 from indy_node.server.node_bootstrap import NodeBootstrap
@@ -187,7 +187,7 @@ def sdk_send_and_check_auth_rule_request(
     # temp fix untill new sdk released
     req_json = json.loads(req_json)
     if req_json[OPERATION][CONSTRAINT][CONSTRAINT_ID] == 'ROLE':
-        req_json[OPERATION][CONSTRAINT][OFF_LEDGER_ENDORSER] = constraint[OFF_LEDGER_ENDORSER]
+        req_json[OPERATION][CONSTRAINT][OFF_LEDGER_SIGNATURE] = constraint[OFF_LEDGER_SIGNATURE]
     req_json = json.dumps(req_json)
 
     return sdk_send_and_check_req_json(
@@ -250,13 +250,13 @@ def generate_constraint_entity(constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID,
                                role=TRUSTEE,
                                sig_count=1,
                                need_to_be_owner=False,
-                               off_ledger_endorser=False,
+                               off_ledger_signature=False,
                                metadata={}):
     return {CONSTRAINT_ID: constraint_id,
             ROLE: role,
             SIG_COUNT: sig_count,
             NEED_TO_BE_OWNER: need_to_be_owner,
-            OFF_LEDGER_ENDORSER: off_ledger_endorser,
+            OFF_LEDGER_SIGNATURE: off_ledger_signature,
             METADATA: metadata}
 
 

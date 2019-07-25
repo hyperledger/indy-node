@@ -5,7 +5,7 @@ from indy.did import create_and_store_my_did
 from indy.ledger import build_nym_request
 
 from indy_common.authorize.auth_actions import ADD_PREFIX
-from indy_common.authorize.auth_constraints import AuthConstraint, OFF_LEDGER_ENDORSER
+from indy_common.authorize.auth_constraints import AuthConstraint, OFF_LEDGER_SIGNATURE
 from indy_common.constants import CONSTRAINT
 from indy_node.test.helper import build_auth_rule_request_json, sdk_send_and_check_req_json
 from plenum.common.constants import ROLE, VERKEY, NYM
@@ -43,7 +43,7 @@ def change_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee, constraint):
         constraint=constraint.as_dict
     )
     req = json.loads(req)
-    req[OPERATION][CONSTRAINT][OFF_LEDGER_ENDORSER] = constraint.off_ledger_endorser
+    req[OPERATION][CONSTRAINT][OFF_LEDGER_SIGNATURE] = constraint.off_ledger_signature
     req = json.dumps(req)
 
     sdk_send_and_check_req_json(looper, sdk_pool_handle, sdk_wallet_trustee, req)
@@ -62,7 +62,7 @@ def test_create_did_without_endorser_fails(looper, txnPoolNodeSet, nym_txn_data,
 def test_create_did_without_endorser(looper, txnPoolNodeSet, nym_txn_data, sdk_pool_handle, sdk_wallet_trustee):
     change_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee, constraint=AuthConstraint(role='*',
                                                                                             sig_count=1,
-                                                                                            off_ledger_endorser=True))
+                                                                                            off_ledger_signature=True))
 
     wh, alias, sender_did, sender_verkey = nym_txn_data
     nym_request = looper.loop.run_until_complete(
@@ -103,7 +103,7 @@ def test_create_did_without_endorser_sig_count_2_one_on_ledger(looper, txnPoolNo
                                                                sdk_wallet_trustee):
     change_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee, constraint=AuthConstraint(role='*',
                                                                                             sig_count=2,
-                                                                                            off_ledger_endorser=True))
+                                                                                            off_ledger_signature=True))
 
     wh, alias, sender_did, sender_verkey = nym_txn_data
     nym_request = looper.loop.run_until_complete(
@@ -124,7 +124,7 @@ def test_create_did_without_endorser_sig_count_0(looper, txnPoolNodeSet, nym_txn
                                                  sdk_wallet_trustee):
     change_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee, constraint=AuthConstraint(role='*',
                                                                                             sig_count=0,
-                                                                                            off_ledger_endorser=True))
+                                                                                            off_ledger_signature=True))
 
     wh, alias, sender_did, sender_verkey = nym_txn_data
     nym_request = looper.loop.run_until_complete(
@@ -142,7 +142,7 @@ def test_create_did_without_endorser_need_to_be(looper, txnPoolNodeSet, nym_txn_
                                                 sdk_wallet_trustee):
     change_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee, constraint=AuthConstraint(role='*',
                                                                                             sig_count=1,
-                                                                                            off_ledger_endorser=False))
+                                                                                            off_ledger_signature=False))
 
     wh, alias, sender_did, sender_verkey = nym_txn_data
     nym_request = looper.loop.run_until_complete(
