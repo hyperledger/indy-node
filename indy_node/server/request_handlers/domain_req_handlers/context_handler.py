@@ -19,7 +19,12 @@ from plenum.server.request_handlers.utils import encode_state_value
 class ContextHandler(WriteRequestHandler):
 
     def _validate_context(context_array):
-        pass
+        if isinstance(context_array, dict):
+            assert "@context" in context_array.keys()
+            if not isinstance(context_array["@context"], dict):
+                raise Exception
+        else:
+            raise Exception
 
     def __init__(self, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator):
