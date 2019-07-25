@@ -5,6 +5,7 @@
 String name = 'indy-node'
 String pkgName = name
 String mainModuleName = 'indy_node'
+Boolean gatherLogs = (params.GATHER_LOGS ?: env.GATHER_LOGS) != 'false'
 
 def nodeTestUbuntu = {
     try {
@@ -91,8 +92,9 @@ def systemTests = { component, releaseVersion ->
             ['test_vc.py'],
             ['test_consensus.py']
         ]
-        testVersion = 'v0.8.4'
+        testVersion = 'v0.8.7'
         testVersionByTag = true
+        delegate.gatherLogs = gatherLogs
     }
 }
 
