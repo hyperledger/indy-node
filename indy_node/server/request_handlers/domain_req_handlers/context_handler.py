@@ -18,17 +18,24 @@ from plenum.server.request_handlers.utils import encode_state_value
 
 class ContextHandler(WriteRequestHandler):
 
+    def _validate_context(context_array):
+        pass
+
     def __init__(self, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator):
         super().__init__(database_manager, SET_CONTEXT, DOMAIN_LEDGER_ID)
         self.write_req_validator = write_req_validator
 
     def static_validation(self, request: Request):
-        pass
+        self._validate_request_type(request)
+        assert request.operation.name
+        assert request.operation.version
+        _validate_context(request.operation.context_array)
+
 
     def dynamic_validation(self, request: Request):
-        # we can not add a Schema with already existent NAME and VERSION
-        # sine a Schema needs to be identified by seqNo
+        # we can not add a Context with already existent NAME and VERSION
+        # since a Context needs to be identified by seqNo
         self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
         context_name = get_write_context_name(request)
