@@ -23,3 +23,11 @@ def test_validate_context_fail_context_not_dict():
 	with pytest.raises(Exception):
 		ContextHandler._validate_context(input_dict)
 
+def test_validate_context_pass_context_single_name_value():
+	input_dict = {
+ 		"@context": {
+    		"favoriteColor": "https://example.com/vocab#favoriteColor"
+		}
+	}
+	
+	ContextHandler._validate_context(input_dict)
