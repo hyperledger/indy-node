@@ -1,3 +1,4 @@
+# Transaction Endorser Design
 ## Reasoning
 As a transaction author, I need my transactions to be written to the ledger preserving me as the author without my needing to accept the responsibilities of an endorser so that I can focus on my business. Instead, I will have a business relationship with an endorser who will endorse my transactions.
  
