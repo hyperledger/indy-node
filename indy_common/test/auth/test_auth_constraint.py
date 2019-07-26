@@ -13,14 +13,14 @@ def test_str_any_7_off_ledger_sig():
     constraint = AuthConstraint(role='*',
                                 sig_count=7,
                                 off_ledger_signature=True)
-    assert str(constraint) == '7 signatures of any role (non-ledger included) are required'
+    assert str(constraint) == '7 signatures of any role (off-ledger included) are required'
 
 
 def test_str_any_1_off_ledger_sig():
     constraint = AuthConstraint(role='*',
                                 sig_count=1,
                                 off_ledger_signature=True)
-    assert str(constraint) == '1 signature of any role (non-ledger included) is required'
+    assert str(constraint) == '1 signature of any role (off-ledger included) is required'
 
 
 def test_str_not_any_7_sig_owner():

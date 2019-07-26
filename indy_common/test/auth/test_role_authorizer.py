@@ -138,6 +138,15 @@ def test_role_authorizer_off_ledger_signature_count_2_pass(idr_cache, req_auth):
     assert authorized
 
 
+def test_role_authorizer_off_ledger_signature_count_2_different_pass(idr_cache, req_auth):
+    authorizer = RolesAuthorizer(cache=idr_cache)
+    req_auth.signature = None
+    req_auth.signatures = {req_auth.identifier: 'signature', 'another_id_off_ledger': 'another_signature'}
+    authorized, reason = authorizer.authorize(req_auth, AuthConstraint(role='*', sig_count=2,
+                                                                       off_ledger_signature=True))
+    assert authorized
+
+
 def test_role_authorizer_off_ledger_signature_count_0_pass(idr_cache, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache)
     req_auth._identifier = 'id_off_ledger'

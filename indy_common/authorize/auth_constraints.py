@@ -110,7 +110,7 @@ class AuthConstraint(AbstractAuthConstraint):
         if role not in accepted_roles:
             raise ValueError("Role {} is not acceptable".format(role))
         if off_ledger_signature and role != "*":
-            raise ValueError("'off_ledger_signature' can be set to False only if any role is accepted (role='*'). "
+            raise ValueError("'off_ledger_signature' can be set to True only if any role is accepted (role='*'). "
                              "Got {} role instead.".format(role))
 
     def __str__(self):
@@ -118,9 +118,9 @@ class AuthConstraint(AbstractAuthConstraint):
         error_msg = ""
 
         if self.off_ledger_signature and self.sig_count > 1:
-            error_msg = "{} signatures of any role (non-ledger included) are required".format(self.sig_count, role)
+            error_msg = "{} signatures of any role (off-ledger included) are required".format(self.sig_count, role)
         elif self.off_ledger_signature and self.sig_count == 1:
-            error_msg = "1 signature of any role (non-ledger included) is required".format(self.sig_count, role)
+            error_msg = "1 signature of any role (off-ledger included) is required".format(self.sig_count, role)
 
         elif role != 'ALL' and self.need_to_be_owner and self.sig_count > 1:
             error_msg = "{} {} signatures are required and needs to be owner".format(self.sig_count, role)

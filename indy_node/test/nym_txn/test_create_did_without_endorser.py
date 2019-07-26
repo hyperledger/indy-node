@@ -140,7 +140,7 @@ def test_create_did_without_endorser_sig_count_0(looper, txnPoolNodeSet, nym_txn
     assert details[VERKEY] == sender_verkey
 
 
-def t_ctesreate_did_without_endorser_need_to_be(looper, txnPoolNodeSet, nym_txn_data, sdk_pool_handle,
+def test_create_did_without_endorser_need_to_be(looper, txnPoolNodeSet, nym_txn_data, sdk_pool_handle,
                                                 sdk_wallet_trustee):
     change_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee, constraint=AuthConstraint(role='*',
                                                                                             sig_count=1,
