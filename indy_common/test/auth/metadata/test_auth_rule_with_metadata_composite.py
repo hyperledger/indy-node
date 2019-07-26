@@ -101,11 +101,12 @@ def test_plugin_or_rule_one_amount_diff_roles(write_auth_req_validator, write_re
 
 
 def test_plugin_or_rule_one_amount_all_roles(write_auth_req_validator, write_request_validation,
-                                             signatures, is_owner, amount):
+                                             signatures, is_owner, amount, off_ledger_signature):
     validate(
         auth_constraint=AuthConstraintOr(auth_constraints=[
             AuthConstraint(role=ENDORSER, sig_count=1, need_to_be_owner=False),
             AuthConstraint(role='*', sig_count=1, need_to_be_owner=True,
+                           off_ledger_signature=off_ledger_signature,
                            metadata={PLUGIN_FIELD: 3}),
         ]),
         valid_actions=[({ENDORSER: 1}, False, None),
