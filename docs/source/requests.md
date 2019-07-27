@@ -56,7 +56,8 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
         <request-specific fields>
     },
     
-    'identifier': <sender/author DID>,
+    'identifier': <author DID>,
+    `endorser`: <endorser DID>, 
     'reqId': <req_id unique integer>,
     'protocolVersion': 2,
     'signature': <signature_value>,
@@ -87,8 +88,9 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
             - NODE_UPGRADE = "110"
             - POOL_CONFIG = "111"
             - REVOC_REG_DEF = "113"
-            - REVOC_REG_DEF = "114"
+            - REVOC_REG_ENTRY = "114"
             - AUTH_RULE = "120"
+            - AUTH_RULES = "122"
             
         - read requests:
         
@@ -107,14 +109,23 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
     - request-specific data
 
 - `identifier` (base58-encoded string):
- 
-     Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
+    
+     Identifier of the transaction author as base58-encoded string
      for 16 or 32 bit DID value.
-     It may differ from `dest` field for some of requests (for example NYM), where `dest` is a 
+ 
+     For read requests this is read request submitter. It can be any DID (not necessary present on the ledger as a NYM txn)
+ 
+     For write requests this is transaction author.
+     It may differ from `endorser` field who submits the transaction on behalf of `identifier`. If `endorser` is absent,
+     then the author (`identifier`) plays the role of endorser and submits request by his own.
+     It also may differ from `dest` field for some of requests (for example NYM), where `dest` is a 
      target identifier (for example, a newly created DID identifier).
      
-     *Example*: `identifier` is a DID of a Endorser creating a new DID, and `dest` is a newly created DID.
+     *Example*:
      
+     - `identifier` is the author of the transaction without a specific role; `endorser` is a user with Endorser role.
+     - new NYM creation: `identifier` is a DID of an Endorser creating a new DID, and `dest` is a newly created DID.
+ 
 - `reqId` (integer): 
 
     Unique ID number of the request with transaction.
@@ -148,7 +159,8 @@ Write requests to Domain and added-by-plugins ledgers may have additional Transa
         <request-specific fields>
     },
     
-    'identifier': <sender/author DID>,
+    'identifier': <author DID>,
+    `endorser`: <endorser DID>,
     'reqId': <req_id unique integer>,
     'taaAcceptance': {
         'taaDigest': <digest hex string>,
@@ -166,6 +178,11 @@ Write requests to Domain and added-by-plugins ledgers may have additional Transa
 ```
 
 Additional (optional) fields for write requests:
+
+- `endorser` (base58-encoded string, optional):
+    Identifier (DID) of an Endorser submitting a transaction on behalf of the original author (`identifier`) as base58-encoded string for 16 or 32 bit DID value.
+   If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own. 
+   If `endorser` is present then the transaction must be multi-signed by the both author (`identifier`) and Endorser (`endorser`).  
 
 - `taaAcceptance` (dict, optional):
             If transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
@@ -198,6 +215,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
             "metadata": {
                 "reqId": <...>,
                 "from": <...>,
+                "endorser": <...>,
                 "digest": <...>,
                 "payloadDigest": <...>,
                 "taaAcceptance": {
@@ -267,13 +285,17 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         Metadata as came from the Request.
 
         - `from` (base58-encoded string):
-             Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
-             for 16 or 32 byte DID value.
-             It may differ from `did` field for some of transaction (for example NYM), where `did` is a 
+             Identifier (DID) of the transaction author as base58-encoded string
+             for 16 or 32 bit DID value.
+             It may differ from `endorser` field who submits the transaction on behalf of `identifier`.
+             If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own.
+             It also may differ from `dest` field for some of requests (for example NYM), where `dest` is a 
              target identifier (for example, a newly created DID identifier).
              
-             *Example*: `from` is a DID of a Endorser creating a new DID, and `did` is a newly created DID.
+             *Example*:
              
+             - `identifier` is the author of the transaction without a specific role; `endorser` is a user with Endorser role.
+             - new NYM creation: `identifier` is a DID of an Endorser creating a new DID, and `dest` is a newly created DID.
         - `reqId` (integer): 
             Unique ID number of the request with transaction.
   
@@ -283,6 +305,11 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         - `payloadDigest` (SHA256 hex digest string):
             SHA256 hash hex digest of the payload fields in the initial requests, that is all fields excluding signatures and plugins-added ones
             
+        - `endorser` (base58-encoded string, optional):
+            Identifier (DID) of an Endorser submitting a transaction on behalf of the original author (`identifier`) as base58-encoded string for 16 or 32 bit DID value.
+            If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own. 
+            If `endorser` is present then the transaction must be multi-signed by the both author (`identifier`) and Endorser (`endorser`). 
+                        
         - `taaAcceptance` (dict, optional):
             If transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
             
@@ -357,6 +384,7 @@ These common metadata values are added to result's JSON at the same level as rea
         
         'seqNo': 10,
         'txnTime': 1514214795,
+        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
 
         'state_proof': {
             'root_hash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
@@ -399,8 +427,7 @@ These common metadata values are added to result's JSON at the same level as rea
 
 - `identifier` (base58-encoded string):
  
-     as was in read Request (may differ from the `identifier` in `data` which defines 
-     transaction submitter)
+     read request submitter's DID as was in read Request (may differ from the `identifier` in `data` which defines transaction author)
      
 - `reqId` (integer): 
 
@@ -414,6 +441,11 @@ These common metadata values are added to result's JSON at the same level as rea
 - `txnTime` (integer as POSIX timestamp): 
 
     the time when transaction was written to the Ledger as POSIX timestamp
+    
+- `endorser` (base58-encoded string, optional):
+    Identifier (DID) of an Endorser submitting a transaction on behalf of the original author (`identifier`) as base58-encoded string for 16 or 32 bit DID value.
+   If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own. 
+   If `endorser` is present then the transaction must be multi-signed by the both author (`identifier`) and Endorser (`endorser`).      
     
 - `state_proof` (dict):
 
@@ -452,7 +484,8 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
 - `dest` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 byte DID value.
-    It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
+    It may differ from `identifier` metadata field, where `identifier` is the DID of the submitter.
+    If they are equal (in permissionless case), then transaction must be signed by the newly created `verkey`.
     
     *Example*: `identifier` is a DID of a Endorser creating a new DID, and `dest` is a newly created DID.
      
@@ -663,6 +696,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     },
 
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
     'reqId': 1514280215504647,
     'protocolVersion': 2,
     'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
@@ -691,6 +725,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
             "metadata": {
                 "reqId":1514280215504647,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
                 "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
                 "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
@@ -758,6 +793,7 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
     },
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
     'reqId': 1514280215504647,
     'protocolVersion': 2,
     'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
@@ -788,6 +824,7 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
             "metadata": {
                 "reqId":1514280215504647,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
                 "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
                 "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
@@ -852,6 +889,7 @@ It contains public keys, maximum number of credentials the registry may contain,
     },
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
     'reqId': 1514280215504647,
     'protocolVersion': 2,
     'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
@@ -886,6 +924,7 @@ It contains public keys, maximum number of credentials the registry may contain,
             "metadata": {
                 "reqId":1514280215504647,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
                 "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
                 "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
@@ -941,6 +980,7 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
     },
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
     'reqId': 1514280215504647,
     'protocolVersion': 2,
     'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
@@ -972,6 +1012,7 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
             "metadata": {
                 "reqId":1514280215504647,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
                 "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
                 "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
@@ -1371,6 +1412,14 @@ The `constraint_id` fields is where one can define the desired auth constraint f
             Flag to check if the user must be the owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
             The notion of the `owner` is different for every auth rule. Please reference to [auth_rules.md](auth_rules.md) for details.
             
+        - `off_ledger_signature` (boolean, optional, False by default):
+        
+            Whether signatures against keys not present on the ledger are accepted during verification of the required number of valid signatures.
+            An example when it can be set to `True` is creation of a new DID in a permissionless mode, that is when `identifer`==`dest`
+            and a newly created `verkey` is used for signature verification.
+            Another example is signing by cryptonyms  (where identifier is equal to verkey), but this is not supported yet. 
+            If the value of this field is False (default), and the number of required signatures is greater than zero, then the transaction author's DID (`identifier`) must be present on the ledger (corresponding NYM txn must exist).            
+            
         - `metadata` (dict; optional):
         
             Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
@@ -1554,6 +1603,14 @@ A client will receive NACK for
         
             Flag to check if the user must be the owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
             The notion of the `owner` is different for every auth rule. Please reference to [auth_rules.md](auth_rules.md) for details.
+            
+        - `off_ledger_signature` (boolean, optional, False by default):
+        
+            Whether signatures against keys not present on the ledger are accepted during verification of required number of valid signatures.
+            An example when it can be set to `True` is creation of a new DID in a permissionless mode, that is when `identifer`==`dest`
+            and a newly created `verkey` is used for signature verification.
+            Another example is signing by cryptonyms  (where identifier is equal to verkey), but this is not supported yet. 
+            If the value of this field is False (default), and the number of required signatures is greater than zero, then the transaction author's DID (`identifier`) must be present on the ledger (corresponding NYM txn must exist).
             
         - `metadata` (dict; optional):
         
@@ -1871,6 +1928,7 @@ Gets information about a DID (NYM).
         
         'seqNo': 10,
         'txnTime': 1514214795,
+        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
 
         'state_proof': {
             'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
@@ -1946,6 +2004,7 @@ i.e. reply data contains requested value only.
         
         'seqNo': 10,
         'txnTime': 1514214795,
+        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
 
         'state_proof': {
             'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
@@ -2018,6 +2077,7 @@ Gets Claim's Schema.
         
         'seqNo': 10,
         'txnTime': 1514214795,
+        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
 
         'state_proof': {
             'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
@@ -2095,6 +2155,7 @@ Gets Claim Definition.
         
         'seqNo': 10,
         'txnTime': 1514214795,
+        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
 
         'state_proof': {
             'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
@@ -2158,6 +2219,7 @@ Gets a Revocation Registry Definition, that Issuer creates and publishes for a p
         
         'seqNo': 10,
         'txnTime': 1514214795,
+        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
         
         'data': {
             'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
@@ -2234,6 +2296,7 @@ Gets a Revocation Registry Accumulator.
         
         'seqNo': 10,
         'txnTime': 1514214795,
+        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
         
         'data': {
             'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
@@ -2319,6 +2382,7 @@ If `from` is not set, then there is just one state proof (as usual) for both `ac
         
         'seqNo': 18,
         'txnTime': 1514214795,
+        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
         
         'data': {
             'revocDefType': 'CL_ACCUM',
