@@ -5,7 +5,7 @@ from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, ISSUANCE_BY
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handler import RevocRegEntryHandler
 from indy_node.test.request_handlers.helper import add_to_idr
-from plenum.common.constants import TXN_TIME, STEWARD, TRUSTEE
+from plenum.common.constants import TXN_TIME, TRUSTEE
 
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
@@ -13,8 +13,6 @@ from plenum.common.txn_util import reqToTxn, append_txn_metadata, get_payload_da
 from plenum.common.types import f
 from plenum.common.util import randomString
 from plenum.server.request_handlers.utils import encode_state_value
-from plenum.test.input_validation.conftest import operation
-from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
 
 
 @pytest.fixture(scope="module")

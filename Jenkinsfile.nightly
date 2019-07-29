@@ -1,0 +1,85 @@
+#!groovy
+
+@Library('SovrinHelpers@v2.2.1') _
+
+String pkgName = 'indy-node'
+String mainModuleName = 'indy_node'
+String emailRecipients = params.INDY_NODE_RECIPIENTS ?: env.INDY_NODE_RECIPIENTS ?: ''
+Boolean gatherLogs = (params.GATHER_LOGS ?: env.GATHER_LOGS) != 'false'
+
+def localLib
+def err
+String buildPkgVersion
+String buildSrcVersion
+
+String scmRepoUrl
+String scmSha1
+
+try {
+    nodeWrapper('ubuntu') {
+        stage('Resolve version to build') {
+            docker.image('hyperledger/indy-core-baseci:0.0.3-master').inside('-u 0') {
+                sh "apt-get update && apt-get install -y $pkgName"
+                releaseVersion = getReleaseVersion(mainModuleName, false)
+                buildPkgVersion = "${releaseVersion.release}~${releaseVersion.pre}${releaseVersion.revision}"
+                buildSrcVersion = sh(returnStdout: true, script: """
+                    python3 -c "from $mainModuleName import load_manifest; print(load_manifest()['sha1'])"
+                """).trim()
+            }
+            echo "Version to build: buildSrcVersion=$buildSrcVersion, buildPkgVersion=$buildPkgVersion"
+        }
+
+        stage('Load local shared library') {
+            checkout scm
+            localLib = load 'ci/pipeline.groovy'
+
+            scmRepoUrl = gitHelper.repoUrl()
+            scmSha1 = gitHelper.sha1()
+        }
+    }
+
+    localLib.systemTests {
+        repoChannel = 'master'
+        pkgVersion = buildPkgVersion
+        srcVersion = buildSrcVersion
+        testSchema = [
+            ['test_ledger.py'],
+            ['test_vc.py'],
+            ['test_consensus.py', 'TestTAASuite.py'],
+            ['test_upgrade.py', 'test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py'],
+            ['TestAuditSuite.py'],
+            // set of authmap tests
+            // TODO might be groupped in parts once https://github.com/docker/docker-py/issues/2278 is resolved
+            ['TestAuthMapAttribSuite.py'],
+            ['TestAuthMapCredDefSuite.py'],
+            ['TestAuthMapMiscSuite.py'],
+            ['TestAuthMapNymSuite.py'],
+            ['TestAuthMapPluginsSuite.py'],
+            ['TestAuthMapRevocRegDefSuite.py'],
+            ['TestAuthMapRevocRegEntrySuite.py'],
+            ['TestAuthMapSchemaSuite.py'],
+            ['TestAuthMapUpgradeSuite.py']
+        ]
+        testVersion = 'v0.8.8'
+        testVersionByTag = true
+        delegate.gatherLogs = gatherLogs
+    }
+} catch(Exception _err) {
+    currentBuild.result = "FAILED"
+    err = _err
+    throw _err
+} finally {
+    stage('Build result notification') {
+        sendNotification.email {
+            to = emailRecipients
+            subject = "[${pkgName}][nightly] Build #${this.env.BUILD_NUMBER} ${err ? 'failed' : 'succeed'} for version ${buildPkgVersion} (${buildSrcVersion})"
+            srcUrl = "${scmRepoUrl}/tree/${scmSha1}"
+        }
+    }
+
+    if (err) {
+        stage('Error dump') {
+            echo "Pipeline failed: $err"
+        }
+    }
+}

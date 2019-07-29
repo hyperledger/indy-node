@@ -13,15 +13,11 @@ from plenum.server.request_handlers.static_taa_helper import StaticTAAHelper
 from plenum.server.request_handlers.utils import get_nym_details, get_role, is_steward, nym_to_state_key, \
     encode_state_value
 from plenum.test.testing_utils import FakeSomething
-from state.pruning_state import PruningState
-from state.state import State
-from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
-from storage.kv_in_memory import KeyValueStorageInMemory
 
 
 @pytest.fixture(scope="module")
 def txn_author_agreement_handler(db_manager, write_auth_req_validator):
-    handler = TxnAuthorAgreementHandler(db_manager, FakeSomething(), write_auth_req_validator)
+    handler = TxnAuthorAgreementHandler(db_manager, write_auth_req_validator)
     return handler
 
 

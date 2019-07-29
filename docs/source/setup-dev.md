@@ -120,7 +120,7 @@ There is a deb package of libindy-crypto that can be used on Ubuntu:
 ```
 sudo apt-get update
 sudo apt-get install apt-transport-https ca-certificates
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88
 sudo add-apt-repository "deb https://repo.sovrin.org/deb xenial master"
 sudo apt-get update
 sudo apt-get install libindy-crypto
@@ -139,7 +139,7 @@ can be used on Ubuntu 16.04 (repository configuration steps may be skipped if In
 # Start of repository configuration steps
 sudo apt-get update
 sudo apt-get install apt-transport-https ca-certificates
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88
 sudo add-apt-repository "deb https://repo.sovrin.org/deb xenial master"
 # End of repository configuration steps
 sudo apt-get update

@@ -38,9 +38,14 @@ class ValidatorInfoHandler(ActionRequestHandler):
                      .format(req_id, request.txn_type))
         result = generate_action_result(request)
         result[DATA] = self.info_tool.info
-        result[DATA].update(self.info_tool.memory_profiler)
+        # Memory profiler needs only for debug purposes,
+        # because collecting memory info it's a very long time operation
+        # result[DATA].update(self.info_tool.memory_profiler)
+        """For keeping output format"""
+        result[DATA].update({'Memory_profiler': []})
         result[DATA].update(self.info_tool._generate_software_info())
         result[DATA].update(self.info_tool.extractions)
+        # ToDo: also can be a long time operation, because we use external tools
         result[DATA].update(self.info_tool.node_disk_size)
         logger.debug("Transaction {} with type {} finished"
                      .format(req_id, request.txn_type))

@@ -127,36 +127,84 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
 
 ## Release workflow
 
-1. Release candidate preparation
-    1. [**Maintainer**] Creates a new release branch `release-X.Y.Z` based on `stable`.
-    2. [**Contributor**]
-        - Creates a new release candidate branch (e.g. `rc-X.Y.Z.rc1`) based on that release branch.
-        - Merges `master` branch.
-        - Sets stable version of `indy-plenum` in `setup.py` (for `indy-node` only).
-        - Sets new version `X.Y.Z.rc1` (`./bump_version.sh X.Y.Z.rc1`).
-        - Commits and pushes changes.
-        - Creates a release candidate PR to `release-X.Y.Z`.
-    3. [**Maintainer**] Waits for CI, reviews the release candidate PR and either merges the PR or asks for changes.
-2. Release candidate acceptance
-    1. [**Maintainer**] Once the release candidate PR is merged the maintainer **starts release candidate pipeline manually**.
-    2. [**build server**] Once the CD pipeline is started (manually triggered) for branch `release-X.Y.Z` it does the following:
-        - creates and pushes release commit to `release-X.Y.Z`;
-        - publishes release candidates packages to PyPI and debian `rc` components;
-        - performs system testing (`indy-node` only);
-        - creates a release PR to merge `release-X.Y.Z` to `stable`;
-        - waits for an approval to proceed.
-    3. [**Maintainer/QA**] Waits for CI, reviews the release PR and either approves or rejects:
-        - may run additional tests against the release candidate before approval;
-        - in case of approval lets build server to proceed but **does not merge the release PR manually**;
-        - otherwise stops the pipeline and previous steps are repeated for new release candidate `X.Y.Z.rc1` and possible future ones.
-    4. [**build server**]
-        - once it is approved to proceed performs fast-forward merging to stable and creates tag `vX.Y.Z`;
-        - otherwise rollbacks release commit pushed to release branch `release-X.Y.Z`.
-3. Publishing
-    1. [**build server**] Once the release PR is merged stable pipeline is triggered and it:
-        - publishes to PyPI;
-        - re-packs `rc` debian package and publishes to debian `stable` components.
+### Feature Release
 
-Hotfix releases are quite similar except the following difference:
-  - hotifx branches `hotfix-X.Y.Z` are created from git tag `vX.Y.(Z-1)`;
-  - `master` is not merged since hotfixes (as a rule) should include only fixes for stable code.
+#### 1. Release Candidate Preparation
+
+1. [**Maintainer**]
+    - Create `release-X.Y.Z` branch from `stable` (during the first RC preparation only).
+2. [**Contributor**]
+    - Create `rc-X.Y.Z.rcN` branch from `release-X.Y.Z` (`N` starts from `1` and is incremented for each new RC).
+    - Apply necessary changes from `master` (either `merge` or `cherry-pick`).
+    - (_optional_) [`indy-node`] Set `indy-plenum` version in `setup.py`.
+    - Set the package version `./bump_version.sh X.Y.Z.rcN`.
+    - Commit, push and create a PR to `release-X.Y.Z`.
+3. Until PR is merged:
+    1. [**build server**]
+        - Run CI for the PR and notifies GitHub.
+    2. [**Maintainer**]
+        - Review the PR.
+        - Either ask for changes or merge.
+    3. [**Contributor**]
+        - (_optional_) Update the PR if either CI failed or reviewer asked for changes.
+        - (_optional_) [**indy-node**] Bump `indy-plenum` version in `setup.py` if changes require new `indy-plenum` release.
+
+#### 2. Release Candidate Acceptance
+
+**Note** If any of the following steps fails new release candidate should be prepared.
+
+1. [**Maintainer**]
+    - **Start release candidate pipeline manually**.
+2. [**build server**]
+    - Checkout the repository.
+    - Publish to PyPI as `X.Y.Z.rcN`.
+    - Bump version locally to `X.Y.Z`, commit and push as the `release commit` to remote.
+    - Build debian packages:
+        - for the project: source code version would be `X.Y.Z`, debian package version `X.Y.Z~rcN`;
+        - for the 3rd party dependencies missed in the official debian repositories.
+    - Publish the packages to `rc-latest` debian channel.
+    - [`indy-node`] Copy the package along with its dependencies (including `indy-plenum`)
+      from `rc-latest` to `rc` channel.
+    - [`indy-node`] Run system tests for the `rc` channel.
+    - Create **release PR** from `release-X.Y.Z` (that points to `release commit`) branch to `stable`.
+    - Notify maintainers.
+    - Wait for an approval to proceed. **It shouldn't be provided until `release PR` passes all necessary checks** (e.g. DCO, CI testing, maintainers reviews etc.).
+3. [**build server**]
+    - Run CI for the PR and notify GitHub.
+4. [**QA**]
+    - (_optional_) Perform additional testing.
+5. [**Maintainer**]
+    - Review the PR but **do not merge it**.
+    - If approved: let build server to proceed.
+    - Otherwise: stop the pipeline.
+6. [**build server**]
+    - If approved:
+        - perform fast-forward merge;
+        - create and push tag `vX.Y.Z`;
+        - Notify maintainers.
+    - Otherwise rollback `release commit` by moving `release-X.Y.Z` to its parent.
+
+#### 3. Publishing
+
+1. [**build server**] triggered once the `release PR` is merged
+    - Publish to PyPI as `X.Y.Z`.
+    - Download and re-pack debian package `X.Y.Z~rcN` (from `rc-latest` channel) to `X.Y.Z` changing only the package name.
+    - Publish the package to `rc-latest` debian channel.
+    - Copy the package along with its dependencies from `rc-latest` to `stable-latest` channel.
+    - [`indy-node`] Copy the package along with its dependencies (including `indy-plenum`) from `stable-latest` to `stable` channel.
+    - [`indy-node`] Run system tests for the `stable` channel.
+    - Notify maintainers.
+
+#### 4. New Development Cycle Start
+
+1. [**Contributor**]:
+    - Create PR to `master` with version bump to `X'.Y'.Z'.dev0`, where `X'.Y'.Z'` is next target release version. Usually it increments one of `X`, `Y` or `Z` and resets lower parts (check [SemVer](https://semver.org/) for more details), e.g.:
+        - `X.Y.Z+1` - bugfix release
+        - `X.Y+1.0` - feature release, backwards compatible API additions/changes
+        - `X+1.0.0` - major release, backwards incompatible API changes
+
+### Hotfix Release
+
+Hotfix release is quite similar except the following difference:
+  - hotfix branches named `hotfix-X.Y.Z`;
+  - `master` usually is not merged since hotfixes (as a rule) should include only fixes for stable code.

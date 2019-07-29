@@ -1,6 +1,5 @@
 import pytest
 from indy_common.authorize.auth_actions import EDIT_PREFIX, ADD_PREFIX
-from indy_common.authorize.auth_map import auth_map
 
 from indy_common.constants import OLD_VALUE, AUTH_TYPE, ROLE, ENDORSER, AUTH_ACTION, \
     AUTH_RULES, RULES
@@ -8,17 +7,14 @@ from indy_node.server.request_handlers.config_req_handlers.auth_rule.abstract_au
     AbstractAuthRuleHandler
 
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rules_handler import AuthRulesHandler
-from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rules_handler import AuthRulesHandler
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.static_auth_rule_helper import StaticAuthRuleHelper
-from indy_node.test.auth_rule.helper import generate_auth_rule_operation, generate_auth_rule
-from indy_node.test.request_handlers.helper import add_to_idr, get_exception
+from indy_node.test.auth_rule.helper import generate_auth_rule
+from indy_node.test.request_handlers.helper import add_to_idr
 from plenum.common.constants import TRUSTEE, TXN_TYPE, STEWARD
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import reqToTxn, get_payload_data
 from plenum.common.util import randomString
-from plenum.test.testing_utils import FakeSomething
-from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
 
 
 @pytest.fixture(scope="module")

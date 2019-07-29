@@ -5,9 +5,8 @@ from typing import Iterable, List
 from common.exceptions import LogicError
 from indy_common.authorize.auth_constraints import AbstractConstraintSerializer
 from indy_node.server.node_bootstrap import NodeBootstrap
-from indy_node.server.pool_req_handler import PoolRequestHandler
 
-from indy_node.server.action_req_handler import ActionReqHandler
+# from indy_node.server.action_req_handler import ActionReqHandler
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 
 from plenum.common.constants import VERSION, \
@@ -25,8 +24,6 @@ from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
 from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
 from indy_node.server.client_authn import LedgerBasedAuthNr
-from indy_node.server.config_req_handler import ConfigReqHandler
-from indy_node.server.domain_req_handler import DomainReqHandler
 from indy_node.server.node_authn import NodeAuthNr
 from stp_core.common.log import getlogger
 
@@ -112,46 +109,8 @@ class Node(PlenumNode):
         when = now + timedelta(seconds=timeout)
         self.restarter.requestRestart(when)
 
-    def init_pool_req_handler(self):
-        return PoolRequestHandler(self.poolLedger,
-                                  self.states[POOL_LEDGER_ID],
-                                  self.states,
-                                  self.idrCache,
-                                  self.write_req_validator)
-
-    def init_domain_req_handler(self):
-        return DomainReqHandler(self.domainLedger,
-                                self.states[DOMAIN_LEDGER_ID],
-                                self.config,
-                                self.reqProcessors,
-                                self.idrCache,
-                                self.attributeStore,
-                                self.bls_bft.bls_store,
-                                self.write_req_validator,
-                                self.db_manager.get_store(TS_LABEL))
-
-    def init_config_req_handler(self):
-        return ConfigReqHandler(self.configLedger,
-                                self.states[CONFIG_LEDGER_ID],
-                                self.states[DOMAIN_LEDGER_ID],
-                                self.idrCache,
-                                self.upgrader,
-                                self.poolManager,
-                                self.poolCfg,
-                                self.write_req_validator,
-                                self.bls_bft.bls_store,
-                                self.db_manager.get_store(TS_LABEL))
-
     def getIdrCache(self):
         return self.idrCache
-
-    def init_action_req_handler(self):
-        return ActionReqHandler(self.idrCache,
-                                self.restarter,
-                                self.poolManager,
-                                self.poolCfg,
-                                self._info_tool,
-                                self.write_req_validator)
 
     def post_txn_from_catchup_added_to_domain_ledger(self, txn):
         pass
