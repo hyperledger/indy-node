@@ -31,3 +31,14 @@ def test_validate_context_pass_context_single_name_value():
 	}
 	
 	ContextHandler._validate_context(input_dict)
+
+def test_validate_context_pass_context_W3C_example_15():
+	input_dict = {
+	  "@context": {
+    	"referenceNumber": "https://example.com/vocab#referenceNumber",
+    	"favoriteFood": "https://example.com/vocab#favoriteFood"
+  		}
+	}
+	
+	ContextHandler._validate_context(input_dict)
+
