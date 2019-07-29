@@ -1,17 +1,13 @@
 import pytest
 
-from common.serializers.serialization import domain_state_serializer
-from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, \
+from indy_common.constants import CRED_DEF_ID, REVOC_TYPE, \
     TAG
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
 from indy_node.test.request_handlers.helper import add_to_idr
 from plenum.common.constants import TRUSTEE
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
-from plenum.common.request import Request
 from plenum.common.txn_util import reqToTxn, append_txn_metadata, get_payload_data
-from plenum.common.util import randomString
 from plenum.server.request_handlers.utils import encode_state_value
-from indy_common.test.auth.conftest import write_auth_req_validator, constraint_serializer, config_state
 
 
 def test_revoc_reg_def_dynamic_validation_fails_wrong_id(revoc_reg_def_handler,

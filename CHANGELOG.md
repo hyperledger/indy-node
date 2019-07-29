@@ -1,5 +1,7 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.9.0](#190)
+
 * [1.8.1](#181)
 
 * [1.8.0](#180)
@@ -41,6 +43,55 @@
 #### Disclosure
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
+
+## 1.9.0
+### Release date: July 04th, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.9.0 |
+| indy-node | 1.9.0 |
+| sovrin | 1.1.50 |
+
+### Additional Information:
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+**Some nodes can fail to send a REJECT or REPLY to client under specific network conditions. See Know Issues for more details.**
+
+### Major Changes
+- Pluggable Request Handlers have been implemented 
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Propagates with invalid requests can lead to node crashes | | [INDY-2144](https://jira.hyperledger.org/browse/INDY-2144)  |
+| There is no validation of the ISSUANCE_TYPE field for the transaction REVOC_REG_DEF | | [INDY-2142](https://jira.hyperledger.org/browse/INDY-2142) |
+| Reduce CONS_PROOF timeout to speed up catchup under the load | | [INDY-2083](https://jira.hyperledger.org/browse/INDY-2083) |
+
+#### Changes and Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| As a Trustee(s), I need to have a way to set multiple AUTH_RULES by one command | | [INDY-2087](https://jira.hyperledger.org/browse/INDY-2087) |
+| Make more system tests to be ready for Indy Node CD pipeline | | [INDY-2127](https://jira.hyperledger.org/browse/INDY-2127) |
+| Integrate new handlers into the codebase | | [INDY-1861](https://jira.hyperledger.org/browse/INDY-1861) |
+| Define Interfaces needed for View Change Service | | [INDY-1338](https://jira.hyperledger.org/browse/INDY-1338) |
+| Rename TRUST_ANCHOR to ENDORSER | | [INDY-1950](https://jira.hyperledger.org/browse/INDY-1950) |
+| Update PBFT view change plan of attack | | [INDY-2134](https://jira.hyperledger.org/browse/INDY-2134) |
+| Apply a new Docker-in-docker approach for system tests | | [INDY-2131](https://jira.hyperledger.org/browse/INDY-2131) |
+| More tests for pluggable request handlers | | [INDY-2108](https://jira.hyperledger.org/browse/INDY-2108) |
+| Remove ANYONE_CAN_WRITE | | [INDY-1956](https://jira.hyperledger.org/browse/INDY-1956) |
+| [Design] ViewChange protocol must be as defined in PBFT | | [INDY-1290](https://jira.hyperledger.org/browse/INDY-1290) |
+| Batch containing some already executed requests should be applied correctly | | [INDY-1405](https://jira.hyperledger.org/browse/INDY-1405) |
+| Update Pluggable Req Handlers | | [INDY-2097](https://jira.hyperledger.org/browse/INDY-2097) |
+| As a Network Admin, I need to be able to forbid an action in AUTH_RULE, so that no changes in code are needed | | [INDY-2077](https://jira.hyperledger.org/browse/INDY-2077) |
+| Create Builders for handlers | | [INDY-1860](https://jira.hyperledger.org/browse/INDY-1860) |
+
+#### Known Issues
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Incorrect request validation || [INDY-2164](https://jira.hyperledger.org/browse/INDY-2164) |
 
 ## 1.8.1
 ### Release date: June 06th, 2019

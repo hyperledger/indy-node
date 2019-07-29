@@ -83,7 +83,20 @@ class NymHandler(PNymHandler):
         return existing_data
 
     def _validate_new_nym(self, request, operation):
+        identifier, req_id, _ = get_request_data(request)
         role = operation.get(ROLE)
+
+        nym_data = self.database_manager.idr_cache.getNym(request.identifier, isCommitted=False)
+        if not nym_data:
+            # Non-ledger nym case. These two checks duplicated and mainly executed in client_authn,
+            # but it has point to repeat them here, for clear understanding of validation non-ledger request cases.
+            if request.identifier != request.operation.get(TARGET_NYM):
+                raise InvalidClientRequest(identifier, req_id, "DID which is not stored on ledger can "
+                                                               "send nym txn only if appropriate auth_rules set "
+                                                               "and sender did equal to destination nym")
+            if not request.operation.get(VERKEY):
+                raise InvalidClientRequest(identifier, req_id, "Non-ledger nym txn must contain verkey for new did")
+
         self.write_req_validator.validate(request,
                                           [AuthActionAdd(txn_type=NYM,
                                                          field=ROLE,
