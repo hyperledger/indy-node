@@ -46,7 +46,7 @@ from plenum.test.conftest import tdir as plenum_tdir, nodeReg, \
 from plenum.test.conftest import sdk_pool_handle as plenum_pool_handle, sdk_pool_data, sdk_wallet_steward, \
     sdk_wallet_handle, sdk_wallet_data, sdk_steward_seed, sdk_wallet_client, sdk_wallet_trustee, \
     sdk_trustee_seed, trustee_data, sdk_client_seed, poolTxnClientData, poolTxnClientNames, \
-    sdk_wallet_stewards, create_node_and_not_start, sdk_wallet_handle
+    sdk_wallet_stewards, create_node_and_not_start, sdk_wallet_handle, sdk_wallet_new_client, sdk_new_client_seed
 
 from indy_common import strict_types
 from indy_common.constants import APP_NAME, CONFIG_LEDGER_ID, CONFIG_LEDGER_AUTH_POLICY, NETWORK_MONITOR, ENDORSER
