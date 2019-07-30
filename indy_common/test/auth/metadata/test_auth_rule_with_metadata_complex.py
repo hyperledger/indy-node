@@ -240,11 +240,12 @@ def test_plugin_complex(write_auth_req_validator, write_request_validation,
 
 
 def test_plugin_complex_with_and_rule_with_not_allowed(write_auth_req_validator, write_request_validation,
-                                                       signatures, is_owner, amount):
+                                                       signatures, is_owner, off_ledger_signature, amount):
     validate(
         auth_constraint=AuthConstraintAnd(auth_constraints=[
             AuthConstraintForbidden(),
             AuthConstraint(role="*", sig_count=1, need_to_be_owner=False,
+                           off_ledger_signature=off_ledger_signature,
                            metadata={PLUGIN_FIELD: 2})
         ]),
         valid_actions=[],
@@ -255,11 +256,12 @@ def test_plugin_complex_with_and_rule_with_not_allowed(write_auth_req_validator,
 
 
 def test_plugin_complex_with_or_rule_with_not_allowed(write_auth_req_validator, write_request_validation,
-                                                      signatures, is_owner, amount):
+                                                      signatures, is_owner, off_ledger_signature, amount):
     validate(
         auth_constraint=AuthConstraintOr(auth_constraints=[
             AuthConstraintForbidden(),
             AuthConstraint(role="*", sig_count=1, need_to_be_owner=False,
+                           off_ledger_signature=off_ledger_signature,
                            metadata={PLUGIN_FIELD: 2})
         ]),
         valid_actions=[

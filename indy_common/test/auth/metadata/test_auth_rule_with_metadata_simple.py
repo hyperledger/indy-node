@@ -24,9 +24,10 @@ def test_plugin_simple_rule_1_sig(write_auth_req_validator, write_request_valida
 
 
 def test_plugin_simple_rule_1_sig_all_roles(write_auth_req_validator, write_request_validation,
-                                            signatures, is_owner, amount):
+                                            signatures, is_owner, off_ledger_signature, amount):
     validate(
         auth_constraint=AuthConstraint(role='*', sig_count=1, need_to_be_owner=True,
+                                       off_ledger_signature=off_ledger_signature,
                                        metadata={PLUGIN_FIELD: 2}),
         valid_actions=[
             (signature, True, 2) for signature in signatures if signature
@@ -53,9 +54,10 @@ def test_plugin_simple_rule_3_sig(write_auth_req_validator, write_request_valida
 
 
 def test_plugin_simple_rule_0_sig(write_auth_req_validator, write_request_validation,
-                                  signatures, is_owner, amount):
+                                  signatures, is_owner, off_ledger_signature, amount):
     validate(
         auth_constraint=AuthConstraint(role='*', sig_count=0, need_to_be_owner=False,
+                                       off_ledger_signature=off_ledger_signature,
                                        metadata={PLUGIN_FIELD: 2}),
         valid_actions=[(signature, True, 2) for signature in signatures] +
                       [(signature, False, 2) for signature in signatures],

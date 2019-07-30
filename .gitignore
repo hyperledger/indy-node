@@ -39,6 +39,7 @@ cli_output.log
 .cache
 nosetests.xml
 coverage.xml
+tails/
 
 # Translations
 *.mo

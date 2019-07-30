@@ -3,7 +3,7 @@ import pytest
 from indy_common.authorize.auth_actions import AbstractAuthAction, AuthActionAdd
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.authorize.authorizer import AbstractAuthorizer
-from indy_common.test.auth.conftest import IDENTIFIERS
+from indy_common.test.constants import IDENTIFIERS
 from indy_common.types import Request
 from plenum.common.constants import TYPE
 from plenum.test.helper import randomOperation
