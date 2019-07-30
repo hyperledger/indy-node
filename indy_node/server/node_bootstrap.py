@@ -148,10 +148,8 @@ class NodeBootstrap(PNodeBootstrap):
                                                   write_req_validator=self.node.write_req_validator,
                                                   pool_manager=self.node.poolManager)
         taa_aml_handler = TxnAuthorAgreementAmlHandler(database_manager=self.node.db_manager,
-                                                       bls_crypto_verifier=self.node.bls_bft.bls_crypto_verifier,
                                                        write_req_validator=self.node.write_req_validator)
         taa_handler = TxnAuthorAgreementHandler(database_manager=self.node.db_manager,
-                                                bls_crypto_verifier=self.node.bls_bft.bls_crypto_verifier,
                                                 write_req_validator=self.node.write_req_validator)
 
         get_taa_aml_handler = GetTxnAuthorAgreementAmlHandler(database_manager=self.node.db_manager)

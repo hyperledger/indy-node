@@ -1,4 +1,5 @@
 import base64
+import copy
 import random
 
 import time
@@ -14,54 +15,23 @@ from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from plenum.bls.bls_store import BlsStore
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, \
     IDENTIFIER, NAME, VERSION, ROLE, VERKEY, KeyValueStorageType, \
-    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME, CURRENT_PROTOCOL_VERSION, DOMAIN_LEDGER_ID
-from plenum.common.txn_util import reqToTxn, append_txn_metadata, append_payload_metadata
+    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME, CURRENT_PROTOCOL_VERSION, DOMAIN_LEDGER_ID, NYM
+from plenum.common.txn_util import reqToTxn, append_txn_metadata, append_payload_metadata, set_type
 from plenum.common.types import f
 from indy_common.constants import \
     ATTRIB, CLAIM_DEF, SCHEMA, CLAIM_DEF_FROM, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_SIGNATURE_TYPE, \
     CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES, LOCAL_AUTH_POLICY, \
-    CONFIG_LEDGER_AUTH_POLICY
+    CONFIG_LEDGER_AUTH_POLICY, GET_NYM, GET_ATTR, GET_CLAIM_DEF, GET_SCHEMA
 from indy_common.types import Request
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
-from indy_node.server.domain_req_handler import DomainReqHandler
 from plenum.common.util import get_utc_epoch, friendlyToRaw, rawToFriendly, \
     friendlyToHex, hexToFriendly
+from plenum.server.request_handlers.utils import nym_to_state_key
 from plenum.test.testing_utils import FakeSomething
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
 from indy_common.state import domain
-
-
-@pytest.fixture()
-def bls_store():
-    return BlsStore(key_value_type=KeyValueStorageType.Memory,
-                    data_location=None,
-                    key_value_storage_name="BlsInMemoryStore",
-                    serializer=serialization.multi_sig_store_serializer)
-
-
-@pytest.fixture()
-def request_handler(bls_store):
-    state = PruningState(KeyValueStorageInMemory())
-    config_state = PruningState(KeyValueStorageInMemory())
-    state_serializer = ConstraintsSerializer(domain_state_serializer)
-    cache = IdrCache('Cache', KeyValueStorageInMemory())
-    attr_store = AttributeStore(KeyValueStorageInMemory())
-    write_req_validator = WriteRequestValidator(config=FakeSomething(authPolicy=CONFIG_LEDGER_AUTH_POLICY),
-                                                auth_map=auth_map,
-                                                cache=cache,
-                                                config_state=config_state,
-                                                state_serializer=state_serializer)
-    return DomainReqHandler(ledger=None,
-                            state=state,
-                            config=None,
-                            requestProcessor=None,
-                            idrCache=cache,
-                            attributeStore=attr_store,
-                            bls_store=bls_store,
-                            write_req_validator=write_req_validator,
-                            ts_store=None)
 
 
 def extract_proof(result, expected_multi_sig):
@@ -75,25 +45,25 @@ def extract_proof(result, expected_multi_sig):
     return proof
 
 
-def save_multi_sig(request_handler):
+def save_multi_sig(db_manager):
     multi_sig_value = MultiSignatureValue(ledger_id=DOMAIN_LEDGER_ID,
                                           state_root_hash=state_roots_serializer.serialize(
-                                              bytes(request_handler.state.committedHeadHash)),
+                                              bytes(db_manager.get_state(DOMAIN_LEDGER_ID).committedHeadHash)),
                                           txn_root_hash='2' * 32,
                                           pool_state_root_hash='1' * 32,
                                           timestamp=get_utc_epoch())
     multi_sig = MultiSignature('0' * 32, ['Alpha', 'Beta', 'Gamma'], multi_sig_value)
-    request_handler.bls_store.put(multi_sig)
+    db_manager.bls_store.put(multi_sig)
     return multi_sig.as_dict()
 
 
-def is_proof_verified(request_handler,
+def is_proof_verified(db_manager,
                       proof, path,
-                      value, seq_no, txn_time, ):
+                      value, seq_no, txn_time):
     encoded_value = domain.encode_state_value(value, seq_no, txn_time)
     proof_nodes = base64.b64decode(proof[PROOF_NODES])
     root_hash = base58.b58decode(proof[ROOT_HASH])
-    verified = request_handler.state.verify_state_proof(
+    verified = db_manager.get_state(DOMAIN_LEDGER_ID).verify_state_proof(
         root_hash,
         path,
         encoded_value,
@@ -103,7 +73,9 @@ def is_proof_verified(request_handler,
     return verified
 
 
-def test_state_proofs_for_get_attr(request_handler):
+def test_state_proofs_for_get_attr(write_manager,
+                                   read_manager,
+                                   db_manager):
     # Adding attribute
     nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
     attr_key = 'last_name'
@@ -120,20 +92,21 @@ def test_state_proofs_for_get_attr(request_handler):
                                                protocolVersion=CURRENT_PROTOCOL_VERSION,
                                                identifier=identifier)),
                               seq_no=seq_no, txn_time=txn_time)
-    request_handler._addAttr(txn)
-    request_handler.state.commit()
-    multi_sig = save_multi_sig(request_handler)
+    write_manager.update_state(txn)
+    db_manager.get_state(DOMAIN_LEDGER_ID).commit()
+    multi_sig = save_multi_sig(db_manager)
 
     # Getting attribute
     get_request = Request(
         operation={
             TARGET_NYM: nym,
-            RAW: 'last_name'
+            RAW: 'last_name',
+            TXN_TYPE: GET_ATTR,
         },
         signatures={},
         protocolVersion=CURRENT_PROTOCOL_VERSION
     )
-    result = request_handler.handleGetAttrsReq(get_request)
+    result = read_manager.get_result(get_request)
 
     proof = extract_proof(result, multi_sig)
     attr_value = result[DATA]
@@ -141,12 +114,14 @@ def test_state_proofs_for_get_attr(request_handler):
 
     # Verifying signed state proof
     path = domain.make_state_path_for_attr(nym, attr_key)
-    assert is_proof_verified(request_handler,
+    assert is_proof_verified(db_manager,
                              proof, path,
                              domain.hash_of(attr_value), seq_no, txn_time)
 
 
-def test_state_proofs_for_get_claim_def(request_handler):
+def test_state_proofs_for_get_claim_def(write_manager,
+                                        read_manager,
+                                        db_manager):
     # Adding claim def
     nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
 
@@ -172,9 +147,9 @@ def test_state_proofs_for_get_claim_def(request_handler):
                               seq_no=seq_no, txn_time=txn_time)
     txn = append_payload_metadata(txn, frm=nym)
 
-    request_handler._addClaimDef(txn)
-    request_handler.state.commit()
-    multi_sig = save_multi_sig(request_handler)
+    write_manager.update_state(txn)
+    db_manager.get_state(DOMAIN_LEDGER_ID).commit()
+    multi_sig = save_multi_sig(db_manager)
 
     # Getting claim def
     request = Request(
@@ -183,25 +158,28 @@ def test_state_proofs_for_get_claim_def(request_handler):
             CLAIM_DEF_FROM: nym,
             CLAIM_DEF_SCHEMA_REF: schema_seqno,
             CLAIM_DEF_SIGNATURE_TYPE: signature_type,
-            CLAIM_DEF_TAG: tag
+            CLAIM_DEF_TAG: tag,
+            TXN_TYPE: GET_CLAIM_DEF,
         },
         signatures={},
         protocolVersion=CURRENT_PROTOCOL_VERSION
     )
 
-    result = request_handler.handleGetClaimDefReq(request)
+    result = read_manager.get_result(request)
     proof = extract_proof(result, multi_sig)
     assert result[DATA] == key_components
 
     # Verifying signed state proof
     path = domain.make_state_path_for_claim_def(nym, schema_seqno,
                                                 signature_type, tag)
-    assert is_proof_verified(request_handler,
+    assert is_proof_verified(db_manager,
                              proof, path,
                              key_components, seq_no, txn_time)
 
 
-def test_state_proofs_for_get_schema(request_handler):
+def test_state_proofs_for_get_schema(write_manager,
+                                     read_manager,
+                                     db_manager):
     # Adding schema
     nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
 
@@ -226,21 +204,22 @@ def test_state_proofs_for_get_schema(request_handler):
                               seq_no=seq_no, txn_time=txn_time)
     txn = append_payload_metadata(txn, frm=nym)
 
-    request_handler._addSchema(txn)
-    request_handler.state.commit()
-    multi_sig = save_multi_sig(request_handler)
+    write_manager.update_state(txn)
+    db_manager.get_state(DOMAIN_LEDGER_ID).commit()
+    multi_sig = save_multi_sig(db_manager)
 
     # Getting schema
     request = Request(
         operation={
             TARGET_NYM: nym,
-            DATA: schema_key
+            DATA: schema_key,
+            TXN_TYPE: GET_SCHEMA
         },
         signatures={},
         protocolVersion=CURRENT_PROTOCOL_VERSION
     )
 
-    result = request_handler.handleGetSchemaReq(request)
+    result = read_manager.get_result(request)
     proof = extract_proof(result, multi_sig)
     assert result[DATA] == data
 
@@ -249,77 +228,90 @@ def test_state_proofs_for_get_schema(request_handler):
 
     # Verifying signed state proof
     path = domain.make_state_path_for_schema(nym, schema_name, schema_version)
-    assert is_proof_verified(request_handler,
+    assert is_proof_verified(db_manager,
                              proof, path,
                              data, seq_no, txn_time)
 
 
-def prep_multi_sig(request_handler, nym, role, verkey, seq_no):
+def prep_multi_sig(write_manager, db_manager, nym, role, verkey, seq_no):
     txn_time = int(time.time())
     identifier = "6ouriXMZkLeHsuXrN1X1fd"
 
     # Adding nym
     data = {
-        f.IDENTIFIER.nm: nym,
+        TARGET_NYM: nym,
         ROLE: role,
         VERKEY: verkey,
-        f.SEQ_NO.nm: seq_no,
-        TXN_TIME: txn_time,
     }
     txn = append_txn_metadata(reqToTxn(Request(operation=data,
                                                protocolVersion=CURRENT_PROTOCOL_VERSION,
                                                identifier=identifier)),
                               seq_no=seq_no, txn_time=txn_time)
+    txn = set_type(txn, NYM)
     txn = append_payload_metadata(txn, frm=nym)
-    request_handler.updateNym(nym, txn)
-    request_handler.state.commit()
-    multi_sig = save_multi_sig(request_handler)
+    write_manager.update_state(txn)
+    db_manager.get_state(DOMAIN_LEDGER_ID).commit()
+    multi_sig = save_multi_sig(db_manager)
     return data, multi_sig
 
 
-def get_nym_verify_proof(request_handler, nym, data, multi_sig):
+def get_nym_verify_proof(read_manager,
+                         db_manager,
+                         nym, data, multi_sig):
     request = Request(
         operation={
-            TARGET_NYM: nym
+            TARGET_NYM: nym,
+            TXN_TYPE: GET_NYM,
         },
         signatures={},
         protocolVersion=CURRENT_PROTOCOL_VERSION
     )
-    result = request_handler.handleGetNymReq(request)
+    result = read_manager.get_result(request)
     proof = extract_proof(result, multi_sig)
+    result_data = None
 
     assert proof
     if data:
         assert result[DATA]
-        result_data = request_handler.stateSerializer.deserialize(result[DATA])
-        result_data.pop(TARGET_NYM, None)
-        assert result_data == data
+        result_data = domain_state_serializer.deserialize(result[DATA])
+        data_from_req = copy.copy(result_data)
+        data_from_req.pop(f.IDENTIFIER.nm, None)
+        data_from_req.pop(f.SEQ_NO.nm, None)
+        data_from_req.pop(TXN_TIME, None)
+        assert data_from_req == data
 
     # Verifying signed state proof
-    path = request_handler.nym_to_state_key(nym)
-    # If the value does not exist, serialisation should be null and
+    path = nym_to_state_key(nym)
+    # If the value does not exist, serialization should be null and
     # verify_state_proof needs to be given null (None). This is done to
     # differentiate between absence of value and presence of empty string value
-    serialised_value = request_handler.stateSerializer.serialize(data) if data else None
+    if result_data:
+        data.pop(TARGET_NYM, None)
+        data.update({f.IDENTIFIER.nm: result_data[f.IDENTIFIER.nm],
+                     f.SEQ_NO.nm: result_data[f.SEQ_NO.nm],
+                     TXN_TIME: result_data[TXN_TIME]})
+    serialized_value = domain_state_serializer.serialize(data) if data else None
     proof_nodes = base64.b64decode(proof[PROOF_NODES])
     root_hash = base58.b58decode(proof[ROOT_HASH])
-    return request_handler.state.verify_state_proof(
+    return db_manager.get_state(DOMAIN_LEDGER_ID).verify_state_proof(
         root_hash,
         path,
-        serialised_value,
+        serialized_value,
         proof_nodes,
         serialized=True
     )
 
 
-def test_state_proofs_for_get_nym(request_handler):
+def test_state_proofs_for_get_nym(write_manager,
+                                  read_manager,
+                                  db_manager):
     nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
     role = "2"
     verkey = "~7TYfekw4GUagBnBVCqPjiC"
     seq_no = 1
     # Check for existing nym
-    data, multi_sig = prep_multi_sig(request_handler, nym, role, verkey, seq_no)
-    assert get_nym_verify_proof(request_handler, nym, data, multi_sig)
+    data, multi_sig = prep_multi_sig(write_manager, db_manager, nym, role, verkey, seq_no)
+    assert get_nym_verify_proof(read_manager, db_manager, nym, data, multi_sig)
 
     # Shuffle the bytes of nym
     h = list(friendlyToHex(nym))
@@ -327,10 +319,12 @@ def test_state_proofs_for_get_nym(request_handler):
     garbled_nym = hexToFriendly(bytes(h))
     data[f.IDENTIFIER.nm] = garbled_nym
     # `garbled_nym` does not exist, proof should verify but data is null
-    assert get_nym_verify_proof(request_handler, garbled_nym, None, multi_sig)
+    assert get_nym_verify_proof(read_manager, db_manager, garbled_nym, None, multi_sig)
 
 
-def test_no_state_proofs_if_protocol_version_less(request_handler):
+def test_no_state_proofs_if_protocol_version_less(write_manager,
+                                                  read_manager,
+                                                  db_manager):
     nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
     role = "2"
     verkey = "~7TYfekw4GUagBnBVCqPjiC"
@@ -340,27 +334,27 @@ def test_no_state_proofs_if_protocol_version_less(request_handler):
     txn_time = int(time.time())
     # Adding nym
     data = {
-        f.IDENTIFIER.nm: nym,
+        TARGET_NYM: nym,
         ROLE: role,
         VERKEY: verkey,
-        f.SEQ_NO.nm: seq_no,
-        TXN_TIME: txn_time,
     }
     txn = append_txn_metadata(reqToTxn(Request(operation=data,
                                                protocolVersion=CURRENT_PROTOCOL_VERSION,
                                                identifier=identifier)),
                               seq_no=seq_no, txn_time=txn_time)
+    txn = set_type(txn, NYM)
     txn = append_payload_metadata(txn, frm=nym)
-    request_handler.updateNym(nym, txn)
-    request_handler.state.commit()
-    multi_sig = save_multi_sig(request_handler)
+    write_manager.update_state(txn)
+    db_manager.get_state(DOMAIN_LEDGER_ID).commit()
+    multi_sig = save_multi_sig(db_manager)
 
     # Getting nym
     request = Request(
         operation={
-            TARGET_NYM: nym
+            TARGET_NYM: nym,
+            TXN_TYPE: GET_NYM,
         },
         signatures={}
     )
-    result = request_handler.handleGetNymReq(request)
+    result = read_manager.get_result(request)
     assert STATE_PROOF not in result

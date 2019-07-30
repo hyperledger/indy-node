@@ -634,13 +634,13 @@
   </tr>      
   
   <tr>
-    <td><sub>VALIDATOR_INFO</sub></td>
+    <td><sub>GET_VALIDATOR_INFO</sub></td>
     <td><sub>ADD</sub></td>
     <td><sub>N/A</sub></td>
   </tr>    
 
   <tr>
-    <td><sub>VALIDATOR_INFO</sub></td>
+    <td><sub>GET_VALIDATOR_INFO</sub></td>
     <td><sub>EDIT</sub></td>
     <td><sub>N/A</sub></td>
   </tr>    
