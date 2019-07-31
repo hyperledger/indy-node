@@ -994,8 +994,7 @@ The `constraint_id` fields is where one can define the desired auth constraint f
         - `off_ledger_signature` (boolean, optional, False by default):
         
             Whether signatures against keys not present on the ledger are accepted during verification of required number of valid signatures.
-            An example when it can be set to `True` is creation of a new DID in a permissionless mode, that is when `identifer`==`dest`
-            and a newly created `verkey` is used for signature verification.
+            An example when it can be set to `True` is creation of a new DID in a permissionless mode, that is when `identifer` is not present on the ledger and a newly created `verkey` is used for signature verification.
             Another example is signing by cryptonyms  (where identifier is equal to verkey), but this is not supported yet. 
             If the value of this field is False (default), and the number of required signatures is greater than zero, then the transaction author's DID (`identifier`) must be present on the ledger (corresponding NYM txn must exist).            
             
@@ -1140,8 +1139,7 @@ Please note, that list elements of `GET_AUTH_RULE` output can be used as an inpu
         - `off_ledger_signature` (boolean, optional, False by default):
         
             Whether signatures against keys not present on the ledger are accepted during verification of required number of valid signatures.
-            An example when it can be set to `True` is creation of a new DID in a permissionless mode, that is when `identifer`==`dest`
-            and a newly created `verkey` is used for signature verification.
+            An example when it can be set to `True` is creation of a new DID in a permissionless mode, that is when `identifer` is not present on the ledger and a newly created `verkey` is used for signature verification.
             Another example is signing by cryptonyms  (where identifier is equal to verkey), but this is not supported yet. 
             If the value of this field is False (default), and the number of required signatures is greater than zero, then the transaction author's DID (`identifier`) must be present on the ledger (corresponding NYM txn must exist).            
             
