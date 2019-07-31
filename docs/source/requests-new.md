@@ -188,7 +188,7 @@ Each Request (both write and read) follows the pattern as shown above.
          
          *Example*:
          
-         - `identifier` is the author of the transaction without a specific role; `endorser` is a user with Endorser role.
+         - `identifier` is a DID of a transaction author who doesn't have write permissions; `endorser` is a DID of a user with Endorser role (that is with write permissions).
          - new NYM creation: `identifier` is a DID of an Endorser creating a new DID, and `dest` is a newly created DID.
  
      - `endorser` (base58-encoded string, optional):

@@ -123,7 +123,7 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
      
      *Example*:
      
-     - `identifier` is the author of the transaction without a specific role; `endorser` is a user with Endorser role.
+     - `identifier` is a DID of a transaction author who doesn't have write permissions; `endorser` is a DID of a user with Endorser role (that is with write permissions).
      - new NYM creation: `identifier` is a DID of an Endorser creating a new DID, and `dest` is a newly created DID.
  
 - `reqId` (integer): 
@@ -160,7 +160,7 @@ Write requests to Domain and added-by-plugins ledgers may have additional Transa
     },
     
     'identifier': <author DID>,
-    `endorser`: <endorser DID>,
+    'endorser': <endorser DID>,
     'reqId': <req_id unique integer>,
     'taaAcceptance': {
         'taaDigest': <digest hex string>,
@@ -294,7 +294,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
              
              *Example*:
              
-             - `identifier` is the author of the transaction without a specific role; `endorser` is a user with Endorser role.
+             - `identifier` is a DID of a transaction author who doesn't have write permissions; `endorser` is a DID of a user with Endorser role (that is with write permissions).
              - new NYM creation: `identifier` is a DID of an Endorser creating a new DID, and `dest` is a newly created DID.
         - `reqId` (integer): 
             Unique ID number of the request with transaction.
@@ -384,7 +384,6 @@ These common metadata values are added to result's JSON at the same level as rea
         
         'seqNo': 10,
         'txnTime': 1514214795,
-        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
 
         'state_proof': {
             'root_hash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
@@ -441,11 +440,6 @@ These common metadata values are added to result's JSON at the same level as rea
 - `txnTime` (integer as POSIX timestamp): 
 
     the time when transaction was written to the Ledger as POSIX timestamp
-    
-- `endorser` (base58-encoded string, optional):
-    Identifier (DID) of an Endorser submitting a transaction on behalf of the original author (`identifier`) as base58-encoded string for 16 or 32 bit DID value.
-   If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own. 
-   If `endorser` is present then the transaction must be multi-signed by the both author (`identifier`) and Endorser (`endorser`).      
     
 - `state_proof` (dict):
 
@@ -1928,7 +1922,6 @@ Gets information about a DID (NYM).
         
         'seqNo': 10,
         'txnTime': 1514214795,
-        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
 
         'state_proof': {
             'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
@@ -2004,7 +1997,6 @@ i.e. reply data contains requested value only.
         
         'seqNo': 10,
         'txnTime': 1514214795,
-        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
 
         'state_proof': {
             'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
@@ -2077,7 +2069,6 @@ Gets Claim's Schema.
         
         'seqNo': 10,
         'txnTime': 1514214795,
-        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
 
         'state_proof': {
             'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
@@ -2155,7 +2146,6 @@ Gets Claim Definition.
         
         'seqNo': 10,
         'txnTime': 1514214795,
-        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
 
         'state_proof': {
             'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
@@ -2219,7 +2209,6 @@ Gets a Revocation Registry Definition, that Issuer creates and publishes for a p
         
         'seqNo': 10,
         'txnTime': 1514214795,
-        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
         
         'data': {
             'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
@@ -2296,7 +2285,6 @@ Gets a Revocation Registry Accumulator.
         
         'seqNo': 10,
         'txnTime': 1514214795,
-        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
         
         'data': {
             'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
@@ -2382,7 +2370,6 @@ If `from` is not set, then there is just one state proof (as usual) for both `ac
         
         'seqNo': 18,
         'txnTime': 1514214795,
-        'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
         
         'data': {
             'revocDefType': 'CL_ACCUM',
@@ -2888,32 +2875,60 @@ A generic request to get a transaction from Ledger by its sequence number.
 *Reply Example (returns requested NYM txn with seqNo=9)*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '3',
-        'identifier': 'MSjKTWkPLtYoPEaTF1TUDb',
-        'reqId': 1514311352551755,
+    "op": "REPLY", 
+    "result": {
+        "type": "3",
+        "identifier": "MSjKTWkPLtYoPEaTF1TUDb",
+        "reqId": 1514311352551755,
        
-        'seqNo': 9,
+        "seqNo": 9,
 
-        'data': {
-            'type': '1',
-            'identifier': 'MSjKTWkPLtYoPEaTF1TUDb',
-            'reqId': 1514311345476031,
-            'signature': '4qDmMAGqjzr4nh7S3rzLX3V9iQYkHurrYvbibHSvQaKw3u3BouTdLwv6ZzzavAjS635kAqpj5kKG1ehixTUkzFjK',
-            'signatures': None,
-            
-            'seqNo': 9,
-            `txnTime': 1514311348,
-            
-            'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
-            'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'],
-            
-            'alias': 'name',
-            'dest': 'WTJ1xmQViyFb67WAuvPnJP',
-            'role': '2',
-            'verkey': '~HjhFpNnFJKyceyELpCz3b5'
+        "data": {
+            "ver": 1,
+            "txn": {
+                "type":"1",
+                "protocolVersion":2,
+        
+                "data": {
+                    "ver": 1,
+                    "dest":"GEzcdDLhCpGCYRHW82kjHd",
+                    "verkey":"~HmUWn928bnFT6Ephf65YXv",
+                    "role":101,
+                },
+        
+                "metadata": {
+                    "reqId":1513945121191691,
+                    "from":"L5AD5g65TDQr1PPHHRoiGf",
+                    "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                    "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+                    "taaAcceptance": {
+                        "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                        "mechanism": "EULA",
+                        "time": 1513942017
+                     }
+                },
+            },
+            "txnMetadata": {
+                "txnTime":1513945121,
+                "seqNo": 10,
+                "txnId": "N22KY2Dyvmuu2PyyqSFKue|01"
+            },
+            "reqSignature": {
+                "type": "ED25519",
+                "values": [{
+                    "from": "L5AD5g65TDQr1PPHHRoiGf",
+                    "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+                }]
+            }
+        
+            "rootHash": "5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn",
+            "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
         }
+        
+        "type": "3",
+        "reqId": 1514311281279625,
+        "identifier": "MSjKTWkPLtYoPEaTF1TUDb",
+        "seqNo": 9,
     }
 }
 ```

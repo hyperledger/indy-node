@@ -147,12 +147,11 @@ transaction specific data:
              for 16 or 32 bit DID value.
              It may differ from `endorser` field who submits the transaction on behalf of `identifier`.
              If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own.
-             It also may differ from `dest` field for some of requests (for example NYM), where `dest` is a 
-             target identifier (for example, a newly created DID identifier).
+             It also may differ from `dest` field for some of requests (for example NYM), where `dest` is a target identifier (for example, a newly created DID identifier).
              
              *Example*:
              
-             - `identifier` is the author of the transaction without a specific role; `endorser` is a user with Endorser role.
+             - `identifier` is a DID of a transaction author who doesn't have write permissions; `endorser` is a DID of a user with Endorser role (that is with write permissions).
              - new NYM creation: `identifier` is a DID of an Endorser creating a new DID, and `dest` is a newly created DID.
 
         - `reqId` (integer):
