@@ -63,7 +63,6 @@ Although every attempt has been made to make this information as accurate as pos
 - New DIDs can be created without endorsers
 - Transaction authors don't need to be endorsers
 - TAA acceptance should use date, not time
-- When view change takes too long instance change should be sent periodically
 - Bug fixes
 
 ### Detailed Changelog
@@ -73,6 +72,7 @@ Although every attempt has been made to make this information as accurate as pos
 | --- | --- | --- |
 | Incorrect request validation | | [INDY-2164](https://jira.hyperledger.org/browse/INDY-2164) |
 | Need to make "reask_ledger_status" repeatable | | [INDY-2112](https://jira.hyperledger.org/browse/INDY-2112) |
+| When view change takes too long instance change should be sent periodically | | [INDY-2143](https://jira.hyperledger.org/browse/INDY-2143) |
 
 #### Changes and Additions
 | Description | Additional Information | Ticket Number |
@@ -81,7 +81,6 @@ Although every attempt has been made to make this information as accurate as pos
 | Transaction authors don't need to be endorsers | | [INDY-2173](https://jira.hyperledger.org/browse/INDY-2173) |
 | Grab pool data for failed system tests | | [INDY-2141](https://jira.hyperledger.org/browse/INDY-2141) |
 | Memory profiling needs to be removed from GET_VALIDATOR_INFO output | | [INDY-2182](https://jira.hyperledger.org/browse/INDY-2182) |
-| When view change takes too long instance change should be sent periodically | | [INDY-2143](https://jira.hyperledger.org/browse/INDY-2143) |
 | Implement PBFT viewchanger service with most basic functionality | | [INDY-2147](https://jira.hyperledger.org/browse/INDY-2147) |
 | Extract Orderer service from Replica | | [INDY-2136](https://jira.hyperledger.org/browse/INDY-2136) |
 | Extract and integrate ConsensusDataProvider from Replica | | [INDY-2139](https://jira.hyperledger.org/browse/INDY-2139) |
