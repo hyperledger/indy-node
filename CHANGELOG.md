@@ -62,6 +62,8 @@ Although every attempt has been made to make this information as accurate as pos
 ### Major Changes
 - New DIDs can be created without endorsers
 - Transaction authors don't need to be endorsers
+- TAA acceptance should use date, not time
+- When view change takes too long instance change should be sent periodically
 - Bug fixes
 
 ### Detailed Changelog
