@@ -4,7 +4,6 @@ import pytest
 
 from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
 
-
 def test_validate_context_fail_on_empty():
 	with pytest.raises(Exception):
 		ContextHandler._validate_context({})
@@ -43,14 +42,14 @@ def test_validate_context_pass_context_W3C_example_15():
 	ContextHandler._validate_context(input_dict)
 
 def test_validate_context_pass_context_W3C_base():
-	true = True # FIXME this tests fails without the variable true set to True
-# pasted directly out of the reference file, as is without any format changes
+# pasted directly out of the reference file, without any format changes
+# change true to True to correct for python
 # Sample from specification: https://w3c.github.io/vc-data-model/#base-context
 # Actual file contents from: https://www.w3.org/2018/credentials/v1
 	input_dict = {
   "@context": {
     "@version": 1.1,
-    "@protected": true,
+    "@protected": True,
 
     "id": "@id",
     "type": "@type",
@@ -59,7 +58,7 @@ def test_validate_context_pass_context_W3C_base():
       "@id": "https://www.w3.org/2018/credentials#VerifiableCredential",
       "@context": {
         "@version": 1.1,
-        "@protected": true,
+        "@protected": True,
 
         "id": "@id",
         "type": "@type",
@@ -73,7 +72,7 @@ def test_validate_context_pass_context_W3C_base():
           "@type": "@id",
           "@context": {
             "@version": 1.1,
-            "@protected": true,
+            "@protected": True,
 
             "id": "@id",
             "type": "@type",
@@ -97,7 +96,7 @@ def test_validate_context_pass_context_W3C_base():
           "@type": "@id",
           "@context": {
             "@version": 1.1,
-            "@protected": true,
+            "@protected": True,
 
             "id": "@id",
             "type": "@type",
@@ -117,7 +116,7 @@ def test_validate_context_pass_context_W3C_base():
       "@id": "https://www.w3.org/2018/credentials#VerifiablePresentation",
       "@context": {
         "@version": 1.1,
-        "@protected": true,
+        "@protected": True,
 
         "id": "@id",
         "type": "@type",
@@ -135,7 +134,7 @@ def test_validate_context_pass_context_W3C_base():
       "@id": "https://w3id.org/security#EcdsaSecp256k1Signature2019",
       "@context": {
         "@version": 1.1,
-        "@protected": true,
+        "@protected": True,
 
         "id": "@id",
         "type": "@type",
@@ -154,7 +153,7 @@ def test_validate_context_pass_context_W3C_base():
           "@type": "@vocab",
           "@context": {
             "@version": 1.1,
-            "@protected": true,
+            "@protected": True,
 
             "id": "@id",
             "type": "@type",
@@ -174,7 +173,7 @@ def test_validate_context_pass_context_W3C_base():
       "@id": "https://w3id.org/security#EcdsaSecp256r1Signature2019",
       "@context": {
         "@version": 1.1,
-        "@protected": true,
+        "@protected": True,
 
         "id": "@id",
         "type": "@type",
@@ -193,7 +192,7 @@ def test_validate_context_pass_context_W3C_base():
           "@type": "@vocab",
           "@context": {
             "@version": 1.1,
-            "@protected": true,
+            "@protected": True,
 
             "id": "@id",
             "type": "@type",
@@ -213,7 +212,7 @@ def test_validate_context_pass_context_W3C_base():
       "@id": "https://w3id.org/security#Ed25519Signature2018",
       "@context": {
         "@version": 1.1,
-        "@protected": true,
+        "@protected": True,
 
         "id": "@id",
         "type": "@type",
@@ -232,7 +231,7 @@ def test_validate_context_pass_context_W3C_base():
           "@type": "@vocab",
           "@context": {
             "@version": 1.1,
-            "@protected": true,
+            "@protected": True,
 
             "id": "@id",
             "type": "@type",
@@ -252,7 +251,7 @@ def test_validate_context_pass_context_W3C_base():
       "@id": "https://w3id.org/security#RsaSignature2018",
       "@context": {
         "@version": 1.1,
-        "@protected": true,
+        "@protected": True,
 
         "challenge": "sec:challenge",
         "created": {"@id": "http://purl.org/dc/terms/created", "@type": "xsd:dateTime"},
@@ -265,7 +264,7 @@ def test_validate_context_pass_context_W3C_base():
           "@type": "@vocab",
           "@context": {
             "@version": 1.1,
-            "@protected": true,
+            "@protected": True,
 
             "id": "@id",
             "type": "@type",
