@@ -47,7 +47,7 @@
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
 
 ## 1.9.1
-### Release date: Aug 02st, 2019
+### Release date: Aug 02nd, 2019
 
 ### Component Version Information
 | Components | Version Numbers |
