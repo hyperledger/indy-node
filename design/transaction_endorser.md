@@ -8,6 +8,7 @@ As a transaction author, I need my transactions to be written to the ledger pres
  - A transaction author can use a different transaction endorser for future transactions, including updates to attribs and key rotations.
  - The transaction must use the author key to sign the transaction author agreement 
  - If the endorser field is included in a transaction, then the ledger will reject the transaction if it is not signed by the endorser.
+ - It should not be possible to endorse a transaction without explicitly specifying the Endorser.
 
 ## Proposed workflow
 1. Transaction Author builds a new request (`indy_build_xxx_reqeust`).

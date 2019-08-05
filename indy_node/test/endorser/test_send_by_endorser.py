@@ -1,6 +1,12 @@
 import pytest
+
+from indy_common.authorize.auth_actions import ADD_PREFIX
+from indy_common.authorize.auth_constraints import AuthConstraint
+from indy_common.constants import SCHEMA
 from indy_node.test.api.helper import sdk_write_schema_and_check, sdk_build_schema_request
 from indy_node.test.endorser.helper import sdk_submit_and_check_by_endorser, sdk_append_request_endorser
+from indy_node.test.helper import build_auth_rule_request_json, sdk_send_and_check_req_json
+from plenum.common.constants import TRUSTEE
 
 from plenum.common.exceptions import RequestRejectedException, RequestNackedException
 from plenum.test.helper import sdk_multisign_request_object, sdk_get_and_check_replies, sdk_send_signed_requests
@@ -30,13 +36,13 @@ def test_both_author_and_endorser_must_sign(looper, sdk_pool_handle, sdk_wallet_
 
     # sign by Author only
     req_json_author_only = sdk_multisign_request_object(looper, sdk_wallet_trustee, req_json)
-    with pytest.raises(RequestNackedException):
+    with pytest.raises(RequestNackedException, match="Endorser must sign the request"):
         request_couple = sdk_send_signed_requests(sdk_pool_handle, [req_json_author_only])[0]
         sdk_get_and_check_replies(looper, [request_couple])
 
     # sign by Endorser only
     req_json_endorser_only = sdk_multisign_request_object(looper, sdk_wallet_endorser, req_json)
-    with pytest.raises(RequestNackedException):
+    with pytest.raises(RequestNackedException, match="Author must sign the request when sending via Endorser"):
         request_couple = sdk_send_signed_requests(sdk_pool_handle, [req_json_endorser_only])[0]
         sdk_get_and_check_replies(looper, [request_couple])
 
@@ -45,3 +51,55 @@ def test_both_author_and_endorser_must_sign(looper, sdk_pool_handle, sdk_wallet_
     req_json_both = sdk_multisign_request_object(looper, sdk_wallet_endorser, req_json_both)
     request_couple = sdk_send_signed_requests(sdk_pool_handle, [req_json_both])[0]
     sdk_get_and_check_replies(looper, [request_couple])
+
+
+def test_endorser_field_must_be_explicit(looper, sdk_pool_handle, sdk_wallet_new_client, sdk_wallet_endorser):
+    req_json = sdk_build_schema_request(looper, sdk_wallet_new_client,
+                                        ["attr1", "attr2"], "name2", "3.0")
+    # Do not append Endorser field!
+
+    # sign by both Author and Endorser
+    req_json = sdk_multisign_request_object(looper, sdk_wallet_new_client, req_json)
+    req_json = sdk_multisign_request_object(looper, sdk_wallet_endorser, req_json)
+
+    with pytest.raises(RequestRejectedException,
+                       match="'Endorser' field must be explicitly set for the endorsed transaction"):
+        request_couple = sdk_send_signed_requests(sdk_pool_handle, [req_json])[0]
+        sdk_get_and_check_replies(looper, [request_couple])
+
+
+def test_endorser_must_have_known_role(looper, sdk_pool_handle, sdk_wallet_new_client, sdk_wallet_trustee):
+    req_json = sdk_build_schema_request(looper, sdk_wallet_trustee,
+                                        ["attr1", "attr2"], "name3", "4.0")
+    with pytest.raises(RequestRejectedException, match="Endorser must have one of the following roles"):
+        sdk_submit_and_check_by_endorser(looper, sdk_pool_handle,
+                                         sdk_wallet_author=sdk_wallet_trustee,
+                                         sdk_wallet_endorser=sdk_wallet_new_client,
+                                         request_json=req_json)
+
+
+def test_endorser_not_required_when_two_trustee_sigs(looper, sdk_pool_handle, sdk_wallet_trustee_list):
+    change_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee_list[0],
+                     constraint=AuthConstraint(role=TRUSTEE, sig_count=2))
+
+    req_json = sdk_build_schema_request(looper, sdk_wallet_trustee_list[1],
+                                        ["attr1", "attr2"], "name4", "5.0")
+    # sign by both
+    req_json = sdk_multisign_request_object(looper, sdk_wallet_trustee_list[1], req_json)
+    req_json = sdk_multisign_request_object(looper, sdk_wallet_trustee_list[2], req_json)
+    request_couple = sdk_send_signed_requests(sdk_pool_handle, [req_json])[0]
+    sdk_get_and_check_replies(looper, [request_couple])
+
+
+def change_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee, constraint):
+    req = build_auth_rule_request_json(
+        looper, sdk_wallet_trustee[1],
+        auth_action=ADD_PREFIX,
+        auth_type=SCHEMA,
+        field='*',
+        old_value=None,
+        new_value='*',
+        constraint=constraint.as_dict
+    )
+
+    sdk_send_and_check_req_json(looper, sdk_pool_handle, sdk_wallet_trustee, req)
