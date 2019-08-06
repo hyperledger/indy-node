@@ -121,7 +121,7 @@ def test_dont_require_endorser_when_multi_sig(authorizer, author_role):
     assert authorized
 
 
-@pytest.mark.parametrize('endorser_role', [TRUSTEE, STEWARD, ENDORSER])
+@pytest.mark.parametrize('endorser_role', [ENDORSER])
 def test_allowed_endorser_roles(authorizer, endorser_role):
     req = build_req_multi_signed_by_endorser(author_role=IDENTITY_OWNER,
                                              endorser_role=endorser_role, append_endorser=True)
@@ -129,7 +129,7 @@ def test_allowed_endorser_roles(authorizer, endorser_role):
     assert authorized
 
 
-@pytest.mark.parametrize('endorser_role', [IDENTITY_OWNER, NETWORK_MONITOR])
+@pytest.mark.parametrize('endorser_role', [TRUSTEE, STEWARD, IDENTITY_OWNER, NETWORK_MONITOR])
 def test_not_allowed_endorser_roles(authorizer, endorser_role):
     req = build_req_multi_signed_by_endorser(author_role=IDENTITY_OWNER,
                                              endorser_role=endorser_role, append_endorser=True)

@@ -200,8 +200,11 @@ class ForbiddenAuthorizer(AbstractAuthorizer):
 
 
 class EndorserAuthorizer(AbstractAuthorizer):
-    ENDORSER_ROLES = {ENDORSER, TRUSTEE, STEWARD}
-    ENDORSER_ROLES_STR = [ENDORSER_STRING, TRUSTEE_STRING, STEWARD_STRING]
+    NO_NEED_FOR_ENDORSER_ROLES = {ENDORSER, TRUSTEE, STEWARD}
+    NO_NEED_FOR_ENDORSER_ROLES_STR = [ENDORSER_STRING, TRUSTEE_STRING, STEWARD_STRING]
+
+    ENDORSER_ROLES = {ENDORSER}
+    ENDORSER_ROLES_STR = {ENDORSER_STRING}
 
     def __init__(self, cache: IdrCache):
         super().__init__()
@@ -235,16 +238,19 @@ class EndorserAuthorizer(AbstractAuthorizer):
 
     def _check_endorser_field_presence(self, request):
         # 1. Endorser is required only when the transaction is endorsed, that is multi-signed
+        # if there is only 1 signature, then static validation makes sure that this is the Author's signature
+        # if the auth rule requires an endorser to submit the transaction, then it will be caught by the Roles Authorizer,
+        # so no need to check anything here if we don't have more than 1 signature.
         if not request.signatures:
             return True, ""
         if len(request.signatures) <= 1:
             return True, ""
 
-        # 2. Endorser is required for non-Endorser roles only
+        # 2. Endorser is required for unprivelleged roles only
         author_role = self._get_role(request.identifier)
         if author_role == "":  # "" - IDENTITY_OWNER
             author_role = None
-        if author_role in self.ENDORSER_ROLES:
+        if author_role in self.NO_NEED_FOR_ENDORSER_ROLES:
             return True, ""
 
         # 3. Check that Endorser field is present
