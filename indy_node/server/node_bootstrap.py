@@ -77,7 +77,7 @@ class NodeBootstrap(PNodeBootstrap):
         attr_store = self.init_attribute_store()
         self.node.db_manager.register_new_store(ATTRIB_LABEL, attr_store)
 
-    def init_storages(self, storage=None):
+    def init_storages(self, domain_storage=None):
         super().init_storages()
         self.init_idr_cache_storage()
         self.init_attribute_storage()
@@ -200,26 +200,6 @@ class NodeBootstrap(PNodeBootstrap):
 
     def init_pool_config(self):
         return PoolConfig(self.node.configLedger)
-
-    def init_domain_ledger(self):
-        """
-        This is usually an implementation of Ledger
-        """
-        if self.node.config.primaryStorage is None:
-            genesis_txn_initiator = GenesisTxnInitiatorFromFile(
-                self.node.genesis_dir, self.node.config.domainTransactionsFile)
-            return Ledger(
-                CompactMerkleTree(
-                    hashStore=self.node.getHashStore('domain')),
-                dataDir=self.node.dataLocation,
-                fileName=self.node.config.domainTransactionsFile,
-                ensureDurability=self.node.config.EnsureLedgerDurability,
-                genesis_txn_initiator=genesis_txn_initiator)
-        else:
-            return initStorage(self.node.config.primaryStorage,
-                               name=self.node.name + NODE_PRIMARY_STORAGE_SUFFIX,
-                               dataDir=self.node.dataLocation,
-                               config=self.node.config)
 
     def init_upgrader(self):
         return Upgrader(self.node.id,
