@@ -59,7 +59,7 @@ that there are some (for example, changes in ledger and state data format, re-br
 for data migration and/or running some scripts.
 - The migration should go to `data/migration` folder under the package name (so this 
 is `data/migration/deb` on Ubuntu).
-- Please have a look at the following [doc](../data/migrations/README.md) for more information about how to write migration scripts.
+- Please have a look at the following [doc](https://github.com/hyperledger/indy-node/blob/master/data/migrations/README.md) for more information about how to write migration scripts.
 
 
 ### When to Run Forced Upgrades
