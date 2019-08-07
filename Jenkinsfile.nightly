@@ -46,7 +46,7 @@ try {
             ['test_ledger.py'],
             ['test_vc.py'],
             ['test_consensus.py', 'TestTAASuite.py'],
-            ['test_upgrade.py', 'test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py'],
+            ['test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py'],
             ['TestAuditSuite.py'],
             // set of authmap tests
             // TODO might be groupped in parts once https://github.com/docker/docker-py/issues/2278 is resolved
