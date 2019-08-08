@@ -51,8 +51,8 @@ class ContextHandler(WriteRequestHandler):
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
-        #assert request.operation.data.name
-        #assert request.operation.data.version
+        assert request.operation['data']['name']
+        assert request.operation['data']['version']
         ContextHandler._validate_context(request.operation['data']['context_array'])
 
 
