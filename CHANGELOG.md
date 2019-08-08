@@ -1,5 +1,7 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.9.1](#191)
+
 * [1.9.0](#190)
 
 * [1.8.1](#181)
@@ -43,6 +45,47 @@
 #### Disclosure
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
+
+## 1.9.1
+### Release date: Aug 02nd, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.9.1 |
+| indy-node | 1.9.1 |
+| sovrin | 1.1.52 |
+
+### Additional Information:
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
+### Major Changes
+- New DIDs can be created without endorsers
+- Transaction authors don't need to be endorsers
+- TAA acceptance should use date, not time
+- Bug fixes
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Incorrect request validation | | [INDY-2164](https://jira.hyperledger.org/browse/INDY-2164) |
+| Need to make "reask_ledger_status" repeatable | | [INDY-2112](https://jira.hyperledger.org/browse/INDY-2112) |
+| When view change takes too long instance change should be sent periodically | | [INDY-2143](https://jira.hyperledger.org/browse/INDY-2143) |
+
+#### Changes and Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| New DIDs can be created without endorsers | | [INDY-2171](https://jira.hyperledger.org/browse/INDY-2171) |
+| Transaction authors don't need to be endorsers | | [INDY-2173](https://jira.hyperledger.org/browse/INDY-2173) |
+| Grab pool data for failed system tests | | [INDY-2141](https://jira.hyperledger.org/browse/INDY-2141) |
+| Memory profiling needs to be removed from GET_VALIDATOR_INFO output | | [INDY-2182](https://jira.hyperledger.org/browse/INDY-2182) |
+| Implement PBFT viewchanger service with most basic functionality | | [INDY-2147](https://jira.hyperledger.org/browse/INDY-2147) |
+| Extract Orderer service from Replica | | [INDY-2136](https://jira.hyperledger.org/browse/INDY-2136) |
+| Extract and integrate ConsensusDataProvider from Replica | | [INDY-2139](https://jira.hyperledger.org/browse/INDY-2139) |
+| TAA acceptance should use date, not time | | [INDY-2157](https://jira.hyperledger.org/browse/INDY-2157) |
+| Clean-up Pluggable Request Handlers | | [INDY-2154](https://jira.hyperledger.org/browse/INDY-2154) |
 
 ## 1.9.0
 ### Release date: July 04th, 2019
