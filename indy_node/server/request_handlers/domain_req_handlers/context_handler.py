@@ -51,9 +51,10 @@ class ContextHandler(WriteRequestHandler):
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
-        assert request.operation.name
-        assert request.operation.version
-        ContextHandler._validate_context(request.operation.context_array)
+        #assert request.operation.data.name
+        #assert request.operation.data.version
+        ContextHandler._validate_context(request.operation['data']['context_array'])
+
 
     def dynamic_validation(self, request: Request):
         # we can not add a Context with already existent NAME and VERSION
