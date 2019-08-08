@@ -17,23 +17,19 @@ def test_plugin_or_rule_all_amount_trustee_no_endorser(write_auth_req_validator,
             AuthConstraint(role=ENDORSER, sig_count=1, need_to_be_owner=True,
                            metadata={PLUGIN_FIELD: 3}),
         ]),
-        valid_actions=[
-                          Action(author=TRUSTEE, endorser=None, sigs={TRUSTEE: s},
-                                 is_owner=owner, amount=1, extra_sigs=True)
-                          for s in range(1, 4)
-                          for owner in [True, False]
-                      ] + [
-                          Action(author=TRUSTEE, endorser=None, sigs={TRUSTEE: s1, STEWARD: s2},
-                                 is_owner=owner, amount=2, extra_sigs=True)
-                          for s1 in range(1, 4)
-                          for s2 in range(1, 4)
-                          for owner in [True, False]
-                      ] + [
-                          Action(author=TRUSTEE, endorser=None, sigs={TRUSTEE: s1, ENDORSER: s2},
-                                 is_owner=True, amount=3, extra_sigs=True)
-                          for s1 in range(1, 4)
-                          for s2 in range(1, 4)
-                      ],
+        valid_actions=[Action(author=TRUSTEE, endorser=None, sigs={TRUSTEE: s},
+                              is_owner=owner, amount=1, extra_sigs=True)
+                       for s in range(1, 4)
+                       for owner in [True, False]] +
+                      [Action(author=TRUSTEE, endorser=None, sigs={TRUSTEE: s1, STEWARD: s2},
+                              is_owner=owner, amount=2, extra_sigs=True)
+                       for s1 in range(1, 4)
+                       for s2 in range(1, 4)
+                       for owner in [True, False]] +
+                      [Action(author=TRUSTEE, endorser=None, sigs={TRUSTEE: s1, ENDORSER: s2},
+                              is_owner=True, amount=3, extra_sigs=True)
+                       for s1 in range(1, 4)
+                       for s2 in range(1, 4)],
         author=TRUSTEE, endorser=None,
         all_signatures=signatures, is_owner=is_owner, amount=amount,
         write_auth_req_validator=write_auth_req_validator,
@@ -49,19 +45,16 @@ def test_plugin_or_rule_one_amount_same_role_trustee_no_endorser(write_auth_req_
             AuthConstraint(role=ENDORSER, sig_count=1, need_to_be_owner=False,
                            metadata={PLUGIN_FIELD: 2}),
         ]),
-        valid_actions=[
-                          Action(author=TRUSTEE, endorser=None, sigs={TRUSTEE: s1, ENDORSER: s2},
-                                 is_owner=owner, amount=2, extra_sigs=True)
-                          for s1 in range(1, 4)
-                          for s2 in range(1, 4)
-                          for owner in [True, False]
-                      ] + [
-                          Action(author=TRUSTEE, endorser=None, sigs={TRUSTEE: s1, ENDORSER: s2},
-                                 is_owner=owner, amount=None, extra_sigs=True)
-                          for s1 in range(1, 4)
-                          for s2 in range(1, 4)
-                          for owner in [True, False]
-                      ],
+        valid_actions=[Action(author=TRUSTEE, endorser=None, sigs={TRUSTEE: s1, ENDORSER: s2},
+                              is_owner=owner, amount=2, extra_sigs=True)
+                       for s1 in range(1, 4)
+                       for s2 in range(1, 4)
+                       for owner in [True, False]] +
+                      [Action(author=TRUSTEE, endorser=None, sigs={TRUSTEE: s1, ENDORSER: s2},
+                              is_owner=owner, amount=None, extra_sigs=True)
+                       for s1 in range(1, 4)
+                       for s2 in range(1, 4)
+                       for owner in [True, False]],
         author=TRUSTEE, endorser=None,
         all_signatures=signatures, is_owner=is_owner, amount=amount,
         write_auth_req_validator=write_auth_req_validator,
@@ -77,18 +70,15 @@ def test_plugin_or_rule_one_amount_diff_roles_trustee_no_endorser(write_auth_req
             AuthConstraint(role=IDENTITY_OWNER, sig_count=1, need_to_be_owner=True,
                            metadata={PLUGIN_FIELD: 1}),
         ]),
-        valid_actions=[
-                          Action(author=TRUSTEE, endorser=None, sigs={TRUSTEE: s1, ENDORSER: s2},
-                                 is_owner=owner, amount=None, extra_sigs=True)
-                          for s1 in range(1, 4)
-                          for s2 in range(1, 4)
-                          for owner in [True, False]
-                      ] + [
-                          Action(author=TRUSTEE, endorser=None, sigs={TRUSTEE: s1, IDENTITY_OWNER: s2},
-                                 is_owner=True, amount=1, extra_sigs=True)
-                          for s1 in range(1, 4)
-                          for s2 in range(1, 4)
-                      ],
+        valid_actions=[Action(author=TRUSTEE, endorser=None, sigs={TRUSTEE: s1, ENDORSER: s2},
+                              is_owner=owner, amount=None, extra_sigs=True)
+                       for s1 in range(1, 4)
+                       for s2 in range(1, 4)
+                       for owner in [True, False]] +
+                      [Action(author=TRUSTEE, endorser=None, sigs={TRUSTEE: s1, IDENTITY_OWNER: s2},
+                              is_owner=True, amount=1, extra_sigs=True)
+                       for s1 in range(1, 4)
+                       for s2 in range(1, 4)],
         author=TRUSTEE, endorser=None,
         all_signatures=signatures, is_owner=is_owner, amount=amount,
         write_auth_req_validator=write_auth_req_validator,
@@ -105,16 +95,13 @@ def test_plugin_or_rule_one_amount_all_roles_endorser_no_endorser(write_auth_req
                            off_ledger_signature=off_ledger_signature,
                            metadata={PLUGIN_FIELD: 3}),
         ]),
-        valid_actions=[
-                          Action(author=ENDORSER, endorser=None, sigs={ENDORSER: s},
-                                 is_owner=owner, amount=None, extra_sigs=True)
-                          for s in range(1, 4)
-                          for owner in [True, False]
-                      ] + [
-                          Action(author=ENDORSER, endorser=None, sigs={ENDORSER: s},
-                                 is_owner=True, amount=3, extra_sigs=True)
-                          for s in range(1, 4)
-                      ],
+        valid_actions=[Action(author=ENDORSER, endorser=None, sigs={ENDORSER: s},
+                              is_owner=owner, amount=None, extra_sigs=True)
+                       for s in range(1, 4)
+                       for owner in [True, False]] +
+                      [Action(author=ENDORSER, endorser=None, sigs={ENDORSER: s},
+                              is_owner=True, amount=3, extra_sigs=True)
+                       for s in range(1, 4)],
         author=ENDORSER, endorser=None,
         all_signatures=signatures, is_owner=is_owner, amount=amount,
         write_auth_req_validator=write_auth_req_validator,

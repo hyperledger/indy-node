@@ -28,13 +28,16 @@ def amount(request):
 def is_owner(request):
     return request.param
 
+
 @pytest.fixture(scope='module', params=[None, ENDORSER])
 def endorser(request):
     return request.param
 
+
 @pytest.fixture(scope='module', params=[IDENTITY_OWNER, TRUSTEE])
 def author(request):
     return request.param
+
 
 @pytest.fixture(
     scope='module',
