@@ -71,6 +71,14 @@ def build_req_multi_signed_by_author_only(author_role):
                    protocolVersion=CURRENT_PROTOCOL_VERSION)
 
 
+def build_req_multi_signed_by_non_author_only(author_role, non_author_role):
+    return Request(identifier=get_idr_by_role(author_role),
+                   reqId=1,
+                   operation=randomOperation(),
+                   signatures={get_idr_by_role(non_author_role): "sig"},
+                   protocolVersion=CURRENT_PROTOCOL_VERSION)
+
+
 def build_req_signed_by_author_only(author_role):
     idr = get_idr_by_role(author_role)
     return Request(identifier=idr,
@@ -90,6 +98,27 @@ def test_dont_require_endorser_if_one_sig(authorizer, author_role):
 @pytest.mark.parametrize('author_role', [IDENTITY_OWNER, NETWORK_MONITOR, TRUSTEE, STEWARD, ENDORSER])
 def test_dont_require_endorser_if_one_multisig(authorizer, author_role):
     req = build_req_multi_signed_by_author_only(author_role)
+    authorized, reason = authorizer.authorize(req, AUTH_CONSTR)
+    assert authorized
+
+
+@pytest.mark.parametrize('author_role', [IDENTITY_OWNER, NETWORK_MONITOR])
+@pytest.mark.parametrize('non_author_role', [IDENTITY_OWNER, NETWORK_MONITOR, TRUSTEE, STEWARD, ENDORSER])
+def test_require_endorser_if_signed_by_non_author(authorizer, author_role, non_author_role):
+    if author_role == non_author_role:
+        return
+    req = build_req_multi_signed_by_non_author_only(author_role, non_author_role)
+    authorized, reason = authorizer.authorize(req, AUTH_CONSTR)
+    assert not authorized
+    assert "'Endorser' field must be explicitly set for the endorsed transaction" in reason
+
+
+@pytest.mark.parametrize('author_role', [TRUSTEE, STEWARD, ENDORSER])
+@pytest.mark.parametrize('non_author_role', [IDENTITY_OWNER, NETWORK_MONITOR, TRUSTEE, STEWARD, ENDORSER])
+def test_dont_require_endorser_if_signed_by_non_author(authorizer, author_role, non_author_role):
+    if author_role == non_author_role:
+        return
+    req = build_req_multi_signed_by_non_author_only(author_role, non_author_role)
     authorized, reason = authorizer.authorize(req, AUTH_CONSTR)
     assert authorized
 
@@ -145,3 +174,12 @@ def test_endorser_role_checked_when_author_is_endorser(authorizer, author_role):
     authorized, reason = authorizer.authorize(req, AUTH_CONSTR)
     assert not authorized
     assert "Endorser must have one of the following roles" in reason
+
+
+@pytest.mark.parametrize('author_role', [IDENTITY_OWNER, NETWORK_MONITOR, TRUSTEE, STEWARD])
+def test_endorser_must_sign(authorizer, author_role):
+    req = build_req_multi_signed_by_author_only(author_role=author_role)
+    req.endorser = get_idr_by_role(ENDORSER)
+    authorized, reason = authorizer.authorize(req, AUTH_CONSTR)
+    assert not authorized
+    assert "Endorser must sign the transaction" in reason

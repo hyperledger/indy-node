@@ -6,7 +6,7 @@ from indy_common.constants import POOL_UPGRADE
 from indy_node.server.node import Node
 from plenum.common.constants import FORCE, TXN_TYPE
 from plenum.test.helper import sdk_gen_request
-from plenum.test.primary_selection.test_primary_selector import FakeNode
+from plenum.test.primary_selection.test_view_changer_primary_selection import FakeNode
 
 
 @pytest.fixture(scope='function')

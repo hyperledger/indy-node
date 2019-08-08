@@ -12,10 +12,9 @@ from indy_node.test.helper import build_auth_rule_request_json, sdk_send_and_che
     sdk_send_and_check_get_auth_rule_request
 from plenum.common.constants import ROLE, VERKEY, NYM, DATA
 from plenum.common.exceptions import RequestNackedException, RequestRejectedException
-from plenum.common.types import OPERATION
 from plenum.common.util import randomString
 from plenum.server.request_handlers.utils import get_nym_details
-from plenum.test.helper import sdk_get_and_check_replies, sdk_multisign_request_object, sdk_send_signed_requests
+from plenum.test.helper import sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request
 
 NEW_ROLE = None
@@ -44,9 +43,6 @@ def change_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee, constraint):
         new_value=NEW_ROLE,
         constraint=constraint.as_dict
     )
-    req = json.loads(req)
-    req[OPERATION][CONSTRAINT][OFF_LEDGER_SIGNATURE] = constraint.off_ledger_signature
-    req = json.dumps(req)
 
     sdk_send_and_check_req_json(looper, sdk_pool_handle, sdk_wallet_trustee, req)
 
@@ -99,27 +95,6 @@ def test_create_did_without_endorser_with_different_dest(looper, nym_txn_data, s
 
     with pytest.raises(RequestNackedException, match='Can not find verkey for {}'.format(sender_did)):
         sdk_get_and_check_replies(looper, [request_couple])
-
-
-def test_create_did_without_endorser_sig_count_2_one_on_ledger(looper, txnPoolNodeSet, nym_txn_data, sdk_pool_handle,
-                                                               sdk_wallet_trustee):
-    change_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee, constraint=AuthConstraint(role='*',
-                                                                                            sig_count=2,
-                                                                                            off_ledger_signature=True))
-
-    wh, alias, sender_did, sender_verkey = nym_txn_data
-    nym_request = looper.loop.run_until_complete(
-        build_nym_request(sender_did, sender_did, sender_verkey, alias, NEW_ROLE))
-
-    nym_request = sdk_multisign_request_object(looper, (wh, sender_did), nym_request)
-    nym_request = sdk_multisign_request_object(looper, sdk_wallet_trustee, nym_request)
-
-    request_couple = sdk_send_signed_requests(sdk_pool_handle, [nym_request])[0]
-    sdk_get_and_check_replies(looper, [request_couple])
-
-    details = get_nym_details(txnPoolNodeSet[0].states[1], sender_did, is_committed=True)
-    assert details[ROLE] == NEW_ROLE
-    assert details[VERKEY] == sender_verkey
 
 
 def test_create_did_without_endorser_sig_count_0(looper, txnPoolNodeSet, nym_txn_data, sdk_pool_handle,
