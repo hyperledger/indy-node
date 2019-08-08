@@ -41,6 +41,8 @@ def idr_cache():
               verkey="SomeVerkey4", isCommitted=False)
     cache.set("network_monitor_did", 1, int(time.time()), role=NETWORK_MONITOR,
               verkey="SomeVerkey5", isCommitted=False)
+    cache.set("endorser_did2", 1, int(time.time()), role=ENDORSER,
+              verkey="SomeVerkey6", isCommitted=False)
     return cache
 
 
@@ -180,6 +182,23 @@ def test_endorser_role_checked_when_author_is_endorser(authorizer, author_role):
 def test_endorser_must_sign(authorizer, author_role):
     req = build_req_multi_signed_by_author_only(author_role=author_role)
     req.endorser = get_idr_by_role(ENDORSER)
+    authorized, reason = authorizer.authorize(req, AUTH_CONSTR)
+    assert not authorized
+    assert "Endorser must sign the transaction" in reason
+
+
+@pytest.mark.parametrize('author_role', [IDENTITY_OWNER, NETWORK_MONITOR, TRUSTEE, STEWARD])
+def test_endorser_is_author_and_1_sig(authorizer, author_role):
+    req = build_req_signed_by_author_only(author_role=ENDORSER)
+    req.endorser = get_idr_by_role(ENDORSER)
+    authorized, reason = authorizer.authorize(req, AUTH_CONSTR)
+    assert authorized
+
+
+@pytest.mark.parametrize('author_role', [IDENTITY_OWNER, NETWORK_MONITOR, TRUSTEE, STEWARD])
+def test_endorser_is_not_author_and_1_sig(authorizer, author_role):
+    req = build_req_signed_by_author_only(author_role=ENDORSER)
+    req.endorser = "endorser_did2"
     authorized, reason = authorizer.authorize(req, AUTH_CONSTR)
     assert not authorized
     assert "Endorser must sign the transaction" in reason

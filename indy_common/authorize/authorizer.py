@@ -247,10 +247,12 @@ class EndorserAuthorizer(AbstractAuthorizer):
 
     def _check_endorser_field_presence(self, request):
         # 1. Check that if Endorser is present, Endorser must sign the transaction
-        if request.endorser and not request.signatures:
-            return False, "Endorser must sign the transaction"
-        if request.endorser and request.endorser not in request.signatures:
-            return False, "Endorser must sign the transaction"
+        # if author=endorser, then no multi-sig is required, since he's already signed the txn
+        if request.endorser != request.identifier:
+            if request.endorser and not request.signatures:
+                return False, "Endorser must sign the transaction"
+            if request.endorser and request.endorser not in request.signatures:
+                return False, "Endorser must sign the transaction"
 
         # 2. Endorser is required only when the transaction is endorsed, that is signed by someone else besides the author.
         # If the auth rule requires an endorser to submit the transaction, then it will be caught by the Roles Authorizer,
