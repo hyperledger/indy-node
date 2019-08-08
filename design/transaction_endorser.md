@@ -65,7 +65,7 @@ pub extern fn indy_append_request_endorser(command_handle: CommandHandle,
       
 #### Request dynamic validation
 In order to avoid endorsement without explicitly specifying an Endorser, the following changes to dynamic validation must be implemented: 
-- If there is `endorser` field, then it must have a known role (Trustee, Steward or Endorser).
+- If there is `endorser` field, then it can have Endorser role only.
 - If request is multi-signed, and the author is not Trustee/Steward/Endorser, then `endorser` field must be present
     - `endorser` field is not required if the author is already an Endorser or a trusted role, since multiple trusted signatures (3 Trustees for example) may be required to send a transaction. 
       
