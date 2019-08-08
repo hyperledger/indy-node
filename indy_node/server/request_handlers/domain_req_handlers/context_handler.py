@@ -33,14 +33,18 @@ class ContextHandler(WriteRequestHandler):
     @staticmethod
     def _validate_context(context_array):
         if isinstance(context_array, dict):
-            assert "@context" in context_array.keys()
+            if "@context" not in context_array.keys():
+                raise Exception("Context missing '@context' property")
             if isinstance(context_array["@context"], list):
                 for ctx in context_array["@context"]:
                     if not isinstance(ctx,dict):
                         if ContextHandler._bad_uri(ctx):
                             raise Exception('@context URI badly formed')
             else:
-                assert isinstance(context_array["@context"], dict)
+                if isinstance(context_array["@context"], dict):
+                    pass
+                else:
+                    raise Exception("'@context' value must be list or dict")
         else:
             raise Exception('context is not a dict')
 
@@ -51,8 +55,10 @@ class ContextHandler(WriteRequestHandler):
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
-        assert request.operation['data']['name']
-        assert request.operation['data']['version']
+        if not request.operation['data']['name']:
+            raise Exception("Context transaction has no 'name' property")
+        if not request.operation['data']['version']:
+            raise Exception("Context transaction has no 'version' property")
         ContextHandler._validate_context(request.operation['data']['context_array'])
 
 

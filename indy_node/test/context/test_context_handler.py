@@ -4,24 +4,27 @@ from indy_node.server.request_handlers.domain_req_handlers.context_handler impor
 
 
 def test_validate_context_fail_on_empty():
-    with pytest.raises(Exception):
+    with pytest.raises(Exception) as e:
         ContextHandler._validate_context({})
+    assert "Context missing '@context' property" in str(e.value)
 
 
 def test_validate_context_fail_no_context_property():
     input_dict = {
         "name": "Thing"
     }
-    with pytest.raises(Exception):
+    with pytest.raises(Exception) as e:
         ContextHandler._validate_context(input_dict)
+    assert "Context missing '@context' property" in str(e.value)
 
 
-def test_validate_context_fail_context_not_dict():
+def test_validate_context_fail_context_not_dict_or_list():
     input_dict = {
         "@context": "Thing"
     }
-    with pytest.raises(Exception):
+    with pytest.raises(Exception) as e:
         ContextHandler._validate_context(input_dict)
+    assert "'@context' value must be list or dict" in str(e.value)
 
 
 def test_validate_context_pass_context_single_name_value():
