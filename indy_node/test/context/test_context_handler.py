@@ -64,12 +64,12 @@ def test_static_validation_pass_valid_transaction():
         "data": {
             "name": "TestContext",
             "version": 1,
-            "context": w3c_base
+            "context_array": w3c_base
         },
         "type": "200"
     }
     req = Request("test", 1, operation, "sig",)
-    ch = ContextHandler(None, None )
+    ch = ContextHandler(None, None)
     ch.static_validation(req)
 
 

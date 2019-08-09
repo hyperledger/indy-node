@@ -59,9 +59,9 @@ class ContextHandler(WriteRequestHandler):
             raise Exception("Context transaction has no 'name' property")
         if not request.operation['data']['version']:
             raise Exception("Context transaction has no 'version' property")
-        if not request.operation['data']['context']:
-            raise Exception("Context transaction has no 'version' property")
-        ContextHandler._validate_context(request.operation['data']['context'])
+        if not request.operation['data']['context_array']:
+            raise Exception("Context transaction has no 'context_array' property")
+        ContextHandler._validate_context(request.operation['data']['context_array'])
 
 
     def dynamic_validation(self, request: Request):
