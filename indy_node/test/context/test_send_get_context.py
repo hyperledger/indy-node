@@ -16,7 +16,7 @@ from indy_node.test.helper import createUuidIdentifier, modify_field
 @pytest.fixture(scope="module")
 def send_context(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
     context_json, _ = sdk_write_context(looper, sdk_pool_handle, sdk_wallet_trustee,
-                {
+        {
             "@context": {
                 "referenceNumber": "https://example.com/vocab#referenceNumber",
                 "favoriteFood": "https://example.com/vocab#favoriteFood"
