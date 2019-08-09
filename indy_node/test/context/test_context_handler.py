@@ -1,6 +1,7 @@
 
 import pytest
 from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
+from plenum.common.request import Request
 
 
 def test_validate_context_fail_on_empty():
@@ -27,7 +28,7 @@ def test_validate_context_fail_context_not_dict_or_list():
     assert "'@context' value must be list or dict" in str(e.value)
 
 
-def test_validate_context_pass_context_single_name_value():
+def test_validate_context_pass_value_is_dict():
     input_dict = {
         "@context": {
             "favoriteColor": "https://example.com/vocab#favoriteColor"
@@ -35,6 +36,17 @@ def test_validate_context_pass_context_single_name_value():
     }
     ContextHandler._validate_context(input_dict)
 
+
+def test_validate_context_pass_value_is_list():
+    input_dict = {
+        "@context": [
+            {
+                "favoriteColor": "https://example.com/vocab#favoriteColor"
+            },
+            "https://www.w3.org/ns/odrl.jsonld"
+        ]
+    }
+    ContextHandler._validate_context(input_dict)
 
 def test_validate_context_pass_context_w3c_example_15():
     input_dict = {
@@ -52,6 +64,20 @@ def test_validate_context_pass_context_w3c_base():
     # Sample from specification: https://w3c.github.io/vc-data-model/#base-context
     # Actual file contents from: https://www.w3.org/2018/credentials/v1
     ContextHandler._validate_context(w3c_base)
+
+
+def test_static_validation_pass_valid_transaction():
+    operation = {
+        "data": {
+            "name": "TestContext",
+            "version": 1,
+            "context_array": w3c_base
+        },
+        "type": "200"
+    }
+    req = Request("test", 1, operation, "sig",)
+    ch = ContextHandler(None, None)
+    ch.static_validation(req)
 
 
 def test_validate_context_pass_context_w3c_examples_v1():
