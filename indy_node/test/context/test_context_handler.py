@@ -20,7 +20,7 @@ def test_validate_context_fail_no_context_property():
 
 def test_validate_context_fail_context_not_dict_or_list():
     input_dict = {
-        "@context": "Thing"
+        "@context": 52
     }
     with pytest.raises(Exception) as e:
         ContextHandler._validate_context(input_dict)
