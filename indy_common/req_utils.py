@@ -1,5 +1,5 @@
 from indy_common.constants import SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES, SCHEMA_FROM, \
-    CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT_ARRAY, CONTEXT_FROM, \
+    CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT, CONTEXT_FROM, \
     CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_TAG, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_FROM, \
     CLAIM_DEF_TAG_DEFAULT, CLAIM_DEF_CL
 
@@ -29,12 +29,12 @@ def get_txn_context_version(txn):
     return get_payload_data(txn)[DATA][CONTEXT_VERSION]
 
 
-def get_write_context_context_array(req: Request):
-    return req.operation[DATA][CONTEXT_CONTEXT_ARRAY]
+def get_write_context_context(req: Request):
+    return req.operation[DATA][CONTEXT_CONTEXT]
 
 
-def get_txn_context_context_array(txn):
-    return get_payload_data(txn)[DATA][CONTEXT_CONTEXT_ARRAY]
+def get_txn_context_context(txn):
+    return get_payload_data(txn)[DATA][CONTEXT_CONTEXT]
 
 
 def get_read_context_name(req: Request):

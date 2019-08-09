@@ -4,7 +4,7 @@ import pytest
 
 from indy_common.authorize.auth_constraints import AuthConstraintForbidden
 #from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
-from indy_common.constants import CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT_ARRAY
+from indy_common.constants import CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT
 from indy_common.types import SetContextField
 from indy_node.test.api.helper import validate_write_reply, sdk_write_context_and_check
 from plenum.common.exceptions import RequestRejectedException

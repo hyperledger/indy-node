@@ -217,7 +217,7 @@ def sdk_write_schema_and_check(looper, sdk_pool_handle, sdk_wallet_client,
     rep = sdk_get_and_check_replies(looper, [req])
     return rep
 
-def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context_array=[], name="", version=""):
+def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context=[], name="", version=""):
     _wh, did = sdk_wallet_steward
 
     '''_, context_json = looper.loop.run_until_complete(
@@ -234,7 +234,7 @@ def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context_array
             'data': {
                 'name': name,
                 'version': version,
-                'context_array': context_array
+                'context': context
             }
         },
         "identifier": did,
@@ -249,7 +249,7 @@ def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context_array
 
 
 def sdk_write_context_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
-                                context_array=[], name="", version=""):
+                                context=[], name="", version=""):
     _wh, did = sdk_wallet_steward
 
     '''_, context_json = looper.loop.run_until_complete(
@@ -266,7 +266,7 @@ def sdk_write_context_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
             'data': {
                 'name': name,
                 'version': version,
-                'context_array': context_array
+                'context': context
             }
         },
         "identifier": did,

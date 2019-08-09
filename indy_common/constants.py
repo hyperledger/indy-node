@@ -14,7 +14,7 @@ Environment = NamedTuple("Environment", [
 # CONTEXT
 CONTEXT_NAME = "name"
 CONTEXT_VERSION = "version"
-CONTEXT_CONTEXT_ARRAY = "context_array"
+CONTEXT_CONTEXT = "context"
 CONTEXT_FROM = "dest"
 
 # SCHEMA

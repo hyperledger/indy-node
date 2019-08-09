@@ -1,10 +1,10 @@
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 
-from indy_common.constants import SET_CONTEXT, CONTEXT_CONTEXT_ARRAY
+from indy_common.constants import SET_CONTEXT, CONTEXT_CONTEXT
 
 from indy_common.req_utils import get_write_context_name, get_write_context_version, get_txn_context_name, \
-    get_txn_context_version, get_txn_context_context_array
+    get_txn_context_version, get_txn_context_context
 from indy_common.state.state_constants import MARKER_CONTEXT
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
@@ -61,9 +61,9 @@ class ContextHandler(WriteRequestHandler):
             raise Exception("Context transaction has no 'name' property")
         if not request.operation['data']['version']:
             raise Exception("Context transaction has no 'version' property")
-        if not request.operation['data']['context_array']:
-            raise Exception("Context transaction has no 'context_array' property")
-        ContextHandler._validate_context(request.operation['data']['context_array'])
+        if not request.operation['data']['context']:
+            raise Exception("Context transaction has no 'context' property")
+        ContextHandler._validate_context(request.operation['data']['context'])
 
     def dynamic_validation(self, request: Request):
         # we can not add a Context with already existent NAME and VERSION
@@ -102,7 +102,7 @@ class ContextHandler(WriteRequestHandler):
         context_name = get_txn_context_name(txn)
         context_version = get_txn_context_version(txn)
         value = {
-            CONTEXT_CONTEXT_ARRAY: get_txn_context_context_array(txn)
+            CONTEXT_CONTEXT: get_txn_context_context(txn)
         }
         path = ContextHandler.make_state_path_for_context(origin, context_name, context_version)
         if path_only:

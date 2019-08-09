@@ -96,7 +96,7 @@ def test_static_validation_pass_valid_transaction():
         "data": {
             "name": "TestContext",
             "version": 1,
-            "context_array": w3c_base
+            "context": w3c_base
         },
         "type": "200"
     }
