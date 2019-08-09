@@ -75,6 +75,7 @@ transaction specific data:
         "metadata": {
             "reqId": <...>,
             "from": <...>,
+            "endorser": <...>,
             "digest": <...>,
             "payloadDigest": <...>,
             "taaAcceptance": {
@@ -141,12 +142,17 @@ transaction specific data:
         Metadata as came from the request.
 
         - `from` (base58-encoded string):
-             Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
-             for 16 or 32 byte DID value.
-             It may differ from `did` field for some of transaction (for example NYM), where `did` is a
-             target identifier (for example, a newly created DID identifier).
-
-             *Example*: `from` is a DID of a Endorser creating a new DID, and `did` is a newly created DID.
+         
+             Identifier (DID) of the transaction author as base58-encoded string
+             for 16 or 32 bit DID value.
+             It may differ from `endorser` field who submits the transaction on behalf of `identifier`.
+             If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own.
+             It also may differ from `dest` field for some of requests (for example NYM), where `dest` is a target identifier (for example, a newly created DID identifier).
+             
+             *Example*:
+             
+             - `identifier` is a DID of a transaction author who doesn't have write permissions; `endorser` is a DID of a user with Endorser role (that is with write permissions).
+             - new NYM creation: `identifier` is a DID of an Endorser creating a new DID, and `dest` is a newly created DID.
 
         - `reqId` (integer):
             Unique ID number of the request with transaction.
@@ -156,6 +162,11 @@ transaction specific data:
             
         - `payloadDigest` (SHA256 hex digest string):
             SHA256 hash hex digest of the payload fields in the initial requests, that is all fields excluding signatures and plugins-added ones
+ 
+        - `endorser` (base58-encoded string, optional):
+            Identifier (DID) of an Endorser submitting a transaction on behalf of the original author (`identifier`) as base58-encoded string for 16 or 32 bit DID value.
+            If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own.
+            If `endorser` is present then the transaction must be multi-signed by the both author (`identifier`) and Endorser (`endorser`). 
             
         - `taaAcceptance` (dict, optional):
             If transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
@@ -215,7 +226,8 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
 - `dest` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 byte DID value.
-    It differs from the `from` metadata field, where `from` is the DID of the submitter.
+    It may differ from the `from` metadata field, where `from` is the DID of the submitter.
+    If they are equal (in permissionless case), then transaction must be signed by the newly created `verkey`.
 
     *Example*: `from` is a DID of a Endorser creating a new DID, and `dest` is a newly created DID.
 
@@ -402,6 +414,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or new na
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "endorser": "D6HG5g65TDQr1PPHHRoiGf",
             "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
             "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
             "taaAcceptance": {
@@ -476,6 +489,7 @@ Adds a claim definition (in particular, public key), that Issuer creates and pub
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "endorser": "D6HG5g65TDQr1PPHHRoiGf",
             "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
             "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
             "taaAcceptance": {
@@ -547,6 +561,7 @@ It contains public keys, maximum number of credentials the registry may contain,
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "endorser": "D6HG5g65TDQr1PPHHRoiGf",
             'digest': '4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453',
             'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
             "taaAcceptance": {
@@ -610,6 +625,7 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "endorser": "D6HG5g65TDQr1PPHHRoiGf",
             'digest': '4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453',
             'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
             "taaAcceptance": {
@@ -975,6 +991,13 @@ The `constraint_id` fields is where one can define the desired auth constraint f
             Flag to check if the user must be the owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
             The notion of the `owner` is different for every auth rule. Please reference to [auth_rules.md](auth_rules.md) for details.
             
+        - `off_ledger_signature` (boolean, optional, False by default):
+        
+            Whether signatures against keys not present on the ledger are accepted during verification of required number of valid signatures.
+            An example when it can be set to `True` is creation of a new DID in a permissionless mode, that is when `identifer` is not present on the ledger and a newly created `verkey` is used for signature verification.
+            Another example is signing by cryptonyms  (where identifier is equal to verkey), but this is not supported yet. 
+            If the value of this field is False (default), and the number of required signatures is greater than zero, then the transaction author's DID (`identifier`) must be present on the ledger (corresponding NYM txn must exist).            
+            
         - `metadata` (dict; optional):
         
             Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
@@ -1112,6 +1135,13 @@ Please note, that list elements of `GET_AUTH_RULE` output can be used as an inpu
         
             Flag to check if the user must be the owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
             The notion of the `owner` is different for every auth rule. Please reference to [auth_rules.md](auth_rules.md) for details.
+            
+        - `off_ledger_signature` (boolean, optional, False by default):
+        
+            Whether signatures against keys not present on the ledger are accepted during verification of required number of valid signatures.
+            An example when it can be set to `True` is creation of a new DID in a permissionless mode, that is when `identifer` is not present on the ledger and a newly created `verkey` is used for signature verification.
+            Another example is signing by cryptonyms  (where identifier is equal to verkey), but this is not supported yet. 
+            If the value of this field is False (default), and the number of required signatures is greater than zero, then the transaction author's DID (`identifier`) must be present on the ledger (corresponding NYM txn must exist).            
             
         - `metadata` (dict; optional):
         
