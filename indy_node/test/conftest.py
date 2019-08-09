@@ -28,7 +28,7 @@ from stp_core.common.log import Logger
 
 from plenum.common.util import randomString
 from plenum.common.constants import VALIDATOR, STEWARD_STRING, POOL_LEDGER_ID, DOMAIN_LEDGER_ID, IDR_CACHE_LABEL, \
-    ATTRIB_LABEL, TRUSTEE, STEWARD, KeyValueStorageType, BLS_LABEL
+    ATTRIB_LABEL, TRUSTEE, STEWARD, KeyValueStorageType, BLS_LABEL, TRUSTEE_STRING
 from plenum.test.helper import sdk_get_and_check_replies
 from plenum.test.test_node import checkNodesConnected
 
@@ -46,7 +46,7 @@ from plenum.test.conftest import tdir as plenum_tdir, nodeReg, \
 from plenum.test.conftest import sdk_pool_handle as plenum_pool_handle, sdk_pool_data, sdk_wallet_steward, \
     sdk_wallet_handle, sdk_wallet_data, sdk_steward_seed, sdk_wallet_client, sdk_wallet_trustee, \
     sdk_trustee_seed, trustee_data, sdk_client_seed, poolTxnClientData, poolTxnClientNames, \
-    sdk_wallet_stewards, create_node_and_not_start, sdk_wallet_handle
+    sdk_wallet_stewards, create_node_and_not_start, sdk_wallet_handle, sdk_wallet_new_client, sdk_new_client_seed
 
 from indy_common import strict_types
 from indy_common.constants import APP_NAME, CONFIG_LEDGER_ID, CONFIG_LEDGER_AUTH_POLICY, NETWORK_MONITOR, ENDORSER
@@ -67,6 +67,7 @@ from indy_node.test.upgrade.helper import releaseVersion
 strict_types.defaultShouldCheck = True
 
 Logger.setLogLevel(logging.NOTSET)
+
 
 @pytest.fixture(scope='module')
 def sdk_pool_handle(plenum_pool_handle, nodeSet):
@@ -162,7 +163,6 @@ def sdk_user_wallet_a(nodeSet, sdk_wallet_endorser,
 # since '_get_curr_info' relies on OS package manager
 @pytest.fixture(scope="module")
 def patchNodeControlUtil():
-
     old__get_curr_info = getattr(NodeControlUtil, '_get_curr_info')
 
     @classmethod
@@ -178,10 +178,10 @@ def patchNodeControlUtil():
 
         raise ValueError("Only {} is expected, got: {}".format(APP_NAME, package))
 
-
     setattr(NodeControlUtil, '_get_curr_info', _get_curr_info)
     yield
     setattr(NodeControlUtil, '_get_curr_info', old__get_curr_info)
+
 
 # link patching with tdir as the most common fixture to make the patch
 # applied regardless usage of the pool (there are cases when node control
@@ -337,7 +337,6 @@ def write_auth_req_validator(idr_cache,
     return validator
 
 
-
 @pytest.fixture(scope="module")
 def db_manager(pool_state, domain_state, config_state,
                pool_ledger, domain_ledger, config_ledger,
@@ -367,6 +366,7 @@ def fake_upgrader():
 @pytest.fixture(scope="module")
 def fake_restarter():
     return FakeSomething()
+
 
 @pytest.fixture(scope="module")
 def fake_pool_manager():
@@ -409,7 +409,6 @@ def read_manager(_managers):
     return _managers[1]
 
 
-
 @pytest.fixture(scope='module')
 def write_request_validation(write_auth_req_validator):
     def wrapped(*args, **kwargs):
@@ -420,3 +419,18 @@ def write_request_validation(write_auth_req_validator):
         return True
 
     return wrapped
+
+
+@pytest.fixture(scope='module')
+def sdk_wallet_trustee_list(looper,
+                            sdk_wallet_trustee,
+                            sdk_pool_handle):
+    sdk_wallet_trustee_list = []
+    for i in range(3):
+        wallet = sdk_add_new_nym(looper,
+                                 sdk_pool_handle,
+                                 sdk_wallet_trustee,
+                                 alias='trustee{}'.format(i),
+                                 role=TRUSTEE_STRING)
+        sdk_wallet_trustee_list.append(wallet)
+    return sdk_wallet_trustee_list

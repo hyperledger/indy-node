@@ -154,6 +154,7 @@ Each Request (both write and read) follows the pattern as shown above.
     "metadata": {
         "reqId": <...>,
         "from": <...>,
+        "endorser": <...>
     },
 }
 ```
@@ -179,14 +180,20 @@ Each Request (both write and read) follows the pattern as shown above.
     Metadata coming with the Request and saving in the transaction as is (if this is a write request).
 
     - `from` (base58-encoded string):
-         Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
+         Identifier (DID) of the transaction author as base58-encoded string
          for 16 or 32 bit DID value.
-         It must be present on Ledger for write requests and can be any value for read requests.
-         
-         It may differ from `did` field for some of requests (for example NYM), where `did` is a 
+         It may differ from `endorser` field who submits the transaction on behalf of `identifier`. If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own.
+         It also may differ from `dest` field for some of requests (for example NYM), where `dest` is a 
          target identifier (for example, a newly created DID identifier).
          
-         *Example*: `from` is a DID of a Endorser creating a new DID, and `did` is a newly created DID.
+         *Example*:
+         
+         - `identifier` is a DID of a transaction author who doesn't have write permissions; `endorser` is a DID of a user with Endorser role (that is with write permissions).
+         - new NYM creation: `identifier` is a DID of an Endorser creating a new DID, and `dest` is a newly created DID.
+ 
+     - `endorser` (base58-encoded string, optional):
+        Identifier (DID) of an Endorser submitting a transaction on behalf of the original author (`identifier`) as base58-encoded string for 16 or 32 bit DID value.
+       If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own. If `endorser` is present then the transaction must be multi-signed by the both author (`identifier`) and Endorser (`endorser`).  
          
     - `reqId` (integer): 
         Unique ID number of the request with transaction.
