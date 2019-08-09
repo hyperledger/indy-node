@@ -16,8 +16,11 @@ def test_claim_def_adding_success_1_owner(write_request_validation, req,
 
 
 def test_claim_def_adding_success_2_owner(write_request_validation, req,
-                                          identity_owners, key):
+                                          identity_owners, endorsers, key):
     req.signatures = {idr: "signature" for idr in identity_owners[:2]}
+    # Endorser must be present in case of multi-sig
+    req.endorser = endorsers[0]
+    req.signatures.update({req.endorser: "endorser_sig"})
     assert write_request_validation(req, [key])
 
 
