@@ -8,6 +8,7 @@ As a transaction author, I need my transactions to be written to the ledger pres
  - A transaction author can use a different transaction endorser for future transactions, including updates to attribs and key rotations.
  - The transaction must use the author key to sign the transaction author agreement 
  - If the endorser field is included in a transaction, then the ledger will reject the transaction if it is not signed by the endorser.
+ - It should not be possible to endorse a transaction without explicitly specifying the Endorser.
 
 ## Proposed workflow
 1. Transaction Author builds a new request (`indy_build_xxx_reqeust`).
@@ -61,6 +62,12 @@ pub extern fn indy_append_request_endorser(command_handle: CommandHandle,
   - there must be `endorser`'s signature in `signatures`
   - there must be `identifier`'s signature in `signatures`
   - `signature` must be absent
+      
+#### Request dynamic validation
+In order to avoid endorsement without explicitly specifying an Endorser, the following changes to dynamic validation must be implemented: 
+- If there is `endorser` field, then it can have Endorser role only.
+- If request is multi-signed, and the author is not Trustee/Steward/Endorser, then `endorser` field must be present
+    - `endorser` field is not required if the author is already an Endorser or a trusted role, since multiple trusted signatures (3 Trustees for example) may be required to send a transaction. 
       
 #### Signature Verification
 No changes are required. 
