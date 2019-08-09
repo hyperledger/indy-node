@@ -35,16 +35,18 @@ class ContextHandler(WriteRequestHandler):
         if isinstance(context_array, dict):
             if "@context" not in context_array.keys():
                 raise Exception("Context missing '@context' property")
-            if isinstance(context_array["@context"], list):
+            elif isinstance(context_array["@context"], list):
                 for ctx in context_array["@context"]:
                     if not isinstance(ctx, dict):
                         if ContextHandler._bad_uri(ctx):
                             raise Exception('@context URI badly formed')
+            elif isinstance(context_array["@context"], dict):
+                pass
+            elif isinstance(context_array['@context'], str):
+                if ContextHandler._bad_uri(context_array['@context']):
+                    raise Exception('@context URI badly formed')
             else:
-                if isinstance(context_array["@context"], dict):
-                    pass
-                else:
-                    raise Exception("'@context' value must be list or dict")
+                raise Exception("'@context' value must be list or dict")
         else:
             raise Exception('context is not a dict')
 
