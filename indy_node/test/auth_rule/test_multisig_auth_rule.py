@@ -57,21 +57,6 @@ def sdk_wallet_steward_list(looper,
 
 
 @pytest.fixture(scope='module')
-def sdk_wallet_trustee_list(looper,
-                            sdk_wallet_trustee,
-                            sdk_pool_handle):
-    sdk_wallet_trustee_list = []
-    for i in range(3):
-        wallet = sdk_add_new_nym(looper,
-                                 sdk_pool_handle,
-                                 sdk_wallet_trustee,
-                                 alias='trustee{}'.format(i),
-                                 role=TRUSTEE_STRING)
-        sdk_wallet_trustee_list.append(wallet)
-    return sdk_wallet_trustee_list
-
-
-@pytest.fixture(scope='module')
 def prepare_auth_map(looper,
                      sdk_wallet_trustee,
                      sdk_pool_handle):

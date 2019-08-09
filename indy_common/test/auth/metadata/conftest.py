@@ -29,6 +29,16 @@ def is_owner(request):
     return request.param
 
 
+@pytest.fixture(scope='module', params=[None, ENDORSER])
+def endorser(request):
+    return request.param
+
+
+@pytest.fixture(scope='module', params=[IDENTITY_OWNER, TRUSTEE])
+def author(request):
+    return request.param
+
+
 @pytest.fixture(
     scope='module',
     params=[role for r in range(len(ROLES) + 1) for role in combinations(ROLES, r)],
