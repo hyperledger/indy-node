@@ -19,6 +19,16 @@ def test_validate_context_fail_no_context_property():
     assert "Context missing '@context' property" in str(e.value)
 
 
+@pytest.mark.skip("Until we find a string that fails the regex, or improve the test, this should be skipped")
+def test_validate_context_fail_bad_uri():
+    input_dict = {
+        "@context": "2http:/..@#$"
+    }
+    with pytest.raises(Exception) as e:
+        ContextHandler._validate_context(input_dict)
+    assert "fail" in str(e.value)
+
+
 def test_validate_context_fail_context_not_uri_or_array_or_object():
     input_dict = {
         "@context": 52
@@ -79,6 +89,20 @@ def test_validate_context_pass_context_w3c_base():
     # Sample from specification: https://w3c.github.io/vc-data-model/#base-context
     # Actual file contents from: https://www.w3.org/2018/credentials/v1
     ContextHandler._validate_context(w3c_base)
+
+
+def test_static_validation_pass_valid_transaction():
+    operation = {
+        "data": {
+            "name": "TestContext",
+            "version": 1,
+            "context_array": w3c_base
+        },
+        "type": "200"
+    }
+    req = Request("test", 1, operation, "sig",)
+    ch = ContextHandler(None, None)
+    ch.static_validation(req)
 
 
 def test_validate_context_pass_context_w3c_examples_v1():

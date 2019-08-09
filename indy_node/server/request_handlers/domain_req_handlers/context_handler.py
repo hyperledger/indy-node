@@ -31,20 +31,22 @@ class ContextHandler(WriteRequestHandler):
         return False
 
     @staticmethod
-    def _validate_context(context_array):
-        if isinstance(context_array, dict):
-            if "@context" not in context_array.keys():
+    def _validate_context(context):
+        if isinstance(context, dict):
+            if "@context" not in context.keys():
                 raise Exception("Context missing '@context' property")
-            if isinstance(context_array["@context"], list):
-                for ctx in context_array["@context"]:
+            elif isinstance(context["@context"], list):
+                for ctx in context["@context"]:
                     if not isinstance(ctx, dict):
                         if ContextHandler._bad_uri(ctx):
-                            raise Exception('@context URI badly formed')
+                            raise Exception('@context URI {} badly formed', ctx)
+            elif isinstance(context["@context"], dict):
+                pass
+            elif isinstance(context['@context'], str):
+                if ContextHandler._bad_uri(context['@context']):
+                    raise Exception('@context URI {} badly formed', context['@context'])
             else:
-                if isinstance(context_array["@context"], dict):
-                    pass
-                else:
-                    raise Exception("'@context' value must be list or dict")
+                raise Exception("'@context' value must be url, array, or object")
         else:
             raise Exception('context is not a dict')
 
@@ -62,7 +64,6 @@ class ContextHandler(WriteRequestHandler):
         if not request.operation['data']['context_array']:
             raise Exception("Context transaction has no 'context_array' property")
         ContextHandler._validate_context(request.operation['data']['context_array'])
-
 
     def dynamic_validation(self, request: Request):
         # we can not add a Context with already existent NAME and VERSION
