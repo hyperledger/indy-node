@@ -39,14 +39,14 @@ class ContextHandler(WriteRequestHandler):
                 for ctx in context_array["@context"]:
                     if not isinstance(ctx, dict):
                         if ContextHandler._bad_uri(ctx):
-                            raise Exception('@context URI badly formed')
+                            raise Exception('@context URI {} badly formed', ctx)
             elif isinstance(context_array["@context"], dict):
                 pass
             elif isinstance(context_array['@context'], str):
                 if ContextHandler._bad_uri(context_array['@context']):
-                    raise Exception('@context URI badly formed')
+                    raise Exception('@context URI {} badly formed', context_array['@context'])
             else:
-                raise Exception("'@context' value must be list or dict")
+                raise Exception("'@context' value must be url, array, or object")
         else:
             raise Exception('context is not a dict')
 
