@@ -1,6 +1,7 @@
 
 import pytest
 from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
+from plenum.common.request import Request
 
 
 def test_validate_context_fail_on_empty():
@@ -18,20 +19,32 @@ def test_validate_context_fail_no_context_property():
     assert "Context missing '@context' property" in str(e.value)
 
 
-def test_validate_context_fail_context_not_dict_or_list():
+def test_validate_context_fail_context_not_uri_or_array_or_object():
     input_dict = {
-        "@context": "Thing"
+        "@context": 52
     }
     with pytest.raises(Exception) as e:
         ContextHandler._validate_context(input_dict)
-    assert "'@context' value must be list or dict" in str(e.value)
+    assert "'@context' value must be url, array, or object" in str(e.value)
 
 
-def test_validate_context_pass_context_single_name_value():
+def test_validate_context_pass_value_is_dict():
     input_dict = {
         "@context": {
             "favoriteColor": "https://example.com/vocab#favoriteColor"
         }
+    }
+    ContextHandler._validate_context(input_dict)
+
+
+def test_validate_context_pass_value_is_list():
+    input_dict = {
+        "@context": [
+            {
+                "favoriteColor": "https://example.com/vocab#favoriteColor"
+            },
+            "https://www.w3.org/ns/odrl.jsonld"
+        ]
     }
     ContextHandler._validate_context(input_dict)
 
@@ -44,6 +57,20 @@ def test_validate_context_pass_context_w3c_example_15():
         }
     }
     ContextHandler._validate_context(input_dict)
+
+
+def test_static_validation_pass_valid_transaction():
+    operation = {
+        "data": {
+            "name": "TestContext",
+            "version": 1,
+            "context": w3c_base
+        },
+        "type": "200"
+    }
+    req = Request("test", 1, operation, "sig",)
+    ch = ContextHandler(None, None )
+    ch.static_validation(req)
 
 
 def test_validate_context_pass_context_w3c_base():

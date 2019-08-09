@@ -24,7 +24,7 @@ def test_send_context_multiple_links_with_object(looper, sdk_pool_handle,
         looper, sdk_pool_handle,
         sdk_wallet_endorser,
         test_context_object,
-        "ISO18013_DriverLicenseContextr",
+        "ISO18013_DriverLicenseContext1",
         "1.9"
     )
 
@@ -40,7 +40,7 @@ def test_send_context_multiple_links(looper, sdk_pool_handle,
                 "did:sov:11111111111111111111111;content-id=ctx:9TDvb9PPgKQUWNQcWAFMo4"
             ]
         },
-        "ISO18013_DriverLicenseContext",
+        "ISO18013_DriverLicenseContext2",
         "1.9"
     )
 
@@ -51,11 +51,9 @@ def test_send_context_one_link(looper, sdk_pool_handle,
         looper, sdk_pool_handle,
         sdk_wallet_trustee,
         {
-            '@context':[
-                "did:sov:11111111111111111111111;content-id=ctx:9TDvb9PPgKQUWNQcWAFMo4"
-            ]
+            '@context': "did:sov:11111111111111111111111;content-id=ctx:9TDvb9PPgKQUWNQcWAFMo4"
         },
-        "ISO18013_DriverLicenseContext2",
+        "ISO18013_DriverLicenseContext3",
         "1.9"
     )
 

@@ -37,7 +37,7 @@ class ContextHandler(WriteRequestHandler):
                 raise Exception("Context missing '@context' property")
             if isinstance(context_array["@context"], list):
                 for ctx in context_array["@context"]:
-                    if not isinstance(ctx,dict):
+                    if not isinstance(ctx, dict):
                         if ContextHandler._bad_uri(ctx):
                             raise Exception('@context URI badly formed')
             else:
@@ -59,7 +59,9 @@ class ContextHandler(WriteRequestHandler):
             raise Exception("Context transaction has no 'name' property")
         if not request.operation['data']['version']:
             raise Exception("Context transaction has no 'version' property")
-        ContextHandler._validate_context(request.operation['data']['context_array'])
+        if not request.operation['data']['context']:
+            raise Exception("Context transaction has no 'version' property")
+        ContextHandler._validate_context(request.operation['data']['context'])
 
 
     def dynamic_validation(self, request: Request):
