@@ -12,8 +12,9 @@ def test_plugin_simple_rule_1_sig_owner_no_endorser(write_auth_req_validator, wr
         auth_constraint=AuthConstraint(role=IDENTITY_OWNER, sig_count=1, need_to_be_owner=True,
                                        metadata={PLUGIN_FIELD: 2}),
         valid_actions=[
-            Action(author=IDENTITY_OWNER, endorser=None, sigs={IDENTITY_OWNER: 1},
+            Action(author=IDENTITY_OWNER, endorser=None, sigs={IDENTITY_OWNER: s},
                    is_owner=True, amount=2, extra_sigs=False)
+            for s in range(1, MAX_SIG_COUNT + 1)
         ],
         author=IDENTITY_OWNER, endorser=None,
         all_signatures=signatures, is_owner=is_owner, amount=amount,
@@ -118,8 +119,9 @@ def test_plugin_simple_rule_1_sig_all_roles_owner_no_endorser(write_auth_req_val
                                        off_ledger_signature=off_ledger_signature,
                                        metadata={PLUGIN_FIELD: 2}),
         valid_actions=[
-            Action(author=IDENTITY_OWNER, endorser=None, sigs={IDENTITY_OWNER: 1},
+            Action(author=IDENTITY_OWNER, endorser=None, sigs={IDENTITY_OWNER: s},
                    is_owner=True, amount=2, extra_sigs=False)
+            for s in range(1, MAX_SIG_COUNT + 1)
         ],
         author=IDENTITY_OWNER, endorser=None,
         all_signatures=signatures, is_owner=is_owner, amount=amount,
@@ -257,13 +259,12 @@ def test_plugin_simple_rule_0_sig_owner_no_endorser(write_auth_req_validator, wr
                                        off_ledger_signature=off_ledger_signature,
                                        metadata={PLUGIN_FIELD: 2}),
         valid_actions=[Action(author=IDENTITY_OWNER, endorser=None, sigs={},
-                              is_owner=True, amount=2, extra_sigs=False),
-                       Action(author=IDENTITY_OWNER, endorser=None, sigs={},
-                              is_owner=False, amount=2, extra_sigs=False),
-                       Action(author=IDENTITY_OWNER, endorser=None, sigs={IDENTITY_OWNER: 1},
-                              is_owner=True, amount=2, extra_sigs=False),
-                       Action(author=IDENTITY_OWNER, endorser=None, sigs={IDENTITY_OWNER: 1},
-                              is_owner=False, amount=2, extra_sigs=False)],
+                              is_owner=owner, amount=2, extra_sigs=False)
+                       for owner in [True, False]] +
+                      [Action(author=IDENTITY_OWNER, endorser=None, sigs={IDENTITY_OWNER: s},
+                              is_owner=owner, amount=2, extra_sigs=False)
+                       for owner in [True, False]
+                       for s in range(1, MAX_SIG_COUNT + 1)],
         author=IDENTITY_OWNER, endorser=None,
         all_signatures=signatures, is_owner=is_owner, amount=amount,
         write_auth_req_validator=write_auth_req_validator,

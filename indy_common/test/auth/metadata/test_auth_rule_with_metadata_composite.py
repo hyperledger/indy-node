@@ -210,8 +210,9 @@ def test_plugin_or_rule_one_amount_all_roles_owner_no_endorser(write_auth_req_va
                            off_ledger_signature=off_ledger_signature,
                            metadata={PLUGIN_FIELD: 3}),
         ]),
-        valid_actions=[Action(author=IDENTITY_OWNER, endorser=None, sigs={IDENTITY_OWNER: 1},
-                              is_owner=True, amount=3, extra_sigs=False)],
+        valid_actions=[Action(author=IDENTITY_OWNER, endorser=None, sigs={IDENTITY_OWNER: s},
+                              is_owner=True, amount=3, extra_sigs=False)
+                       for s in range(1, MAX_SIG_COUNT + 1)],
         author=IDENTITY_OWNER, endorser=None,
         all_signatures=signatures, is_owner=is_owner, amount=amount,
         write_auth_req_validator=write_auth_req_validator,

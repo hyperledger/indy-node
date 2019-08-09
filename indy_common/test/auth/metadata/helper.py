@@ -1,4 +1,4 @@
-from typing import NamedTuple, List
+from typing import NamedTuple, List, Optional
 
 from indy_common.authorize.auth_actions import AbstractAuthAction, AuthActionAdd
 from indy_common.authorize.auth_constraints import AuthConstraint
@@ -11,7 +11,7 @@ from plenum.test.helper import randomOperation
 PLUGIN_FIELD = "new_field"
 
 Action = NamedTuple('Action',
-                    [("author", str), ("endorser", str), ("sigs", dict),
+                    [("author", str), ("endorser", Optional[str]), ("sigs", dict),
                      ("is_owner", bool), ("amount", int), ("extra_sigs", bool)])
 
 
