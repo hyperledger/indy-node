@@ -7,11 +7,12 @@ from indy_common.authorize.auth_actions import AbstractAuthAction
 from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AuthConstraint, \
     AuthConstraintAnd, ConstraintsEnum, AuthConstraintOr, AuthConstraintForbidden
 from indy_common.authorize.helper import get_named_role
-from indy_common.constants import NYM, CLAIM_DEF
+from indy_common.constants import ENDORSER, ENDORSER_STRING
 from indy_common.roles import Roles
 from indy_common.transactions import IndyTransactions
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
+from plenum.common.constants import STEWARD, TRUSTEE, TRUSTEE_STRING, STEWARD_STRING
 
 logger = getLogger()
 
@@ -37,6 +38,7 @@ class AbstractAuthorizer(metaclass=ABCMeta):
 
 
 class RolesAuthorizer(AbstractAuthorizer):
+
     def __init__(self, cache: IdrCache):
         super().__init__()
         self.cache = cache
@@ -97,12 +99,8 @@ class RolesAuthorizer(AbstractAuthorizer):
                   request: Request,
                   auth_constraint: AuthConstraint,
                   auth_action: AbstractAuthAction = None):
-        if auth_constraint.sig_count > 0 and not auth_constraint.off_ledger_signature and self.get_role(
-                request) is None:
-            return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
-        if not self.is_sig_count_accepted(request, auth_constraint):
-            role = Roles(auth_constraint.role).name if auth_constraint.role != '*' else '*'
-            return False, "Not enough {} signatures".format(role)
+        # 1. Check that the Author is the owner
+        # do first since it doesn't require going to state
         if not self.is_owner_accepted(auth_constraint, auth_action):
             if auth_action.field != '*':
                 return False, "{} can not touch {} field since only the owner can modify it". \
@@ -112,6 +110,22 @@ class RolesAuthorizer(AbstractAuthorizer):
                 return False, "{} can not edit {} txn since only owner can modify it". \
                     format(self.get_named_role_from_req(request),
                            IndyTransactions.get_name_from_code(auth_action.txn_type))
+
+        author_role = self.get_role(request)
+
+        # 2. Check that the Author is present on the ledger
+        if auth_constraint.sig_count > 0 and not auth_constraint.off_ledger_signature and author_role is None:
+            return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
+
+        # 3. Check that the Author signed the transaction in case of multi-sig
+        if auth_constraint.sig_count > 0 and request.signatures and request.identifier not in request.signatures:
+            return False, "Author must sign the transaction"
+
+        # 4. Check that there are enough signatures of the needed role
+        if not self.is_sig_count_accepted(request, auth_constraint):
+            role = Roles(auth_constraint.role).name if auth_constraint.role != '*' else '*'
+            return False, "Not enough {} signatures".format(role)
+
         return True, ""
 
     def _get_role(self, idr):
@@ -192,3 +206,80 @@ class ForbiddenAuthorizer(AbstractAuthorizer):
                   auth_constraint: AuthConstraintForbidden,
                   auth_action: AbstractAuthAction):
         return False, str(auth_constraint)
+
+
+class EndorserAuthorizer(AbstractAuthorizer):
+    NO_NEED_FOR_ENDORSER_ROLES = {ENDORSER, TRUSTEE, STEWARD}
+    NO_NEED_FOR_ENDORSER_ROLES_STR = [ENDORSER_STRING, TRUSTEE_STRING, STEWARD_STRING]
+
+    ENDORSER_ROLES = {ENDORSER}
+    ENDORSER_ROLES_STR = {ENDORSER_STRING}
+
+    def __init__(self, cache: IdrCache):
+        super().__init__()
+        self.cache = cache
+
+    def authorize(self,
+                  request: Request,
+                  auth_constraint: AuthConstraint,
+                  auth_action: AbstractAuthAction = None):
+        # check if endorser role is valid first
+        res, reason = self._check_endorser_role(request)
+        if not res:
+            return res, reason
+
+        # check if Endorser field must be explicitly present
+        res, reason = self._check_endorser_field_presence(request)
+        if not res:
+            return res, reason
+
+        return True, ""
+
+    def _check_endorser_role(self, request):
+        if request.endorser is None:
+            return True, ""
+
+        endorser_role = self._get_role(request.endorser)
+        if endorser_role not in self.ENDORSER_ROLES:
+            return False, "Endorser must have one of the following roles: {}".format(str(self.ENDORSER_ROLES_STR))
+
+        return True, ""
+
+    def _check_endorser_field_presence(self, request):
+        # 1. Check that if Endorser is present, Endorser must sign the transaction
+        # if author=endorser, then no multi-sig is required, since he's already signed the txn
+        if request.endorser != request.identifier:
+            if request.endorser and not request.signatures:
+                return False, "Endorser must sign the transaction"
+            if request.endorser and request.endorser not in request.signatures:
+                return False, "Endorser must sign the transaction"
+
+        # 2. Endorser is required only when the transaction is endorsed, that is signed by someone else besides the author.
+        # If the auth rule requires an endorser to submit the transaction, then it will be caught by the Roles Authorizer,
+        # so no need to check anything here if we don't have any extra signatures.
+        if not request.signatures:
+            return True, ""
+        has_extra_sigs = len(request.signatures) > 1 or (request.identifier not in request.signatures)
+        if not has_extra_sigs:
+            return True, ""
+
+        # 3. Endorser is required for unprivileged roles only
+        author_role = self._get_role(request.identifier)
+        if author_role == "":  # "" - IDENTITY_OWNER
+            author_role = None
+        if author_role in self.NO_NEED_FOR_ENDORSER_ROLES:
+            return True, ""
+
+        # 4. Check that Endorser field is present
+        if request.endorser is None:
+            return False, "'Endorser' field must be explicitly set for the endorsed transaction"
+
+        return True, ""
+
+    def _get_role(self, idr):
+        if idr is None:
+            return None
+        try:
+            return self.cache.getRole(idr, isCommitted=False)
+        except KeyError:
+            return None

@@ -21,11 +21,22 @@ def req_auth():
 
 
 @pytest.fixture(scope='module')
+def req_multi_signed_by_non_author():
+    return Request(identifier="some_identifier",
+                   reqId=1,
+                   operation=randomOperation(),
+                   signatures={"some_identifier2": "sig"},
+                   protocolVersion=CURRENT_PROTOCOL_VERSION)
+
+
+@pytest.fixture(scope='module')
 def idr_cache(req_auth):
     cache = IdrCache("Cache",
                      KeyValueStorageInMemory())
     cache.set(req_auth.identifier, 1, int(time.time()), role=STEWARD,
-              verkey="SomeVerkey", isCommitted=False)
+              verkey="SomeVerkey", isCommitted=False),
+    cache.set("some_identifier2", 1, int(time.time()), role=STEWARD,
+              verkey="SomeVerkey2", isCommitted=False)
     return cache
 
 
@@ -152,4 +163,19 @@ def test_role_authorizer_off_ledger_signature_count_0_pass(idr_cache, req_auth):
     req_auth._identifier = 'id_off_ledger'
     authorized, reason = authorizer.authorize(req_auth, AuthConstraint(role='*', sig_count=0,
                                                                        off_ledger_signature=True))
+    assert authorized
+
+
+def test_signed_by_author_if_more_than_1_sig(idr_cache, req_multi_signed_by_non_author):
+    authorizer = RolesAuthorizer(cache=idr_cache)
+    authorized, reason = authorizer.authorize(req_multi_signed_by_non_author,
+                                              AuthConstraint(role=STEWARD, sig_count=1))
+    assert not authorized
+    assert "Author must sign the transaction" in reason
+
+
+def test_no_sign_by_author_if_0_sig(idr_cache, req_multi_signed_by_non_author):
+    authorizer = RolesAuthorizer(cache=idr_cache)
+    authorized, reason = authorizer.authorize(req_multi_signed_by_non_author,
+                                              AuthConstraint(role=STEWARD, sig_count=0))
     assert authorized
