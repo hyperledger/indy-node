@@ -389,7 +389,11 @@ def fake_node(db_manager, fake_pool_cfg, fake_upgrader, fake_restarter, fake_poo
                          action_manager=am,
                          db_manager=db_manager,
                          write_req_validator=write_auth_req_validator,
-                         config=FakeSomething(stewardThreshold=20),
+                         config=FakeSomething(
+                             stewardThreshold=20,
+                             poolTransactionsFile="//pool_genesis_that_cannot_exist",
+                             domainTransactionsFile="//domain_genesis_that_cannot_exist"
+                         ),
                          poolCfg=fake_pool_cfg,
                          upgrader=fake_upgrader,
                          restarter=fake_restarter,
