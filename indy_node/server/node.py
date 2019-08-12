@@ -81,7 +81,6 @@ class Node(PlenumNode):
                          genesis_dir=genesis_dir,
                          plugins_dir=plugins_dir,
                          node_info_dir=node_info_dir,
-                         primaryDecider=primaryDecider,
                          pluginPaths=pluginPaths,
                          storage=storage,
                          config=config,

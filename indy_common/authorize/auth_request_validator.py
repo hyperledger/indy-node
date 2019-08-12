@@ -4,7 +4,7 @@ from indy_common.authorize.auth_cons_strategies import LocalAuthStrategy, Config
 from indy_common.authorize.auth_actions import AbstractAuthAction
 from indy_common.authorize.auth_constraints import ConstraintsEnum, AbstractConstraintSerializer
 from indy_common.authorize.authorizer import AbstractAuthorizer, CompositeAuthorizer, RolesAuthorizer, AndAuthorizer, \
-    OrAuthorizer, AuthValidationError, ForbiddenAuthorizer
+    OrAuthorizer, AuthValidationError, ForbiddenAuthorizer, EndorserAuthorizer
 from indy_common.constants import LOCAL_AUTH_POLICY, CONFIG_LEDGER_AUTH_POLICY
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
@@ -12,7 +12,6 @@ from plenum.common.exceptions import UnauthorizedClientRequest
 from plenum.common.metrics_collector import MetricsCollector
 from state.pruning_state import PruningState
 from stp_core.common.log import getlogger
-
 
 logger = getlogger()
 
@@ -44,7 +43,10 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
         self.register_default_authorizers()
 
     def register_default_authorizers(self):
-        self.register_authorizer(RolesAuthorizer(cache=self.cache), auth_constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID)
+        self.register_authorizer(RolesAuthorizer(cache=self.cache),
+                                 auth_constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID)
+        self.register_authorizer(EndorserAuthorizer(cache=self.cache),
+                                 auth_constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID)
         self.register_authorizer(AndAuthorizer(), auth_constraint_id=ConstraintsEnum.AND_CONSTRAINT_ID)
         self.register_authorizer(OrAuthorizer(), auth_constraint_id=ConstraintsEnum.OR_CONSTRAINT_ID)
         self.register_authorizer(ForbiddenAuthorizer(), auth_constraint_id=ConstraintsEnum.FORBIDDEN_CONSTRAINT_ID)
