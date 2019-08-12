@@ -95,7 +95,7 @@ def test_init_state_from_ledger(write_manager,
         FakeSomething(
             db_manager=db_manager,
             write_manager=write_manager,
-            update_txn_with_extra_data=lambda txn: txn))
+            _update_txn_with_extra_data=lambda txn: txn))
     """Check that txn is not exist in state"""
     assert db_manager.get_state(CONFIG_LEDGER_ID).get(config.make_state_path_for_auth_rule(action.get_action_id()),
                             isCommitted=False) is None
