@@ -77,18 +77,18 @@ class NodeBootstrap(PNodeBootstrap):
         attr_store = self.init_attribute_store()
         self.node.db_manager.register_new_store(ATTRIB_LABEL, attr_store)
 
-    def init_storages(self, domain_storage=None):
-        super().init_storages()
+    def _init_storages(self, domain_storage=None):
+        super()._init_storages(domain_storage)
         self.init_idr_cache_storage()
         self.init_attribute_storage()
 
-    def register_pool_req_handlers(self):
+    def _register_pool_req_handlers(self):
         node_handler = NodeHandler(self.node.db_manager,
                                    self.node.bls_bft.bls_crypto_verifier,
                                    self.node.write_req_validator)
         self.node.write_manager.register_req_handler(node_handler)
 
-    def register_domain_req_handlers(self):
+    def _register_domain_req_handlers(self):
         # Read handlers
         get_nym_handler = GetNymHandler(database_manager=self.node.db_manager)
         get_attribute_handler = GetAttributeHandler(database_manager=self.node.db_manager)
@@ -131,7 +131,7 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.read_manager.register_req_handler(get_revoc_reg_handler)
         self.node.read_manager.register_req_handler(get_revoc_reg_delta_handler)
 
-    def register_config_req_handlers(self):
+    def _register_config_req_handlers(self):
         # Read handlers
         get_auth_rule_handler = GetAuthRuleHandler(database_manager=self.node.db_manager,
                                                    write_req_validator=self.node.write_req_validator)
@@ -168,7 +168,7 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.read_manager.register_req_handler(get_taa_aml_handler)
         self.node.read_manager.register_req_handler(get_taa_handler)
 
-    def register_action_req_handlers(self):
+    def _register_action_req_handlers(self):
         # Action handlers
         pool_restart_handler = PoolRestartHandler(database_manager=self.node.db_manager,
                                                   write_req_validator=self.node.write_req_validator,
@@ -180,11 +180,11 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.action_manager.register_action_handler(pool_restart_handler)
         self.node.action_manager.register_action_handler(validator_info_handler)
 
-    def register_domain_batch_handlers(self):
-        super().register_domain_batch_handlers()
+    def _register_domain_batch_handlers(self):
+        super()._register_domain_batch_handlers()
         self.register_idr_cache_batch_handler()
 
-    def register_config_batch_handlers(self):
+    def _register_config_batch_handlers(self):
         config_batch_handler = ConfigBatchHandler(database_manager=self.node.db_manager,
                                                   upgrader=self.node.upgrader,
                                                   pool_config=self.node.poolCfg)
@@ -216,8 +216,8 @@ class NodeBootstrap(PNodeBootstrap):
                          self.node.dataLocation,
                          self.node.config)
 
-    def init_common_managers(self):
-        super().init_common_managers()
+    def _init_common_managers(self):
+        super()._init_common_managers()
         self.node.upgrader = self.init_upgrader()
         self.node.restarter = self.init_restarter()
         self.node.poolCfg = self.init_pool_config()

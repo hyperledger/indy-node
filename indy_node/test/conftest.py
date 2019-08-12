@@ -400,10 +400,10 @@ def fake_node(db_manager, fake_pool_cfg, fake_upgrader, fake_restarter, fake_poo
 def _managers(write_auth_req_validator,
               fake_node):
     nbs = TestNodeBootstrap(fake_node)
-    nbs.register_domain_req_handlers()
-    nbs.register_domain_batch_handlers()
-    nbs.register_config_req_handlers()
-    nbs.register_config_batch_handlers()
+    nbs._register_domain_req_handlers()
+    nbs._register_domain_batch_handlers()
+    nbs._register_config_req_handlers()
+    nbs._register_config_batch_handlers()
     return fake_node.write_manager, fake_node.read_manager
 
 
