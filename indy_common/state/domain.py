@@ -10,7 +10,7 @@ from indy_common.req_utils import get_txn_schema_name, get_txn_claim_def_schema_
     get_txn_schema_attr_names, get_reply_schema_from, get_reply_schema_name, get_reply_schema_version, \
     get_reply_schema_attr_names, \
     get_write_context_name, get_write_context_version, get_txn_context_name, \
-    get_txn_context_version, get_txn_context_context
+    get_txn_context_version, get_txn_context_data
 from indy_common.serialization import attrib_raw_data_serializer
 from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, \
     TARGET_NYM, DATA, TYPE
@@ -299,7 +299,7 @@ def prepare_context_for_state(txn, path_only=False):
     context_name = get_txn_context_name(txn)
     context_version = get_txn_context_version(txn)
     value = {
-        CONTEXT_CONTEXT_ARRAY: get_txn_context_context(txn)
+        CONTEXT_CONTEXT_ARRAY: get_txn_context_data(txn)
     }
     path = make_state_path_for_context(origin, context_name, context_version)
     if path_only:

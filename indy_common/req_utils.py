@@ -29,12 +29,12 @@ def get_txn_context_version(txn):
     return get_payload_data(txn)[DATA][CONTEXT_VERSION]
 
 
-def get_write_context_context(req: Request):
-    return req.operation[DATA][CONTEXT_CONTEXT]
+def get_write_context_data(req: Request):
+    return req.operation[DATA]
 
 
-def get_txn_context_context(txn):
-    return get_payload_data(txn)[DATA][CONTEXT_CONTEXT]
+def get_txn_context_data(txn):
+    return get_payload_data(txn)[DATA]
 
 
 def get_read_context_name(req: Request):
@@ -57,13 +57,12 @@ def get_reply_context_version(reply):
     return reply[DATA][CONTEXT_VERSION]
 
 
-def get_reply_context_context_array(reply):
-    return reply[DATA].get(CONTEXT_CONTEXT_ARRAY)
+def get_reply_context_context(reply):
+    return reply[DATA].get(CONTEXT_CONTEXT)
 
 
 def get_reply_context_from(reply):
     return reply[CONTEXT_FROM]
-
 
 
 # SCHEMA

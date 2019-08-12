@@ -94,6 +94,7 @@ class SchemaField(MessageValidator):
             max_length=SCHEMA_ATTRIBUTES_LIMIT)),
     )
 
+
 # Rich Schema
 # This should work if URIs are passed
 # FIXME This will break if dictionary entries are passed

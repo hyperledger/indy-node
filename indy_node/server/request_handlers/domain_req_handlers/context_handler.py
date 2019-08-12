@@ -1,10 +1,10 @@
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 
-from indy_common.constants import SET_CONTEXT, CONTEXT_CONTEXT
+from indy_common.constants import SET_CONTEXT
 
 from indy_common.req_utils import get_write_context_name, get_write_context_version, get_txn_context_name, \
-    get_txn_context_version, get_txn_context_context
+    get_txn_context_version, get_txn_context_data
 from indy_common.state.state_constants import MARKER_CONTEXT
 from plenum.common.constants import DOMAIN_LEDGER_ID, DATA
 from plenum.common.exceptions import InvalidClientRequest
@@ -71,7 +71,7 @@ def prepare_context_for_state(txn, path_only=False):
     context_name = get_txn_context_name(txn)
     context_version = get_txn_context_version(txn)
     value = {
-        CONTEXT_CONTEXT: get_txn_context_context(txn)
+        DATA: get_txn_context_data(txn)
     }
     path = make_state_path_for_context(origin, context_name, context_version)
     if path_only:
