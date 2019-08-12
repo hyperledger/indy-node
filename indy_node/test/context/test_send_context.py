@@ -47,7 +47,7 @@ def test_send_context_multiple_links(looper, sdk_pool_handle,
 
 def test_send_context_one_link(looper, sdk_pool_handle,
                                 sdk_wallet_trustee):
-    sdk_write_context_and_check(
+    rep = sdk_write_context_and_check(
         looper, sdk_pool_handle,
         sdk_wallet_trustee,
         {
@@ -56,6 +56,10 @@ def test_send_context_one_link(looper, sdk_pool_handle,
         "ISO18013_DriverLicenseContext3",
         "1.9"
     )
+    data = rep[0][0]['operation']['data']
+    assert data[CONTEXT_VERSION] == '1.9'
+    assert data[CONTEXT_NAME] == 'ISO18013_DriverLicenseContext3'
+    assert data[CONTEXT_CONTEXT]['@context'] == "did:sov:11111111111111111111111;content-id=ctx:9TDvb9PPgKQUWNQcWAFMo4"
 
 '''
 def test_can_not_send_same_schema(looper, sdk_pool_handle,
