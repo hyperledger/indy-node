@@ -10,6 +10,12 @@ def test_validate_context_fail_on_empty():
     assert "Context missing '@context' property" in str(e.value)
 
 
+def test_validate_context_fail_not_dict():
+    with pytest.raises(Exception) as e:
+        ContextHandler._validate_context("context")
+    assert "context is not an object" in str(e.value)
+
+
 def test_validate_context_fail_no_context_property():
     input_dict = {
         "name": "Thing"

@@ -6,7 +6,7 @@ from indy_common.constants import SET_CONTEXT, CONTEXT_CONTEXT
 from indy_common.req_utils import get_write_context_name, get_write_context_version, get_txn_context_name, \
     get_txn_context_version, get_txn_context_context
 from indy_common.state.state_constants import MARKER_CONTEXT
-from plenum.common.constants import DOMAIN_LEDGER_ID
+from plenum.common.constants import DOMAIN_LEDGER_ID, DATA
 from plenum.common.exceptions import InvalidClientRequest
 
 from plenum.common.request import Request
@@ -20,35 +20,8 @@ from re import findall
 # defined in https://tools.ietf.org/html/rfc3986#page-50
 URI_REGEX = '^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?'
 
+
 class ContextHandler(WriteRequestHandler):
-
-
-    @staticmethod
-    def _bad_uri(uri_string):
-        url = findall(URI_REGEX, uri_string)
-        if not url:
-            return True
-        return False
-
-    @staticmethod
-    def _validate_context(context):
-        if isinstance(context, dict):
-            if "@context" not in context.keys():
-                raise Exception("Context missing '@context' property")
-            elif isinstance(context["@context"], list):
-                for ctx in context["@context"]:
-                    if not isinstance(ctx, dict):
-                        if ContextHandler._bad_uri(ctx):
-                            raise Exception('@context URI {} badly formed', ctx)
-            elif isinstance(context["@context"], dict):
-                pass
-            elif isinstance(context['@context'], str):
-                if ContextHandler._bad_uri(context['@context']):
-                    raise Exception('@context URI {} badly formed', context['@context'])
-            else:
-                raise Exception("'@context' value must be url, array, or object")
-        else:
-            raise Exception('context is not a dict')
 
     def __init__(self, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator):
@@ -57,13 +30,14 @@ class ContextHandler(WriteRequestHandler):
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
-        if not request.operation['data']['name']:
+        data = request.operation.get(DATA)
+        if not data['name']:
             raise Exception("Context transaction has no 'name' property")
-        if not request.operation['data']['version']:
+        if not data['version']:
             raise Exception("Context transaction has no 'version' property")
-        if not request.operation['data']['context']:
+        if not data['context']:
             raise Exception("Context transaction has no 'context' property")
-        ContextHandler._validate_context(request.operation['data']['context'])
+        ContextHandler._validate_context(data['context'])
 
     def dynamic_validation(self, request: Request):
         # we can not add a Context with already existent NAME and VERSION
@@ -119,3 +93,30 @@ class ContextHandler(WriteRequestHandler):
                     MARKER=MARKER_CONTEXT,
                     CONTEXT_NAME=context_name,
                     CONTEXT_VERSION=context_version).encode()
+
+    @staticmethod
+    def _bad_uri(uri_string):
+        url = findall(URI_REGEX, uri_string)
+        if not url:
+            return True
+        return False
+
+    @staticmethod
+    def _validate_context(context):
+        if isinstance(context, dict):
+            if "@context" not in context.keys():
+                raise Exception("Context missing '@context' property")
+            elif isinstance(context["@context"], list):
+                for ctx in context["@context"]:
+                    if not isinstance(ctx, dict):
+                        if ContextHandler._bad_uri(ctx):
+                            raise Exception('@context URI {} badly formed', ctx)
+            elif isinstance(context["@context"], dict):
+                pass
+            elif isinstance(context['@context'], str):
+                if ContextHandler._bad_uri(context['@context']):
+                    raise Exception('@context URI {} badly formed', context['@context'])
+            else:
+                raise Exception("'@context' value must be url, array, or object")
+        else:
+            raise Exception('context is not an object')
