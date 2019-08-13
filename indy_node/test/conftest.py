@@ -11,12 +11,14 @@ from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.test.constants import IDENTIFIERS
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
+from indy_node.server.node import Node
 from indy_node.server.node_bootstrap import NodeBootstrap
 from ledger.compact_merkle_tree import CompactMerkleTree
 from plenum.bls.bls_store import BlsStore
 from plenum.common.exceptions import UnauthorizedClientRequest
 from plenum.common.ledger import Ledger
 from plenum.server.database_manager import DatabaseManager
+from plenum.server.request_managers.action_request_manager import ActionRequestManager
 from plenum.server.request_managers.read_request_manager import ReadRequestManager
 from plenum.server.request_managers.write_request_manager import WriteRequestManager
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_pool_refresh, prepare_new_node_data, \
@@ -377,11 +379,21 @@ def fake_pool_manager():
 def fake_node(db_manager, fake_pool_cfg, fake_upgrader, fake_restarter, fake_pool_manager):
     wm = WriteRequestManager(database_manager=db_manager)
     rm = ReadRequestManager()
-    return FakeSomething(write_manager=wm,
+    am = ActionRequestManager()
+    return FakeSomething(name="fake_node",
+                         dataLocation="//place_that_cannot_exist",
+                         genesis_dir="//place_that_cannot_exist",
+                         ledger_ids=Node.ledger_ids,
+                         write_manager=wm,
                          read_manager=rm,
+                         action_manager=am,
                          db_manager=db_manager,
                          write_req_validator=write_auth_req_validator,
-                         config=FakeSomething(stewardThreshold=20),
+                         config=FakeSomething(
+                             stewardThreshold=20,
+                             poolTransactionsFile="//pool_genesis_that_cannot_exist",
+                             domainTransactionsFile="//domain_genesis_that_cannot_exist"
+                         ),
                          poolCfg=fake_pool_cfg,
                          upgrader=fake_upgrader,
                          restarter=fake_restarter,
@@ -392,10 +404,10 @@ def fake_node(db_manager, fake_pool_cfg, fake_upgrader, fake_restarter, fake_poo
 def _managers(write_auth_req_validator,
               fake_node):
     nbs = TestNodeBootstrap(fake_node)
-    nbs.register_domain_req_handlers()
-    nbs.register_domain_batch_handlers()
-    nbs.register_config_req_handlers()
-    nbs.register_config_batch_handlers()
+    nbs._register_domain_req_handlers()
+    nbs._register_domain_batch_handlers()
+    nbs._register_config_req_handlers()
+    nbs._register_config_batch_handlers()
     return fake_node.write_manager, fake_node.read_manager
 
 
