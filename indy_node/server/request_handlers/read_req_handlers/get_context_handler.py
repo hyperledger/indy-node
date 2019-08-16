@@ -23,14 +23,8 @@ class GetContextHandler(ReadRequestHandler):
             context_version=context_version,
             with_proof=True
         )
-        # TODO: we have to do this since SCHEMA has a bit different format than other txns
-        # (it has NAME and VERSION inside DATA, and it's not part of the state value, but state key)
         if context is None:
             context = {}
-        context.update({
-            CONTEXT_NAME: context_name,
-            CONTEXT_VERSION: context_version
-        })
         return self.make_result(request=request,
                                 data=context,
                                 last_seq_no=last_seq_no,

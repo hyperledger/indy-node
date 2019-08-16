@@ -2,7 +2,8 @@ import json
 
 import pytest
 
-from indy_common.constants import GET_CONTEXT, CONTEXT_TYPE
+from indy_common.constants import GET_CONTEXT, CONTEXT_TYPE, RS_TYPE, CONTEXT_NAME, CONTEXT_VERSION
+from indy_node.test.context.helper import W3C_BASE_CONTEXT
 from plenum.common.exceptions import RequestNackedException
 
 from plenum.common.constants import DATA, NAME, VERSION, TXN_METADATA, TXN_METADATA_SEQ_NO
@@ -15,17 +16,16 @@ from indy_node.test.api.helper import sdk_write_context
 from indy_node.test.helper import createUuidIdentifier, modify_field
 
 
+TEST_CONTEXT_NAME = "Base_Context"
+TEST_CONTEXT_VERSION = "1.0"
+
+
 @pytest.fixture(scope="module")
 def send_context(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
     context_json, _ = sdk_write_context(looper, sdk_pool_handle, sdk_wallet_trustee,
-        {
-            "@context": {
-                "referenceNumber": "https://example.com/vocab#referenceNumber",
-                "favoriteFood": "https://example.com/vocab#favoriteFood"
-            }
-        },
-        "ISO18013_DriverLicenseContext",
-        "1.9")
+                                        W3C_BASE_CONTEXT,
+                                        TEST_CONTEXT_NAME,
+                                        TEST_CONTEXT_VERSION)
     return json.loads(context_json)['id']
 
 
@@ -40,14 +40,9 @@ def send_context_req(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
     context_json, reply = sdk_write_context(
         looper, sdk_pool_handle,
         sdk_wallet_trustee,
-        {
-            "@context": {
-                "referenceNumber": "https://example.com/vocab#referenceNumber",
-                "favoriteFood": "https://example.com/vocab#favoriteFood"
-            }
-        },
-        "ISO18013_DriverLicenseContext",
-        "1.9")
+        W3C_BASE_CONTEXT,
+        TEST_CONTEXT_NAME,
+        TEST_CONTEXT_VERSION)
     return context_json, reply
 
 
@@ -59,8 +54,8 @@ def test_send_get_context_succeeds(
             'type': GET_CONTEXT,
             'dest': did,
             'meta': {
-                'name': "ISO18013_DriverLicenseContext",
-                'version': "1.9",
+                'name': TEST_CONTEXT_NAME,
+                'version': TEST_CONTEXT_VERSION,
                 'type': CONTEXT_TYPE
             }
         },
@@ -68,11 +63,14 @@ def test_send_get_context_succeeds(
         "reqId": 12345678,
         "protocolVersion": 2,
     }
-
     get_context_txn_json = json.dumps(raw_json)
-
-    rep = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, get_context_txn_json)])
+    rep = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee,
+                                                                     get_context_txn_json)])
     assert rep[0][1]['result']['seqNo']
+    assert rep[0][1]['result']['data']['meta'][RS_TYPE] == CONTEXT_TYPE
+    assert rep[0][1]['result']['data']['meta'][CONTEXT_NAME] == TEST_CONTEXT_NAME
+    assert rep[0][1]['result']['data']['meta'][CONTEXT_VERSION] == TEST_CONTEXT_VERSION
+    assert rep[0][1]['result']['data']['data'] == W3C_BASE_CONTEXT
 
 
 '''def test_send_get_schema_as_client(
