@@ -60,10 +60,10 @@ def test_validate_meta_pass():
     validate_meta(meta)
 
 
-def test_validate_context_fail_on_empty():
-    with pytest.raises(Exception) as e:
-        validate_context({})
-    assert "Context missing '@context' property" in str(e.value)
+def test_validate_data_fail_on_empty():
+    with pytest.raises(KeyError) as e:
+        validate_data({})
+    assert '@context' in str(e.value)
 
 
 def test_validate_context_fail_not_dict():

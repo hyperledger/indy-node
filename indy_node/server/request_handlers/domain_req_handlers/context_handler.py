@@ -128,5 +128,5 @@ def validate_meta(meta):
 
 
 def validate_data(data):
-    if not data['context']:
-        raise Exception("Context transaction has no 'context' property")
+    if not data['@context']:
+        raise Exception("Context transaction has no '@context' property")
