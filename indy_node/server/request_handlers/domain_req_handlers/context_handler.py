@@ -29,9 +29,9 @@ class ContextHandler(WriteRequestHandler):
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
-        meta = request.operation.get('meta')
+        meta = request.operation['meta']
         validate_meta(meta)
-        data = request.operation.get(DATA)
+        data = request.operation['data']
         validate_data(data)
 
     def dynamic_validation(self, request: Request):
