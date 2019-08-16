@@ -61,63 +61,55 @@ def test_validate_meta_pass():
 
 
 def test_validate_data_fail_on_empty():
-    with pytest.raises(KeyError) as e:
-        validate_data({})
-    assert '@context' in str(e.value)
-
-
-def test_validate_context_fail_not_dict():
     with pytest.raises(Exception) as e:
-        validate_context("context")
-    assert "context is not an object" in str(e.value)
+        validate_data({})
+    assert "data missing '@context' property" in str(e.value)
 
 
-def test_validate_context_fail_no_context_property():
+def test_validate_data_fail_not_dict():
+    with pytest.raises(Exception) as e:
+        validate_data("context")
+    assert "data is not an object" in str(e.value)
+
+
+def test_validate_data_fail_no_context_property():
     input_dict = {
         "name": "Thing"
     }
     with pytest.raises(Exception) as e:
-        validate_context(input_dict)
-    assert "Context missing '@context' property" in str(e.value)
+        validate_data(input_dict)
+    assert "data missing '@context' property" in str(e.value)
 
 
 def test_validate_context_fail_bad_uri():
-    input_dict = {
-        "@context": "2http:/..@#$"
-    }
+    context = "2http:/..@#$"
     with pytest.raises(Exception) as e:
-        validate_context(input_dict)
+        validate_context(context)
     assert "2http:/..@#$" in str(e.value)
 
 
 def test_validate_context_fail_context_not_uri_or_array_or_object():
-    input_dict = {
-        "@context": 52
-    }
+    context = 52
     with pytest.raises(Exception) as e:
-        validate_context(input_dict)
+        validate_context(context)
     assert "'@context' value must be url, array, or object" in str(e.value)
 
 
 def test_validate_context_pass_value_is_dict():
-    input_dict = {
-        "@context": {
-            "favoriteColor": "https://example.com/vocab#favoriteColor"
-        }
+    context = {
+        "favoriteColor": "https://example.com/vocab#favoriteColor"
     }
-    validate_context(input_dict)
+    validate_context(context)
 
 
 def test_validate_context_pass_value_is_list():
-    input_dict = {
-        "@context": [
-            {
-                "favoriteColor": "https://example.com/vocab#favoriteColor"
-            },
-            "https://www.w3.org/ns/odrl.jsonld"
-        ]
-    }
-    validate_context(input_dict)
+    context = [
+        {
+            "favoriteColor": "https://example.com/vocab#favoriteColor"
+        },
+        "https://www.w3.org/ns/odrl.jsonld"
+    ]
+    validate_context(context)
 
 
 def test_validate_context_pass_context_w3c_example_15():
@@ -154,11 +146,12 @@ def test_validate_context_pass_context_w3c_base():
 
 def test_static_validation_pass_valid_transaction():
     operation = {
-        "data": {
+        "meta": {
             "name": "TestContext",
             "version": 1,
-            "context": W3C_BASE_CONTEXT
+            "type": "ctx"
         },
+        "data": W3C_BASE_CONTEXT,
         "type": "200"
     }
     req = Request("test", 1, operation, "sig",)

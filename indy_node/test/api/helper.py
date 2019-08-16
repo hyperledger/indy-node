@@ -3,6 +3,8 @@ import base58
 
 from indy.anoncreds import issuer_create_schema
 from indy.ledger import build_schema_request
+
+from indy_common.constants import SET_CONTEXT, CONTEXT_TYPE
 from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req, sdk_get_and_check_replies
 
 
@@ -227,15 +229,15 @@ def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context=[], n
         ))
     '''
     # create json
-    SET_CONTEXT = "200"
     raw_json = {
         'operation': {
             'type': SET_CONTEXT,
-            'data': {
+            'meta': {
                 'name': name,
                 'version': version,
-                'context': context
-            }
+                'type': CONTEXT_TYPE
+            },
+            'data': context
         },
         "identifier": did,
         "reqId": 12345678,
@@ -263,11 +265,12 @@ def sdk_write_context_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
     raw_json = {
         'operation': {
             'type': SET_CONTEXT,
-            'data': {
+            'meta': {
                 'name': name,
                 'version': version,
-                'context': context
-            }
+                'type': 'ctx'
+            },
+            'data': context
         },
         "identifier": did,
         "reqId": 12345678,

@@ -11,11 +11,13 @@ Environment = NamedTuple("Environment", [
 ])
 
 # Rich Schema
+RS_TYPE = "type"
 # CONTEXT
 CONTEXT_NAME = "name"
 CONTEXT_VERSION = "version"
 CONTEXT_CONTEXT = "context"
 CONTEXT_FROM = "dest"
+CONTEXT_TYPE = 'ctx'
 
 # SCHEMA
 SCHEMA_NAME = "name"

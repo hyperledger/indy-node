@@ -1,6 +1,8 @@
 import json
 
 import pytest
+
+from indy_common.constants import GET_CONTEXT, CONTEXT_TYPE
 from plenum.common.exceptions import RequestNackedException
 
 from plenum.common.constants import DATA, NAME, VERSION, TXN_METADATA, TXN_METADATA_SEQ_NO
@@ -52,15 +54,14 @@ def send_context_req(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
 def test_send_get_context_succeeds(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, send_context):
     _, did = sdk_wallet_trustee
-
-    GET_CONTEXT = "300"
     raw_json = {
         'operation': {
             'type': GET_CONTEXT,
             'dest': did,
-            'data': {
+            'meta': {
                 'name': "ISO18013_DriverLicenseContext",
-                'version': "1.9"
+                'version': "1.9",
+                'type': CONTEXT_TYPE
             }
         },
         "identifier": did,

@@ -1,10 +1,11 @@
 import json
 
 import pytest
+from plenum.common.constants import DATA, META
 
 from indy_common.authorize.auth_constraints import AuthConstraintForbidden
 #from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
-from indy_common.constants import CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT
+from indy_common.constants import CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT, RS_TYPE, CONTEXT_TYPE
 from indy_node.test.context.helper import W3C_BASE_CONTEXT
 from indy_common.types import SetContextField
 from indy_node.test.api.helper import validate_write_reply, sdk_write_context_and_check
@@ -22,10 +23,12 @@ def test_send_context_pass(looper, sdk_pool_handle,
         "Base_Context",
         "1.0"
     )
-    data = rep[0][0]['operation']['data']
-    assert data[CONTEXT_VERSION] == '1.0'
-    assert data[CONTEXT_NAME] == 'Base_Context'
-    assert data[CONTEXT_CONTEXT] == W3C_BASE_CONTEXT
+    meta = rep[0][0]['operation'][META]
+    assert meta[CONTEXT_VERSION] == '1.0'
+    assert meta[CONTEXT_NAME] == 'Base_Context'
+    assert meta[RS_TYPE] == CONTEXT_TYPE
+    data = rep[0][0]['operation'][DATA]
+    assert data == W3C_BASE_CONTEXT
 
 
 '''
