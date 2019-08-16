@@ -5,6 +5,7 @@ import pytest
 
 from indy_node.server.node import Node
 from plenum.common.batched import Batched
+from plenum.server.consensus.ordering_service import OrderingService
 from plenum.test.delayers import cDelay, lsDelay
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.test_node import getNonPrimaryReplicas
@@ -81,6 +82,7 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
 
     non_primary_replicas_of_master = getNonPrimaryReplicas(nodeSet, 0)
     slow_node = non_primary_replicas_of_master[0].node
+    slow_os = slow_node.master_replica._ordering_service
 
     slow_node.nodeIbStasher.delay(cDelay(300))
     slow_node.start_catchup = MethodType(patched_start_catchup, slow_node)
@@ -88,9 +90,9 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
     no_more_catchups_needed_call_times_before = \
         slow_node.spylog.count(Node.no_more_catchups_needed.__name__)
     on_batch_rejected_call_times_before = \
-        slow_node.spylog.count(Node.onBatchRejected.__name__)
+        slow_os.spylog.count(OrderingService.post_batch_rejection.__name__)
     on_batch_created_call_times_before = \
-        slow_node.spylog.count(Node.onBatchCreated.__name__)
+        slow_os.spylog.count(OrderingService.post_batch_creation.__name__)
     process_ordered_call_times_before = \
         slow_node.spylog.count(Node.processOrdered.__name__)
 
@@ -105,9 +107,9 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
     looper.run(eventually(check_catchup_done, retryWait=1, timeout=10))
 
     on_batch_rejected_call_times_after = \
-        slow_node.spylog.count(Node.onBatchRejected.__name__)
+        slow_os.spylog.count(OrderingService.post_batch_rejection.__name__)
     on_batch_created_call_times_after = \
-        slow_node.spylog.count(Node.onBatchCreated.__name__)
+        slow_os.spylog.count(OrderingService.post_batch_creation.__name__)
     process_ordered_call_times_after = \
         slow_node.spylog.count(Node.processOrdered.__name__)
 
