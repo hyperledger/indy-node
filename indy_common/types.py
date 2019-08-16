@@ -3,7 +3,7 @@ from copy import deepcopy
 from hashlib import sha256
 
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
-    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, SCHEMA_IS_STRICT
+    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, SCHEMA_IS_STRICT, META
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.fields import ConstantField, IdentifierField, \
@@ -188,10 +188,10 @@ class ClientSetContextOperation(MessageValidator):
 
 
 class ClientGetContextOperation(MessageValidator):
-    context = (
+    schema = (
         (TXN_TYPE, ConstantField(GET_CONTEXT)),
         (CONTEXT_FROM, IdentifierField()),
-        (DATA, GetContextField()),
+        (META, GetContextField()),
     )
 
 
