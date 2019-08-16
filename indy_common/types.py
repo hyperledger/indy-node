@@ -100,7 +100,7 @@ class SchemaField(MessageValidator):
 # FIXME This will break if dictionary entries are passed
 # FIXME Replace LimitedLengthStringField with something that can validate a context.
 class SetContextField(MessageValidator):
-    context = (
+    schema = (
         (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
         (CONTEXT_CONTEXT, IterableField(
@@ -110,7 +110,7 @@ class SetContextField(MessageValidator):
     )
 
 class GetContextField(MessageValidator):
-    context = (
+    schema = (
         (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
         (ORIGIN, IdentifierField(optional=True))
@@ -185,6 +185,7 @@ class ClientSetContextOperation(MessageValidator):
         (TXN_TYPE, ConstantField(SET_CONTEXT)),
         (DATA, SetContextField()),
     )
+
 
 class ClientGetContextOperation(MessageValidator):
     context = (

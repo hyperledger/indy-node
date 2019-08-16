@@ -104,22 +104,29 @@ def validate_context(context):
             for ctx in context["@context"]:
                 if not isinstance(ctx, dict):
                     if _bad_uri(ctx):
-                        raise Exception('@context URI {} badly formed', ctx)
+                        raise Exception('@context URI {} badly formed'.format(ctx))
         elif isinstance(context["@context"], dict):
             pass
         elif isinstance(context['@context'], str):
             if _bad_uri(context['@context']):
-                raise Exception('@context URI {} badly formed', context['@context'])
+                raise Exception('@context URI {} badly formed'.format(context['@context']))
         else:
             raise Exception("'@context' value must be url, array, or object")
     else:
         raise Exception('context is not an object')
 
 
-def validate_data(data):
-    if not data['name']:
+def validate_meta(meta):
+    if not meta['name']:
         raise Exception("Context transaction has no 'name' property")
-    if not data['version']:
+    if not meta['version']:
         raise Exception("Context transaction has no 'version' property")
+    if not meta['type']:
+        raise Exception("Context transaction has no 'type' property")
+    if not meta['type'] == 'ctx':
+        raise Exception("Context transaction meta 'type' is '{}', should be 'ctx'".format(meta['type']))
+
+
+def validate_data(data):
     if not data['context']:
         raise Exception("Context transaction has no 'context' property")

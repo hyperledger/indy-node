@@ -1,43 +1,63 @@
 
 import pytest
 from indy_node.server.request_handlers.domain_req_handlers.context_handler import validate_data, validate_context, \
-    ContextHandler
+    ContextHandler, validate_meta
 from plenum.common.request import Request
 from indy_node.test.context.helper import W3C_BASE_CONTEXT, W3C_EXAMPLE_V1_CONTEXT
 
 
-def test_validate_data_fail_on_empty():
+def test_validate_meta_fail_on_empty():
     with pytest.raises(KeyError) as e:
-        validate_data({})
+        validate_meta({})
     assert "name" in str(e.value)
 
 
-def test_validate_data_fail_no_name():
-    data = {
+def test_validate_meta_fail_no_name():
+    meta = {
         "version": "2.5"
     }
     with pytest.raises(KeyError) as e:
-        validate_data(data)
+        validate_meta(meta)
     assert "name" in str(e.value)
 
 
-def test_validate_data_fail_no_version():
-    data = {
+def test_validate_meta_fail_no_version():
+    meta = {
         "name": "New Context"
     }
     with pytest.raises(KeyError) as e:
-        validate_data(data)
+        validate_meta(meta)
     assert "version" in str(e.value)
 
 
-def test_validate_data_fail_no_context():
-    data = {
+def test_validate_meta_fail_no_type():
+    meta = {
         "name": "New Context",
         "version": "5.2"
     }
     with pytest.raises(KeyError) as e:
-        validate_data(data)
-    assert "context" in str(e.value)
+        validate_meta(meta)
+    assert "type" in str(e.value)
+
+
+def test_validate_meta_fail_wrong_type():
+    meta = {
+        "name": "New Context",
+        "version": "5.2",
+        "type": "sch"
+    }
+    with pytest.raises(Exception) as e:
+        validate_meta(meta)
+    assert "Context transaction meta 'type' is 'sch', should be 'ctx'" in str(e.value)
+
+
+def test_validate_meta_pass():
+    meta = {
+        "name": "New Context",
+        "version": "5.2",
+        "type": "ctx"
+    }
+    validate_meta(meta)
 
 
 def test_validate_context_fail_on_empty():
