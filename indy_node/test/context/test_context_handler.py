@@ -61,14 +61,13 @@ def test_validate_context_fail_no_context_property():
     assert "Context missing '@context' property" in str(e.value)
 
 
-@pytest.mark.skip("Until we find a string that fails the regex, or improve the test, this should be skipped")
 def test_validate_context_fail_bad_uri():
     input_dict = {
         "@context": "2http:/..@#$"
     }
     with pytest.raises(Exception) as e:
         validate_context(input_dict)
-    assert "fail" in str(e.value)
+    assert "2http:/..@#$" in str(e.value)
 
 
 def test_validate_context_fail_context_not_uri_or_array_or_object():

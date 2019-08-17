@@ -17,8 +17,7 @@ from plenum.server.request_handlers.utils import encode_state_value
 
 from re import findall
 
-# defined in https://tools.ietf.org/html/rfc3986#page-50
-URI_REGEX = '^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?'
+URI_REGEX = r'^(?P<scheme>\w+):(?:(?:(?P<url>//[.\w]+)(?:(/(?P<path>[/\w]+)?)?))|(?:(?P<method>\w+):(?P<id>\w+)))'
 
 
 class ContextHandler(WriteRequestHandler):
