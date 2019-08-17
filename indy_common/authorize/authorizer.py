@@ -270,7 +270,17 @@ class EndorserAuthorizer(AbstractAuthorizer):
         if author_role in self.NO_NEED_FOR_ENDORSER_ROLES:
             return True, ""
 
-        # 4. Check that Endorser field is present
+        # 4. Endorser field is not required when multi-signed by non-privileged roles only
+        has_privileged_sig = False
+        for idr, _ in request.signatures.items():
+            role = self._get_role(idr)
+            if role in self.NO_NEED_FOR_ENDORSER_ROLES:
+                has_privileged_sig = True
+                break
+        if not has_privileged_sig:
+            return True, ""
+
+        # 5. Check that Endorser field is present
         if request.endorser is None:
             return False, "'Endorser' field must be explicitly set for the endorsed transaction"
 
