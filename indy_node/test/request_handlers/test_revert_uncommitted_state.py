@@ -18,7 +18,7 @@ def fake_ordering_service(config_ledger,
     ordering_service = FakeSomething(db_manager=db_manager,
                                      post_batch_rejection=lambda *args, **kwargs: True,
                                      _logger=FakeSomething(info=lambda *args, **kwargs: True))
-    ordering_service.l_revert = functools.partial(OrderingService.l_revert, ordering_service)
+    ordering_service._revert = functools.partial(OrderingService._revert, ordering_service)
     return ordering_service
 
 
@@ -42,7 +42,7 @@ def test_revert_uncommitted_state(write_manager,
         isCommitted=False)
     assert constraint_serializer.deserialize(from_state) == constraint
 
-    fake_ordering_service.l_revert(CONFIG_LEDGER_ID,
+    fake_ordering_service._revert(CONFIG_LEDGER_ID,
                                    state_root_hash_before,
                                    req_count)
     """
