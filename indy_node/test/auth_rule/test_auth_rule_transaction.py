@@ -4,17 +4,17 @@ import json
 from common.serializers.serialization import config_state_serializer
 from indy_common.state import config
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.static_auth_rule_helper import StaticAuthRuleHelper
-from plenum.common.constants import TRUSTEE, STEWARD
+from plenum.common.constants import TRUSTEE, STEWARD, DATA
 from plenum.common.exceptions import RequestRejectedException, \
     RequestNackedException
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ROLE, CONSTRAINT_ID, ConstraintsEnum, SIG_COUNT, NEED_TO_BE_OWNER, \
     METADATA, OFF_LEDGER_SIGNATURE
-from indy_common.constants import AUTH_ACTION, OLD_VALUE, NYM, ENDORSER, CONFIG_LEDGER_ID
+from indy_common.constants import AUTH_ACTION, OLD_VALUE, NYM, ENDORSER, CONFIG_LEDGER_ID, CONSTRAINT
 
 from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, sdk_get_and_check_replies
-from indy_node.test.auth_rule.helper import sdk_send_and_check_req_json
+from indy_node.test.auth_rule.helper import sdk_send_and_check_req_json, sdk_send_and_check_get_auth_rule_request
 from indy_node.test.auth_rule.helper import (
     generate_constraint_entity, generate_constraint_list,
     sdk_send_and_check_auth_rule_request, generate_auth_rule_operation,
@@ -150,3 +150,16 @@ def test_auth_rule_state_format(
     path = config.make_state_path_for_auth_rule(StaticAuthRuleHelper.get_auth_key(key))
     state_constraint = config_state_serializer.deserialize(state.get(path))
     assert state_constraint == constraint
+
+    _, before_resp = sdk_send_and_check_get_auth_rule_request(looper,
+                                                              sdk_pool_handle,
+                                                              sdk_wallet_trustee,
+                                                              auth_type=auth_type,
+                                                              auth_action=auth_action,
+                                                              field=field,
+                                                              new_value=new_value
+                                                              )[0]
+
+    for rule in before_resp["result"][DATA]:
+        if rule[CONSTRAINT][CONSTRAINT_ID] == 'ROLE' and off_ledger_signature:
+            assert OFF_LEDGER_SIGNATURE in rule[CONSTRAINT]
