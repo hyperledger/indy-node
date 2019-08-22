@@ -186,7 +186,7 @@ def sdk_send_and_check_auth_rule_request(
 
     # temp fix untill new sdk released
     req_json = json.loads(req_json)
-    if req_json[OPERATION][CONSTRAINT][CONSTRAINT_ID] == 'ROLE':
+    if req_json[OPERATION][CONSTRAINT][CONSTRAINT_ID] == 'ROLE' and OFF_LEDGER_SIGNATURE in constraint:
         req_json[OPERATION][CONSTRAINT][OFF_LEDGER_SIGNATURE] = constraint[OFF_LEDGER_SIGNATURE]
     req_json = json.dumps(req_json)
 
@@ -250,14 +250,16 @@ def generate_constraint_entity(constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID,
                                role=TRUSTEE,
                                sig_count=1,
                                need_to_be_owner=False,
-                               off_ledger_signature=False,
+                               off_ledger_signature=None,
                                metadata={}):
-    return {CONSTRAINT_ID: constraint_id,
-            ROLE: role,
-            SIG_COUNT: sig_count,
-            NEED_TO_BE_OWNER: need_to_be_owner,
-            OFF_LEDGER_SIGNATURE: off_ledger_signature,
-            METADATA: metadata}
+    constraint = {CONSTRAINT_ID: constraint_id,
+                  ROLE: role,
+                  SIG_COUNT: sig_count,
+                  NEED_TO_BE_OWNER: need_to_be_owner,
+                  METADATA: metadata}
+    if off_ledger_signature is not None:
+        constraint[OFF_LEDGER_SIGNATURE] = off_ledger_signature
+    return constraint
 
 
 base58_alphabet = set(base58.alphabet.decode("utf-8"))
