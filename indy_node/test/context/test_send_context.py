@@ -1,12 +1,7 @@
-import json
-
 import pytest
-
-from indy_common.config import CONTEXT_SIZE_LIMIT
 from plenum.common.constants import DATA, META
 
 from indy_common.authorize.auth_constraints import AuthConstraintForbidden
-#from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
 from indy_common.constants import CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT, RS_TYPE, CONTEXT_TYPE
 from indy_node.test.context.helper import W3C_BASE_CONTEXT, SCHEMA_ORG_CONTEXT
 from indy_common.types import SetContextMetaField
@@ -76,33 +71,3 @@ def test_write_same_context_with_different_reqid_fails(looper, sdk_pool_handle, 
         x = len(SCHEMA_ORG_CONTEXT)
         validate_write_reply(resp)
 
-'''
-def test_schema_maximum_attrib(looper, sdk_pool_handle,
-                               sdk_wallet_endorser):
-    attribs = []
-    for i in range(SCHEMA_ATTRIBUTES_LIMIT):
-        attribs.append(randomString(NAME_FIELD_LIMIT))
-
-    sdk_write_schema_and_check(
-        looper, sdk_pool_handle,
-        sdk_wallet_endorser,
-        attribs,
-        "business1",
-        "1.9"
-    )
-
-
-def test_schema_over_maximum_attrib():
-    attribs = []
-    for i in range(CONTEXT_SIZE_LIMIT + 1):
-        attribs.append('attrib' + str(i))
-
-    context = SetContextMetaField()
-    with pytest.raises(Exception) as ex_info:
-        context.validate({CONTEXT_NAME: "business2",
-                         CONTEXT_VERSION: "2.0",
-                         SCHEMA_ATTR_NAMES: attribs})
-    ex_info.match(
-        "length should be at most {}".format(SCHEMA_ATTRIBUTES_LIMIT)
-    )
-'''

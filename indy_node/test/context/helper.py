@@ -7408,3 +7408,8 @@ EXCESSIVELY_BIG_CONTEXT = {
     }
     }
 }
+
+
+TINY_CONTEXT = {
+    "@context": "bob"
+}

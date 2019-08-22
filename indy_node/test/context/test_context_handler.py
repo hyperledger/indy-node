@@ -8,7 +8,6 @@ from indy_node.server.request_handlers.domain_req_handlers.context_handler impor
 from plenum.common.request import Request
 from indy_node.test.context.helper import W3C_BASE_CONTEXT, W3C_EXAMPLE_V1_CONTEXT
 
-
 def test_validate_meta_fail_on_empty():
     with pytest.raises(KeyError) as e:
         validate_meta({})
@@ -154,7 +153,7 @@ def test_static_validation_pass_valid_transaction():
         "meta": {
             "name": "TestContext",
             "version": 1,
-            "type": "ctx"
+            "type": CONTEXT_TYPE
         },
         "data": W3C_BASE_CONTEXT,
         "type": "200"
@@ -216,7 +215,7 @@ def test_static_validation_fail_no_data():
 def test_static_validation_fail_no_type():
     operation = {
         "meta": {
-            "type": "context",
+            "type": CONTEXT_TYPE,
             "name": "TestContext",
             "version": 1
         },
