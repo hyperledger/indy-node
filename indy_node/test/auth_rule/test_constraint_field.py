@@ -150,6 +150,4 @@ def test_auth_constraint_without_off_ledger_sig_from_dct_succesfull():
     assert constr.off_ledger_signature is None
 
     del auth_dct[unkwn]
-    print(auth_dct)
-    print(constr.as_dict)
     assert auth_dct == constr.as_dict

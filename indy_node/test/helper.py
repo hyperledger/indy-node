@@ -184,12 +184,6 @@ def sdk_send_and_check_auth_rule_request(
         constraint=constraint
     )
 
-    # temp fix untill new sdk released
-    req_json = json.loads(req_json)
-    if req_json[OPERATION][CONSTRAINT][CONSTRAINT_ID] == 'ROLE' and OFF_LEDGER_SIGNATURE in constraint:
-        req_json[OPERATION][CONSTRAINT][OFF_LEDGER_SIGNATURE] = constraint[OFF_LEDGER_SIGNATURE]
-    req_json = json.dumps(req_json)
-
     return sdk_send_and_check_req_json(
         looper, sdk_pool_handle, sdk_wallet, req_json, no_wait=no_wait
     )

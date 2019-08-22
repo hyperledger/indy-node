@@ -122,7 +122,7 @@ def test_reqnack_auth_rule_add_transaction_with_wrong_format(looper,
             format(AUTH_ACTION, ADD_PREFIX, OLD_VALUE))
 
 
-@pytest.mark.parametrize("off_ledger_signature", [True, False, None])
+@pytest.mark.parametrize("off_ledger_signature", [True, False])
 def test_auth_rule_state_format(
     looper, sdk_pool_handle, sdk_wallet_trustee, txnPoolNodeSet, off_ledger_signature
 ):
@@ -135,16 +135,16 @@ def test_auth_rule_state_format(
                   SIG_COUNT: 1,
                   NEED_TO_BE_OWNER: False,
                   METADATA: {}}
-    if off_ledger_signature is not None:
+    if off_ledger_signature:
         constraint[OFF_LEDGER_SIGNATURE] = off_ledger_signature
-    resp = sdk_send_and_check_auth_rule_request(looper,
-                                                sdk_pool_handle,
-                                                sdk_wallet_trustee,
-                                                auth_action=auth_action,
-                                                auth_type=auth_type,
-                                                field=field,
-                                                new_value=new_value,
-                                                constraint=constraint)
+    sdk_send_and_check_auth_rule_request(looper,
+                                         sdk_pool_handle,
+                                         sdk_wallet_trustee,
+                                         auth_action=auth_action,
+                                         auth_type=auth_type,
+                                         field=field,
+                                         new_value=new_value,
+                                         constraint=constraint)
     state = txnPoolNodeSet[0].db_manager.get_database(CONFIG_LEDGER_ID).state
     key = generate_key(auth_action, auth_type, field, new_value)
     path = config.make_state_path_for_auth_rule(StaticAuthRuleHelper.get_auth_key(key))
