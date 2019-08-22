@@ -251,7 +251,7 @@ def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context=[], n
 
 
 def sdk_write_context_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
-                                context=[], name="", version=""):
+                                context=[], name="", version="", reqId=12345678):
     _wh, did = sdk_wallet_steward
 
     '''_, context_json = looper.loop.run_until_complete(
@@ -273,7 +273,7 @@ def sdk_write_context_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
             'data': context
         },
         "identifier": did,
-        "reqId": 12345678,
+        "reqId": reqId,
         "protocolVersion": 2,
     }
 

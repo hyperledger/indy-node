@@ -24,7 +24,7 @@ from common.version import GenericVersion
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ConstraintsEnum, CONSTRAINT_ID, AUTH_CONSTRAINTS, METADATA, \
     NEED_TO_BE_OWNER, SIG_COUNT, ROLE, OFF_LEDGER_SIGNATURE
-from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT, CONTEXT_ATTRIBUTES_LIMIT
+from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT, CONTEXT_SIZE_LIMIT
 from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     POOL_UPGRADE, POOL_CONFIG, \
@@ -99,14 +99,14 @@ class SchemaField(MessageValidator):
 # This should work if URIs are passed
 # FIXME This will break if dictionary entries are passed
 # FIXME Replace LimitedLengthStringField with something that can validate a context.
-class SetContextField(MessageValidator):
+class SetContextMetaField(MessageValidator):
     schema = (
         (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
         (CONTEXT_CONTEXT, IterableField(
             LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
             min_length=1,
-            max_length=CONTEXT_ATTRIBUTES_LIMIT)),
+            max_length=CONTEXT_SIZE_LIMIT)),
     )
 
 class GetContextField(MessageValidator):
@@ -179,11 +179,12 @@ class ClientGetSchemaOperation(MessageValidator):
     )
 
 
-#Rich Schema
+# Rich Schema
+# this class is not actually used for static validation at this time
 class ClientSetContextOperation(MessageValidator):
     context = (
         (TXN_TYPE, ConstantField(SET_CONTEXT)),
-        (DATA, SetContextField()),
+        (DATA, SetContextMetaField()),
     )
 
 
