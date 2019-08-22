@@ -84,7 +84,7 @@ class AuthConstraintForbidden(AbstractAuthConstraint):
 class AuthConstraint(AbstractAuthConstraint):
     def __init__(self, role, sig_count,
                  need_to_be_owner=False,
-                 off_ledger_signature=False,
+                 off_ledger_signature=None,
                  metadata={}):
         self._role_validation(role, off_ledger_signature)
         self.role = role
@@ -96,14 +96,16 @@ class AuthConstraint(AbstractAuthConstraint):
 
     @property
     def as_dict(self):
-        return {
+        constraint = {
             CONSTRAINT_ID: self.constraint_id,
             ROLE: self.role,
             SIG_COUNT: self.sig_count,
             NEED_TO_BE_OWNER: self.need_to_be_owner,
-            OFF_LEDGER_SIGNATURE: self.off_ledger_signature,
             METADATA: self.metadata
         }
+        if self.off_ledger_signature is not None:
+            constraint[OFF_LEDGER_SIGNATURE] = self.off_ledger_signature
+        return constraint
 
     @staticmethod
     def _role_validation(role, off_ledger_signature):
@@ -155,7 +157,7 @@ class AuthConstraint(AbstractAuthConstraint):
     def from_dict(as_dict):
         return AuthConstraint(role=as_dict[ROLE], sig_count=as_dict[SIG_COUNT],
                               need_to_be_owner=as_dict.get(NEED_TO_BE_OWNER, False),
-                              off_ledger_signature=as_dict.get(OFF_LEDGER_SIGNATURE, False),
+                              off_ledger_signature=as_dict.get(OFF_LEDGER_SIGNATURE, None),
                               metadata=as_dict.get(METADATA, {}))
 
     def set_metadata(self, metadata: dict):
