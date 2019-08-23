@@ -11,8 +11,6 @@ from indy_node.test.api.helper import validate_write_reply, sdk_write_context_an
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.util import randomString
 from plenum.config import NAME_FIELD_LIMIT
-import pickle
-import sys
 
 
 def test_send_context_pass(looper, sdk_pool_handle,

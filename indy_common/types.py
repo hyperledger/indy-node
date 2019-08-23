@@ -1,6 +1,9 @@
 import json
+import sys
 from copy import deepcopy
 from hashlib import sha256
+
+from common.exceptions import PlenumTypeError, PlenumValueError
 
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
     VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, SCHEMA_IS_STRICT, META
@@ -10,7 +13,7 @@ from plenum.common.messages.fields import ConstantField, IdentifierField, \
     LimitedLengthStringField, TxnSeqNoField, \
     Sha256HexField, JsonField, MapField, BooleanField, VersionField, \
     ChooseField, IntegerField, IterableField, \
-    AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField, AnyField, FieldBase, ContextField
+    AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField, AnyField, FieldBase, FieldValidator
 from plenum.common.messages.message_base import MessageValidator
 from plenum.common.messages.node_messages import NonNegativeNumberField
 from plenum.common.request import Request as PRequest
@@ -105,6 +108,30 @@ class SetContextMetaField(MessageValidator):
         (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
         (RS_TYPE, ConstantField(CONTEXT_TYPE)),
     )
+
+
+class ContextField(FieldBase):
+    _base_types = None
+
+    def __init__(self, inner_field_type: FieldValidator, max_size=None, **kwargs):
+        if not isinstance(inner_field_type, FieldValidator):
+            raise PlenumTypeError(
+                'inner_field_type', inner_field_type, FieldValidator)
+        if max_size is not None:
+            if not isinstance(max_size, int):
+                raise PlenumTypeError('max_size', max_size, int)
+            if not max_size > 0:
+                raise PlenumValueError('max_size', max_size, '> 0')
+        self.inner_field_type = inner_field_type
+        self.max_size = max_size
+        super().__init__(**kwargs)
+
+    def _specific_validation(self, val):
+        if self.max_size is not None:
+            arr = json.dumps(val)
+            size = sys.getsizeof(arr)
+            if size > self.max_size:
+                return 'size should be at most {}'.format(self.max_size)
 
 
 class SetContextDataField(MessageValidator):
