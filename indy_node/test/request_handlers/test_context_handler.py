@@ -1,6 +1,9 @@
 
 import pytest
 
+from indy_common.authorize.auth_constraints import AuthConstraintForbidden
+from plenum.common.exceptions import UnauthorizedClientRequest
+
 from indy_common.req_utils import get_write_context_name, get_write_context_version
 from plenum.common.txn_util import get_request_data
 
@@ -11,6 +14,7 @@ from indy_node.server.request_handlers.domain_req_handlers.context_handler impor
     ContextHandler, validate_meta
 from plenum.common.request import Request
 from indy_node.test.context.helper import W3C_BASE_CONTEXT, W3C_EXAMPLE_V1_CONTEXT
+from plenum.server.request_handlers.utils import encode_state_value
 
 
 def test_validate_meta_fail_on_empty():
@@ -217,35 +221,26 @@ def test_static_validation_fail_no_data():
     assert "data" in str(e.value)
 
 
-def test_static_validation_fail_no_type():
-    operation = {
-        "meta": {
-            "type": CONTEXT_TYPE,
-            "name": "TestContext",
-            "version": 1
-        },
-        "data": W3C_BASE_CONTEXT
-    }
-    req = Request("test", 1, operation, "sig",)
-    ch = ContextHandler(None, None)
+def test_static_validation_fail_no_type(context_handler, context_request):
+    del context_request.operation['type']
     with pytest.raises(LogicError):
-        ch.static_validation(req)
+        context_handler.static_validation(context_request)
+
+
+def make_context_exist(context_request, context_handler):
+    identifier, req_id, operation = get_request_data(context_request)
+    context_name = get_write_context_name(context_request)
+    context_version = get_write_context_version(context_request)
+    path = ContextHandler.make_state_path_for_context(identifier, context_name, context_version)
+    context_handler.state.set(path, encode_state_value("value", "seqNo", "txnTime"))
+
+
+def test_context_dynamic_validation_failed_existing_context(context_request, context_handler):
+    make_context_exist(context_request, context_handler)
+    with pytest.raises(UnauthorizedClientRequest, match=str(AuthConstraintForbidden())):
+        context_handler.dynamic_validation(context_request)
 
 '''
-def make_schema_exist(schema_request, schema_handler):
-    identifier, req_id, operation = get_request_data(schema_request)
-    schema_name = get_write_context_name(schema_request)
-    schema_version = get_write_context_version(schema_request)
-    path = ContextHandler.make_state_path_for_schema(identifier, schema_name, schema_version)
-    schema_handler.state.set(path, encode_state_value("value", "seqNo", "txnTime"))
-
-
-def test_schema_dynamic_validation_failed_existing_schema(schema_request, schema_handler):
-    make_schema_exist(schema_request, schema_handler)
-    with pytest.raises(UnauthorizedClientRequest, match=str(AuthConstraintForbidden())):
-        schema_handler.dynamic_validation(schema_request)
-
-
 def test_schema_dynamic_validation_failed_not_authorised(schema_request, schema_handler):
     add_to_idr(schema_handler.database_manager.idr_cache, schema_request.identifier, None)
     with pytest.raises(UnauthorizedClientRequest):

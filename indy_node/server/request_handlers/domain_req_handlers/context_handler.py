@@ -41,7 +41,7 @@ class ContextHandler(WriteRequestHandler):
         identifier, req_id, operation = get_request_data(request)
         context_name = get_write_context_name(request)
         context_version = get_write_context_version(request)
-        path = make_state_path_for_context(identifier, context_name, context_version)
+        path = ContextHandler.make_state_path_for_context(identifier, context_name, context_version)
         context, _, _ = self.get_from_state(path)
         if context:
             self.write_req_validator.validate(request,
@@ -65,6 +65,14 @@ class ContextHandler(WriteRequestHandler):
         path, value_bytes = prepare_context_for_state(txn)
         self.state.set(path, value_bytes)
 
+    @staticmethod
+    def make_state_path_for_context(authors_did, context_name, context_version) -> bytes:
+        return "{DID}:{MARKER}:{CONTEXT_NAME}:{CONTEXT_VERSION}" \
+            .format(DID=authors_did,
+                    MARKER=MARKER_CONTEXT,
+                    CONTEXT_NAME=context_name,
+                    CONTEXT_VERSION=context_version).encode()
+
 
 def prepare_context_for_state(txn, path_only=False):
     origin = get_from(txn)
@@ -74,21 +82,13 @@ def prepare_context_for_state(txn, path_only=False):
         META: get_txn_context_meta(txn),
         DATA: get_txn_context_data(txn)
     }
-    path = make_state_path_for_context(origin, context_name, context_version)
+    path = ContextHandler.make_state_path_for_context(origin, context_name, context_version)
     if path_only:
         return path
     seq_no = get_seq_no(txn)
     txn_time = get_txn_time(txn)
     value_bytes = encode_state_value(value, seq_no, txn_time)
     return path, value_bytes
-
-
-def make_state_path_for_context(authors_did, context_name, context_version) -> bytes:
-    return "{DID}:{MARKER}:{CONTEXT_NAME}:{CONTEXT_VERSION}" \
-        .format(DID=authors_did,
-                MARKER=MARKER_CONTEXT,
-                CONTEXT_NAME=context_name,
-                CONTEXT_VERSION=context_version).encode()
 
 
 def _bad_uri(uri_string):
