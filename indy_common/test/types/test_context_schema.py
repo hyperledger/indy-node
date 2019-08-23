@@ -1,8 +1,8 @@
 from collections import OrderedDict
 
-from indy_common.types import ClientSchemaOperation, SetContextMetaField, SetContextDataField, ClientSetContextOperation
-from plenum.common.messages.fields import ConstantField, VersionField, IterableField, LimitedLengthStringField, \
-    ContextField
+from indy_common.types import ClientSchemaOperation, SetContextMetaField, SetContextDataField, \
+    ClientSetContextOperation, ContextField
+from plenum.common.messages.fields import ConstantField, VersionField, IterableField, LimitedLengthStringField
 
 EXPECTED_ORDERED_META_FIELDS_SCHEMA = OrderedDict([
     ("name", LimitedLengthStringField),
