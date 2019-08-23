@@ -8,6 +8,7 @@ from indy_node.server.request_handlers.domain_req_handlers.context_handler impor
 from plenum.common.request import Request
 from indy_node.test.context.helper import W3C_BASE_CONTEXT, W3C_EXAMPLE_V1_CONTEXT
 
+
 def test_validate_meta_fail_on_empty():
     with pytest.raises(KeyError) as e:
         validate_meta({})

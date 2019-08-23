@@ -10,7 +10,7 @@ from plenum.common.messages.fields import ConstantField, IdentifierField, \
     LimitedLengthStringField, TxnSeqNoField, \
     Sha256HexField, JsonField, MapField, BooleanField, VersionField, \
     ChooseField, IntegerField, IterableField, \
-    AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField, AnyField, FieldBase
+    AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField, AnyField, FieldBase, ContextField
 from plenum.common.messages.message_base import MessageValidator
 from plenum.common.messages.node_messages import NonNegativeNumberField
 from plenum.common.request import Request as PRequest
@@ -40,7 +40,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
-    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
+    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, RS_TYPE, CONTEXT_TYPE
 from indy_common.version import SchemaVersion, ContextVersion
 
 
@@ -103,11 +103,17 @@ class SetContextMetaField(MessageValidator):
     schema = (
         (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
-        (CONTEXT_CONTEXT, IterableField(
-            LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
-            min_length=1,
-            max_length=CONTEXT_SIZE_LIMIT)),
+        (RS_TYPE, ConstantField(CONTEXT_TYPE)),
     )
+
+
+class SetContextDataField(MessageValidator):
+    schema = (
+        (CONTEXT_CONTEXT, ContextField(
+            LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
+            max_size=CONTEXT_SIZE_LIMIT)),
+    )
+
 
 class GetContextField(MessageValidator):
     schema = (
@@ -182,9 +188,10 @@ class ClientGetSchemaOperation(MessageValidator):
 # Rich Schema
 # this class is not actually used for static validation at this time
 class ClientSetContextOperation(MessageValidator):
-    context = (
+    schema = (
         (TXN_TYPE, ConstantField(SET_CONTEXT)),
-        (DATA, SetContextMetaField()),
+        (META, SetContextMetaField()),
+        (DATA, SetContextDataField()),
     )
 
 
