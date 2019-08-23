@@ -57,12 +57,12 @@ class ContextHandler(WriteRequestHandler):
 
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
-        path = prepare_context_for_state(txn, path_only=True)
+        path = ContextHandler.prepare_context_for_state(txn, path_only=True)
         return path.decode()
 
     def update_state(self, txn, prev_result, request, is_committed=False) -> None:
         self._validate_txn_type(txn)
-        path, value_bytes = prepare_context_for_state(txn)
+        path, value_bytes = ContextHandler.prepare_context_for_state(txn)
         self.state.set(path, value_bytes)
 
     @staticmethod
@@ -73,22 +73,22 @@ class ContextHandler(WriteRequestHandler):
                     CONTEXT_NAME=context_name,
                     CONTEXT_VERSION=context_version).encode()
 
-
-def prepare_context_for_state(txn, path_only=False):
-    origin = get_from(txn)
-    context_name = get_txn_context_name(txn)
-    context_version = get_txn_context_version(txn)
-    value = {
-        META: get_txn_context_meta(txn),
-        DATA: get_txn_context_data(txn)
-    }
-    path = ContextHandler.make_state_path_for_context(origin, context_name, context_version)
-    if path_only:
-        return path
-    seq_no = get_seq_no(txn)
-    txn_time = get_txn_time(txn)
-    value_bytes = encode_state_value(value, seq_no, txn_time)
-    return path, value_bytes
+    @staticmethod
+    def prepare_context_for_state(txn, path_only=False):
+        origin = get_from(txn)
+        context_name = get_txn_context_name(txn)
+        context_version = get_txn_context_version(txn)
+        value = {
+            META: get_txn_context_meta(txn),
+            DATA: get_txn_context_data(txn)
+        }
+        path = ContextHandler.make_state_path_for_context(origin, context_name, context_version)
+        if path_only:
+            return path
+        seq_no = get_seq_no(txn)
+        txn_time = get_txn_time(txn)
+        value_bytes = encode_state_value(value, seq_no, txn_time)
+        return path, value_bytes
 
 
 def _bad_uri(uri_string):

@@ -5,7 +5,7 @@ from indy_common.constants import NYM, NODE, ATTRIB, SCHEMA, CLAIM_DEF, DISCLO, 
 from indy_common.transactions import IndyTransactions
 
 
-def testTransactionsAreEncoded():
+def test_transactions_are_encoded():
     assert NODE == "0"
     assert NYM == "1"
     assert GET_TXNS == "3"
@@ -39,8 +39,7 @@ def testTransactionsAreEncoded():
     assert GET_CONTEXT == "300"
 
 
-
-def testTransactionEnumDecoded():
+def test_transaction_enum_decoded():
     assert IndyTransactions.NODE.name == "NODE"
     assert IndyTransactions.NYM.name == "NYM"
 
@@ -74,8 +73,7 @@ def testTransactionEnumDecoded():
     assert IndyTransactions.GET_CONTEXT.name == "GET_CONTEXT"
     
 
-
-def testTransactionEnumEncoded():
+def test_transaction_enum_encoded():
     assert IndyTransactions.NODE.value == "0"
     assert IndyTransactions.NYM.value == "1"
     assert IndyTransactions.GET_TXNS.value == "3"
