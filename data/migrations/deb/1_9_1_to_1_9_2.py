@@ -30,34 +30,18 @@ def get_node_name():
     return node_name
 
 
-def is_node_stopped():
-    ret = subprocess.run(["systemctl", "status", "indy-node"], stdout=subprocess.PIPE)
-
-    if ret.returncode == 0:
-        return False
-    return True
-
-
 def remove_dir(path_to_dir):
     try:
         shutil.rmtree(path_to_dir)
     except shutil.Error as ex:
-        logger.error("""While removing directory: {}
-    the next error was raised:
-    {}""".format(path_to_dir, ex))
+        logger.error("""While removing directory: {} the next error was raised:
+{}""".format(path_to_dir, ex))
 
         return False
     return True
 
 
 def migrate_all():
-
-    # Check, that node is stopped
-    if not is_node_stopped():
-        logger.error(
-            'Please, stop indy-node service before script running '
-            '(for example, you can run "systemctl stop indy-node")')
-        return False
 
     node_name = get_node_name()
     if node_name is None:
