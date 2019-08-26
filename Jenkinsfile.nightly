@@ -60,7 +60,7 @@ try {
             ['TestAuthMapSchemaSuite.py'],
             ['TestAuthMapUpgradeSuite.py']
         ]
-        testVersion = 'v0.8.11'
+        testVersion = 'v0.8.12'
         testVersionByTag = true
         delegate.gatherLogs = gatherLogs
     }
