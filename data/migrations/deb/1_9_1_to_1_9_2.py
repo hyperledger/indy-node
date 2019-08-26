@@ -38,6 +38,18 @@ def is_node_stopped():
     return True
 
 
+def remove_dir(path_to_dir):
+    try:
+        shutil.rmtree(path_to_dir)
+    except shutil.Error as ex:
+        logger.error("""While removing directory: {}
+    the next error was raised:
+    {}""".format(path_to_dir, ex))
+
+        return False
+    return True
+
+
 def migrate_all():
 
     # Check, that node is stopped
@@ -52,28 +64,35 @@ def migrate_all():
         return False
 
     config = getConfig()
-
     config_helper = NodeConfigHelper(node_name, config)
 
     if BUILDER_NET_NETWORK_NAME != config.NETWORK_NAME:
-        logger.error("This script can be used only for {} network".format(BUILDER_NET_NETWORK_NAME))
+        logger.info("This script can be used only for {} network".format(BUILDER_NET_NETWORK_NAME))
         return False
 
     path_to_config_state = os.path.join(config_helper.ledger_dir, config.configStateDbName)
+    path_to_config_ts_db = os.path.join(config_helper.ledger_dir, config.configStateTsDbName)
+
+    if not os.path.exists(path_to_config_ts_db):
+        logger.error("Path {} to config's timestamp storage does not exist".format(path_to_config_ts_db))
+        return False
 
     if not os.path.exists(path_to_config_state):
         logger.error("Path {} to config_state storage does not exist".format(path_to_config_state))
         return False
 
-    try:
-        shutil.rmtree(path_to_config_state)
-    except shutil.Error as ex:
-        logger.error("""While removing directory: {}
-the next error was raised:
-{}""".format(path_to_config_state, ex))
+    if not remove_dir(path_to_config_ts_db):
+        logger.error("Failed to remove {}".format(path_to_config_ts_db))
+        return False
 
+    if not remove_dir(path_to_config_state):
+        logger.error("Failed to remove {}".format(path_to_config_state))
         return False
 
     logger.info("Config state storage was successfully removed. Path was {}".format(path_to_config_state))
 
     return True
+
+
+if not migrate_all():
+    logger.error("Config state storage removing failed")
