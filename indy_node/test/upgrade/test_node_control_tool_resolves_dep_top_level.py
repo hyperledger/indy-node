@@ -17,9 +17,10 @@ PACKAGE_MNG_EXT_PTK_OUTPUT = "Package: {}\nStatus: install ok installed\nPriorit
 
 
 @pytest.fixture(scope="module")
-def tconf(tconf):
+def tconf(tconf, tdir):
     oldv = tconf.UPGRADE_ENTRY
     tconf.UPGRADE_ENTRY = EXT_PKT_NAME
+    tconf.LOG_DIR = tdir
     yield tconf
     tconf.UPGRADE_ENTRY = oldv
 
