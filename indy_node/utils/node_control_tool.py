@@ -7,7 +7,7 @@ from typing import List
 from common.version import InvalidVersionError
 
 from indy_common.constants import UPGRADE_MESSAGE, RESTART_MESSAGE, MESSAGE_TYPE
-from stp_core.common.log import getlogger
+from stp_core.common.log import getlogger, Logger
 
 from indy_common.version import (
     PackageVersion, SourceVersion, src_version_cls
@@ -18,12 +18,15 @@ from indy_common.util import compose_cmd
 from indy_node.utils.migration_tool import migrate
 from indy_node.utils.node_control_utils import NodeControlUtil
 
-logger = getlogger()
 
 TIMEOUT = 300
 BACKUP_FORMAT = 'zip'
 BACKUP_NUM = 10
 TMP_DIR = '/tmp/.indy_tmp'
+LOG_FILE_NAME = 'node_control.log'
+
+
+logger = getlogger()
 
 
 class NodeControlTool:
@@ -65,8 +68,13 @@ class NodeControlTool:
         _backup_name_prefix = '{}_backup_'.format(self.config.NETWORK_NAME)
 
         self.backup_name_prefix = backup_name_prefix or _backup_name_prefix
+        self._enable_file_logging()
 
         self._listen()
+
+    def _enable_file_logging(self):
+        path_to_log_file = os.path.join(self.config.LOG_DIR, LOG_FILE_NAME)
+        Logger().enableFileLogging(path_to_log_file)
 
     def _listen(self):
         # Create a TCP/IP socket
