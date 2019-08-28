@@ -9,7 +9,7 @@ from indy_common.authorize.auth_constraints import AuthConstraint, OFF_LEDGER_SI
 from indy_common.constants import CONSTRAINT
 from indy_node.test.auth_rule.test_auth_rules_transaction import RESULT
 from indy_node.test.helper import build_auth_rule_request_json, sdk_send_and_check_req_json, \
-    sdk_send_and_check_get_auth_rule_request
+    sdk_send_and_check_get_auth_rule_request, sdk_send_and_check_auth_rule_request
 from plenum.common.constants import ROLE, VERKEY, NYM, DATA
 from plenum.common.exceptions import RequestNackedException, RequestRejectedException
 from plenum.common.util import randomString
@@ -128,13 +128,3 @@ def test_create_did_without_endorser_need_to_be(looper, txnPoolNodeSet, nym_txn_
     request_couple = sdk_sign_and_send_prepared_request(looper, (wh, sender_did), sdk_pool_handle, nym_request)
     with pytest.raises(RequestRejectedException, match='is not found in the Ledger'):
         sdk_get_and_check_replies(looper, [request_couple])
-
-
-def test_off_ledger_signature_returned(looper, txnPoolNodeSet, sdk_pool_handle, sdk_wallet_trustee):
-    _, before_resp = sdk_send_and_check_get_auth_rule_request(looper,
-                                                              sdk_pool_handle,
-                                                              sdk_wallet_trustee)[0]
-
-    for rule in before_resp[RESULT][DATA]:
-        if rule[CONSTRAINT][CONSTRAINT_ID] == 'ROLE':
-            assert OFF_LEDGER_SIGNATURE in rule[CONSTRAINT]
