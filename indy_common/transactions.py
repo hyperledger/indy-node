@@ -38,7 +38,7 @@ class IndyTransactions(Transactions):
     GET_AUTH_RULE = "121"
     AUTH_RULES = "122"
 
-    #Rich Schema
+    # Rich Schema
     SET_CONTEXT = "200"
     GET_CONTEXT = "300"
 

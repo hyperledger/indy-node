@@ -32,11 +32,11 @@ class GetContextHandler(ReadRequestHandler):
                                 proof=proof)
 
     def get_context(self,
-                   author: str,
-                   context_name: str,
-                   context_version: str,
-                   is_committed=True,
-                   with_proof=True) -> (str, int, int, list):
+                    author: str,
+                    context_name: str,
+                    context_version: str,
+                    is_committed=True,
+                    with_proof=True) -> (str, int, int, list):
         assert author is not None
         assert context_name is not None
         assert context_version is not None

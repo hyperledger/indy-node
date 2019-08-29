@@ -171,7 +171,7 @@ GET_REVOC_REG = IndyTransactions.GET_REVOC_REG.value
 GET_REVOC_REG_DELTA = IndyTransactions.GET_REVOC_REG_DELTA.value
 CHANGE_KEY = IndyTransactions.CHANGE_KEY.value
 
-#Rich Schema
+# Rich Schema
 SET_CONTEXT = IndyTransactions.SET_CONTEXT.value
 GET_CONTEXT = IndyTransactions.GET_CONTEXT.value
 

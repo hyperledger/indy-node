@@ -504,7 +504,7 @@ class ClientOperationField(PClientOperationField):
         GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
         GET_REVOC_REG: ClientGetRevocRegField(),
         GET_REVOC_REG_DELTA: ClientGetRevocRegDeltaField(),
-        SET_CONTEXT: ClientSetContextOperation(), #Rich Schema 
+        SET_CONTEXT: ClientSetContextOperation(),  # Rich Schema
         GET_CONTEXT: ClientGetContextOperation(),
     }
 

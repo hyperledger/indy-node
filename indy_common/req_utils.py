@@ -10,7 +10,7 @@ from plenum.common.txn_util import get_payload_data
 
 # TODO: use data classes instead
 
-#Rich Schema
+# Rich Schema
 # CONTEXT
 
 def get_write_context_name(req):

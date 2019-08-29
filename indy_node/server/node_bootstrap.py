@@ -111,7 +111,7 @@ class NodeBootstrap(PNodeBootstrap):
         schema_handler = SchemaHandler(database_manager=self.node.db_manager,
                                        write_req_validator=self.node.write_req_validator)
         context_handler = ContextHandler(database_manager=self.node.db_manager,
-                                       write_req_validator=self.node.write_req_validator)
+                                         write_req_validator=self.node.write_req_validator)
         claim_def_handler = ClaimDefHandler(database_manager=self.node.db_manager,
                                             write_req_validator=self.node.write_req_validator)
         revoc_reg_def_handler = RevocRegDefHandler(database_manager=self.node.db_manager,

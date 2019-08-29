@@ -69,13 +69,13 @@ edit_schema = AuthActionEdit(txn_type=SCHEMA,
                              new_value='*')
 
 add_context = AuthActionAdd(txn_type=SET_CONTEXT,
-                           field='*',
-                           value='*')
+                            field='*',
+                            value='*')
 
 edit_context = AuthActionEdit(txn_type=SET_CONTEXT,
-                             field='*',
-                             old_value='*',
-                             new_value='*')
+                              field='*',
+                              old_value='*',
+                              new_value='*')
 
 
 add_claim_def = AuthActionAdd(txn_type=CLAIM_DEF,

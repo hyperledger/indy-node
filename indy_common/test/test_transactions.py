@@ -71,7 +71,7 @@ def test_transaction_enum_decoded():
 
     assert IndyTransactions.SET_CONTEXT.name == "SET_CONTEXT"
     assert IndyTransactions.GET_CONTEXT.name == "GET_CONTEXT"
-    
+
 
 def test_transaction_enum_encoded():
     assert IndyTransactions.NODE.value == "0"
