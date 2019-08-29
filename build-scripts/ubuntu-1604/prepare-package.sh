@@ -22,7 +22,6 @@ echo -e "\n\nPrepares indy-plenum debian package version"
 sed -i -r "s~indy-plenum==([0-9\.]+[0-9])(\.)?([a-z]+)~indy-plenum==\1\~\3~" setup.py
 
 echo -e "\nAdapt the dependencies for the Canonical archive"
-sed -i "s~python-dateutil~python3-dateutil~" setup.py
 sed -i "s~timeout-decorator~python3-timeout-decorator~" setup.py
 sed -i "s~distro~python3-distro~" setup.py
 
