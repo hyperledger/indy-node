@@ -1,9 +1,9 @@
 from indy_common.constants import SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES, SCHEMA_FROM, \
     CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT, CONTEXT_FROM, \
     CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_TAG, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_FROM, \
-    CLAIM_DEF_TAG_DEFAULT, CLAIM_DEF_CL
+    CLAIM_DEF_TAG_DEFAULT, CLAIM_DEF_CL, META
 
-from plenum.common.constants import DATA, META
+from plenum.common.constants import DATA
 from plenum.common.request import Request
 from plenum.common.txn_util import get_payload_data
 

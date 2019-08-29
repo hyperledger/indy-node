@@ -1,12 +1,12 @@
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 
-from indy_common.constants import SET_CONTEXT
+from indy_common.constants import SET_CONTEXT, META
 
 from indy_common.req_utils import get_write_context_name, get_write_context_version, get_txn_context_name, \
     get_txn_context_version, get_txn_context_data, get_txn_context_meta
 from indy_common.state.state_constants import MARKER_CONTEXT
-from plenum.common.constants import DOMAIN_LEDGER_ID, DATA, META
+from plenum.common.constants import DOMAIN_LEDGER_ID, DATA
 from plenum.common.exceptions import InvalidClientRequest
 
 from plenum.common.request import Request

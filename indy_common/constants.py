@@ -12,6 +12,7 @@ Environment = NamedTuple("Environment", [
 
 # Rich Schema
 RS_TYPE = "type"
+META = "meta"
 # CONTEXT
 CONTEXT_NAME = "name"
 CONTEXT_VERSION = "version"
