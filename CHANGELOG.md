@@ -56,9 +56,10 @@ Although every attempt has been made to make this information as accurate as pos
 | --- | --- |
 | indy-plenum | 1.9.2 |
 | indy-node | 1.9.2 |
-| sovrin | 1.1.53 |
+| sovrin | 1.1.56 |
 
 ### Additional Information:
+**Migration script will be applied for buildernet only and will return error message in python shell for any other pools (if manual migration will be performed).**
 **There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
 
 ### Major Changes
