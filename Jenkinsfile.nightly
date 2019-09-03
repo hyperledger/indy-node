@@ -43,11 +43,12 @@ try {
         pkgVersion = buildPkgVersion
         srcVersion = buildSrcVersion
         testSchema = [
-            ['test_ledger.py'],
-            ['test_vc.py'],
+            ['test_ledger.py', 'test_state_proof.py'],
+            ['test_vc.py', 'test_off_ledger_signature.py'],
             ['test_consensus.py', 'TestTAASuite.py'],
             ['test_roles.py', 'test_freshness.py', 'TestMultiSigSuite.py'],
             ['TestAuditSuite.py'],
+            ['TestCatchUpSuite.py'],
             // set of authmap tests
             // TODO might be groupped in parts once https://github.com/docker/docker-py/issues/2278 is resolved
             ['TestAuthMapAttribSuite.py'],
@@ -60,7 +61,7 @@ try {
             ['TestAuthMapSchemaSuite.py'],
             ['TestAuthMapUpgradeSuite.py']
         ]
-        testVersion = 'v0.8.12'
+        testVersion = 'v0.8.13'
         testVersionByTag = true
         delegate.gatherLogs = gatherLogs
     }
