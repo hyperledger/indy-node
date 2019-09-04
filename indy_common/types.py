@@ -114,16 +114,12 @@ class SetContextMetaField(MessageValidator):
 class ContextField(FieldBase):
     _base_types = None
 
-    def __init__(self, inner_field_type: FieldValidator, max_size=None, **kwargs):
-        if not isinstance(inner_field_type, FieldValidator):
-            raise PlenumTypeError(
-                'inner_field_type', inner_field_type, FieldValidator)
+    def __init__(self, max_size=None, **kwargs):
         if max_size is not None:
             if not isinstance(max_size, int):
                 raise PlenumTypeError('max_size', max_size, int)
             if not max_size > 0:
                 raise PlenumValueError('max_size', max_size, '> 0')
-        self.inner_field_type = inner_field_type
         self.max_size = max_size
         super().__init__(**kwargs)
 
@@ -132,13 +128,12 @@ class ContextField(FieldBase):
             arr = json.dumps(val)
             size = sys.getsizeof(arr)
             if size > self.max_size:
-                return 'size should be at most {}'.format(self.max_size)
+                return 'size should be at most {}, context has size {}'.format(self.max_size, size)
 
 
 class SetContextDataField(MessageValidator):
     schema = (
         (CONTEXT_CONTEXT, ContextField(
-            LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
             max_size=CONTEXT_SIZE_LIMIT)),
     )
 
