@@ -4,7 +4,7 @@ from hashlib import sha256
 from common.serializers.serialization import domain_state_serializer
 from indy_common.constants import ATTRIB, GET_ATTR, SIGNATURE_TYPE, REVOC_TYPE, TAG, CRED_DEF_ID, REVOC_REG_DEF_ID, \
     CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_PUBLIC_KEYS, SCHEMA_ATTR_NAMES, CLAIM_DEF_FROM, CLAIM_DEF_TAG, \
-    CLAIM_DEF_TAG_DEFAULT, CLAIM_DEF_CL, CONTEXT_CONTEXT
+    CLAIM_DEF_TAG_DEFAULT, CLAIM_DEF_CL
 from indy_common.req_utils import get_txn_schema_name, get_txn_claim_def_schema_ref, \
     get_txn_claim_def_public_keys, get_txn_claim_def_signature_type, get_txn_claim_def_tag, get_txn_schema_version, \
     get_txn_schema_attr_names, get_reply_schema_from, get_reply_schema_name, get_reply_schema_version, \
