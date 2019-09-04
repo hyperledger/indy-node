@@ -1,4 +1,5 @@
 import json
+import time
 
 from indy import blob_storage
 from indy.anoncreds import issuer_create_and_store_revoc_reg
@@ -10,10 +11,12 @@ from plenum.common.constants import STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PRO
     MULTI_SIGNATURE_PARTICIPANTS, MULTI_SIGNATURE_VALUE, MULTI_SIGNATURE_VALUE_LEDGER_ID, \
     MULTI_SIGNATURE_VALUE_STATE_ROOT, MULTI_SIGNATURE_VALUE_TXN_ROOT, MULTI_SIGNATURE_VALUE_POOL_STATE_ROOT, \
     MULTI_SIGNATURE_VALUE_TIMESTAMP, TYPE, DATA, TXN_TIME, TXN_PAYLOAD, TXN_PAYLOAD_METADATA, TXN_PAYLOAD_METADATA_FROM, \
-    TXN_PAYLOAD_DATA, TXN_METADATA, TXN_METADATA_SEQ_NO, TXN_METADATA_TIME
+    TXN_PAYLOAD_DATA, TXN_METADATA, TXN_METADATA_SEQ_NO, TXN_METADATA_TIME, TXN_TYPE
 from indy_common.constants import VALUE, GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA, \
-    ACCUM_TO, ISSUED, STATE_PROOF_FROM, ACCUM_FROM, CRED_DEF_ID, REVOC_TYPE, TAG
+    ACCUM_TO, ISSUED, STATE_PROOF_FROM, ACCUM_FROM, CRED_DEF_ID, REVOC_TYPE, TAG, REVOC_REG_DEF_ID, FROM, TO, TIMESTAMP
 from common.serializers.serialization import state_roots_serializer, proof_nodes_serializer
+from plenum.common.util import randomString
+from plenum.test.helper import sdk_sign_request_from_dict
 from state.pruning_state import PruningState
 from indy_common.state import domain
 
@@ -152,3 +155,24 @@ def check_valid_proof(reply):
         assert validate_proof(reply_to)
     else:
         assert validate_proof(result)
+
+def build_get_revoc_reg_delta(looper,
+                              sdk_wallet_steward):
+    data = {
+        REVOC_REG_DEF_ID: randomString(10),
+        TXN_TYPE: GET_REVOC_REG_DELTA,
+        FROM: 10,
+        TO: 20,
+    }
+    revoc_reg_delta_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
+    return revoc_reg_delta_req
+
+def build_get_revoc_reg_entry(looper,
+                              sdk_wallet_steward):
+    data = {
+        REVOC_REG_DEF_ID: randomString(10),
+        TXN_TYPE: GET_REVOC_REG,
+        TIMESTAMP: int(time.time())
+    }
+    revoc_reg_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
+    return revoc_reg_req
