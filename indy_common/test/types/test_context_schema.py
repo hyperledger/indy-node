@@ -4,7 +4,7 @@ from indy_common.types import ClientSchemaOperation, SetContextMetaField, SetCon
     ClientSetContextOperation, ContextField
 from plenum.common.messages.fields import ConstantField, VersionField, IterableField, LimitedLengthStringField
 
-EXPECTED_ORDERED_META_FIELDS_SCHEMA = OrderedDict([
+EXPECTED_ORDERED_CONTEXT_META_FIELDS = OrderedDict([
     ("name", LimitedLengthStringField),
     ("version", VersionField),
     ("type", ConstantField),
@@ -13,28 +13,28 @@ EXPECTED_ORDERED_META_FIELDS_SCHEMA = OrderedDict([
 
 def test_meta_has_expected_fields_s():
     actual_field_names = OrderedDict(SetContextMetaField.schema).keys()
-    assert actual_field_names == EXPECTED_ORDERED_META_FIELDS_SCHEMA.keys()
+    assert actual_field_names == EXPECTED_ORDERED_CONTEXT_META_FIELDS.keys()
 
 
 def test_meta_has_expected_validators_s():
     schema = dict(SetContextMetaField.schema)
-    for field, validator in EXPECTED_ORDERED_META_FIELDS_SCHEMA.items():
+    for field, validator in EXPECTED_ORDERED_CONTEXT_META_FIELDS.items():
         assert isinstance(schema[field], validator)
 
 
-EXPECTED_ORDERED_DATA_FIELDS_SCHEMA = OrderedDict([
+EXPECTED_ORDERED_CONTEXT_DATA_FIELDS = OrderedDict([
     ("@context", ContextField),
 ])
 
 
 def test_data_has_expected_fields_s():
     actual_field_names = OrderedDict(SetContextDataField.schema).keys()
-    assert actual_field_names == EXPECTED_ORDERED_DATA_FIELDS_SCHEMA.keys()
+    assert actual_field_names == EXPECTED_ORDERED_CONTEXT_DATA_FIELDS.keys()
 
 
 def test_data_has_expected_validators_s():
     schema = dict(SetContextDataField.schema)
-    for field, validator in EXPECTED_ORDERED_DATA_FIELDS_SCHEMA.items():
+    for field, validator in EXPECTED_ORDERED_CONTEXT_DATA_FIELDS.items():
         assert isinstance(schema[field], validator)
 
 
