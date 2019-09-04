@@ -100,9 +100,6 @@ class SchemaField(MessageValidator):
 
 
 # Rich Schema
-# This should work if URIs are passed
-# FIXME This will break if dictionary entries are passed
-# FIXME Replace LimitedLengthStringField with something that can validate a context.
 class SetContextMetaField(MessageValidator):
     schema = (
         (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
