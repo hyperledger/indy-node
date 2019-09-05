@@ -6,7 +6,7 @@ from plenum.common.constants import DATA
 from indy_common.authorize.auth_constraints import AuthConstraintForbidden
 from indy_common.constants import CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT, RS_TYPE, CONTEXT_TYPE, META, \
     SET_CONTEXT
-from indy_node.test.context.helper import W3C_BASE_CONTEXT, SCHEMA_ORG_CONTEXT, TINY_CONTEXT, EXCESSIVELY_BIG_CONTEXT
+from indy_node.test.context.helper import W3C_BASE_CONTEXT, SCHEMA_ORG_CONTEXT, EXCESSIVELY_BIG_CONTEXT
 from indy_common.types import SetContextMetaField, SetContextDataField, ClientSetContextOperation
 from indy_node.test.api.helper import validate_write_reply, sdk_write_context_and_check
 from plenum.common.exceptions import RequestRejectedException

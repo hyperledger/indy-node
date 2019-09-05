@@ -5383,11 +5383,3 @@ EXCESSIVELY_BIG_CONTEXT = {
         }
     }
 }
-
-
-TINY_CONTEXT = {
-    "@context": {
-        "ExhibitionEvent": {"@id": "schema:ExhibitionEvent"},
-        "Eye": {"@id": "schema:Eye"}
-    }
-}

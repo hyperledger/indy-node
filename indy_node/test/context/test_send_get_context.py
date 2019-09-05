@@ -2,11 +2,11 @@ import json
 
 import pytest
 
-from indy_common.constants import GET_CONTEXT, CONTEXT_TYPE, RS_TYPE, CONTEXT_NAME, CONTEXT_VERSION
+from indy_common.constants import GET_CONTEXT, CONTEXT_TYPE, RS_TYPE, CONTEXT_NAME, CONTEXT_VERSION, META
 from indy_node.test.context.helper import W3C_BASE_CONTEXT
 from plenum.common.exceptions import RequestNackedException
 
-from plenum.common.constants import DATA, NAME, VERSION, TXN_METADATA, TXN_METADATA_SEQ_NO
+from plenum.common.constants import DATA, NAME, VERSION, TXN_METADATA, TXN_METADATA_SEQ_NO, TXN_TYPE
 
 from plenum.common.types import OPERATION
 
@@ -29,34 +29,16 @@ def send_context(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
     return json.loads(context_json)['id']
 
 
-@pytest.fixture(scope="module")
-def send_context_seq_no(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
-    _, reply = sdk_write_context(looper, sdk_pool_handle, sdk_wallet_trustee)
-    return reply['result'][TXN_METADATA][TXN_METADATA_SEQ_NO]
-
-
-@pytest.fixture(scope="module")
-def send_context_req(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
-    context_json, reply = sdk_write_context(
-        looper, sdk_pool_handle,
-        sdk_wallet_trustee,
-        W3C_BASE_CONTEXT,
-        TEST_CONTEXT_NAME,
-        TEST_CONTEXT_VERSION)
-    return context_json, reply
-
-
-def test_send_get_context_succeeds(
-        looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, send_context):
+def test_send_get_context_succeeds(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, send_context):
     _, did = sdk_wallet_trustee
     raw_json = {
         'operation': {
-            'type': GET_CONTEXT,
+            TXN_TYPE: GET_CONTEXT,
             'dest': did,
-            'meta': {
-                'name': TEST_CONTEXT_NAME,
-                'version': TEST_CONTEXT_VERSION,
-                'type': CONTEXT_TYPE
+            META: {
+                CONTEXT_NAME: TEST_CONTEXT_NAME,
+                CONTEXT_VERSION: TEST_CONTEXT_VERSION,
+                RS_TYPE: CONTEXT_TYPE
             }
         },
         "identifier": did,
@@ -67,23 +49,23 @@ def test_send_get_context_succeeds(
     rep = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee,
                                                                      get_context_txn_json)])
     assert rep[0][1]['result']['seqNo']
-    assert rep[0][1]['result']['data']['meta'][RS_TYPE] == CONTEXT_TYPE
-    assert rep[0][1]['result']['data']['meta'][CONTEXT_NAME] == TEST_CONTEXT_NAME
-    assert rep[0][1]['result']['data']['meta'][CONTEXT_VERSION] == TEST_CONTEXT_VERSION
-    assert rep[0][1]['result']['data']['data'] == W3C_BASE_CONTEXT
+    assert rep[0][1]['result'][DATA][META][RS_TYPE] == CONTEXT_TYPE
+    assert rep[0][1]['result'][DATA][META][CONTEXT_NAME] == TEST_CONTEXT_NAME
+    assert rep[0][1]['result'][DATA][META][CONTEXT_VERSION] == TEST_CONTEXT_VERSION
+    assert rep[0][1]['result'][DATA][DATA] == W3C_BASE_CONTEXT
 
 
-def test_send_get_context_as_client(
-        looper, sdk_pool_handle, nodeSet, sdk_wallet_client, sdk_wallet_trustee, send_context):
+def test_send_get_context_as_client(looper, sdk_pool_handle, nodeSet, sdk_wallet_client, sdk_wallet_trustee,
+                                    send_context):
     _, did = sdk_wallet_trustee
     raw_json = {
         'operation': {
-            'type': GET_CONTEXT,
+            TXN_TYPE: GET_CONTEXT,
             'dest': did,
-            'meta': {
-                'name': TEST_CONTEXT_NAME,
-                'version': TEST_CONTEXT_VERSION,
-                'type': CONTEXT_TYPE
+            META: {
+                CONTEXT_NAME: TEST_CONTEXT_NAME,
+                CONTEXT_VERSION: TEST_CONTEXT_VERSION,
+                RS_TYPE: CONTEXT_TYPE
             }
         },
         "identifier": did,
@@ -94,10 +76,10 @@ def test_send_get_context_as_client(
     rep = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client,
                                                                      get_context_txn_json)])
     assert rep[0][1]['result']['seqNo']
-    assert rep[0][1]['result']['data']['meta'][RS_TYPE] == CONTEXT_TYPE
-    assert rep[0][1]['result']['data']['meta'][CONTEXT_NAME] == TEST_CONTEXT_NAME
-    assert rep[0][1]['result']['data']['meta'][CONTEXT_VERSION] == TEST_CONTEXT_VERSION
-    assert rep[0][1]['result']['data']['data'] == W3C_BASE_CONTEXT
+    assert rep[0][1]['result'][DATA][META][RS_TYPE] == CONTEXT_TYPE
+    assert rep[0][1]['result'][DATA][META][CONTEXT_NAME] == TEST_CONTEXT_NAME
+    assert rep[0][1]['result'][DATA][META][CONTEXT_VERSION] == TEST_CONTEXT_VERSION
+    assert rep[0][1]['result'][DATA][DATA] == W3C_BASE_CONTEXT
 
 
 def test_send_get_context_fails_with_invalid_name(
@@ -105,12 +87,12 @@ def test_send_get_context_fails_with_invalid_name(
     _, did = sdk_wallet_trustee
     raw_json = {
         'operation': {
-            'type': GET_CONTEXT,
+            TXN_TYPE: GET_CONTEXT,
             'dest': did,
-            'meta': {
-                'name': "bad_name",
-                'version': TEST_CONTEXT_VERSION,
-                'type': CONTEXT_TYPE
+            META: {
+                CONTEXT_NAME: "bad_name",
+                CONTEXT_VERSION: TEST_CONTEXT_VERSION,
+                RS_TYPE: CONTEXT_TYPE
             }
         },
         "identifier": did,
@@ -128,12 +110,12 @@ def test_send_get_context_fails_with_incorrect_dest(
     _, did = sdk_wallet_client
     raw_json = {
         'operation': {
-            'type': GET_CONTEXT,
+            TXN_TYPE: GET_CONTEXT,
             'dest': did,
-            'meta': {
-                'name': CONTEXT_NAME,
-                'version': TEST_CONTEXT_VERSION,
-                'type': CONTEXT_TYPE
+            META: {
+                CONTEXT_NAME: TEST_CONTEXT_NAME,
+                CONTEXT_VERSION: TEST_CONTEXT_VERSION,
+                RS_TYPE: CONTEXT_TYPE
             }
         },
         "identifier": did,
@@ -151,12 +133,12 @@ def test_send_get_context_fails_with_invalid_dest(
     _, did = sdk_wallet_trustee
     raw_json = {
         'operation': {
-            'type': GET_CONTEXT,
+            TXN_TYPE: GET_CONTEXT,
             'dest': "wrong_did",
-            'meta': {
-                'name': CONTEXT_NAME,
-                'version': TEST_CONTEXT_VERSION,
-                'type': CONTEXT_TYPE
+            META: {
+                CONTEXT_NAME: TEST_CONTEXT_NAME,
+                CONTEXT_VERSION: TEST_CONTEXT_VERSION,
+                RS_TYPE: CONTEXT_TYPE
             }
         },
         "identifier": did,
@@ -167,7 +149,8 @@ def test_send_get_context_fails_with_invalid_dest(
     with pytest.raises(RequestNackedException) as e:
         sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee,
                                                                    get_context_txn_json)])
-    assert "validation error [ClientGetContextOperation]: should not contain the following chars [\'_\'] (dest=wrong_did)" in str(e.value)
+    assert "validation error [ClientGetContextOperation]: should not contain the following chars [\'_\'] (" \
+           "dest=wrong_did)" in str(e.value)
 
 
 def test_send_get_context_fails_with_incorrect_version(
@@ -175,12 +158,12 @@ def test_send_get_context_fails_with_incorrect_version(
     _, did = sdk_wallet_trustee
     raw_json = {
         'operation': {
-            'type': GET_CONTEXT,
+            TXN_TYPE: GET_CONTEXT,
             'dest': did,
-            'meta': {
-                'name': CONTEXT_NAME,
-                'version': '2.0',
-                'type': CONTEXT_TYPE
+            META: {
+                CONTEXT_NAME: TEST_CONTEXT_NAME,
+                CONTEXT_VERSION: '2.0',
+                RS_TYPE: CONTEXT_TYPE
             }
         },
         "identifier": did,
@@ -198,12 +181,12 @@ def test_send_get_context_fails_with_invalid_version(
     _, did = sdk_wallet_trustee
     raw_json = {
         'operation': {
-            'type': GET_CONTEXT,
+            TXN_TYPE: GET_CONTEXT,
             'dest': did,
-            'meta': {
-                'name': CONTEXT_NAME,
-                'version': 2.0,
-                'type': CONTEXT_TYPE
+            META: {
+                CONTEXT_NAME: TEST_CONTEXT_NAME,
+                CONTEXT_VERSION: 2.0,
+                RS_TYPE: CONTEXT_TYPE
             }
         },
         "identifier": did,
@@ -222,12 +205,12 @@ def test_send_get_context_fails_with_invalid_version_syntax(
     _, did = sdk_wallet_trustee
     raw_json = {
         'operation': {
-            'type': GET_CONTEXT,
+            TXN_TYPE: GET_CONTEXT,
             'dest': did,
-            'meta': {
-                'name': CONTEXT_NAME,
-                'version': 'asd',
-                'type': CONTEXT_TYPE
+            META: {
+                CONTEXT_NAME: TEST_CONTEXT_NAME,
+                CONTEXT_VERSION: 'asd',
+                RS_TYPE: CONTEXT_TYPE
             }
         },
         "identifier": did,
@@ -246,11 +229,11 @@ def test_send_get_context_fails_without_version(
     _, did = sdk_wallet_trustee
     raw_json = {
         'operation': {
-            'type': GET_CONTEXT,
+            TXN_TYPE: GET_CONTEXT,
             'dest': did,
-            'meta': {
-                'name': CONTEXT_NAME,
-                'type': CONTEXT_TYPE
+            META: {
+                CONTEXT_NAME: TEST_CONTEXT_NAME,
+                RS_TYPE: CONTEXT_TYPE
             }
         },
         "identifier": did,
@@ -269,11 +252,11 @@ def test_send_get_context_fails_without_name(
     _, did = sdk_wallet_trustee
     raw_json = {
         'operation': {
-            'type': GET_CONTEXT,
+            TXN_TYPE: GET_CONTEXT,
             'dest': did,
-            'meta': {
-                'version': CONTEXT_VERSION,
-                'type': CONTEXT_TYPE
+            META: {
+                CONTEXT_VERSION: TEST_CONTEXT_VERSION,
+                RS_TYPE: CONTEXT_TYPE
             }
         },
         "identifier": did,
@@ -292,11 +275,11 @@ def test_send_get_context_fails_without_dest(
     _, did = sdk_wallet_trustee
     raw_json = {
         'operation': {
-            'type': GET_CONTEXT,
-            'meta': {
-                'name': CONTEXT_NAME,
-                'version': CONTEXT_VERSION,
-                'type': CONTEXT_TYPE
+            TXN_TYPE: GET_CONTEXT,
+            META: {
+                CONTEXT_NAME: TEST_CONTEXT_NAME,
+                CONTEXT_VERSION: TEST_CONTEXT_VERSION,
+                RS_TYPE: CONTEXT_TYPE
             }
         },
         "identifier": did,
