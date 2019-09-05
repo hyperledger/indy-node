@@ -1,7 +1,7 @@
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 
-from indy_common.constants import SET_CONTEXT, META
+from indy_common.constants import SET_CONTEXT, META, CONTEXT_CONTEXT
 
 from indy_common.req_utils import get_write_context_name, get_write_context_version, get_txn_context_name, \
     get_txn_context_version, get_txn_context_data, get_txn_context_meta
@@ -29,10 +29,8 @@ class ContextHandler(WriteRequestHandler):
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
-        meta = request.operation['meta']
-        validate_meta(meta)
-        data = request.operation['data']
-        validate_data(data)
+        data = request.operation[DATA]
+        self._validate_context(data[CONTEXT_CONTEXT])
 
     def dynamic_validation(self, request: Request):
         # we can not add a Context with already existent NAME and VERSION
@@ -65,6 +63,26 @@ class ContextHandler(WriteRequestHandler):
         path, value_bytes = ContextHandler.prepare_context_for_state(txn)
         self.state.set(path, value_bytes)
 
+    def _validate_context(self, context):
+        if isinstance(context, list):
+            for ctx in context:
+                if not isinstance(ctx, dict):
+                    if self._bad_uri(ctx):
+                        raise Exception('@context URI {} badly formed'.format(ctx))
+        elif isinstance(context, dict):
+            pass
+        elif isinstance(context, str):
+            if self._bad_uri(context):
+                raise Exception('@context URI {} badly formed'.format(context))
+        else:
+            raise Exception("'@context' value must be url, array, or object")
+
+    def _bad_uri(self, uri_string):
+        url = findall(URI_REGEX, uri_string)
+        if not url:
+            return True
+        return False
+
     @staticmethod
     def make_state_path_for_context(authors_did, context_name, context_version) -> bytes:
         return "{DID}:{MARKER}:{CONTEXT_NAME}:{CONTEXT_VERSION}" \
@@ -89,46 +107,3 @@ class ContextHandler(WriteRequestHandler):
         txn_time = get_txn_time(txn)
         value_bytes = encode_state_value(value, seq_no, txn_time)
         return path, value_bytes
-
-
-def _bad_uri(uri_string):
-    url = findall(URI_REGEX, uri_string)
-    if not url:
-        return True
-    return False
-
-
-def validate_data(data):
-    if isinstance(data, dict):
-        if "@context" not in data.keys():
-            raise Exception("data missing '@context' property")
-        else:
-            validate_context(data['@context'])
-    else:
-        raise Exception('data is not an object')
-
-
-def validate_meta(meta):
-    if not meta['name']:
-        raise Exception("Context transaction has no 'name' property")
-    if not meta['version']:
-        raise Exception("Context transaction has no 'version' property")
-    if not meta['type']:
-        raise Exception("Context transaction has no 'type' property")
-    if not meta['type'] == 'ctx':
-        raise Exception("Context transaction meta 'type' is '{}', should be 'ctx'".format(meta['type']))
-
-
-def validate_context(context):
-    if isinstance(context, list):
-        for ctx in context:
-            if not isinstance(ctx, dict):
-                if _bad_uri(ctx):
-                    raise Exception('@context URI {} badly formed'.format(ctx))
-    elif isinstance(context, dict):
-        pass
-    elif isinstance(context, str):
-        if _bad_uri(context):
-            raise Exception('@context URI {} badly formed'.format(context))
-    else:
-        raise Exception("'@context' value must be url, array, or object")
