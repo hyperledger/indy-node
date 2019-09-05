@@ -25,9 +25,9 @@ PLUGINS_DIR = '/var/lib/indy/plugins'
 # Directory to store node info.
 NODE_INFO_DIR = '/var/lib/indy'
 
-METRICS_COLLECTOR_TYPE='kv'
+METRICS_COLLECTOR_TYPE = 'kv'
 
-ENABLED_PLUGINS=[]
+ENABLED_PLUGINS = []
 
 ENABLED_PLUGINS.append('sovtoken')
 
