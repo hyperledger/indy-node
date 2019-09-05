@@ -370,4 +370,7 @@ def send_revoc_reg_entry_by_demand(looper,
     return reg_entry_replies[0]
 
 
-
+@pytest.fixture(scope="module")
+def create_node_and_not_start(create_node_and_not_start):
+    create_node_and_not_start.bootstrapper.upload_states()
+    return create_node_and_not_start
