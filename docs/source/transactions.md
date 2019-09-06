@@ -674,6 +674,7 @@ If the Context needs to be evolved, a new Context with a new version or new name
     
     - `name`: Context's name string
     - `version`: Context's version string
+    - `type`: 'ctx'
 
 
 **Example**:
@@ -701,7 +702,8 @@ If the Context needs to be evolved, a new Context with a new version or new name
             },
             "meta": {
                 "name":"SimpleContext",
-                "version":"1.0"
+                "version":"1.0",
+                "type": "ctx
             },
         },
 

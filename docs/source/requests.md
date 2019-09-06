@@ -1888,19 +1888,28 @@ Each acceptance mechanisms list has a unique version.
 }
 ```
 
-### GET_CONTEXT
+### SET_CONTEXT
 Adds Context.
 
 It's not possible to update existing Context.
 So, if the Context needs to be evolved, a new Context with a new version or name needs to be created.
 
 - `data` (dict):
- 
+
      Dictionary with Context's data:
      
-    - `attr_names`: array of attribute name strings (125 attributes maximum)
+    - `@context`: This value must be either:
+        1) a URI (it should dereference to a Context object)
+        2) a Context object (a dict)
+        3) an array of Context objects and/or Context URIs
+
+- `meta` (dict)
+
+    Dictionary with Context's metadata
+    
     - `name`: Context's name string
     - `version`: Context's version string
+    - `type`: 'ctx'
 
 *Request Example*:
 ```
@@ -1922,7 +1931,8 @@ So, if the Context needs to be evolved, a new Context with a new version or name
         },
         "meta": {
             "name":"SimpleContext",
-            "version":"1.0"
+            "version":"1.0",
+            "type": "ctx"
         },
     },
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
@@ -1960,7 +1970,8 @@ So, if the Context needs to be evolved, a new Context with a new version or name
                 },
                 "meta": {
                     "name":"SimpleContext",
-                    "version":"1.0"
+                    "version":"1.0",
+                    "type": "ctx"
                 },
             },
             
@@ -2979,7 +2990,8 @@ Gets Context.
         'dest': '2VkbBskPNNyWrLrZq7DBhk',
         'data': {
             'name': 'SimpleContext',
-            'version': '1.0'
+            'version': '1.0',
+            'type': 'ctx'
         },
     },
     
@@ -3033,7 +3045,8 @@ Gets Context.
 
         "meta": {
             "name":"SimpleContext",
-            "version":"1.0"
+            "version":"1.0",
+            "type": "ctx"
         },
         
         'dest': '2VkbBskPNNyWrLrZq7DBhk'
