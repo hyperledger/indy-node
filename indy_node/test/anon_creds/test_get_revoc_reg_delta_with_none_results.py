@@ -4,6 +4,7 @@ import json
 from indy_common.constants import REVOC_REG_DEF_ID, TO, CRED_DEF_ID, REVOC_TYPE, TAG, VALUE, STATE_PROOF_FROM, \
     ACCUM_FROM
 from indy_common.state import domain
+from indy_node.test.anon_creds.helper import build_get_revoc_reg_delta
 from plenum.common.constants import DATA, STATE_PROOF
 from plenum.common.types import f, OPERATION
 from plenum.common.util import get_utc_epoch
@@ -15,9 +16,9 @@ def test_send_reg_def_and_get_delta_then(
         txnPoolNodeSet,
         sdk_pool_handle,
         send_revoc_reg_def_by_default,
-        build_get_revoc_reg_delta):
+        sdk_wallet_steward):
     rev_def_req, _ = send_revoc_reg_def_by_default
-    get_revoc_reg_delta = copy.deepcopy(build_get_revoc_reg_delta)
+    get_revoc_reg_delta = build_get_revoc_reg_delta(looper, sdk_wallet_steward)
     get_revoc_reg_delta['operation'][REVOC_REG_DEF_ID] = domain.make_state_path_for_revoc_def(authors_did=rev_def_req[f.IDENTIFIER.nm],
                                                                                               cred_def_id=rev_def_req[OPERATION][CRED_DEF_ID],
                                                                                               revoc_def_type=rev_def_req[OPERATION][REVOC_TYPE],
