@@ -17,6 +17,7 @@
     * [AUTH_RULES](#auth_rules)
     * [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)
     * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)    
+    * [SET_CONTEXT](#set_context)
 
 * [Read Requests](#read-requests)
 
@@ -30,6 +31,7 @@
     * [GET_AUTH_RULE](#get_auth_rule)
     * [GET_TRANSACTION_AUTHOR_AGREEMENT](#get_transaction_author_agreement)
     * [GET_TRANSACTION_AUTHOR_AGREEMENT_AML](#get_transaction_author_agreement_aml)
+    * [GET_CONTEXT](#get_context)
     * [GET_TXN](#get_txn)
 
 * [Action Requests](#action-requests)
@@ -91,6 +93,7 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
             - REVOC_REG_ENTRY = "114"
             - AUTH_RULE = "120"
             - AUTH_RULES = "122"
+            - SET_CONTEXT = "200"
             
         - read requests:
         
@@ -105,6 +108,7 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
             - GET_REVOC_REG = "116"
             - GET_REVOC_REG_DELTA = "117"  
             - GET_AUTH_RULE = "121"      
+            - GET_CONTEXT = "300"
             
     - request-specific data
 
@@ -269,6 +273,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         - REVOC_REG_DEF = "113"
         - REVOC_REG_DEF = "114"
         - AUTH_RULE = "120"
+        - SET_CONTEXT = "200"
 
     - `protocolVersion` (integer; optional): 
     
@@ -423,6 +428,7 @@ These common metadata values are added to result's JSON at the same level as rea
     - GET_REVOC_REG = "116"
     - GET_REVOC_REG_DELTA = "117"  
     - GET_AUTH_RULE = "121"    
+    - GET_CONTEXT = "300"
 
 - `identifier` (base58-encoded string):
  
@@ -1882,6 +1888,110 @@ Each acceptance mechanisms list has a unique version.
 }
 ```
 
+### GET_CONTEXT
+Adds Context.
+
+It's not possible to update existing Context.
+So, if the Context needs to be evolved, a new Context with a new version or name needs to be created.
+
+- `data` (dict):
+ 
+     Dictionary with Context's data:
+     
+    - `attr_names`: array of attribute name strings (125 attributes maximum)
+    - `name`: Context's name string
+    - `version`: Context's version string
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '200',
+        "data":{
+            "@context": [
+                {
+                    "@version": 1.1
+                },
+                "https://www.w3.org/ns/odrl.jsonld",
+                {
+                    "ex": "https://example.org/examples#",
+                    "schema": "http://schema.org/",
+                    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                }
+            ]
+        },
+        "meta": {
+            "name":"SimpleContext",
+            "version":"1.0"
+        },
+    },
+    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
+    'reqId': 1514280215504647,
+    'protocolVersion': 2,
+    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        "ver": 1,
+        "txn": {
+            "type":"200",
+            "protocolVersion":2,
+            
+            "data": {
+                "ver":1,
+                "data":{
+                    "@context": [
+                        {
+                            "@version": 1.1
+                        },
+                        "https://www.w3.org/ns/odrl.jsonld",
+                        {
+                            "ex": "https://example.org/examples#",
+                            "schema": "http://schema.org/",
+                            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                        }
+                    ]
+                },
+                "meta": {
+                    "name":"SimpleContext",
+                    "version":"1.0"
+                },
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
+        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+		
+    }
+}
+```
+
 
 ## Read Requests
 
@@ -2839,6 +2949,94 @@ All input parameters are optional and mutually exclusive.
         },
         
        
+    }
+}
+```
+
+### GET_CONTEXT
+
+Gets Context.
+
+- `dest` (base58-encoded string):
+
+    Context DID as base58-encoded string for 16 or 32 byte DID value.
+    It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
+    
+    *Example*: `identifier` is a DID of the read request sender, and `dest` is the DID of the Context.
+
+- `meta` (dict):
+
+    - `name` (string):  Context's name string
+    - `version` (string): Context's version string
+    
+
+ 
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '300'
+        'dest': '2VkbBskPNNyWrLrZq7DBhk',
+        'data': {
+            'name': 'SimpleContext',
+            'version': '1.0'
+        },
+    },
+    
+    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '300',
+        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'seqNo': 10,
+        'txnTime': 1514214795,
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 1, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+        "data":{
+            "@context": [
+                {
+                    "@version": 1.1
+                },
+                "https://www.w3.org/ns/odrl.jsonld",
+                {
+                    "ex": "https://example.org/examples#",
+                    "schema": "http://schema.org/",
+                    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                }
+            ]
+        },
+
+        "meta": {
+            "name":"SimpleContext",
+            "version":"1.0"
+        },
+        
+        'dest': '2VkbBskPNNyWrLrZq7DBhk'
     }
 }
 ```

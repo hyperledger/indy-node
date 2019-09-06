@@ -5383,3 +5383,17 @@ EXCESSIVELY_BIG_CONTEXT = {
         }
     }
 }
+
+SIMPLE_CONTEXT = {
+    "@context": [
+        {
+            "@version": 1.1
+        },
+        "https://www.w3.org/ns/odrl.jsonld",
+        {
+            "ex": "https://example.org/examples#",
+            "schema": "http://schema.org/",
+            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+        }
+    ]
+}
