@@ -29,6 +29,7 @@ EXPECTED_ORDERED_FIELDS_CONSTRAINT_ENTITY = OrderedDict([
     ("role", RoleField),
     ("sig_count", NonNegativeNumberField),
     ("need_to_be_owner", BooleanField),
+    ("off_ledger_signature", BooleanField),
     ("metadata", AnyMapField),
 ])
 

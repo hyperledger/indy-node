@@ -10,13 +10,14 @@ from libnacl import randombytes
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ROLE, CONSTRAINT_ID, ConstraintsEnum, SIG_COUNT, NEED_TO_BE_OWNER, \
-    METADATA
+    METADATA, OFF_LEDGER_SIGNATURE
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.constants import NYM, ENDORSER, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, OLD_VALUE
 from indy_node.server.node_bootstrap import NodeBootstrap
 from plenum.common.constants import TRUSTEE
 from plenum.common.signer_did import DidSigner
 from plenum.common.signer_simple import SimpleSigner
+from plenum.common.types import OPERATION
 from plenum.common.util import rawToFriendly
 from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request, sdk_add_new_nym
 from stp_core.common.log import getlogger
@@ -182,6 +183,7 @@ def sdk_send_and_check_auth_rule_request(
         new_value=new_value,
         constraint=constraint
     )
+
     return sdk_send_and_check_req_json(
         looper, sdk_pool_handle, sdk_wallet, req_json, no_wait=no_wait
     )
@@ -242,12 +244,16 @@ def generate_constraint_entity(constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID,
                                role=TRUSTEE,
                                sig_count=1,
                                need_to_be_owner=False,
+                               off_ledger_signature=None,
                                metadata={}):
-    return {CONSTRAINT_ID: constraint_id,
-            ROLE: role,
-            SIG_COUNT: sig_count,
-            NEED_TO_BE_OWNER: need_to_be_owner,
-            METADATA: metadata}
+    constraint = {CONSTRAINT_ID: constraint_id,
+                  ROLE: role,
+                  SIG_COUNT: sig_count,
+                  NEED_TO_BE_OWNER: need_to_be_owner,
+                  METADATA: metadata}
+    if off_ledger_signature is not None:
+        constraint[OFF_LEDGER_SIGNATURE] = off_ledger_signature
+    return constraint
 
 
 base58_alphabet = set(base58.alphabet.decode("utf-8"))

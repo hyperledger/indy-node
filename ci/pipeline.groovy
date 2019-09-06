@@ -12,7 +12,8 @@ def systemTests(Closure body) {
             srcVersion: null,
             testSchema: [['.']],
             testVersion: null,
-            testVersionByTag: false
+            testVersionByTag: false,
+            gatherLogs: true
         ],
         body, ['pkgVersion'], {}, prefix
     )
@@ -92,6 +93,9 @@ def systemTests(Closure body) {
                 String testReportFileNameXml = "system_tests_${testGroup}_report.${config.repoChannel}.xml"
                 String testReportFileNamePlain = "system_tests_${testGroup}_report.${config.repoChannel}.txt"
                 String testTargets = config.testSchema[testGroup].collect{"system/indy-node-tests/$it"}.join(' ')
+                String buildLogsDir = "_build/logs"
+                String gatherLogsOpt = config.gatherLogs ? ' --gatherlogs' : ''
+
                 try {
                     stage("[${testGroup}] Run tests") {
                         sh """
@@ -99,7 +103,7 @@ def systemTests(Closure body) {
                                 set -o pipefail; \
                                 ./system/docker/run.sh \
                                     \\"$testTargets\\" \
-                                    \\"-l -vv --junit-xml=$testReportFileNameXml\\" \
+                                    \\"-l -vv --junit-xml=$testReportFileNameXml ${gatherLogsOpt} --logsdir=${buildLogsDir}\\" \
                                     \\"$systemTestsNetwork\\" 2>&1 | tee $testReportFileNamePlain;\
                             "
                         """
@@ -112,6 +116,7 @@ def systemTests(Closure body) {
                         sh "ls -la *report* || true"
                         if (err) {
                             archiveArtifacts artifacts: testReportFileNamePlain, allowEmptyArchive: true
+                            archiveArtifacts artifacts: "$buildLogsDir/**/*", allowEmptyArchive: true
                         }
                         junit testResults: testReportFileNameXml, allowEmptyResults: true
                     }
@@ -173,28 +178,24 @@ def systemTests(Closure body) {
                 error "Failed to get versions for indy-plenum or indy-crypto or indy-sdk"
             }
         }
+    }
 
-        Map builds = [:]
-        for (int i = 0; i < config.testSchema.size(); i++) {
-            String testNames = config.testSchema[i].join(' ')
-            Boolean isFirst = (i == 0)
-            int testGroup = i
-            builds[testNames] = {
-                stage("Run ${testNames}") {
-                    if (isFirst) {
-                        runTest(testGroup)
-                    } else {
-                        nodeWrapper('ubuntu') {
-                            runTest(testGroup)
-                        }
-                    }
+    Map builds = [:]
+    for (int i = 0; i < config.testSchema.size(); i++) {
+        String testNames = config.testSchema[i].join(' ')
+        Boolean isFirst = (i == 0)
+        int testGroup = i
+        builds[testNames] = {
+            stage("Run ${testNames}") {
+                nodeWrapper('ubuntu') {
+                    runTest(testGroup)
                 }
             }
         }
-        builds.failFast = false
-
-        parallel builds
     }
+    builds.failFast = false
+
+    parallel builds
 }
 
 return this;

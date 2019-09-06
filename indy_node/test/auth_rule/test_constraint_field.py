@@ -1,11 +1,13 @@
 import pytest
+from plenum.common.constants import STEWARD
 
 from indy_common.constants import CONSTRAINT, AUTH_ACTION
 from indy_common.types import ClientAuthRuleOperation
 from indy_node.test.helper import generate_constraint_entity
 from indy_node.test.auth_rule.helper import generate_constraint_list, \
     generate_auth_rule_operation
-from indy_common.authorize.auth_constraints import ROLE, AUTH_CONSTRAINTS, CONSTRAINT_ID
+from indy_common.authorize.auth_constraints import ROLE, AUTH_CONSTRAINTS, CONSTRAINT_ID, AuthConstraint, SIG_COUNT, \
+    NEED_TO_BE_OWNER, OFF_LEDGER_SIGNATURE, METADATA, ConstraintsEnum
 
 validator = ClientAuthRuleOperation()
 
@@ -113,3 +115,39 @@ def test_invalid_operation_without_none_constraint():
     with pytest.raises(TypeError, match="Fields {} and {} are required and should not "
                                         "be an empty list.".format(AUTH_CONSTRAINTS, CONSTRAINT)):
         validator.validate(invalid_auth_rule_operation)
+
+
+def test_auth_constraint_from_dct_succesfull():
+    unkwn = 'unknown_field'
+    auth_dct = {ROLE: STEWARD,
+                SIG_COUNT: 1,
+                NEED_TO_BE_OWNER: False,
+                OFF_LEDGER_SIGNATURE: False,
+                METADATA: {},
+                unkwn: 'unknown_value'}
+    constr = AuthConstraint.from_dict(auth_dct)
+
+    for k in auth_dct:
+        if k != unkwn:
+            assert hasattr(constr, k)
+    assert not hasattr(constr, unkwn)
+
+
+def test_auth_constraint_without_off_ledger_sig_from_dct_succesfull():
+    unkwn = 'unknown_field'
+    auth_dct = {CONSTRAINT_ID: ConstraintsEnum.ROLE_CONSTRAINT_ID,
+                ROLE: STEWARD,
+                SIG_COUNT: 1,
+                NEED_TO_BE_OWNER: False,
+                METADATA: {},
+                unkwn: 'unknown_value'}
+    constr = AuthConstraint.from_dict(auth_dct)
+
+    for k in auth_dct:
+        if k != unkwn:
+            assert hasattr(constr, k)
+    assert not hasattr(constr, unkwn)
+    assert constr.off_ledger_signature is None
+
+    del auth_dct[unkwn]
+    assert auth_dct == constr.as_dict

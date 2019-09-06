@@ -10,8 +10,11 @@ def write_auth_req_validator(write_auth_req_validator, key):
 
 
 def test_claim_def_adding_success_5_owners(write_request_validation, req,
-                                           identity_owners, key, write_auth_req_validator):
+                                           identity_owners, endorsers, key, write_auth_req_validator):
     req.signatures = {idr: "signature" for idr in identity_owners}
+    # Endorser must be present in case of multi-sig
+    req.endorser = endorsers[0]
+    req.signatures.update({req.endorser: "endorser_sig"})
     assert write_request_validation(req, [key])
 
 

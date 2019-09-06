@@ -26,6 +26,11 @@ def is_owner(request):
     return request.param
 
 
+@pytest.fixture(scope='function', params=[True, False])
+def off_ledger_signature(request):
+    return request.param
+
+
 @pytest.fixture(scope='function')
 def action_add():
     return AuthActionAdd(txn_type='SomeType',

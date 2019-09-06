@@ -4,6 +4,8 @@ import multiprocessing
 
 import time
 
+import pytest
+
 from indy_common.constants import POOL_RESTART, RESTART_MESSAGE
 from indy_node.test.pool_restart.helper import compose_restart_message, \
     send_restart_message
@@ -13,6 +15,12 @@ from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, \
 
 m = multiprocessing.Manager()
 whitelist = ['Unexpected error in _restart test']
+
+
+@pytest.fixture(scope='module')
+def tconf(tconf, tdir):
+    tconf.LOG_DIR = tdir
+    yield tconf
 
 
 def test_node_control_tool_restart(looper, tdir, monkeypatch, tconf):
@@ -28,7 +36,7 @@ def test_node_control_tool_restart(looper, tdir, monkeypatch, tconf):
         assert len(received) == 1
         assert received[0] == compose_restart_message(msg)
 
-    nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
+    nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform, config=tconf)
     try:
         send_restart_message(msg)
         looper.run(eventually(check_message))
@@ -51,7 +59,7 @@ def test_communication_with_node_control_tool(looper, tdir, tconf, monkeypatch):
     def restart_count():
         received.append(RESTART_MESSAGE)
 
-    nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
+    nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform, config=tconf)
     try:
         send_restart_message(msg)
         looper.run(eventually(check_restart_count))
