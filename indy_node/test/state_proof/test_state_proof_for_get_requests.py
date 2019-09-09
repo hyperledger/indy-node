@@ -150,11 +150,11 @@ def test_state_proof_returned_for_get_schema(looper,
     check_valid_proof(result)
 
 
-def test_state_proof_returned_for_get_context_nodeset(looper,
-                                                      nodeSet,
-                                                      sdk_wallet_endorser,
-                                                      sdk_pool_handle,
-                                                      sdk_wallet_client):
+def test_state_proof_returned_for_get_context(looper,
+                                              nodeSet,
+                                              sdk_wallet_endorser,
+                                              sdk_pool_handle,
+                                              sdk_wallet_client):
     """
     Tests that state proof is returned in the reply for GET_CONTEXT transactions.
     Use different submitter and reader!
@@ -206,6 +206,7 @@ def test_state_proof_returned_for_get_context_nodeset(looper,
     check_valid_proof(result)
 
 
+'''
 def test_state_proof_returned_for_get_context(looper,
                                               nodeSetWithOneNodeResponding,
                                               sdk_wallet_endorser,
@@ -260,6 +261,8 @@ def test_state_proof_returned_for_get_context(looper,
     assert VERSION in meta
     assert result[TXN_TIME]
     check_valid_proof(result)
+'''
+
 
 def test_state_proof_returned_for_get_claim_def(looper,
                                                 nodeSetWithOneNodeResponding,
