@@ -52,7 +52,7 @@ def commonTestUbuntu = {
     }
 }
 
-def buildDebUbuntu = { releaseVersion, sourcePath, packageVersion=null, missedPkgs=false ->
+def buildDebUbuntuXenial = { releaseVersion, sourcePath, packageVersion=null, missedPkgs=false ->
     def volumeName = "$name-deb-u1604"
     packageVersion = packageVersion ?: releaseVersion
 
@@ -65,6 +65,30 @@ def buildDebUbuntu = { releaseVersion, sourcePath, packageVersion=null, missedPk
 
     // TODO build only missed ones
     dir('build-scripts/ubuntu-1604') {
+        sh "./build-$name-docker.sh \"$sourcePath\" $releaseVersion $volumeName $packageVersion"
+        if (missedPkgs == [pkgName]) {
+            echo "Skip 3rd parties building"
+        } else {
+            sh "./build-3rd-parties-docker.sh $volumeName"
+        }
+    }
+    return "$volumeName"
+}
+
+
+def buildDebUbuntuBionic = { releaseVersion, sourcePath, packageVersion=null, missedPkgs=false ->
+    def volumeName = "$name-deb-u1804"
+    packageVersion = packageVersion ?: releaseVersion
+
+    if (env.BRANCH_NAME != '' && env.BRANCH_NAME != 'master') {
+        volumeName = "${volumeName}.${BRANCH_NAME}"
+    }
+    if (sh(script: "docker volume ls -q | grep -q '^$volumeName\$'", returnStatus: true) == 0) {
+        sh "docker volume rm $volumeName"
+    }
+
+    // TODO build only missed ones
+    dir('build-scripts/ubuntu-1804') {
         sh "./build-$name-docker.sh \"$sourcePath\" $releaseVersion $volumeName $packageVersion"
         if (missedPkgs == [pkgName]) {
             echo "Skip 3rd parties building"
@@ -132,5 +156,5 @@ testAndPublish(
     [
         ubuntu: [node: nodeTestUbuntu, common: commonTestUbuntu]
     ],
-    true, options, [ubuntu: buildDebUbuntu], mainModuleName
+    true, options, [ubuntu: buildDebUbuntuXenial], mainModuleName
 )
