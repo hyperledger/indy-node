@@ -292,7 +292,7 @@
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
     <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 ENDORSER</sub></td>
-    <td><sub>Adding a new Schema</sub></td>
+    <td><sub>Adding a new Context</sub></td>
   </tr>
   <tr>
     <td><sub>SET_CONTEXT</sub></td>
@@ -301,7 +301,7 @@
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
     <td><sub>No one can edit existing Context</sub></td>
-    <td><sub>Editing a Schema</sub></td>
+    <td><sub>Editing a Context</sub></td>
   </tr>
   <tr>
     <td><sub>CLAIM_DEF</sub></td>
@@ -576,7 +576,7 @@
   <tr>
     <td><sub>SET_CONTEXT</sub></td>
     <td><sub>EDIT</sub></td>
-    <td><sub>A CONTEXT cannot be edited</sub></td>
+    <td><sub>The DID used to create the CONTEXT</sub></td>
   </tr>  
 
   <tr>
