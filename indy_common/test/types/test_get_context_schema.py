@@ -5,8 +5,7 @@ from plenum.common.messages.fields import ConstantField, IdentifierField, Versio
 
 EXPECTED_ORDERED_FIELDS_SCHEMA = OrderedDict([
     ("name", LimitedLengthStringField),
-    ("version", VersionField),
-    ('origin', IdentifierField),
+    ("version", VersionField)
 ])
 
 

@@ -138,8 +138,7 @@ class SetContextDataField(MessageValidator):
 class GetContextField(MessageValidator):
     schema = (
         (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
-        (ORIGIN, IdentifierField(optional=True))
+        (CONTEXT_VERSION, VersionField(version_cls=ContextVersion))
     )
 
 
