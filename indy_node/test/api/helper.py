@@ -5,7 +5,7 @@ from indy.anoncreds import issuer_create_schema
 from indy.ledger import build_schema_request
 
 from indy_common.state.state_constants import MARKER_CONTEXT
-from plenum.common.constants import TXN_TYPE, DATA
+from plenum.common.constants import TXN_TYPE, DATA, CURRENT_PROTOCOL_VERSION
 
 from indy_common.constants import SET_CONTEXT, CONTEXT_TYPE, META, RS_TYPE
 from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req, sdk_get_and_check_replies
@@ -235,7 +235,7 @@ def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context=[], n
         },
         "identifier": did,
         "reqId": 12345678,
-        "protocolVersion": 2,
+        "protocolVersion": CURRENT_PROTOCOL_VERSION,
     }
     set_context_txn_json = json.dumps(raw_json)
 
