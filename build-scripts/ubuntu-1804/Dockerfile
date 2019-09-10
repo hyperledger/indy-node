@@ -5,7 +5,7 @@ RUN apt-get update -y && apt-get install -y \
         git \
         wget \
         unzip \
-        python3.5 \
+        python3.6 \
         python3-pip \
         python3-venv \
     # fmp

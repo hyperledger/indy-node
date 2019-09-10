@@ -3,7 +3,7 @@
 ```
 ./build-indy-node-docker.sh <path-to-sources> <version>
 ```
-Built package is placed in a docker volume `indy-node-deb-u1604`. 
+Built package is placed in a docker volume `indy-node-deb-u1804`. 
 
 ### Build indy-node
 
