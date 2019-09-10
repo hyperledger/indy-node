@@ -3,7 +3,7 @@ import pytest
 from plenum.common.constants import DATA
 
 from indy_common.authorize.auth_constraints import AuthConstraintForbidden
-from plenum.common.exceptions import UnauthorizedClientRequest
+from plenum.common.exceptions import UnauthorizedClientRequest, InvalidClientRequest
 
 from indy_common.req_utils import get_write_context_name, get_write_context_version
 from plenum.common.txn_util import get_request_data
@@ -32,7 +32,7 @@ def test_static_validation_context_fail_bad_uri():
     }
     req = Request("test", 1, operation, "sig",)
     ch = ContextHandler(None, None)
-    with pytest.raises(Exception) as e:
+    with pytest.raises(InvalidClientRequest) as e:
         ch.static_validation(req)
     assert "@context URI 2http:/..@#$ badly formed" in str(e.value)
 
@@ -52,7 +52,7 @@ def test_static_validation_fail_context_not_uri_or_array_or_object():
     }
     req = Request("test", 1, operation, "sig",)
     ch = ContextHandler(None, None)
-    with pytest.raises(Exception) as e:
+    with pytest.raises(InvalidClientRequest) as e:
         ch.static_validation(req)
     assert "'@context' value must be url, array, or object" in str(e.value)
 
@@ -143,7 +143,7 @@ def test_static_validation_fail_context_is_list_with_dict_and_bad_uri():
     }
     req = Request("test", 1, operation, "sig",)
     ch = ContextHandler(None, None)
-    with pytest.raises(Exception) as e:
+    with pytest.raises(InvalidClientRequest) as e:
         ch.static_validation(req)
     assert "@context URI this is a bad uri badly formed" in str(e.value)
 

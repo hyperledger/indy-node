@@ -30,7 +30,7 @@ class ContextHandler(WriteRequestHandler):
     def static_validation(self, request: Request):
         self._validate_request_type(request)
         data = request.operation[DATA]
-        self._validate_context(data[CONTEXT_CONTEXT])
+        self._validate_context(data[CONTEXT_CONTEXT], request.identifier, request.reqId)
 
     def dynamic_validation(self, request: Request):
         # we can not add a Context with already existent NAME and VERSION
@@ -63,19 +63,19 @@ class ContextHandler(WriteRequestHandler):
         path, value_bytes = ContextHandler.prepare_context_for_state(txn)
         self.state.set(path, value_bytes)
 
-    def _validate_context(self, context):
+    def _validate_context(self, context, id, reqId):
         if isinstance(context, list):
             for ctx in context:
                 if not isinstance(ctx, dict):
                     if self._bad_uri(ctx):
-                        raise Exception('@context URI {} badly formed'.format(ctx))
+                        raise InvalidClientRequest(id, reqId, '@context URI {} badly formed'.format(ctx))
         elif isinstance(context, dict):
             pass
         elif isinstance(context, str):
             if self._bad_uri(context):
-                raise Exception('@context URI {} badly formed'.format(context))
+                raise InvalidClientRequest(id, reqId, '@context URI {} badly formed'.format(context))
         else:
-            raise Exception("'@context' value must be url, array, or object")
+            raise InvalidClientRequest(id, reqId, "'@context' value must be url, array, or object")
 
     def _bad_uri(self, uri_string):
         url = findall(URI_REGEX, uri_string)

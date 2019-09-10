@@ -9,7 +9,7 @@ from indy_common.constants import CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT
 from indy_node.test.context.helper import W3C_BASE_CONTEXT, SCHEMA_ORG_CONTEXT, EXCESSIVELY_BIG_CONTEXT
 from indy_common.types import SetContextMetaField, SetContextDataField, ClientSetContextOperation
 from indy_node.test.api.helper import validate_write_reply, sdk_write_context_and_check
-from plenum.common.exceptions import RequestRejectedException
+from plenum.common.exceptions import RequestRejectedException, InvalidClientRequest
 from plenum.common.util import randomString
 from plenum.config import NAME_FIELD_LIMIT
 
@@ -73,7 +73,7 @@ def test_write_same_context_with_different_reqid_fails(looper, sdk_pool_handle, 
 
 def test_context_over_maximum_size():
     context = SetContextDataField()
-    with pytest.raises(Exception) as ex_info:
+    with pytest.raises(TypeError) as ex_info:
         context.validate(EXCESSIVELY_BIG_CONTEXT)
     ex_info.match(
         "size should be at most {}".format(CONTEXT_SIZE_LIMIT)
@@ -156,7 +156,7 @@ def test_validate_meta_pass():
 
 def test_validate_data_fail_on_empty():
     data = SetContextDataField()
-    with pytest.raises(Exception) as e:
+    with pytest.raises(TypeError) as e:
         data.validate({})
     assert "validation error [SetContextDataField]: missed fields" in str(e.value)
     assert "@context" in str(e.value)
@@ -164,14 +164,14 @@ def test_validate_data_fail_on_empty():
 
 def test_validate_data_fail_not_dict():
     data = SetContextDataField()
-    with pytest.raises(Exception) as e:
+    with pytest.raises(TypeError) as e:
         data.validate("context")
     assert "validation error [SetContextDataField]: invalid type <class 'str'>, dict expected" in str(e.value)
 
 
 def test_validate_data_fail_no_context_property():
     data = SetContextDataField()
-    with pytest.raises(Exception) as e:
+    with pytest.raises(TypeError) as e:
         data.validate({
             "name": "Thing"
         })
