@@ -23,8 +23,6 @@ class GetContextHandler(ReadRequestHandler):
             context_version=context_version,
             with_proof=True
         )
-        if context is None:
-            context = {}
         return self.make_result(request=request,
                                 data=context,
                                 last_seq_no=last_seq_no,
