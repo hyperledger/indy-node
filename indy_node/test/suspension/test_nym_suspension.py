@@ -43,4 +43,4 @@ def testEndorserSuspendingHimselfByVerkeyFlush(looper, sdk_pool_handle,
     sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_endorser, dest=did, verkey='')
     with pytest.raises(RequestNackedException) as e:
         sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_endorser)
-    e.match('InsufficientCorrectSignatures')
+    e.match('insufficient number of valid signatures')

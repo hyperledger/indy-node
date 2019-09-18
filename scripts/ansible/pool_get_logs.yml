@@ -1,6 +1,9 @@
 - hosts: pool
   gather_facts: no
 
+  vars:
+    pool_prefix: persistent_node
+
   tasks:
   - name: Save journalctl log
     shell: "journalctl > /tmp/jctl"
@@ -30,3 +33,27 @@
       src: /var/log/indy/sandbox/
       dest: ./logs
       mode: pull
+
+  - name: Stop service
+    shell: "systemctl stop indy-node"
+    become: yes
+
+  - name: Process metrics
+    shell: "cd /usr/local/bin && python3 get_metrics --data_dir /var/lib/indy/sandbox/data/{{ inventory_hostname|replace(pool_prefix,'Node') }}/metrics_db --output /home/ubuntu/metrics{{ inventory_hostname|replace(pool_prefix,'') }}.csv > /home/ubuntu/metrics_summary{{ inventory_hostname|replace(pool_prefix,'') }}.txt"
+    become: yes
+
+  - name: Fetch metrics
+    fetch:
+      src: "/home/ubuntu/metrics{{ inventory_hostname|replace(pool_prefix,'') }}.csv"
+      dest: "./logs/metrics/metrics{{ inventory_hostname|replace(pool_prefix,'') }}.csv"
+      flat: yes
+
+  - name: Fetch metrics summary
+    fetch:
+      src: "/home/ubuntu/metrics_summary{{ inventory_hostname|replace(pool_prefix,'') }}.txt"
+      dest: "./logs/metrics/metrics_summary{{ inventory_hostname|replace(pool_prefix,'') }}.txt"
+      flat: yes
+
+  - name: Start service
+    shell: "systemctl start indy-node"
+    become: yes

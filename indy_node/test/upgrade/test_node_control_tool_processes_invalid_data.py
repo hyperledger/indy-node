@@ -12,6 +12,12 @@ from indy_node.test.upgrade.helper import (
 )
 
 
+@pytest.fixture(scope='module')
+def tconf(tconf, tdir):
+    tconf.LOG_DIR = tdir
+    yield tconf
+
+
 def test_node_control_tool_processes_invalid_json(
     monkeypatch, tdir, tconf
 ):
@@ -20,7 +26,7 @@ def test_node_control_tool_processes_invalid_json(
         monkeypatch.setattr(tool, '_upgrade', lambda *x, **y: None)
         monkeypatch.setattr(tool, '_restart', lambda *x, **y: None)
 
-    tool = NodeControlToolPatched(patch, backup_dir=tdir, backup_target=tdir)
+    tool = NodeControlToolPatched(patch, backup_dir=tdir, backup_target=tdir, config=tconf)
 
     with pytest.raises(BlowUp, match='JSON decoding failed'):
         tool._process_data('{12345}'.encode('utf-8'))
@@ -41,7 +47,7 @@ def test_node_control_tool_processes_invalid_version(
         monkeypatch.setattr(tool, '_upgrade', lambda *x, **y: None)
         monkeypatch.setattr(tool, '_restart', lambda *x, **y: None)
 
-    tool = NodeControlToolPatched(patch, backup_dir=tdir, backup_target=tdir)
+    tool = NodeControlToolPatched(patch, backup_dir=tdir, backup_target=tdir, config=tconf)
 
     with pytest.raises(InvalidVersionError):
         src_version_cls(pkg_name)(version)

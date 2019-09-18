@@ -1,5 +1,7 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.9.2](#192)
+
 * [1.9.1](#191)
 
 * [1.9.0](#190)
@@ -45,6 +47,42 @@
 #### Disclosure
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
+
+## 1.9.2
+### Release date: Aug 30th, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.9.2 |
+| indy-node | 1.9.2 |
+| sovrin | 1.1.56 |
+
+### Additional Information:
+**Migration script will be applied for buildernet only and will return error message in python shell for any other pools (if manual migration will be performed).**
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
+### Major Changes
+- Stability fixes
+- Endorser support fixes and improvements
+- Improving GET_TXN to be able to query just one node the same way as for other GET requests
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| New nodes added after last upgrade (1.9.1) are not in consensus | | [INDY-2211](https://jira.hyperledger.org/browse/INDY-2211) |
+| indy-node broken by indy-plenum and python-dateutil | | [INDY-2176](https://jira.hyperledger.org/browse/INDY-2176) |
+| Issue with non utf-8 decoding | | [INDY-2218](https://jira.hyperledger.org/browse/INDY-2218) |
+| Endorsers must be specified within the transaction | | [INDY-2199](https://jira.hyperledger.org/browse/INDY-2199) |
+| One node doesn't catch up | | [INDY-2215](https://jira.hyperledger.org/browse/INDY-2215) |
+
+#### Changes and Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| As a user, I need to be able to know what was the last update time of the ledger when querying a txn via GET_TXN request | | [INDY-1954](https://jira.hyperledger.org/browse/INDY-1954) |
+| Endorser field can contian a DID with a known role only | | [INDY-2198](https://jira.hyperledger.org/browse/INDY-2198) |
 
 ## 1.9.1
 ### Release date: Aug 02nd, 2019
