@@ -7,7 +7,7 @@ from indy.ledger import build_schema_request
 from indy_common.state.state_constants import MARKER_CONTEXT
 from plenum.common.constants import TXN_TYPE, DATA, CURRENT_PROTOCOL_VERSION
 
-from indy_common.constants import SET_CONTEXT, CONTEXT_TYPE, META, RS_TYPE
+from indy_common.constants import SET_CONTEXT, CONTEXT_TYPE, META, RS_TYPE, CONTEXT_NAME, CONTEXT_VERSION
 from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req, sdk_get_and_check_replies
 
 
@@ -227,9 +227,9 @@ def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context=[], n
         'operation': {
             TXN_TYPE: SET_CONTEXT,
             META: {
-                'name': name,
-                'version': version,
-                'type': CONTEXT_TYPE
+                CONTEXT_NAME: name,
+                CONTEXT_VERSION: version,
+                RS_TYPE: CONTEXT_TYPE
             },
             DATA: context
         },
@@ -247,26 +247,20 @@ def sdk_write_context_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
                                 context=[], name="", version="", reqId=12345678):
     _wh, did = sdk_wallet_steward
 
-    '''_, context_json = looper.loop.run_until_complete(
-        issuer_create_context(
-            did, name,
-            version, json.dumps(context_array)
-        ))
-    '''
     # create json
     raw_json = {
         'operation': {
             TXN_TYPE: SET_CONTEXT,
             META: {
-                'name': name,
-                'version': version,
+                CONTEXT_NAME: name,
+                CONTEXT_VERSION: version,
                 RS_TYPE: CONTEXT_TYPE
             },
             DATA: context
         },
         "identifier": did,
         "reqId": reqId,
-        "protocolVersion": 2,
+        "protocolVersion": CURRENT_PROTOCOL_VERSION,
     }
     set_context_txn_json = json.dumps(raw_json)
     req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, set_context_txn_json)

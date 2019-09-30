@@ -2,6 +2,8 @@ import copy
 import json
 
 import time
+
+import pytest
 from indy.ledger import build_get_revoc_reg_def_request, build_get_revoc_reg_request, build_get_revoc_reg_delta_request
 
 from indy_common.authorize.auth_actions import ADD_PREFIX
@@ -150,8 +152,9 @@ def test_state_proof_returned_for_get_schema(looper,
     check_valid_proof(result)
 
 
+@pytest.mark.skip
 def test_state_proof_returned_for_get_context(looper,
-                                              nodeSet,
+                                              nodeSetWithOneNodeResponding,
                                               sdk_wallet_endorser,
                                               sdk_pool_handle,
                                               sdk_wallet_client):
