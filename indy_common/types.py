@@ -13,7 +13,7 @@ from plenum.common.messages.fields import ConstantField, IdentifierField, \
     LimitedLengthStringField, TxnSeqNoField, \
     Sha256HexField, JsonField, MapField, BooleanField, VersionField, \
     ChooseField, IntegerField, IterableField, \
-    AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField, AnyField, FieldBase, FieldValidator
+    AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField, AnyField, FieldBase
 from plenum.common.messages.message_base import MessageValidator
 from plenum.common.messages.node_messages import NonNegativeNumberField
 from plenum.common.request import Request as PRequest
