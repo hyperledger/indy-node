@@ -101,7 +101,7 @@ def test_pool_restart_in_view_change(sdk_pool_handle, sdk_wallet_trustee, looper
         if node.view_changer is None:
             node.view_changer = FakeSomething(view_change_in_progress=True)
         else:
-            node.view_changer.view_change_in_progress = True
+            node.master_replica._consensus_data.waiting_for_new_view = True
 
     pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper,
                      tdir, tconf, START)
