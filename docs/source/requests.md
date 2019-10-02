@@ -2988,7 +2988,7 @@ Gets Context.
     'operation': {
         'type': '300'
         'dest': '2VkbBskPNNyWrLrZq7DBhk',
-        'data': {
+        'meta': {
             'name': 'SimpleContext',
             'version': '1.0',
             'type': 'ctx'
