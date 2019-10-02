@@ -153,6 +153,8 @@ def test_state_proof_returned_for_get_schema(looper,
 
 
 @pytest.mark.skip
+# TODO fix this test so it does not rely on Indy-SDK,
+# or, fix this test once GET_CONTEXT is part of Indy-SDK
 def test_state_proof_returned_for_get_context(looper,
                                               nodeSetWithOneNodeResponding,
                                               sdk_wallet_endorser,

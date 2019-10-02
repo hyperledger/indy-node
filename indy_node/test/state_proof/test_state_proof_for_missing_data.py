@@ -59,6 +59,9 @@ def test_state_proof_returned_for_missing_nym(looper, nodeSetWithOneNodeRespondi
     check_no_data_and_valid_proof(result)
 
 
+@pytest.mark.skip
+# TODO fix this test so it does not rely on Indy-SDK,
+# or, fix this test once GET_CONTEXT is part of Indy-SDK
 def test_state_proof_returned_for_missing_context(looper, nodeSet,
                                                  sdk_pool_handle,
                                                  sdk_wallet_endorser):
