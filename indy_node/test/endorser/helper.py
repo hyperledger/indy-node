@@ -1,6 +1,5 @@
-import json
+from indy.ledger import append_request_endorser
 
-from plenum.common.types import f
 from plenum.test.helper import sdk_get_and_check_replies, sdk_send_signed_requests, sdk_multisign_request_object
 
 
@@ -8,16 +7,7 @@ def sdk_append_request_endorser(
         looper,
         request_json,
         endorser_did):
-    request = json.loads(request_json)
-    request[f.ENDORSER.nm] = endorser_did
-    return json.dumps(request)
-    # TODO call SDK
-    # return looper.loop.run_until_complete(
-    #     append_request_endorser(
-    #         request_json,
-    #         endorser_did=endorser_did,
-    #     )
-    # )
+    return looper.loop.run_until_complete(append_request_endorser(request_json, endorser_did))
 
 
 def sdk_submit_and_check_by_endorser(looper, sdk_pool_handle, sdk_wallet_author, sdk_wallet_endorser, request_json):

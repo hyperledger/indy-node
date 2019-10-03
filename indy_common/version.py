@@ -11,6 +11,12 @@ from indy_common.node_version import NodeVersion
 NodeVersion = NodeVersion
 
 
+# Rich Schema
+class ContextVersion(DigitDotVersion):
+    def __init__(self, version: str, **kwargs):
+        super().__init__(version, parts_num=(2, 3), **kwargs)
+
+
 class SchemaVersion(DigitDotVersion):
     def __init__(self, version: str, **kwargs):
         super().__init__(version, parts_num=(2, 3), **kwargs)

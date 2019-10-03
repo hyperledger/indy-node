@@ -1,14 +1,19 @@
 import copy
+import json
 
 import time
+
+import pytest
 from indy.ledger import build_get_revoc_reg_def_request, build_get_revoc_reg_request, build_get_revoc_reg_delta_request
 
 from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_node.test.anon_creds.helper import get_revoc_reg_def_id
 
 from common.serializers.serialization import domain_state_serializer
+from indy_node.test.api.helper import sdk_write_context
 from indy_node.test.auth_rule.helper import sdk_send_and_check_get_auth_rule_request, generate_key, \
     sdk_send_and_check_auth_rule_request
+from indy_node.test.context.helper import SIMPLE_CONTEXT
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, \
     ROLE, VERKEY, TXN_TIME, NYM, NAME, VERSION, STEWARD
 from plenum.common.types import f
@@ -17,7 +22,8 @@ from indy_node.test.state_proof.helper import check_valid_proof, \
     sdk_submit_operation_and_get_result
 from indy_common.constants import GET_ATTR, GET_NYM, SCHEMA, GET_SCHEMA, \
     CLAIM_DEF, REVOCATION, GET_CLAIM_DEF, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_FROM, \
-    SCHEMA_ATTR_NAMES, SCHEMA_NAME, SCHEMA_VERSION, CLAIM_DEF_TAG, ENDORSER
+    SCHEMA_ATTR_NAMES, SCHEMA_NAME, SCHEMA_VERSION, CLAIM_DEF_TAG, ENDORSER, CONTEXT_NAME, CONTEXT_VERSION, SET_CONTEXT, \
+    META, GET_CONTEXT, CONTEXT_CONTEXT, RS_TYPE, CONTEXT_TYPE
 from indy_common.serialization import attrib_raw_data_serializer
 
 # Fixtures, do not remove
@@ -144,6 +150,123 @@ def test_state_proof_returned_for_get_schema(looper,
     assert VERSION in data
     assert result[TXN_TIME]
     check_valid_proof(result)
+
+
+@pytest.mark.skip
+# TODO fix this test so it does not rely on Indy-SDK,
+# or, fix this test once GET_CONTEXT is part of Indy-SDK
+def test_state_proof_returned_for_get_context(looper,
+                                              nodeSetWithOneNodeResponding,
+                                              sdk_wallet_endorser,
+                                              sdk_pool_handle,
+                                              sdk_wallet_client):
+    """
+    Tests that state proof is returned in the reply for GET_CONTEXT transactions.
+    Use different submitter and reader!
+    """
+
+    _, dest = sdk_wallet_endorser
+    context_name = "test_context"
+    context_version = "1.0"
+    meta = {
+        CONTEXT_NAME: context_name,
+        CONTEXT_VERSION: context_version,
+        RS_TYPE: CONTEXT_TYPE,
+    }
+    data = SIMPLE_CONTEXT
+    context_operation = {
+        TXN_TYPE: SET_CONTEXT,
+        DATA: data,
+        META: meta
+    }
+    sdk_submit_operation_and_get_result(looper,
+                                        sdk_pool_handle,
+                                        sdk_wallet_endorser,
+                                        context_operation)
+
+    get_context_operation = {
+        TARGET_NYM: dest,
+        TXN_TYPE: GET_CONTEXT,
+        META: {
+            CONTEXT_NAME: context_name,
+            CONTEXT_VERSION: context_version,
+            RS_TYPE: CONTEXT_TYPE
+        }
+    }
+    result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
+                                                 sdk_wallet_client,
+                                                 get_context_operation)
+    assert DATA in result
+    rdata = result.get(DATA)
+    assert rdata
+    assert DATA in rdata
+    data = rdata[DATA]
+    assert CONTEXT_CONTEXT in data
+    assert data == SIMPLE_CONTEXT
+    assert META in rdata
+    meta = rdata[META]
+    assert NAME in meta
+    assert VERSION in meta
+    assert result[TXN_TIME]
+    check_valid_proof(result)
+
+
+'''
+def test_state_proof_returned_for_get_context(looper,
+                                              nodeSetWithOneNodeResponding,
+                                              sdk_wallet_endorser,
+                                              sdk_pool_handle,
+                                              sdk_wallet_client):
+    """
+    Tests that state proof is returned in the reply for GET_CONTEXT transactions.
+    Use different submitter and reader!
+    """
+
+    _, dest = sdk_wallet_endorser
+    context_name = "test_context"
+    context_version = "1.0"
+    meta = {
+        CONTEXT_NAME: context_name,
+        CONTEXT_VERSION: context_version,
+        RS_TYPE: CONTEXT_TYPE,
+    }
+    data = SIMPLE_CONTEXT
+    context_operation = {
+        TXN_TYPE: SET_CONTEXT,
+        DATA: data,
+        META: meta
+    }
+    sdk_submit_operation_and_get_result(looper,
+                                        sdk_pool_handle,
+                                        sdk_wallet_endorser,
+                                        context_operation)
+
+    get_context_operation = {
+        TARGET_NYM: dest,
+        TXN_TYPE: GET_CONTEXT,
+        META: {
+            CONTEXT_NAME: context_name,
+            CONTEXT_VERSION: context_version,
+            RS_TYPE: CONTEXT_TYPE
+        }
+    }
+    result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
+                                                 sdk_wallet_client,
+                                                 get_context_operation)
+    assert DATA in result
+    rdata = result.get(DATA)
+    assert rdata
+    assert DATA in rdata
+    data = rdata[DATA]
+    assert CONTEXT_CONTEXT in data
+    assert data == SIMPLE_CONTEXT
+    assert META in rdata
+    meta = rdata[META]
+    assert NAME in meta
+    assert VERSION in meta
+    assert result[TXN_TIME]
+    check_valid_proof(result)
+'''
 
 
 def test_state_proof_returned_for_get_claim_def(looper,
