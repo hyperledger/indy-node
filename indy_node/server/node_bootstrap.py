@@ -19,6 +19,7 @@ from indy_node.server.request_handlers.read_req_handlers.get_auth_rule_handler i
 from indy_node.server.request_handlers.domain_req_handlers.claim_def_handler import ClaimDefHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handler import RevocRegEntryHandler
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
+from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
 
 from indy_node.server.request_handlers.domain_req_handlers.attribute_handler import AttributeHandler
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
@@ -38,6 +39,8 @@ from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_def_handl
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_delta_handler import GetRevocRegDeltaHandler
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_handler import GetRevocRegHandler
 from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
+from indy_node.server.request_handlers.read_req_handlers.get_context_handler import GetContextHandler
+
 from indy_node.server.restarter import Restarter
 from indy_node.server.upgrader import Upgrader
 from ledger.compact_merkle_tree import CompactMerkleTree
@@ -77,22 +80,23 @@ class NodeBootstrap(PNodeBootstrap):
         attr_store = self.init_attribute_store()
         self.node.db_manager.register_new_store(ATTRIB_LABEL, attr_store)
 
-    def init_storages(self, storage=None):
-        super().init_storages()
+    def _init_storages(self, domain_storage=None):
+        super()._init_storages(domain_storage)
         self.init_idr_cache_storage()
         self.init_attribute_storage()
 
-    def register_pool_req_handlers(self):
+    def _register_pool_req_handlers(self):
         node_handler = NodeHandler(self.node.db_manager,
                                    self.node.bls_bft.bls_crypto_verifier,
                                    self.node.write_req_validator)
         self.node.write_manager.register_req_handler(node_handler)
 
-    def register_domain_req_handlers(self):
+    def _register_domain_req_handlers(self):
         # Read handlers
         get_nym_handler = GetNymHandler(database_manager=self.node.db_manager)
         get_attribute_handler = GetAttributeHandler(database_manager=self.node.db_manager)
         get_schema_handler = GetSchemaHandler(database_manager=self.node.db_manager)
+        get_context_handler = GetContextHandler(database_manager=self.node.db_manager)
         get_claim_def_handler = GetClaimDefHandler(database_manager=self.node.db_manager)
         get_revoc_reg_def_handler = GetRevocRegDefHandler(database_manager=self.node.db_manager)
         get_revoc_reg_handler = GetRevocRegHandler(database_manager=self.node.db_manager)
@@ -106,6 +110,8 @@ class NodeBootstrap(PNodeBootstrap):
                                           write_req_validator=self.node.write_req_validator)
         schema_handler = SchemaHandler(database_manager=self.node.db_manager,
                                        write_req_validator=self.node.write_req_validator)
+        context_handler = ContextHandler(database_manager=self.node.db_manager,
+                                         write_req_validator=self.node.write_req_validator)
         claim_def_handler = ClaimDefHandler(database_manager=self.node.db_manager,
                                             write_req_validator=self.node.write_req_validator)
         revoc_reg_def_handler = RevocRegDefHandler(database_manager=self.node.db_manager,
@@ -117,6 +123,7 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.write_manager.register_req_handler(nym_handler)
         self.node.write_manager.register_req_handler(attrib_handler)
         self.node.write_manager.register_req_handler(schema_handler)
+        self.node.write_manager.register_req_handler(context_handler)
         self.node.write_manager.register_req_handler(claim_def_handler)
         self.node.write_manager.register_req_handler(revoc_reg_def_handler)
         self.node.write_manager.register_req_handler(revoc_reg_entry_handler)
@@ -126,12 +133,13 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.read_manager.register_req_handler(get_nym_handler)
         self.node.read_manager.register_req_handler(get_attribute_handler)
         self.node.read_manager.register_req_handler(get_schema_handler)
+        self.node.read_manager.register_req_handler(get_context_handler)
         self.node.read_manager.register_req_handler(get_claim_def_handler)
         self.node.read_manager.register_req_handler(get_revoc_reg_def_handler)
         self.node.read_manager.register_req_handler(get_revoc_reg_handler)
         self.node.read_manager.register_req_handler(get_revoc_reg_delta_handler)
 
-    def register_config_req_handlers(self):
+    def _register_config_req_handlers(self):
         # Read handlers
         get_auth_rule_handler = GetAuthRuleHandler(database_manager=self.node.db_manager,
                                                    write_req_validator=self.node.write_req_validator)
@@ -168,7 +176,7 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.read_manager.register_req_handler(get_taa_aml_handler)
         self.node.read_manager.register_req_handler(get_taa_handler)
 
-    def register_action_req_handlers(self):
+    def _register_action_req_handlers(self):
         # Action handlers
         pool_restart_handler = PoolRestartHandler(database_manager=self.node.db_manager,
                                                   write_req_validator=self.node.write_req_validator,
@@ -180,11 +188,11 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.action_manager.register_action_handler(pool_restart_handler)
         self.node.action_manager.register_action_handler(validator_info_handler)
 
-    def register_domain_batch_handlers(self):
-        super().register_domain_batch_handlers()
+    def _register_domain_batch_handlers(self):
+        super()._register_domain_batch_handlers()
         self.register_idr_cache_batch_handler()
 
-    def register_config_batch_handlers(self):
+    def _register_config_batch_handlers(self):
         config_batch_handler = ConfigBatchHandler(database_manager=self.node.db_manager,
                                                   upgrader=self.node.upgrader,
                                                   pool_config=self.node.poolCfg)
@@ -201,26 +209,6 @@ class NodeBootstrap(PNodeBootstrap):
     def init_pool_config(self):
         return PoolConfig(self.node.configLedger)
 
-    def init_domain_ledger(self):
-        """
-        This is usually an implementation of Ledger
-        """
-        if self.node.config.primaryStorage is None:
-            genesis_txn_initiator = GenesisTxnInitiatorFromFile(
-                self.node.genesis_dir, self.node.config.domainTransactionsFile)
-            return Ledger(
-                CompactMerkleTree(
-                    hashStore=self.node.getHashStore('domain')),
-                dataDir=self.node.dataLocation,
-                fileName=self.node.config.domainTransactionsFile,
-                ensureDurability=self.node.config.EnsureLedgerDurability,
-                genesis_txn_initiator=genesis_txn_initiator)
-        else:
-            return initStorage(self.node.config.primaryStorage,
-                               name=self.node.name + NODE_PRIMARY_STORAGE_SUFFIX,
-                               dataDir=self.node.dataLocation,
-                               config=self.node.config)
-
     def init_upgrader(self):
         return Upgrader(self.node.id,
                         self.node.name,
@@ -236,8 +224,8 @@ class NodeBootstrap(PNodeBootstrap):
                          self.node.dataLocation,
                          self.node.config)
 
-    def init_common_managers(self):
-        super().init_common_managers()
+    def _init_common_managers(self):
+        super()._init_common_managers()
         self.node.upgrader = self.init_upgrader()
         self.node.restarter = self.init_restarter()
         self.node.poolCfg = self.init_pool_config()

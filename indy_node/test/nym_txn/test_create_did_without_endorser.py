@@ -81,7 +81,7 @@ def test_create_did_without_endorser_empty_verkey(looper, nym_txn_data, sdk_wall
 
     request_couple = sdk_sign_and_send_prepared_request(looper, (wh, sender_did), sdk_pool_handle, nym_request)
 
-    with pytest.raises(RequestNackedException, match='Can not find verkey for {}'.format(sender_did)):
+    with pytest.raises(RequestNackedException, match='verkey for {} cannot be found'.format(sender_did)):
         sdk_get_and_check_replies(looper, [request_couple])
 
 
@@ -93,7 +93,7 @@ def test_create_did_without_endorser_with_different_dest(looper, nym_txn_data, s
 
     request_couple = sdk_sign_and_send_prepared_request(looper, (wh, sender_did), sdk_pool_handle, nym_request)
 
-    with pytest.raises(RequestNackedException, match='Can not find verkey for {}'.format(sender_did)):
+    with pytest.raises(RequestNackedException, match='verkey for {} cannot be found'.format(sender_did)):
         sdk_get_and_check_replies(looper, [request_couple])
 
 

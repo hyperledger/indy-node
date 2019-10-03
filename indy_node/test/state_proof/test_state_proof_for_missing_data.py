@@ -5,7 +5,8 @@ from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA
 from indy_node.test.state_proof.helper import check_valid_proof, \
     sdk_submit_operation_and_get_result
 from indy_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, CLAIM_DEF_FROM, CLAIM_DEF_SCHEMA_REF, \
-    CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES
+    CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES, GET_CONTEXT, META, CONTEXT_NAME, \
+    CONTEXT_VERSION, RS_TYPE, CONTEXT_TYPE, CONTEXT_CONTEXT
 
 # fixtures, do not remove
 from indy_node.test.attrib_txn.test_nym_attrib import \
@@ -56,6 +57,34 @@ def test_state_proof_returned_for_missing_nym(looper, nodeSetWithOneNodeRespondi
     result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
                                                  sdk_wallet_endorser, get_nym_operation)
     check_no_data_and_valid_proof(result)
+
+
+@pytest.mark.skip
+# TODO fix this test so it does not rely on Indy-SDK,
+# or, fix this test once GET_CONTEXT is part of Indy-SDK
+def test_state_proof_returned_for_missing_context(looper, nodeSet,
+                                                 sdk_pool_handle,
+                                                 sdk_wallet_endorser):
+    """
+    Tests that state proof is returned in the reply for GET_CONTEXT transactions
+    """
+    _, dest = sdk_wallet_endorser
+    context_name = "test_context"
+    context_version = "1.0"
+    get_context_operation = {
+        TARGET_NYM: dest,
+        TXN_TYPE: GET_CONTEXT,
+        META: {
+            CONTEXT_NAME: context_name,
+            CONTEXT_VERSION: context_version,
+            RS_TYPE: CONTEXT_TYPE
+        }
+    }
+    result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
+                                                 sdk_wallet_endorser,
+                                                 get_context_operation)
+    assert not result[DATA]
+    check_valid_proof(result)
 
 
 def test_state_proof_returned_for_missing_schema(looper, nodeSetWithOneNodeResponding,

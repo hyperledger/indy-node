@@ -21,7 +21,8 @@ from plenum.common.types import f
 from indy_common.constants import \
     ATTRIB, CLAIM_DEF, SCHEMA, CLAIM_DEF_FROM, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_SIGNATURE_TYPE, \
     CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES, LOCAL_AUTH_POLICY, \
-    CONFIG_LEDGER_AUTH_POLICY, GET_NYM, GET_ATTR, GET_CLAIM_DEF, GET_SCHEMA
+    CONFIG_LEDGER_AUTH_POLICY, GET_NYM, GET_ATTR, GET_CLAIM_DEF, GET_SCHEMA, CONTEXT_NAME, CONTEXT_VERSION, GET_CONTEXT, \
+    CONTEXT_CONTEXT, META, CONTEXT_TYPE, RS_TYPE, SET_CONTEXT
 from indy_common.types import Request
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
@@ -175,6 +176,63 @@ def test_state_proofs_for_get_claim_def(write_manager,
     assert is_proof_verified(db_manager,
                              proof, path,
                              key_components, seq_no, txn_time)
+
+
+def test_state_proofs_for_get_context(write_manager,
+                                      read_manager,
+                                      db_manager):
+    # Adding context
+    nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
+
+    seq_no = 0
+    txn_time = int(time.time())
+    identifier = "6ouriXMZkLeHsuXrN1X1fd"
+
+    context_name = "context_a"
+    context_version = "1.0"
+    meta = {CONTEXT_NAME: context_name,
+            CONTEXT_VERSION: context_version,
+            RS_TYPE: CONTEXT_TYPE}
+    data = {CONTEXT_CONTEXT: {"ex": "https://example.org/examples#"}}
+    txn = {
+        TXN_TYPE: SET_CONTEXT,
+        DATA: data,
+        META: meta
+    }
+    txn = append_txn_metadata(reqToTxn(Request(operation=txn,
+                                               protocolVersion=CURRENT_PROTOCOL_VERSION,
+                                               identifier=identifier)),
+                              seq_no=seq_no, txn_time=txn_time)
+    txn = append_payload_metadata(txn, frm=nym)
+
+    write_manager.update_state(txn)
+    db_manager.get_state(DOMAIN_LEDGER_ID).commit()
+    multi_sig = save_multi_sig(db_manager)
+
+    # Getting context
+    request = Request(
+        operation={
+            TARGET_NYM: nym,
+            META: meta,
+            TXN_TYPE: GET_CONTEXT
+        },
+        signatures={},
+        protocolVersion=CURRENT_PROTOCOL_VERSION
+    )
+
+    result = read_manager.get_result(request)
+    proof = extract_proof(result, multi_sig)
+    assert result[DATA][DATA] == data
+
+    # Verifying signed state proof
+    path = domain.make_state_path_for_context(nym, context_name, context_version)
+    value = {
+        META: meta,
+        DATA: data
+    }
+    assert is_proof_verified(db_manager,
+                             proof, path,
+                             value, seq_no, txn_time)
 
 
 def test_state_proofs_for_get_schema(write_manager,

@@ -1,6 +1,9 @@
 import json
+import sys
 from copy import deepcopy
 from hashlib import sha256
+
+from common.exceptions import PlenumTypeError, PlenumValueError
 
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
     VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, SCHEMA_IS_STRICT
@@ -24,7 +27,7 @@ from common.version import GenericVersion
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ConstraintsEnum, CONSTRAINT_ID, AUTH_CONSTRAINTS, METADATA, \
     NEED_TO_BE_OWNER, SIG_COUNT, ROLE, OFF_LEDGER_SIGNATURE
-from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
+from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT, CONTEXT_SIZE_LIMIT
 from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     POOL_UPGRADE, POOL_CONFIG, \
@@ -34,12 +37,15 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
     REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
     GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
-    GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
+    GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, \
+    SET_CONTEXT, GET_CONTEXT, CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT, CONTEXT_FROM, \
+    SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
-    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
-from indy_common.version import SchemaVersion
+    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, RS_TYPE, CONTEXT_TYPE, \
+    META
+from indy_common.version import SchemaVersion, ContextVersion
 
 
 class Request(PRequest):
@@ -90,6 +96,49 @@ class SchemaField(MessageValidator):
             LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
             min_length=1,
             max_length=SCHEMA_ATTRIBUTES_LIMIT)),
+    )
+
+
+# Rich Schema
+class SetContextMetaField(MessageValidator):
+    schema = (
+        (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
+        (RS_TYPE, ConstantField(CONTEXT_TYPE)),
+    )
+
+
+class ContextField(FieldBase):
+    _base_types = None
+
+    def __init__(self, max_size=None, **kwargs):
+        if max_size is not None:
+            if not isinstance(max_size, int):
+                raise PlenumTypeError('max_size', max_size, int)
+            if not max_size > 0:
+                raise PlenumValueError('max_size', max_size, '> 0')
+        self.max_size = max_size
+        super().__init__(**kwargs)
+
+    def _specific_validation(self, val):
+        if self.max_size is not None:
+            arr = json.dumps(val)
+            size = sys.getsizeof(arr)
+            if size > self.max_size:
+                return 'size should be at most {}, context has size {}'.format(self.max_size, size)
+
+
+class SetContextDataField(MessageValidator):
+    schema = (
+        (CONTEXT_CONTEXT, ContextField(
+            max_size=CONTEXT_SIZE_LIMIT)),
+    )
+
+
+class GetContextField(MessageValidator):
+    schema = (
+        (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (CONTEXT_VERSION, VersionField(version_cls=ContextVersion))
     )
 
 
@@ -152,6 +201,24 @@ class ClientGetSchemaOperation(MessageValidator):
         (TXN_TYPE, ConstantField(GET_SCHEMA)),
         (SCHEMA_FROM, IdentifierField()),
         (DATA, GetSchemaField()),
+    )
+
+
+# Rich Schema
+# this class is not actually used for static validation at this time
+class ClientSetContextOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(SET_CONTEXT)),
+        (META, SetContextMetaField()),
+        (DATA, SetContextDataField()),
+    )
+
+
+class ClientGetContextOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(GET_CONTEXT)),
+        (CONTEXT_FROM, IdentifierField()),
+        (META, GetContextField()),
     )
 
 
@@ -428,6 +495,8 @@ class ClientOperationField(PClientOperationField):
         GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
         GET_REVOC_REG: ClientGetRevocRegField(),
         GET_REVOC_REG_DELTA: ClientGetRevocRegDeltaField(),
+        SET_CONTEXT: ClientSetContextOperation(),  # Rich Schema
+        GET_CONTEXT: ClientGetContextOperation(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class
