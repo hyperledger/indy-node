@@ -11,6 +11,7 @@
     * [CLAIM_DEF](#claim_def)
     * [REVOC_REG_DEF](#revoc_reg_def)
     * [REVOC_REG_ENTRY](#revoc_reg_entry)
+    * [SET_CONTEXT](#set_context)
 
 * [Pool Ledger](#pool-ledger)
     * [NODE](#node)
@@ -126,6 +127,7 @@ transaction specific data:
         - REVOC_REG_DEF = "114"
         - AUTH_RULE = "120"
         - AUTH_RULES = "122"
+        - SET_CONTEXT = "200"
 
     - `protocolVersion` (integer; optional):
 
@@ -650,6 +652,88 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
 }
 ```
 
+
+#### SET_CONTEXT
+Adds a Context
+
+It's not possible to update an existing Context.
+If the Context needs to be evolved, a new Context with a new version or new name needs to be created.
+
+- `data` (dict):
+
+     Dictionary with Context's data:
+     
+    - `@context`: This value must be either:
+        1) a URI (it should dereference to a Context object)
+        2) a Context object (a dict)
+        3) an array of Context objects and/or Context URIs
+
+- `meta` (dict)
+
+    Dictionary with Context's metadata
+    
+    - `name`: Context's name string
+    - `version`: Context's version string
+    - `type`: 'ctx'
+
+
+**Example**:
+```
+{
+    "ver": 1,
+    "txn": {
+        "type":200,
+        "protocolVersion":2,
+
+        "data": {
+            "ver":1,
+            "data":{
+                "@context": [
+                    {
+                        "@version": 1.1
+                    },
+                    "https://www.w3.org/ns/odrl.jsonld",
+                    {
+                        "ex": "https://example.org/examples#",
+                        "schema": "http://schema.org/",
+                        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                    }
+                ]
+            },
+            "meta": {
+                "name":"SimpleContext",
+                "version":"1.0",
+                "type": "ctx
+            },
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }            
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+        "txnId":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
 
 ## Pool Ledger
 
