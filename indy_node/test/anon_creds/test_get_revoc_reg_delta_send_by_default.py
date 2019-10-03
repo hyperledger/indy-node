@@ -1,6 +1,7 @@
 import json
 import copy
 
+from indy_node.test.anon_creds.helper import build_get_revoc_reg_delta
 from plenum.common.txn_util import get_txn_time, get_payload_data
 from plenum.common.util import get_utc_epoch
 from plenum.test.helper import sdk_send_and_check, sdk_sign_request_from_dict
@@ -14,8 +15,8 @@ from plenum.common.util import randomString
 def test_send_with_wrong_rev_reg_id_default(looper, txnPoolNodeSet,
                                             sdk_pool_handle,
                                             send_revoc_reg_entry_by_default,
-                                            build_get_revoc_reg_delta):
-    get_revoc_reg_delta = copy.deepcopy(build_get_revoc_reg_delta)
+                                            sdk_wallet_steward):
+    get_revoc_reg_delta = build_get_revoc_reg_delta(looper, sdk_wallet_steward)
     del get_revoc_reg_delta['operation'][FROM]
     get_revoc_reg_delta['operation'][REVOC_REG_DEF_ID] = randomString(30)
     get_revoc_reg_delta['operation'][TO] = get_utc_epoch() + 1000
@@ -30,9 +31,9 @@ def test_send_with_only_to_by_default(looper,
                             txnPoolNodeSet,
                             sdk_pool_handle,
                             send_revoc_reg_entry_by_default,
-                            build_get_revoc_reg_delta):
+                            sdk_wallet_steward):
     rev_entry_req, reg_reply = send_revoc_reg_entry_by_default
-    get_revoc_reg_delta = copy.deepcopy(build_get_revoc_reg_delta)
+    get_revoc_reg_delta = build_get_revoc_reg_delta(looper, sdk_wallet_steward)
     del get_revoc_reg_delta['operation'][FROM]
     get_revoc_reg_delta['operation'][REVOC_REG_DEF_ID] = rev_entry_req['operation'][REVOC_REG_DEF_ID]
     get_revoc_reg_delta['operation'][TO] = get_utc_epoch() + 1000
@@ -48,9 +49,9 @@ def test_send_earlier_then_first_entry_by_default(
         txnPoolNodeSet,
         sdk_pool_handle,
         send_revoc_reg_entry_by_default,
-        build_get_revoc_reg_delta):
+        sdk_wallet_steward):
     rev_entry_req, reg_reply = send_revoc_reg_entry_by_default
-    get_revoc_reg_delta = copy.deepcopy(build_get_revoc_reg_delta)
+    get_revoc_reg_delta = build_get_revoc_reg_delta(looper, sdk_wallet_steward)
     del get_revoc_reg_delta['operation'][FROM]
     get_revoc_reg_delta['operation'][REVOC_REG_DEF_ID] = rev_entry_req['operation'][REVOC_REG_DEF_ID]
     get_revoc_reg_delta['operation'][TO] = get_utc_epoch() - 1000
@@ -66,8 +67,7 @@ def test_send_with_from_by_default(looper,
         txnPoolNodeSet,
         sdk_pool_handle,
         sdk_wallet_steward,
-        send_revoc_reg_entry_by_default,
-        build_get_revoc_reg_delta):
+        send_revoc_reg_entry_by_default):
     # We save timestamp of state changes.
     # looper and txnPoolNodeSet has "module", therefore,
     # when we send request with FROM section, it's not a clean situation
@@ -96,7 +96,7 @@ def test_send_with_from_by_default(looper,
         looper,
         txnPoolNodeSet,
         sdk_pool_handle)[0]
-    reg_delta_req = copy.deepcopy(build_get_revoc_reg_delta)
+    reg_delta_req = build_get_revoc_reg_delta(looper, sdk_wallet_steward)
     reg_delta_req['operation'][REVOC_REG_DEF_ID] = rev_reg_req1['operation'][REVOC_REG_DEF_ID]
     reg_delta_req['operation'][FROM] = get_txn_time(rev_reg_reply1['result'])
     reg_delta_req['operation'][TO] = get_txn_time(rev_reg_reply3['result']) + 1000

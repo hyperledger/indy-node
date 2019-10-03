@@ -5,7 +5,7 @@ from plenum.common.constants import TARGET_NYM, RAW, NAME, VERSION, ORIGIN
 
 # noinspection PyUnresolvedReferences
 from plenum.common.ledger import Ledger
-from plenum.test.primary_selection.test_primary_selector import FakeLedger
+from plenum.test.primary_selection.test_view_changer_primary_selection import FakeLedger
 from plenum.test.validator_info.conftest import info, node  # qa
 
 from indy_common.constants import TXN_TYPE, DATA, GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, REF, SIGNATURE_TYPE

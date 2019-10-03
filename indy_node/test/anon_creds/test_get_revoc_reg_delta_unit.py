@@ -1,6 +1,7 @@
 import pytest
 
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_delta_handler import GetRevocRegDeltaHandler
+from indy_node.test.anon_creds.helper import build_get_revoc_reg_delta
 from plenum.common.txn_util import reqToTxn, append_txn_metadata, get_txn_time
 from plenum.common.types import f
 from indy_common.types import Request
@@ -68,9 +69,9 @@ def test_get_delta_with_other_reg_def_in_state(looper,
                                                create_node_and_not_start,
                                                reg_entry_with_other_reg_id,
                                                build_txn_for_revoc_def_entry_by_default,
-                                               build_get_revoc_reg_delta):
+                                               sdk_wallet_steward):
     entry_second_id = build_txn_for_revoc_def_entry_by_default
-    delta_req = build_get_revoc_reg_delta
+    delta_req = build_get_revoc_reg_delta(looper, sdk_wallet_steward)
     node = create_node_and_not_start
     # need for different txnTime
     looper.runFor(2)
