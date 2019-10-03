@@ -10,6 +10,16 @@ Environment = NamedTuple("Environment", [
     ("domainLedger", str)
 ])
 
+# Rich Schema
+RS_TYPE = "type"
+META = "meta"
+# CONTEXT
+CONTEXT_NAME = "name"
+CONTEXT_VERSION = "version"
+CONTEXT_CONTEXT = "@context"
+CONTEXT_FROM = "dest"
+CONTEXT_TYPE = 'ctx'
+
 # SCHEMA
 SCHEMA_NAME = "name"
 SCHEMA_VERSION = "version"
@@ -159,6 +169,10 @@ GET_REVOC_REG_DEF = IndyTransactions.GET_REVOC_REG_DEF.value
 GET_REVOC_REG = IndyTransactions.GET_REVOC_REG.value
 GET_REVOC_REG_DELTA = IndyTransactions.GET_REVOC_REG_DELTA.value
 CHANGE_KEY = IndyTransactions.CHANGE_KEY.value
+
+# Rich Schema
+SET_CONTEXT = IndyTransactions.SET_CONTEXT.value
+GET_CONTEXT = IndyTransactions.GET_CONTEXT.value
 
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value

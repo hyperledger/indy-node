@@ -103,3 +103,5 @@ PACKAGES_TO_HOLD = ['indy-plenum', 'indy-node', 'python3-indy-crypto', 'libindy-
 authPolicy = CONFIG_LEDGER_AUTH_POLICY
 
 SCHEMA_ATTRIBUTES_LIMIT = 125
+
+CONTEXT_SIZE_LIMIT = 131072

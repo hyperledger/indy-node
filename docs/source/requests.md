@@ -17,6 +17,7 @@
     * [AUTH_RULES](#auth_rules)
     * [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)
     * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)    
+    * [SET_CONTEXT](#set_context)
 
 * [Read Requests](#read-requests)
 
@@ -30,6 +31,7 @@
     * [GET_AUTH_RULE](#get_auth_rule)
     * [GET_TRANSACTION_AUTHOR_AGREEMENT](#get_transaction_author_agreement)
     * [GET_TRANSACTION_AUTHOR_AGREEMENT_AML](#get_transaction_author_agreement_aml)
+    * [GET_CONTEXT](#get_context)
     * [GET_TXN](#get_txn)
 
 * [Action Requests](#action-requests)
@@ -56,7 +58,8 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
         <request-specific fields>
     },
     
-    'identifier': <sender/author DID>,
+    'identifier': <author DID>,
+    `endorser`: <endorser DID>, 
     'reqId': <req_id unique integer>,
     'protocolVersion': 2,
     'signature': <signature_value>,
@@ -87,8 +90,10 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
             - NODE_UPGRADE = "110"
             - POOL_CONFIG = "111"
             - REVOC_REG_DEF = "113"
-            - REVOC_REG_DEF = "114"
+            - REVOC_REG_ENTRY = "114"
             - AUTH_RULE = "120"
+            - AUTH_RULES = "122"
+            - SET_CONTEXT = "200"
             
         - read requests:
         
@@ -103,18 +108,28 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
             - GET_REVOC_REG = "116"
             - GET_REVOC_REG_DELTA = "117"  
             - GET_AUTH_RULE = "121"      
+            - GET_CONTEXT = "300"
             
     - request-specific data
 
 - `identifier` (base58-encoded string):
- 
-     Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
+    
+     Identifier of the transaction author as base58-encoded string
      for 16 or 32 bit DID value.
-     It may differ from `dest` field for some of requests (for example NYM), where `dest` is a 
+ 
+     For read requests this is read request submitter. It can be any DID (not necessary present on the ledger as a NYM txn)
+ 
+     For write requests this is transaction author.
+     It may differ from `endorser` field who submits the transaction on behalf of `identifier`. If `endorser` is absent,
+     then the author (`identifier`) plays the role of endorser and submits request by his own.
+     It also may differ from `dest` field for some of requests (for example NYM), where `dest` is a 
      target identifier (for example, a newly created DID identifier).
      
-     *Example*: `identifier` is a DID of a Endorser creating a new DID, and `dest` is a newly created DID.
+     *Example*:
      
+     - `identifier` is a DID of a transaction author who doesn't have write permissions; `endorser` is a DID of a user with Endorser role (that is with write permissions).
+     - new NYM creation: `identifier` is a DID of an Endorser creating a new DID, and `dest` is a newly created DID.
+ 
 - `reqId` (integer): 
 
     Unique ID number of the request with transaction.
@@ -148,7 +163,8 @@ Write requests to Domain and added-by-plugins ledgers may have additional Transa
         <request-specific fields>
     },
     
-    'identifier': <sender/author DID>,
+    'identifier': <author DID>,
+    'endorser': <endorser DID>,
     'reqId': <req_id unique integer>,
     'taaAcceptance': {
         'taaDigest': <digest hex string>,
@@ -166,6 +182,11 @@ Write requests to Domain and added-by-plugins ledgers may have additional Transa
 ```
 
 Additional (optional) fields for write requests:
+
+- `endorser` (base58-encoded string, optional):
+    Identifier (DID) of an Endorser submitting a transaction on behalf of the original author (`identifier`) as base58-encoded string for 16 or 32 bit DID value.
+   If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own. 
+   If `endorser` is present then the transaction must be multi-signed by the both author (`identifier`) and Endorser (`endorser`).  
 
 - `taaAcceptance` (dict, optional):
             If transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
@@ -198,6 +219,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
             "metadata": {
                 "reqId": <...>,
                 "from": <...>,
+                "endorser": <...>,
                 "digest": <...>,
                 "payloadDigest": <...>,
                 "taaAcceptance": {
@@ -251,6 +273,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         - REVOC_REG_DEF = "113"
         - REVOC_REG_DEF = "114"
         - AUTH_RULE = "120"
+        - SET_CONTEXT = "200"
 
     - `protocolVersion` (integer; optional): 
     
@@ -267,13 +290,17 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         Metadata as came from the Request.
 
         - `from` (base58-encoded string):
-             Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
-             for 16 or 32 byte DID value.
-             It may differ from `did` field for some of transaction (for example NYM), where `did` is a 
+             Identifier (DID) of the transaction author as base58-encoded string
+             for 16 or 32 bit DID value.
+             It may differ from `endorser` field who submits the transaction on behalf of `identifier`.
+             If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own.
+             It also may differ from `dest` field for some of requests (for example NYM), where `dest` is a 
              target identifier (for example, a newly created DID identifier).
              
-             *Example*: `from` is a DID of a Endorser creating a new DID, and `did` is a newly created DID.
+             *Example*:
              
+             - `identifier` is a DID of a transaction author who doesn't have write permissions; `endorser` is a DID of a user with Endorser role (that is with write permissions).
+             - new NYM creation: `identifier` is a DID of an Endorser creating a new DID, and `dest` is a newly created DID.
         - `reqId` (integer): 
             Unique ID number of the request with transaction.
   
@@ -283,6 +310,11 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         - `payloadDigest` (SHA256 hex digest string):
             SHA256 hash hex digest of the payload fields in the initial requests, that is all fields excluding signatures and plugins-added ones
             
+        - `endorser` (base58-encoded string, optional):
+            Identifier (DID) of an Endorser submitting a transaction on behalf of the original author (`identifier`) as base58-encoded string for 16 or 32 bit DID value.
+            If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own. 
+            If `endorser` is present then the transaction must be multi-signed by the both author (`identifier`) and Endorser (`endorser`). 
+                        
         - `taaAcceptance` (dict, optional):
             If transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
             
@@ -396,11 +428,11 @@ These common metadata values are added to result's JSON at the same level as rea
     - GET_REVOC_REG = "116"
     - GET_REVOC_REG_DELTA = "117"  
     - GET_AUTH_RULE = "121"    
+    - GET_CONTEXT = "300"
 
 - `identifier` (base58-encoded string):
  
-     as was in read Request (may differ from the `identifier` in `data` which defines 
-     transaction submitter)
+     read request submitter's DID as was in read Request (may differ from the `identifier` in `data` which defines transaction author)
      
 - `reqId` (integer): 
 
@@ -452,7 +484,8 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
 - `dest` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 byte DID value.
-    It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
+    It may differ from `identifier` metadata field, where `identifier` is the DID of the submitter.
+    If they are equal (in permissionless case), then transaction must be signed by the newly created `verkey`.
     
     *Example*: `identifier` is a DID of a Endorser creating a new DID, and `dest` is a newly created DID.
      
@@ -663,6 +696,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     },
 
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
     'reqId': 1514280215504647,
     'protocolVersion': 2,
     'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
@@ -691,6 +725,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
             "metadata": {
                 "reqId":1514280215504647,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
                 "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
                 "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
@@ -758,6 +793,7 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
     },
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
     'reqId': 1514280215504647,
     'protocolVersion': 2,
     'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
@@ -788,6 +824,7 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
             "metadata": {
                 "reqId":1514280215504647,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
                 "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
                 "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
@@ -852,6 +889,7 @@ It contains public keys, maximum number of credentials the registry may contain,
     },
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
     'reqId': 1514280215504647,
     'protocolVersion': 2,
     'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
@@ -886,6 +924,7 @@ It contains public keys, maximum number of credentials the registry may contain,
             "metadata": {
                 "reqId":1514280215504647,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
                 "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
                 "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
@@ -941,6 +980,7 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
     },
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
     'reqId': 1514280215504647,
     'protocolVersion': 2,
     'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
@@ -972,6 +1012,7 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
             "metadata": {
                 "reqId":1514280215504647,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
                 "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
                 "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
@@ -1371,6 +1412,13 @@ The `constraint_id` fields is where one can define the desired auth constraint f
             Flag to check if the user must be the owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
             The notion of the `owner` is different for every auth rule. Please reference to [auth_rules.md](auth_rules.md) for details.
             
+        - `off_ledger_signature` (boolean, optional, False by default):
+        
+            Whether signatures against keys not present on the ledger are accepted during verification of the required number of valid signatures.
+            An example when it can be set to `True` is creation of a new DID in a permissionless mode, that is when `identifer` is not present on the ledger and a newly created `verkey` is used for signature verification.
+            Another example is signing by cryptonyms  (where identifier is equal to verkey), but this is not supported yet. 
+            If the value of this field is False (default), and the number of required signatures is greater than zero, then the transaction author's DID (`identifier`) must be present on the ledger (corresponding NYM txn must exist).            
+            
         - `metadata` (dict; optional):
         
             Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
@@ -1554,6 +1602,13 @@ A client will receive NACK for
         
             Flag to check if the user must be the owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
             The notion of the `owner` is different for every auth rule. Please reference to [auth_rules.md](auth_rules.md) for details.
+            
+        - `off_ledger_signature` (boolean, optional, False by default):
+        
+            Whether signatures against keys not present on the ledger are accepted during verification of required number of valid signatures.
+            An example when it can be set to `True` is creation of a new DID in a permissionless mode, that is when `identifer` is not present on the ledger and a newly created `verkey` is used for signature verification.
+            Another example is signing by cryptonyms  (where identifier is equal to verkey), but this is not supported yet. 
+            If the value of this field is False (default), and the number of required signatures is greater than zero, then the transaction author's DID (`identifier`) must be present on the ledger (corresponding NYM txn must exist).
             
         - `metadata` (dict; optional):
         
@@ -1829,6 +1884,121 @@ Each acceptance mechanisms list has a unique version.
         
         'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
         'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+    }
+}
+```
+
+### SET_CONTEXT
+Adds Context.
+
+It's not possible to update existing Context.
+So, if the Context needs to be evolved, a new Context with a new version or name needs to be created.
+
+- `data` (dict):
+
+     Dictionary with Context's data:
+     
+    - `@context`: This value must be either:
+        1) a URI (it should dereference to a Context object)
+        2) a Context object (a dict)
+        3) an array of Context objects and/or Context URIs
+
+- `meta` (dict)
+
+    Dictionary with Context's metadata
+    
+    - `name`: Context's name string
+    - `version`: Context's version string
+    - `type`: 'ctx'
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '200',
+        "data":{
+            "@context": [
+                {
+                    "@version": 1.1
+                },
+                "https://www.w3.org/ns/odrl.jsonld",
+                {
+                    "ex": "https://example.org/examples#",
+                    "schema": "http://schema.org/",
+                    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                }
+            ]
+        },
+        "meta": {
+            "name":"SimpleContext",
+            "version":"1.0",
+            "type": "ctx"
+        },
+    },
+    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
+    'reqId': 1514280215504647,
+    'protocolVersion': 2,
+    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        "ver": 1,
+        "txn": {
+            "type":"200",
+            "protocolVersion":2,
+            
+            "data": {
+                "ver":1,
+                "data":{
+                    "@context": [
+                        {
+                            "@version": 1.1
+                        },
+                        "https://www.w3.org/ns/odrl.jsonld",
+                        {
+                            "ex": "https://example.org/examples#",
+                            "schema": "http://schema.org/",
+                            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                        }
+                    ]
+                },
+                "meta": {
+                    "name":"SimpleContext",
+                    "version":"1.0",
+                    "type": "ctx"
+                },
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
+        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+		
     }
 }
 ```
@@ -2794,6 +2964,96 @@ All input parameters are optional and mutually exclusive.
 }
 ```
 
+### GET_CONTEXT
+
+Gets Context.
+
+- `dest` (base58-encoded string):
+
+    Context DID as base58-encoded string for 16 or 32 byte DID value.
+    It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
+    
+    *Example*: `identifier` is a DID of the read request sender, and `dest` is the DID of the Context.
+
+- `meta` (dict):
+
+    - `name` (string):  Context's name string
+    - `version` (string): Context's version string
+    
+
+ 
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '300'
+        'dest': '2VkbBskPNNyWrLrZq7DBhk',
+        'meta': {
+            'name': 'SimpleContext',
+            'version': '1.0',
+            'type': 'ctx'
+        },
+    },
+    
+    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '300',
+        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'seqNo': 10,
+        'txnTime': 1514214795,
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 1, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+        "data":{
+            "@context": [
+                {
+                    "@version": 1.1
+                },
+                "https://www.w3.org/ns/odrl.jsonld",
+                {
+                    "ex": "https://example.org/examples#",
+                    "schema": "http://schema.org/",
+                    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                }
+            ]
+        },
+
+        "meta": {
+            "name":"SimpleContext",
+            "version":"1.0",
+            "type": "ctx"
+        },
+        
+        'dest': '2VkbBskPNNyWrLrZq7DBhk'
+    }
+}
+```
+
 ### GET_TXN
 
 A generic request to get a transaction from Ledger by its sequence number.
@@ -2824,32 +3084,60 @@ A generic request to get a transaction from Ledger by its sequence number.
 *Reply Example (returns requested NYM txn with seqNo=9)*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '3',
-        'identifier': 'MSjKTWkPLtYoPEaTF1TUDb',
-        'reqId': 1514311352551755,
+    "op": "REPLY", 
+    "result": {
+        "type": "3",
+        "identifier": "MSjKTWkPLtYoPEaTF1TUDb",
+        "reqId": 1514311352551755,
        
-        'seqNo': 9,
+        "seqNo": 9,
 
-        'data': {
-            'type': '1',
-            'identifier': 'MSjKTWkPLtYoPEaTF1TUDb',
-            'reqId': 1514311345476031,
-            'signature': '4qDmMAGqjzr4nh7S3rzLX3V9iQYkHurrYvbibHSvQaKw3u3BouTdLwv6ZzzavAjS635kAqpj5kKG1ehixTUkzFjK',
-            'signatures': None,
-            
-            'seqNo': 9,
-            `txnTime': 1514311348,
-            
-            'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
-            'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'],
-            
-            'alias': 'name',
-            'dest': 'WTJ1xmQViyFb67WAuvPnJP',
-            'role': '2',
-            'verkey': '~HjhFpNnFJKyceyELpCz3b5'
+        "data": {
+            "ver": 1,
+            "txn": {
+                "type":"1",
+                "protocolVersion":2,
+        
+                "data": {
+                    "ver": 1,
+                    "dest":"GEzcdDLhCpGCYRHW82kjHd",
+                    "verkey":"~HmUWn928bnFT6Ephf65YXv",
+                    "role":101,
+                },
+        
+                "metadata": {
+                    "reqId":1513945121191691,
+                    "from":"L5AD5g65TDQr1PPHHRoiGf",
+                    "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                    "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+                    "taaAcceptance": {
+                        "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                        "mechanism": "EULA",
+                        "time": 1513942017
+                     }
+                },
+            },
+            "txnMetadata": {
+                "txnTime":1513945121,
+                "seqNo": 10,
+                "txnId": "N22KY2Dyvmuu2PyyqSFKue|01"
+            },
+            "reqSignature": {
+                "type": "ED25519",
+                "values": [{
+                    "from": "L5AD5g65TDQr1PPHHRoiGf",
+                    "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+                }]
+            }
+        
+            "rootHash": "5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn",
+            "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
         }
+        
+        "type": "3",
+        "reqId": 1514311281279625,
+        "identifier": "MSjKTWkPLtYoPEaTF1TUDb",
+        "seqNo": 9,
     }
 }
 ```

@@ -59,9 +59,9 @@ Indy Node repo consists of the following parts:
 - scripts
     - Some scripts that can be run for installed Node (in particular, scripts to start Nodes, generate keys, prepare test Network, etc.)
 - doc
-    - a folder with documentation
+    - A folder with documentation
 - dev-setup
-    - a folder with scripts helping to configure development environment (python, dependencies, projects, virtual environment)
+    - A folder with scripts helping to configure development environment (python, dependencies, projects, virtual environment)
 
 ## Dependent Projects
 
@@ -73,7 +73,7 @@ Indy Node repo consists of the following parts:
       (see [How to Start Working with the Code](#how-to-start-working-with-the-code) below).
 - [indy-sdk](https://github.com/hyperledger/indy-sdk)
     - An official SDK for Indy.
-    - it contains client and anoncreds implementation
+    - It contains client and anoncreds implementation
     - You don't need it to contribute to Indy-Node. But please use indy-sdk for your own applications dealing with Indy ecosystem.
 - [indy-crypto](https://github.com/hyperledger/indy-crypto)
     - A shared crypto library
