@@ -1,5 +1,7 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.10.0](#1100)
+
 * [1.9.2](#192)
 
 * [1.9.1](#191)
@@ -47,6 +49,66 @@
 #### Disclosure
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
+
+## 1.10.0
+### Release date: Oct 4th, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.10.0 |
+| indy-node | 1.10.0 |
+| sovrin | 1.1.58 |
+
+### Additional Information:
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+**PBFT View Change was implemented but not enabled so old View Change is active now.**
+
+### Major Changes
+- PBFT View Change implementation
+- BLS fixes and improvements
+- Stability fixes
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| GET_TXN doesn't work with old libindy | | [INDY-2233](https://jira.hyperledger.org/browse/INDY-2233) |
+| Need to improve error message with invalid signature | | [INDY-2103](https://jira.hyperledger.org/browse/INDY-2103) |
+| A node may not be able to connect to another node if another node was able to connect | | [INDY-2183](https://jira.hyperledger.org/browse/INDY-2183) |
+| ZMQError: Address already in use when restarting client stack | | [INDY-2212](https://jira.hyperledger.org/browse/INDY-2212) |
+
+#### Changes and Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| All ledgers in a batch need to be BLS multi-signed | | [INDY-2228](https://jira.hyperledger.org/browse/INDY-2228) |
+| Drop ppSeqNo on Backups after View Change | | [INDY-2226](https://jira.hyperledger.org/browse/INDY-2226) |
+| Move 3PC Message Request logic into a separate service | | [INDY-2220](https://jira.hyperledger.org/browse/INDY-2220) |
+| Bump pyzmq to the latest version | | [INDY-2213](https://jira.hyperledger.org/browse/INDY-2213) |
+| Integration of Services: Cleanup | | [INDY-2208](https://jira.hyperledger.org/browse/INDY-2208) |
+| Integrate Checkpointer Service into Replica | | [INDY-2179](https://jira.hyperledger.org/browse/INDY-2179) |
+| Use audit ledger in Checkpoints | | [INDY-2177](https://jira.hyperledger.org/browse/INDY-2177) |
+| Integrate OrderingService into Replica | | [INDY-2169](https://jira.hyperledger.org/browse/INDY-2169) |
+| Integrate PrimarySelector into View Change Service | | [INDY-2167](https://jira.hyperledger.org/browse/INDY-2167) |
+| Integrate view change property-based tests into CI | | [INDY-2150](https://jira.hyperledger.org/browse/INDY-2150) |
+| Integrate and run PBFT View Changer simulation tests with a real implementation | | [INDY-2149](https://jira.hyperledger.org/browse/INDY-2149) |
+| Implement PBFT viewchanger service with most basic functionality | | [INDY-2147](https://jira.hyperledger.org/browse/INDY-2147) |
+| Extract and integrate ConsensusDataProvider from Replica | | [INDY-2139](https://jira.hyperledger.org/browse/INDY-2139) |
+| Extract Checkpointer service from Replica | | [INDY-2137](https://jira.hyperledger.org/browse/INDY-2137) |
+| Extract Orderer service from Replica | | [INDY-2136](https://jira.hyperledger.org/browse/INDY-2136) |
+| Simulation tests for View Changer (no integration) | | [INDY-2135](https://jira.hyperledger.org/browse/INDY-2135) |
+| Implementation: Make PBFT view change working | | [INDY-1340](https://jira.hyperledger.org/browse/INDY-1340) |
+| Implement network, executor, orderer and checkpointer as adaptors for existing codebase | | [INDY-1339](https://jira.hyperledger.org/browse/INDY-1339) |
+| Define Interfaces needed for View Change Service | | [INDY-1338](https://jira.hyperledger.org/browse/INDY-1338) |
+| Modify WriteReqManager to meet Executor interface needs | | [INDY-1337](https://jira.hyperledger.org/browse/INDY-1337) |
+| Stop resetting ppSeqNo (and relying on this) in new view | | [INDY-1336](https://jira.hyperledger.org/browse/INDY-1336) |
+| Enable full ordering of batches from last view that have been already ordered, make execution on replicas that executed them no-op | | [INDY-1335](https://jira.hyperledger.org/browse/INDY-1335) |
+
+#### Known Issues
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| One node doesn't catch up after promotion | | [INDY-2222](https://jira.hyperledger.org/browse/INDY-2222) |
 
 ## 1.9.2
 ### Release date: Aug 30th, 2019
