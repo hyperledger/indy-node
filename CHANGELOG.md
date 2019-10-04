@@ -65,8 +65,9 @@ Although every attempt has been made to make this information as accurate as pos
 **PBFT View Change was implemented but not enabled so old View Change is active now.**
 
 ### Major Changes
-- PBFT View Change implementation
-- BLS fixes and improvements
+- PBFT View Change implementation (not enabled yet) and corresponding code improvements 
+- BLS multi-signature fixes and improvements
+- The latest version of ZMQ library support
 - Stability fixes
 
 ### Detailed Changelog
