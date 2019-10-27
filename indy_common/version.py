@@ -28,5 +28,5 @@ class TopPkgDefVersion(DigitDotVersion, SourceVersion):
 
 
 def src_version_cls(pkg_name: str = APP_NAME) -> Type[SourceVersion]:
-    # TODO implement dynamic class resolving depending on packge name and config
+    # TODO implement dynamic class resolving depending on package name and config
     return NodeVersion if pkg_name == APP_NAME else TopPkgDefVersion

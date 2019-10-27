@@ -1,4 +1,3 @@
-from indy_common.config_util import getConfig
 from plenum.common.constants import TRUSTEE, STEWARD, NODE
 from stp_core.common.log import getlogger
 

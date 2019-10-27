@@ -15,7 +15,6 @@ from plenum.common.ledger import Ledger
 from plenum.common.constants import HS_ROCKSDB
 
 from indy_common.config_util import getConfig
-from indy_common.config_helper import ConfigHelper, NodeConfigHelper
 from common.serializers.serialization import ledger_txn_serializer
 
 logging.root.handlers = []

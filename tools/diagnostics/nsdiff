@@ -62,10 +62,8 @@ from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.hash_stores.file_hash_store import FileHashStore
 from ledger.ledger import Ledger
 from leveldb import LevelDBError
-from os import listdir
 from os.path import abspath, basename, dirname, isfile, isdir, join
 from plenum.common.constants import KeyValueStorageType
-from shutil import copyfile
 from storage.helper import initKeyValueStorage, initKeyValueStorageIntKeys
 from state.pruning_state import PruningState
 
@@ -215,8 +213,8 @@ class NodeStateComparator:
 
     # Print the contents of a directory
     def print_directory(self, d):
-        onlyfiles = [f for f in listdir(d) if isfile(join(d, f))]
-        onlydirs = [f for f in listdir(d) if isdir(join(d, f))]
+        onlyfiles = [f for f in os.listdir(d) if isfile(join(d, f))]
+        onlydirs = [f for f in os.listdir(d) if isdir(join(d, f))]
         logger.debug("In {}:".format(d))
         for file in onlyfiles:
             logger.debug("\t{}".format(file))
@@ -535,7 +533,7 @@ class NodeStateComparator:
                         file_handle.write("view: {}".format(
                             data['view']))
             else:
-                copyfile(join(abspath(dir_name), fname), join(sout, fname))
+                shutil.copyfile(join(abspath(dir_name), fname), join(sout, fname))
 
     def transform_logs(self, sin, sout):
         # Check for a log file

@@ -1,4 +1,4 @@
-from common.serializers.serialization import state_roots_serializer, domain_state_serializer
+from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_constraints import ConstraintsSerializer
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.state import config

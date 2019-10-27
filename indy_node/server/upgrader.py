@@ -2,7 +2,7 @@ import os
 import asyncio
 from datetime import datetime
 from functools import partial
-from typing import Union, Optional, Callable, Dict
+from typing import Optional, Callable, Dict
 
 import dateutil.parser
 import dateutil.tz
@@ -16,9 +16,8 @@ from common.version import (
     SourceVersion, InvalidVersionError
 )
 
-from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
-    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, \
-    UPGRADE_MESSAGE, PACKAGE, APP_NAME
+from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, CANCEL, JUSTIFICATION, TIMEOUT,\
+    NODE_UPGRADE, UPGRADE_MESSAGE, PACKAGE, APP_NAME
 from indy_common.version import src_version_cls
 from indy_node.server.upgrade_log import UpgradeLogData, UpgradeLog
 from indy_node.utils.node_control_utils import NodeControlUtil

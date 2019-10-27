@@ -597,9 +597,9 @@ def read_json_data(info_path, num: int = 1, from_start = False, _from: int = Non
         ts = int(ts)
         obj['timestamp'] = "{} ({})".format(str_from_timestamp(ts), ts)
 
-        if _from != None or _to != None:
-            if _from == None or _from <= ts:
-                if _to == None or ts <= _to:
+        if _from is not None or _to is not None:
+            if _from is None or _from <= ts:
+                if _to is None or ts <= _to:
                     json_data.append(obj)
                 else:
                     break

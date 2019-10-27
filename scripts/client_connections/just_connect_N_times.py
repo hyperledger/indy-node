@@ -3,14 +3,10 @@ import json
 import multiprocessing
 import time
 import asyncio
-
-from multiprocessing import Process
-
 import os
-
 import functools
-
 import sys
+
 from indy import pool
 
 count_of_connected = 0
@@ -90,7 +86,7 @@ async def start_all_procs(args, wr):
         if client_number == client_connections_node_limit:
             # Give a chance all clients that fit the limit to connect
             time.sleep(10)
-        process = Process(target=run_client, args=(args.genesis_path, wr, client_number))
+        process = multiprocessing.Process(target=run_client, args=(args.genesis_path, wr, client_number))
         processes.append(process)
         process.start()
 

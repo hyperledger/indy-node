@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Dict, Callable
+from typing import Callable
 
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
 from indy_common.authorize.auth_request_validator import WriteRequestValidator

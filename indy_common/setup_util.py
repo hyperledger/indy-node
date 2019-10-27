@@ -1,7 +1,6 @@
 import glob
 import os
 import shutil
-from shutil import copyfile
 
 from ledger.genesis_txn.genesis_txn_file_util import genesis_txn_file
 
@@ -53,7 +52,7 @@ class Setup:
                 self.base_dir, genesis_txn_file(fileName))
             if os.path.exists(destFilePath) and not force:
                 continue
-            copyfile(sourceFilePath, destFilePath)
+            shutil.copyfile(sourceFilePath, destFilePath)
 
         return self
 
