@@ -135,7 +135,7 @@ class TestAuthRuleUsing():
     def validUpgrade(self, nodeIds, tconf, pckg, monkeymodule):
         schedule = {}
         unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-        startAt = unow + timedelta(seconds=1000)
+        startAt = unow + timedelta(seconds=3000)
         acceptableDiff = tconf.MinSepBetweenNodeUpgrades + 1
         for i in nodeIds:
             schedule[i] = datetime.isoformat(startAt)
