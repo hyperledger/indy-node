@@ -55,7 +55,7 @@ from indy_common.constants import APP_NAME, CONFIG_LEDGER_ID, CONFIG_LEDGER_AUTH
 from indy_common.config_helper import NodeConfigHelper
 
 # noinspection PyUnresolvedReferences
-from indy_common.test.conftest import general_conf_tdir, tconf, poolTxnTrusteeNames, \
+from indy_common.test.conftest import general_conf_tdir, tconf as _tconf, poolTxnTrusteeNames, \
     domainTxnOrderedFields, looper, setTestLogLevel, node_config_helper_class, config_helper_class
 
 from indy_node.test.helper import TestNode, TestNodeBootstrap
@@ -70,6 +70,13 @@ strict_types.defaultShouldCheck = True
 
 Logger.setLogLevel(logging.NOTSET)
 
+
+@pytest.fixture(scope="module")
+def tconf(_tconf):
+    oldMax3PCBatchSize = _tconf.Max3PCBatchSize
+    _tconf.Max3PCBatchSize = 1
+    yield _tconf
+    _tconf.Max3PCBatchSize = oldMax3PCBatchSize
 
 @pytest.fixture(scope='module')
 def sdk_pool_handle(plenum_pool_handle, nodeSet):
