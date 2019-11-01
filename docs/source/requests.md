@@ -292,9 +292,9 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         - `from` (base58-encoded string):
              Identifier (DID) of the transaction author as base58-encoded string
              for 16 or 32 bit DID value.
-             It may differ from `endorser` field who submits the transaction on behalf of `identifier`.
-             If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own.
-             It also may differ from `dest` field for some of requests (for example NYM), where `dest` is a 
+             It may differ from the `endorser` field who submits the transaction on behalf of `identifier`.
+             If `endorser` is absent, then the author (`identifier`) plays the role of the endorser and submits a request on his own.
+             It also may differ from `dest` field for some of the requests (for example NYM), where `dest` is a 
              target identifier (for example, a newly created DID identifier).
              
              *Example*:
@@ -302,7 +302,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
              - `identifier` is a DID of a transaction author who doesn't have write permissions; `endorser` is a DID of a user with Endorser role (that is with write permissions).
              - new NYM creation: `identifier` is a DID of an Endorser creating a new DID, and `dest` is a newly created DID.
         - `reqId` (integer): 
-            Unique ID number of the request with transaction.
+            Unique ID number of the requested transaction.
   
         - `digest` (SHA256 hex digest string):
             SHA256 hash hex digest of all fields in the initial requests (including signatures) 
@@ -312,15 +312,15 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
             
         - `endorser` (base58-encoded string, optional):
             Identifier (DID) of an Endorser submitting a transaction on behalf of the original author (`identifier`) as base58-encoded string for 16 or 32 bit DID value.
-            If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own. 
-            If `endorser` is present then the transaction must be multi-signed by the both author (`identifier`) and Endorser (`endorser`). 
+            If `endorser` is absent, then the author (`identifier`) plays the role of the endorser and submits a request on his own. 
+            If `endorser` is present then the transaction must be multi-signed by both author (`identifier`) and Endorser (`endorser`). 
                         
         - `taaAcceptance` (dict, optional):
-            If transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
+            If the transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
             
                 - `taaDigest` (SHA256 hex digest string): SHA256 hex digest of the latest Transaction Author Agreement on the ledger
                 
-                - `mechanism` (string): a mechanism used to accept the signature; must be present in the latest list of transaction author agreement acceptane mechanisms on the ledger  
+                - `mechanism` (string): a mechanism used to accept the signature; must be present in the latest list of transaction author agreement acceptance mechanisms on the ledger  
                 
                 - `time` (integer as POSIX timestamp): transaction author agreement acceptance time
                   
@@ -330,7 +330,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
     Metadata attached to the transaction.
     
     - `txnTime` (integer as POSIX timestamp):
-        The time when transaction was written to the Ledger as POSIX timestamp.
+        The time when the transaction was written to the Ledger as POSIX timestamp.
         
     - `seqNo` (integer):
         A unique sequence number of the transaction on Ledger
@@ -340,7 +340,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
   
 - `reqSignature` (dict):
 
-    Submitter's signature over request with transaction (`txn` field).
+    Submitter's signature over the request with the transaction (`txn` field).
     
     - `type` (string enum):
         
@@ -357,11 +357,11 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
          
 - `rootHash` (base58-encoded hash string):
 
-    base58-encoded ledger's merkle tree root hash
+    base58-encoded ledger's Merkle tree root hash
     
 - `auditPath` (array of base58-encoded hash strings):
 
-    ledger's merkle tree audit proof as array of base58-encoded hash strings
+    ledger's Merkle tree audit-proof as an array of base58-encoded hash strings
     (this is a cryptographic proof to verify that the new transaction has 
     been appended to the ledger)
     
