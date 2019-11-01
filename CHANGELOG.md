@@ -63,7 +63,9 @@ Although every attempt has been made to make this information as accurate as pos
 | sovrin | 1.1.60 |
 
 ### Additional Information:
+
 **Please be careful with demoting/promoting/adding nodes (see Known Issues for details).**
+
 **There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
 
 ### Major Changes
