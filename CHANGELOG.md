@@ -53,7 +53,7 @@
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
 
 ## 1.11.0
-### Release date: Oct 31th, 2019
+### Release date: Nov 1st, 2019
 
 ### Component Version Information
 | Components | Version Numbers |
@@ -63,8 +63,8 @@ Although every attempt has been made to make this information as accurate as pos
 | sovrin | 1.1.60 |
 
 ### Additional Information:
-**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
 **Please be careful with demoting/promoting/adding nodes (see Known Issues for details).**
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
 
 ### Major Changes
 - Switch to PBFT View Change protocol
@@ -75,7 +75,6 @@ Although every attempt has been made to make this information as accurate as pos
 #### Major Fixes
 | Description | Additional Information | Ticket Number |
 | --- | --- | --- |
-| After a ledger-triggered upgrade of the Sovrin package failed, indy-node upgraded to an incorrect version | | [INDY-2161](https://jira.hyperledger.org/browse/INDY-2161) |
 | One node doesn't catch up after promotion | | [INDY-2222](https://jira.hyperledger.org/browse/INDY-2222) |
 | A Replica may process messages from other Replicas | | [INDY-2248](https://jira.hyperledger.org/browse/INDY-2248) |
 | Up to F nodes are out of consensus after >3 hours of load | | [INDY-2268](https://jira.hyperledger.org/browse/INDY-2268) |
@@ -101,7 +100,7 @@ Although every attempt has been made to make this information as accurate as pos
 | All nodes need to select the same primary during view change | | [INDY-2262](https://jira.hyperledger.org/browse/INDY-2262) |
 | A Node missing a View Change may not be able to finish it if NODE txns have been sent | | [INDY-2275](https://jira.hyperledger.org/browse/INDY-2275) |
 | A new node joining the pool during the view change may not be able to start ordering immediately | | [INDY-2276](https://jira.hyperledger.org/browse/INDY-2276) |
-Summary: If there are NODE txns for adding/removing nodes interleaved with View Changes (not any view changes, but a specific subset), then up to F Nodes may not be able to finish view change. This will not affect consensus since N-F nodes will finish the view change.
+Summary: If there are NODE txns for adding/removing nodes interleaved with View Changes (not any view changes, but a specific subset), then either up to F or all Nodes may not be able to finish view change. Please see the details and conditions when it may happen in INDY-2262.
 
 ## 1.10.0
 ### Release date: Oct 4th, 2019
