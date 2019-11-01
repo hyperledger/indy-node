@@ -132,7 +132,7 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
  
 - `reqId` (integer): 
 
-    Unique ID number of the request with transaction.
+    Unique ID number of the requested transaction.
     
 - `protocolVersion` (integer; optional): 
 
@@ -146,7 +146,7 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
     
 - `signatures` (map of base58-encoded string; mutually exclusive with `signature` field): 
     
-    Submitters' signature in multisig case. This is a map where client's identifiers are the keys and 
+    Submitters' signature in multisig case. This is a map where the client's identifiers are the keys and 
     base58-encoded signature strings are the values. Not required for read requests.
     
 
@@ -185,15 +185,15 @@ Additional (optional) fields for write requests:
 
 - `endorser` (base58-encoded string, optional):
     Identifier (DID) of an Endorser submitting a transaction on behalf of the original author (`identifier`) as base58-encoded string for 16 or 32 bit DID value.
-   If `endorser` is absent, then the author (`identifier`) plays the role of endorser and submits request by his own. 
-   If `endorser` is present then the transaction must be multi-signed by the both author (`identifier`) and Endorser (`endorser`).  
+   If `endorser` is absent, then the author (`identifier`) plays the role of the endorser and submits a request on his own. 
+   If `endorser` is present then the transaction must be multi-signed by both the author (`identifier`) and Endorser (`endorser`).  
 
 - `taaAcceptance` (dict, optional):
-            If transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
+            If the transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
             
    - `taaDigest` (SHA256 hex digest string): SHA256 hex digest of the latest Transaction Author Agreement on the ledger. The digest is calculated from concatenation of [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)'s `version` and `text`.
                 
-   - `mechanism` (string): a mechanism used to accept the signature; must be present in the latest list of transaction author agreement acceptane mechanisms on the ledger  
+   - `mechanism` (string): a mechanism used to accept the signature; must be present in the latest list of transaction author agreement acceptance mechanisms on the ledger  
                 
    - `time` (integer as POSIX timestamp): transaction author agreement acceptance time
                 
