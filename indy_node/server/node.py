@@ -6,11 +6,10 @@ from common.exceptions import LogicError
 from indy_common.authorize.auth_constraints import AbstractConstraintSerializer
 from indy_node.server.node_bootstrap import NodeBootstrap
 
-# from indy_node.server.action_req_handler import ActionReqHandler
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 
 from plenum.common.constants import VERSION, \
-    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION, FORCE, POOL_LEDGER_ID, TS_LABEL, ATTRIB_LABEL, IDR_CACHE_LABEL
+    ENC, RAW, CURRENT_PROTOCOL_VERSION, FORCE, ATTRIB_LABEL, IDR_CACHE_LABEL
 from plenum.common.txn_util import get_type, get_payload_data, TxnUtilConfig
 from plenum.common.types import f, \
     OPERATION
@@ -19,7 +18,7 @@ from plenum.server.node import Node as PlenumNode
 from state.pruning_state import PruningState
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
-    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
+    NODE_UPGRADE, COMPLETE, FAIL, POOL_UPGRADE, POOL_CONFIG, \
     IN_PROGRESS, AUTH_RULE, AUTH_RULES
 from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper

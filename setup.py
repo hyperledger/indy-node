@@ -41,6 +41,9 @@ setup(
     author_email=metadata['__author_email__'],
     maintainer=metadata['__maintainer__'],
     license=metadata['__license__'],
+    classifiers=[
+        'Programming Language :: Python :: 3'
+    ],
     packages=find_packages(exclude=['docs', 'docs*']) + [
         'data'],
     # TODO move that to MANIFEST.in

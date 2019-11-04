@@ -13,7 +13,6 @@ class RGSeqReqs(RequestGenerator):
         for reqc, prms in reqs:
             if not issubclass(reqc, RequestGenerator):
                 raise RuntimeError("Bad Request class provided")
-            cnt = 1
             param = {}
             if isinstance(prms, int) and prms > 0:
                 cnt = prms

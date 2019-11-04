@@ -9,7 +9,6 @@ from indy_node.server.request_handlers.config_req_handlers.auth_rule.static_auth
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
-from plenum.server.request_handlers.utils import decode_state_value
 
 
 class AbstractAuthRuleHandler(WriteRequestHandler, metaclass=ABCMeta):

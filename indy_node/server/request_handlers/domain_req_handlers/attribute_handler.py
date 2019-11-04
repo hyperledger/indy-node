@@ -2,7 +2,6 @@ from _sha256 import sha256
 from copy import deepcopy
 from json import JSONDecodeError
 
-from common.exceptions import LogicError
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.serialization import attrib_raw_data_serializer
@@ -12,7 +11,7 @@ from indy_common.constants import ATTRIB
 from indy_common.state.state_constants import MARKER_ATTR
 from indy_node.server.request_handlers.utils import validate_attrib_keys
 from plenum.common.constants import DOMAIN_LEDGER_ID, RAW, ENC, HASH, TARGET_NYM
-from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
+from plenum.common.exceptions import InvalidClientRequest
 
 from plenum.common.request import Request
 from plenum.common.txn_util import get_type, get_request_data, get_payload_data, get_seq_no, get_txn_time

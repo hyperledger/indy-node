@@ -1,7 +1,6 @@
 import glob
 import os
-import shutil
-from shutil import copyfile
+from shutil import copyfile, copy2
 
 from ledger.genesis_txn.genesis_txn_file_util import genesis_txn_file
 
@@ -65,5 +64,5 @@ class Setup:
         files = glob.iglob(os.path.join(sdir, "*.indy"))
         for file in files:
             if os.path.isfile(file):
-                shutil.copy2(file, sidir)
+                copy2(file, sidir)
         return self
