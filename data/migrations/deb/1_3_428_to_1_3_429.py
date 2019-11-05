@@ -211,7 +211,7 @@ def migrate_txn_log(db_dir, db_name):
                                                      db_dir,
                                                      new_seqno_db_name)
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         logger.error("Could not open new seq_no_db storage")
         return False
 
@@ -219,14 +219,14 @@ def migrate_txn_log(db_dir, db_name):
     try:
         src_storage = KeyValueStorageRocksdbIntKeys(db_dir, db_name, read_only=True)
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         logger.error("Could not open old ledger: {}".format(os.path.join(db_dir, db_name)))
         return False
 
     try:
         dest_storage = KeyValueStorageRocksdbIntKeys(db_dir, new_db_name)
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         logger.error("Could not open new ledger: {}".format(os.path.join(db_dir, new_db_name)))
         return False
 
@@ -256,7 +256,7 @@ def migrate_txn_log(db_dir, db_name):
             dest_storage.put(key, new_val)
 
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         logger.error("Could not put key/value to the new ledger '{}'".format(db_name))
         return False
 
@@ -269,7 +269,7 @@ def migrate_txn_log(db_dir, db_name):
     try:
         shutil.rmtree(old_path)
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         logger.error("Could not remove old ledger: {}"
                      .format(old_path))
         return False
@@ -278,7 +278,7 @@ def migrate_txn_log(db_dir, db_name):
     try:
         shutil.move(new_path, old_path)
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         logger.error("Could not rename temporary new ledger from '{}' to '{}'"
                      .format(new_path, old_path))
         return False
@@ -297,14 +297,14 @@ def rename_seq_no_db(db_dir):
     try:
         shutil.rmtree(old_seqno_path)
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         logger.error("Could not remove old seq_no_db: {}"
                      .format(old_seqno_path))
         return False
     try:
         shutil.move(new_seqno_path, old_seqno_path)
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         logger.error("Could not rename temporary new seq_no_db from '{}' to '{}'"
                      .format(new_seqno_path, old_seqno_path))
         return False

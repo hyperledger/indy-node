@@ -144,7 +144,6 @@ class RevokedStrategy(RevocationStrategy):
             txn_data[VALUE] = value_from_txn
         # contains already changed txn
         self.set_to_state(txn)
-        del txn
 
     @staticmethod
     def get_delta(to_dict, from_dict=None):
@@ -203,7 +202,6 @@ class IssuedStrategy(RevocationStrategy):
             txn_data[VALUE] = value_from_txn
         # contains already changed txn
         self.set_to_state(txn)
-        del txn
 
     @staticmethod
     def get_delta(to_dict, from_dict=None):
