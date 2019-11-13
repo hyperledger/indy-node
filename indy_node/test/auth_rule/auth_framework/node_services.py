@@ -1,11 +1,14 @@
 import pytest
 from abc import abstractmethod
 
+from plenum.test.test_node import ensureElectionsDone
+
 from indy_common.authorize.auth_actions import split_action_id
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
 from plenum.common.constants import STEWARD_STRING, TRUSTEE, TRUSTEE_STRING, VALIDATOR
 from plenum.common.exceptions import RequestRejectedException
+from plenum.test.helper import waitForViewChange
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 from indy_node.test.helper import build_auth_rule_request_json
@@ -34,8 +37,13 @@ class NodeAuthTest(AuthTest):
         with pytest.raises(RequestRejectedException):
             self.send_and_check(*self.node_req_1)
 
+        prev_view_no = self.txnPoolNodeSet[0].viewNo
+        new_node_count = len(self.new_nodes)
+
         # Step 3. Check, that a new way works
         self.send_and_check(*self.node_req_for_new_rule)
+
+        prev_view_no, new_node_count = self._wait_view_change_finish(prev_view_no, new_node_count)
 
         # Step 4. Return default auth rule
         self.send_and_check(self.default_auth_rule, self.trustee_wallet)
@@ -43,7 +51,11 @@ class NodeAuthTest(AuthTest):
         # Step 5. Check, that default auth rule works
         self.send_and_check(*self.node_req_2)
 
+        prev_view_no, new_node_count = self._wait_view_change_finish(prev_view_no, new_node_count)
+
         self._demote_new_nodes()
+
+        self._wait_view_change_finish(prev_view_no, new_node_count)
 
     def result(self):
         pass
@@ -87,6 +99,16 @@ class NodeAuthTest(AuthTest):
                                                             node_name=node_name,
                                                             node_data=node_data)
             self.send_and_check(req1, wallet)
+
+    def _wait_view_change_finish(self, view_no, node_count):
+        if node_count == len(self.new_nodes):
+            return node_count, view_no
+        view_no += 1
+        waitForViewChange(looper=self.looper, txnPoolNodeSet=self.txnPoolNodeSet,
+                          expectedViewNo=view_no + 1)
+        ensureElectionsDone(looper=self.looper, nodes=self.txnPoolNodeSet)
+        node_count = len(self.new_nodes)
+        return view_no, node_count
 
     @abstractmethod
     def _generate_auth_rule_params(self, constraint):
