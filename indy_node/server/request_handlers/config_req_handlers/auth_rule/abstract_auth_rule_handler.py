@@ -1,7 +1,8 @@
 from abc import ABCMeta
 
 from common.serializers.serialization import domain_state_serializer, config_state_serializer
-from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer, OFF_LEDGER_SIGNATURE
+from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer, OFF_LEDGER_SIGNATURE, \
+    CONSTRAINT_ID, ConstraintsEnum, AUTH_CONSTRAINTS
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.config_util import getConfig
 from indy_common.constants import CONFIG_LEDGER_ID, CONSTRAINT
@@ -31,7 +32,8 @@ class AbstractAuthRuleHandler(WriteRequestHandler, metaclass=ABCMeta):
                                        exp)
         StaticAuthRuleHelper.check_auth_key(operation, identifier, req_id, self.write_req_validator.auth_map)
 
-    def _update_auth_constraint(self, auth_key: str, constraint, version=None):
+    def _update_auth_constraint(self, auth_key: str, constraint):
+        version = self.database_manager.state_version
         if version in self._update_state_by_versions:
             self._update_state_by_versions[version](auth_key, constraint)
         else:
@@ -40,9 +42,15 @@ class AbstractAuthRuleHandler(WriteRequestHandler, metaclass=ABCMeta):
 
     def _update_auth_constraint_for_1_9_1(self, auth_key: str, constraint):
         constraint_dict = constraint.as_dict if constraint else {}
-        constraint_dict[OFF_LEDGER_SIGNATURE] = constraint.off_ledger_signature
+        self._set_off_ledger_to_constraint(constraint_dict)
         self.state.set(AbstractAuthRuleHandler.make_state_path_for_auth_rule(auth_key),
                        self.constraint_serializer.serializer.serialize(constraint_dict))
+
+    def _set_off_ledger_to_constraint(self, constraint_dict):
+        if constraint_dict[CONSTRAINT_ID] == ConstraintsEnum.ROLE_CONSTRAINT_ID:
+            constraint_dict[OFF_LEDGER_SIGNATURE] = None
+        for constraint in constraint_dict.get(AUTH_CONSTRAINTS, []):
+            self._set_off_ledger_to_constraint(constraint)
 
     def _decode_state_value(self, encoded):
         if encoded:
