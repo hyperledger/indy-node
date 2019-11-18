@@ -82,6 +82,7 @@ class NodeAuthTest(AuthTest):
         return req, node_data, node_name, wallet
 
     def _demote_new_nodes(self):
+        view_no = self.txnPoolNodeSet[0].viewNo
         for wallet, (node_data, node_name) in self.new_nodes.items():
             print("demote {}".format(node_name))
             req1, node_data1, node_name1 = self._build_node(wallet,
@@ -91,6 +92,7 @@ class NodeAuthTest(AuthTest):
                                                             node_name=node_name,
                                                             node_data=node_data)
             self.send_and_check(req1, wallet)
+            view_no = self._wait_view_change_finish(view_no)
 
     def _wait_view_change_finish(self, view_no):
         view_no += 1
@@ -100,7 +102,10 @@ class NodeAuthTest(AuthTest):
         def check_not_in_view_change():
             assert all([not n.master_replica._consensus_data.waiting_for_new_view
                         for n in self.txnPoolNodeSet])
-        self.looper.run(eventually(check_not_in_view_change))
+
+        # we may have multiple view changes since we can select the same Primary as in previous view,
+        # or select a demoted node as a Primary
+        self.looper.run(eventually(check_not_in_view_change, timeout=100))
         return view_no
 
     @abstractmethod
@@ -197,8 +202,6 @@ class EditNodeServicesTest(EditNodeTest):
 
         self._demote_new_nodes()
 
-        self._wait_view_change_finish(view_no)
-
     def _edit_node(self, wallet=None, services=[VALIDATOR], node_name=None, node_data=None):
         if not (node_name and node_data and wallet):
             req, node_data, node_name, wallet = self._add_node()
@@ -242,8 +245,6 @@ class AddNewNodeTest(AddNodeTest):
         prev_view_no = self._wait_view_change_finish(prev_view_no)
 
         self._demote_new_nodes()
-
-        self._wait_view_change_finish(prev_view_no)
 
 
 class AddNewNodeEmptyServiceTest(AddNodeTest):
