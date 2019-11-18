@@ -91,7 +91,7 @@ class Node(PlenumNode):
 
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
-        self.db_manager.set_state_version_controller(TxnVersionController())
+        self.db_manager.set_txn_version_controller(TxnVersionController())
 
     @property
     def attributeStore(self):
