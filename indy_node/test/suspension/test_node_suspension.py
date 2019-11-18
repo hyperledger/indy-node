@@ -1,7 +1,3 @@
-import pytest
-
-from plenum.test.view_change.helper import ensure_view_change
-
 from plenum.test.test_node import ensureElectionsDone
 
 from plenum.common.util import randomString, hexToFriendly
@@ -12,7 +8,6 @@ from plenum.test.helper import waitForViewChange
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_add_new_node, demote_node, promote_node
 
 
-@pytest.mark.skip(reason='Unskip with last PR for the task INDY-2262')
 def testSuspendNode(looper, sdk_pool_handle, sdk_wallet_trustee, newNodeAdded, nodeSet):
     """
     Suspend a node and then cancel suspension. Suspend while suspended
@@ -27,7 +22,7 @@ def testSuspendNode(looper, sdk_pool_handle, sdk_wallet_trustee, newNodeAdded, n
     demote_node(looper, sdk_wallet_trustee, sdk_pool_handle, new_node)
 
     promote_node(looper, sdk_wallet_trustee, sdk_pool_handle, new_node)
-    _wait_view_change_finish(looper, nodeSet[:-1], start_view_no + 3)
+    _wait_view_change_finish(looper, nodeSet[:-1], start_view_no + 2)
 
     promote_node(looper, sdk_wallet_trustee, sdk_pool_handle, new_node)
 
