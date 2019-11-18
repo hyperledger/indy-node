@@ -25,7 +25,7 @@ from stp_core.loop.eventually import eventually
 @pytest.fixture(scope="module")
 def tconf(tconf):
     old_version_matching = tconf.INDY_NODE_VERSION_MATCHING
-    tconf.INDY_NODE_VERSION_MATCHING = {"1.9.1": "1.1.58"}
+    tconf.INDY_NODE_VERSION_MATCHING = {"1.1.58": "1.9.1"}
     yield tconf
     tconf.INDY_NODE_VERSION_MATCHING = old_version_matching
 
@@ -108,8 +108,9 @@ def test_state_recovering_for_auth_rule(nodeSet, looper, sdk_pool_handle, sdk_wa
     send_node_upgrades(nodeSet, version1, looper)
     for n in nodeSet:
         handler = n.write_manager.request_handlers.get(AUTH_RULE)[0]
+        handler_for_1_9_1 = n.write_manager._request_handlers_with_version.get((AUTH_RULE, "1.9.1"))[0]
         monkeypatch.setattr(handler, '_update_auth_constraint',
-                            handler._update_auth_constraint_for_1_9_1)
+                            handler_for_1_9_1._update_auth_constraint)
     send_auth_rule(looper,
                    sdk_pool_handle,
                    sdk_wallet_trustee,

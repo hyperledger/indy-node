@@ -105,4 +105,5 @@ SCHEMA_ATTRIBUTES_LIMIT = 125
 
 CONTEXT_SIZE_LIMIT = 131072
 
+# Dict[other_project_version: node_version]
 INDY_NODE_VERSION_MATCHING = {}

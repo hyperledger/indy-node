@@ -2,9 +2,10 @@ from indy_common.constants import NODE_UPGRADE, ACTION, COMPLETE, POOL_UPGRADE, 
 from plenum.common.constants import VERSION, DATA
 from plenum.common.txn_util import get_type, get_payload_data, get_from
 from plenum.common.util import SortedDict
+from plenum.server.txn_version_controller import ITxnVersionController
 
 
-class StateVersionController:
+class TxnVersionController(ITxnVersionController):
 
     def __init__(self) -> None:
         self._version = None
