@@ -21,7 +21,8 @@ class AuthRuleHandler191(AuthRuleHandler):
                        self.constraint_serializer.serializer.serialize(constraint_dict))
 
     def _set_off_ledger_to_constraint(self, constraint_dict):
-        if constraint_dict[CONSTRAINT_ID] == ConstraintsEnum.ROLE_CONSTRAINT_ID:
+        if constraint_dict[CONSTRAINT_ID] == ConstraintsEnum.ROLE_CONSTRAINT_ID and \
+                not constraint_dict.get(OFF_LEDGER_SIGNATURE, False):
             constraint_dict[OFF_LEDGER_SIGNATURE] = False
         for constraint in constraint_dict.get(AUTH_CONSTRAINTS, []):
             self._set_off_ledger_to_constraint(constraint)
