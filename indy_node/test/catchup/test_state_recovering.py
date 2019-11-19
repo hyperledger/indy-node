@@ -24,10 +24,10 @@ from stp_core.loop.eventually import eventually
 
 @pytest.fixture(scope="module")
 def tconf(tconf):
-    old_version_matching = tconf.INDY_NODE_VERSION_MATCHING
-    tconf.INDY_NODE_VERSION_MATCHING = {"1.1.58": "1.9.1"}
+    old_version_matching = tconf.INDY_VERSION_MATCHING
+    tconf.INDY_VERSION_MATCHING = {"1.1.58": "1.9.1"}
     yield tconf
-    tconf.INDY_NODE_VERSION_MATCHING = old_version_matching
+    tconf.INDY_VERSION_MATCHING = old_version_matching
 
 
 @pytest.fixture(scope='module')
