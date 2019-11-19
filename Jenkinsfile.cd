@@ -93,7 +93,7 @@ def systemTests = { component, releaseVersion ->
             ['TestConsensusSuite.py'],
             ['test_state_proof.py']
         ]
-        testVersion = 'v0.8.23'
+        testVersion = 'v0.8.25'
         testVersionByTag = true
         delegate.gatherLogs = gatherLogs
     }
