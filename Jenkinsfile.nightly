@@ -63,9 +63,10 @@ try {
             ['TestAuthMapRevocRegEntrySuite.py'],
             ['TestAuthMapSchemaSuite.py'],
             ['TestAuthMapUpgradeSuite.py'],
-            ['TestAdHocSuite.py']
+            ['TestAdHocSuite.py'],
+            ['TestProductionSuite.py']
         ]
-        testVersion = 'v0.8.21'
+        testVersion = 'v0.8.23'
         testVersionByTag = true
         delegate.gatherLogs = gatherLogs
     }
