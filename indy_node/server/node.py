@@ -5,6 +5,7 @@ from typing import Iterable, List
 from common.exceptions import LogicError
 from indy_common.authorize.auth_constraints import AbstractConstraintSerializer
 from indy_node.server.node_bootstrap import NodeBootstrap
+from indy_node.server.txn_version_controller import TxnVersionController
 
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 
@@ -90,6 +91,7 @@ class Node(PlenumNode):
 
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
+        self.db_manager.set_txn_version_controller(TxnVersionController())
 
     @property
     def attributeStore(self):

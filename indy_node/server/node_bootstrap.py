@@ -5,6 +5,7 @@ from indy_node.server.request_handlers.action_req_handlers.pool_restart_handler 
 from indy_node.server.request_handlers.action_req_handlers.validator_info_handler import ValidatorInfoHandler
 from indy_node.server.request_handlers.config_batch_handler import ConfigBatchHandler
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rule_handler import AuthRuleHandler
+from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rule_handler_1_9_1 import AuthRuleHandler191
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rules_handler import AuthRulesHandler
 from indy_node.server.request_handlers.config_req_handlers.node_upgrade_handler import NodeUpgradeHandler
 from indy_node.server.request_handlers.config_req_handlers.pool_config_handler import PoolConfigHandler
@@ -141,6 +142,8 @@ class NodeBootstrap(PNodeBootstrap):
         # Write handlers
         auth_rule_handler = AuthRuleHandler(database_manager=self.node.db_manager,
                                             write_req_validator=self.node.write_req_validator)
+        auth_rule_handler_1_9_1 = AuthRuleHandler191(database_manager=self.node.db_manager,
+                                                     write_req_validator=self.node.write_req_validator)
         auth_rules_handler = AuthRulesHandler(database_manager=self.node.db_manager,
                                               write_req_validator=self.node.write_req_validator)
         pool_config_handler = PoolConfigHandler(database_manager=self.node.db_manager,
@@ -170,6 +173,9 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.read_manager.register_req_handler(get_auth_rule_handler)
         self.node.read_manager.register_req_handler(get_taa_aml_handler)
         self.node.read_manager.register_req_handler(get_taa_handler)
+        # Register write handlers for a version
+        self.node.write_manager.register_req_handler_with_version(auth_rule_handler_1_9_1,
+                                                                  version="1.9.1")
 
     def _register_action_req_handlers(self):
         # Action handlers
