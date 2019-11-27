@@ -21,7 +21,7 @@ class TxnVersionController(ITxnVersionController):
             return self.version
         last_version = None
         for upgrade_tm, version in self._versions.items():
-            if timestamp <= upgrade_tm:
+            if timestamp < upgrade_tm:
                 return last_version
             last_version = version
         return last_version
