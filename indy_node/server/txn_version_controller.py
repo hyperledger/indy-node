@@ -14,14 +14,14 @@ class TxnVersionController(ITxnVersionController):
 
     @property
     def version(self):
-        return self._versions.peekitem(-1) if self._versions else None
+        return self._versions.peekitem(-1)[1] if self._versions else None
 
     def get_version(self, timestamp):
         if timestamp is None:
             return self.version
         last_version = None
         for upgrade_tm, version in self._versions.items():
-            if timestamp >= upgrade_tm:
+            if timestamp <= upgrade_tm:
                 return last_version
             last_version = version
         return last_version
