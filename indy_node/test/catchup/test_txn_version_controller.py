@@ -3,7 +3,7 @@ import pytest
 from indy_common.constants import POOL_UPGRADE, ACTION, START, SCHEDULE, NODE_UPGRADE, COMPLETE
 from indy_node.server.txn_version_controller import TxnVersionController
 from plenum.common.constants import TXN_PAYLOAD_TYPE, TXN_PAYLOAD, TXN_PAYLOAD_DATA, DATA, VERSION, \
-    TXN_PAYLOAD_METADATA_FROM, TXN_PAYLOAD_METADATA
+    TXN_PAYLOAD_METADATA_FROM, TXN_PAYLOAD_METADATA, TXN_METADATA, TXN_METADATA_TIME
 
 node_count = 4
 
@@ -15,13 +15,15 @@ def txn_version_controller():
 
 @pytest.fixture()
 def pool_upgrade_txn():
-    return {TXN_PAYLOAD: {TXN_PAYLOAD_TYPE: POOL_UPGRADE,
+    return {TXN_METADATA: {TXN_METADATA_TIME: 0},
+            TXN_PAYLOAD: {TXN_PAYLOAD_TYPE: POOL_UPGRADE,
                           TXN_PAYLOAD_DATA: {ACTION: START,
                                              SCHEDULE: {i for i in list(range(node_count))}}}}
 
 
 def create_node_upgrade_txn(version, frm):
-    return {TXN_PAYLOAD: {TXN_PAYLOAD_TYPE: NODE_UPGRADE,
+    return {TXN_METADATA: {TXN_METADATA_TIME: 0},
+            TXN_PAYLOAD: {TXN_PAYLOAD_TYPE: NODE_UPGRADE,
                           TXN_PAYLOAD_METADATA: {TXN_PAYLOAD_METADATA_FROM: frm},
                           TXN_PAYLOAD_DATA: {DATA: {ACTION: COMPLETE,
                                                     VERSION: version}}}}
