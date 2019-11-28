@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import shutil
-import os
 import argparse
 from indy_common.config_util import getConfig
 from indy_common.config_helper import ConfigHelper

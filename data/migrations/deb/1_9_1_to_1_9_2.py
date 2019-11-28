@@ -1,7 +1,5 @@
 import os
 import shutil
-import subprocess
-import sys
 
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.config_util import getConfig

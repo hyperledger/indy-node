@@ -78,14 +78,14 @@ def migrate_storage(level_db_dir, rocks_db_dir, db_name, is_db_int_keys):
     try:
         leveldb_storage = KeyValueStorageLeveldbCls(level_db_dir, db_name, read_only=True)
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         logger.error("Could not open leveldb storage: {}".format(os.path.join(level_db_dir, db_name)))
         return False
 
     try:
         rocksdb_storage = KeyValueStorageRocksdbCls(rocks_db_dir, db_name)
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         logger.error("Could not open rocksdb storage: {}".format(os.path.join(rocks_db_dir, db_name)))
         return False
 
@@ -93,7 +93,7 @@ def migrate_storage(level_db_dir, rocks_db_dir, db_name, is_db_int_keys):
         for key, val in leveldb_storage.iterator():
             rocksdb_storage.put(bytes(key), bytes(val))
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         logger.error("Could not put key/value to RocksDB storage '{}'".format(db_name))
         return False
 
@@ -141,7 +141,7 @@ def migrate_all():
     try:
         os.mkdir(rocksdb_ledger_dir)
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         logger.error("Could not create temporary directory for RocksDB-based ledger: {}"
                      .format(rocksdb_ledger_dir))
         return False
@@ -168,7 +168,7 @@ def migrate_all():
     try:
         shutil.rmtree(leveldb_ledger_dir)
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         logger.error("Could not remove LevelDB-based ledger: {}"
                      .format(leveldb_ledger_dir))
         shutil.rmtree(rocksdb_ledger_dir)
@@ -179,7 +179,7 @@ def migrate_all():
     try:
         shutil.move(rocksdb_ledger_dir, ledger_dir)
     except Exception:
-        logger.error(traceback.print_exc())
+        logger.error(traceback.format_exc())
         logger.error("Could not rename temporary RocksDB-based ledger from '{}' to '{}'"
                      .format(rocksdb_ledger_dir, ledger_dir))
         shutil.rmtree(rocksdb_ledger_dir)
