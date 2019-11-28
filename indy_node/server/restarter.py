@@ -1,8 +1,7 @@
 import os
-from collections import deque
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import partial
-from typing import Tuple, Union, Optional, Callable, Dict
+from typing import Union
 
 import dateutil.parser
 import dateutil.tz
@@ -12,14 +11,9 @@ from indy_node.server.node_maintainer import NodeMaintainer, \
     NodeControlToolMessage
 from indy_node.server.restart_log import RestartLogData, RestartLog
 from stp_core.common.log import getlogger
-from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER
-from plenum.common.types import f
-from plenum.server.has_action_queue import HasActionQueue
+from plenum.common.constants import TXN_TYPE
 from indy_common.constants import ACTION, POOL_RESTART, START, DATETIME, \
-    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, IN_PROGRESS, FORCE, \
-    RESTART_MESSAGE
-from plenum.server import notifier_plugin_manager
-from ledger.util import F
+    CANCEL, TIMEOUT, RESTART_MESSAGE
 import asyncio
 
 logger = getlogger()

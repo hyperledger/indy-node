@@ -1,15 +1,16 @@
 from abc import ABCMeta
 
 from common.serializers.serialization import domain_state_serializer, config_state_serializer
-from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer
+from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer, OFF_LEDGER_SIGNATURE, \
+    CONSTRAINT_ID, ConstraintsEnum, AUTH_CONSTRAINTS
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
+from indy_common.config_util import getConfig
 from indy_common.constants import CONFIG_LEDGER_ID, CONSTRAINT
 from indy_common.state.state_constants import MARKER_AUTH_RULE
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.static_auth_rule_helper import StaticAuthRuleHelper
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
-from plenum.server.request_handlers.utils import decode_state_value
 
 
 class AbstractAuthRuleHandler(WriteRequestHandler, metaclass=ABCMeta):

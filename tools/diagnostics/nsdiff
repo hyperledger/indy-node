@@ -62,18 +62,16 @@ from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.hash_stores.file_hash_store import FileHashStore
 from ledger.ledger import Ledger
 from leveldb import LevelDBError
-from os import listdir
-from os.path import abspath, basename, dirname, isfile, isdir, join
+from os import listdir, makedirs, walk
+from os.path import abspath, basename, dirname, isfile, isdir, join, exists
 from plenum.common.constants import KeyValueStorageType
-from shutil import copyfile
+from shutil import copyfile, rmtree
 from storage.helper import initKeyValueStorage, initKeyValueStorageIntKeys
 from state.pruning_state import PruningState
 
 import argparse
 import json
 import logging
-import os
-import shutil
 import subprocess
 import sys
 import tarfile
@@ -146,7 +144,7 @@ class NodeStateComparator:
             if self.cleanup:
                 logger.info("Removing temp dir {} containing {} contents"
                             .format(self.s1tempdir, self.s1))
-                shutil.rmtree(self.s1tempdir)
+                rmtree(self.s1tempdir)
             else:
                 logger.debug("Skipping removal of temp directory {}".format(
                     self.s1dir))
@@ -156,7 +154,7 @@ class NodeStateComparator:
             if self.cleanup:
                 logger.info("Removing temp dir {} containing {} contents"
                             .format(self.s2tempdir, self.s2))
-                shutil.rmtree(self.s2tempdir)
+                rmtree(self.s2tempdir)
             else:
                 logger.debug("Skipping removal of temp directory {}".format(
                     self.s2dir))
@@ -169,13 +167,13 @@ class NodeStateComparator:
                      "scrubbed contents from {}")
                 logger.info(s.format(self.s1_transformed_and_scrubbed,
                                      self.s1dir))
-                shutil.rmtree(self.s1_transformed_and_scrubbed)
+                rmtree(self.s1_transformed_and_scrubbed)
             if self.s2_transformed_and_scrubbed:
                 s = ("Removing temp dir {} containing transformed and"
                      "scrubbed contents from {}")
                 logger.info(s.format(self.s2_transformed_and_scrubbed,
                                      self.s2dir))
-                shutil.rmtree(self.s2_transformed_and_scrubbed)
+                rmtree(self.s2_transformed_and_scrubbed)
         else:
             skip_message = ("Skipping removal of transform and scrub temp"
                             " directory {}")
@@ -278,9 +276,9 @@ class NodeStateComparator:
 
     def _mkdir_p(self, path):
         try:
-            os.makedirs(path)
+            makedirs(path)
         except OSError as exc:  # Python >2.5
-            if exc.errno == errno.EEXIST and os.path.isdir(path):
+            if exc.errno == errno.EEXIST and isdir(path):
                 pass
             else:
                 raise
@@ -542,7 +540,7 @@ class NodeStateComparator:
         (dirname, filename, name, extension) = self.split_name(sin)
         log_filename = "{}.log".format(filename)
         log_filepath = join(dirname, "../", "log", log_filename)
-        if os.path.exists(log_filepath):
+        if exists(log_filepath):
             # Extract (view no, ppSeqNo) tuple from log file(s)
             # Last "batch ordered"
             process_grep = subprocess.Popen(["grep",
@@ -675,7 +673,7 @@ class NodeStateComparator:
         #
         #       2. Files in Non-LevelDB/RocksDB directories can be transformed
         #          and scrubbed in parallel.
-        for dirName, subdirList, fileList in os.walk(abspath(sin)):
+        for dirName, subdirList, fileList in walk(abspath(sin)):
             if dirName in self.skipdirs:
                 logger.debug("Skipping dirName: {}".format(dirName))
                 break

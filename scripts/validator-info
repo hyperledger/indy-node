@@ -6,7 +6,6 @@ import argparse
 import asyncio
 import concurrent.futures
 import curses
-import datetime
 import json
 import os
 import sys

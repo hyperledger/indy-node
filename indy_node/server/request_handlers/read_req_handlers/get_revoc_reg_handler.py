@@ -2,7 +2,6 @@ from indy_common.constants import TIMESTAMP, REVOC_REG_DEF_ID, GET_REVOC_REG
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handler import RevocRegEntryHandler
 from indy_node.server.request_handlers.utils import StateValue
 from plenum.common.constants import DOMAIN_LEDGER_ID
-from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler

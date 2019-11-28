@@ -117,7 +117,6 @@ class ActionLogEvent(CsvSerializer):
             ['ts', 'ev_type'] +
             [(self._data_items_prefix + i) for i in self.data._items]
         )
-        pass
 
     def __getattr__(self, name):
         try:
