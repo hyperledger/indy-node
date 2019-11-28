@@ -1,10 +1,9 @@
 import argparse
 import json
-import multiprocessing
 import time
 import asyncio
 
-from multiprocessing import Process
+from multiprocessing import Process, Pipe
 
 import os
 
@@ -110,7 +109,7 @@ max_connected_clients_without_stack_restart = \
     get_max_connected_clients_without_stack_restart(
         client_connections_node_limit, pool_size, max_failure_tolerance)
 
-rd, wr = multiprocessing.Pipe()
+rd, wr = Pipe()
 main_loop = asyncio.get_event_loop()
 main_loop.add_reader(rd, functools.partial(read_cb, rd))
 print("Connecting clients...")

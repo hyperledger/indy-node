@@ -1,8 +1,7 @@
-import os
 import logging
 from collections import OrderedDict
 
-from indy_common.constants import LOCAL_AUTH_POLICY, CONFIG_LEDGER_AUTH_POLICY
+from indy_common.constants import CONFIG_LEDGER_AUTH_POLICY
 from plenum.common.constants import ClientBootStrategy, HS_ROCKSDB, KeyValueStorageType
 from plenum.config import rocksdb_default_config
 

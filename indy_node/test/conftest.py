@@ -31,8 +31,8 @@ from stp_core.common.log import Logger
 from plenum.common.util import randomString
 from plenum.common.constants import VALIDATOR, STEWARD_STRING, POOL_LEDGER_ID, DOMAIN_LEDGER_ID, IDR_CACHE_LABEL, \
     ATTRIB_LABEL, TRUSTEE, STEWARD, KeyValueStorageType, BLS_LABEL, TRUSTEE_STRING
-from plenum.test.helper import sdk_get_and_check_replies
-from plenum.test.test_node import checkNodesConnected
+from plenum.test.helper import sdk_get_and_check_replies, waitForViewChange
+from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir as plenum_tdir, nodeReg, \
@@ -218,6 +218,7 @@ def testNodeBootstrapClass():
 @pytest.fixture(scope="module")
 def newNodeAdded(looper, nodeSet, tdir, tconf, sdk_pool_handle,
                  sdk_wallet_trustee, allPluginsPath):
+    view_no = nodeSet[0].viewNo
     new_steward_wallet, new_node = sdk_node_theta_added(looper,
                                                         nodeSet,
                                                         tdir,
@@ -228,6 +229,9 @@ def newNodeAdded(looper, nodeSet, tdir, tconf, sdk_pool_handle,
                                                         node_config_helper_class=NodeConfigHelper,
                                                         testNodeClass=TestNode,
                                                         name='')
+    waitForViewChange(looper=looper, txnPoolNodeSet=nodeSet,
+                      expectedViewNo=view_no + 1)
+    ensureElectionsDone(looper=looper, nodes=nodeSet)
     return new_steward_wallet, new_node
 
 

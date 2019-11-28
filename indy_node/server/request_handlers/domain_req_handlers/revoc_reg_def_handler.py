@@ -6,7 +6,7 @@ from indy_node.server.revocation_strategy import RevokedStrategy, IssuedStrategy
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
-from plenum.common.txn_util import get_request_data, get_seq_no, get_txn_time, get_from, get_payload_data
+from plenum.common.txn_util import get_seq_no, get_txn_time, get_from, get_payload_data
 
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler

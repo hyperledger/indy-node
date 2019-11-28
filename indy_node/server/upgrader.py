@@ -2,7 +2,7 @@ import os
 import asyncio
 from datetime import datetime
 from functools import partial
-from typing import Union, Optional, Callable, Dict
+from typing import Optional, Callable, Dict
 
 import dateutil.parser
 import dateutil.tz
@@ -17,7 +17,7 @@ from common.version import (
 )
 
 from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
-    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, \
+    CANCEL, JUSTIFICATION, TIMEOUT, NODE_UPGRADE, \
     UPGRADE_MESSAGE, PACKAGE, APP_NAME
 from indy_common.version import src_version_cls
 from indy_node.server.upgrade_log import UpgradeLogData, UpgradeLog
@@ -214,10 +214,10 @@ class Upgrader(NodeMaintainer):
 
         try:
             target_ver = version_cls(target_ver)
-        except InvalidVersionError as exc:
+        except InvalidVersionError:
             return (
                 "invalid target version {} for version class {}: "
-                .format(target_ver, version_cls, exc)
+                .format(target_ver, version_cls)
             )
 
         # get current installed package version of pkg_name

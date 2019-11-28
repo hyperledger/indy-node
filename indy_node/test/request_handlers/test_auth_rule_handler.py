@@ -11,30 +11,12 @@ from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from indy_node.test.request_handlers.helper import add_to_idr
 from plenum.common.constants import STEWARD, TRUSTEE
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
-from plenum.common.request import Request
 from plenum.common.txn_util import reqToTxn, get_payload_data
-from plenum.common.util import randomString
 
 
 @pytest.fixture(scope="module")
 def auth_rule_handler(db_manager, write_auth_req_validator):
     return AuthRuleHandler(db_manager, write_auth_req_validator)
-
-
-@pytest.fixture(scope="function")
-def auth_rule_request(creator):
-    return Request(identifier=creator,
-                   reqId=5,
-                   signature="sig",
-                   operation=generate_auth_rule_operation())
-
-
-@pytest.fixture(scope="module")
-def creator(db_manager):
-    identifier = randomString()
-    idr = db_manager.idr_cache
-    add_to_idr(idr, identifier, None)
-    return identifier
 
 
 def test_auth_rule_static_validation(auth_rule_request, auth_rule_handler: AuthRuleHandler):

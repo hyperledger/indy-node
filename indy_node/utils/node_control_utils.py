@@ -11,7 +11,7 @@ from common.version import (
     InvalidVersionError, SourceVersion, PackageVersion, GenericVersion
 )
 
-from indy_common.version import NodeVersion, src_version_cls
+from indy_common.version import src_version_cls
 from indy_common.util import compose_cmd
 
 
