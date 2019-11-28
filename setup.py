@@ -41,6 +41,9 @@ setup(
     author_email=metadata['__author_email__'],
     maintainer=metadata['__maintainer__'],
     license=metadata['__license__'],
+    classifiers=[
+        'Programming Language :: Python :: 3'
+    ],
     packages=find_packages(exclude=['docs', 'docs*']) + [
         'data'],
     # TODO move that to MANIFEST.in
@@ -51,7 +54,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum==1.11.0',
+    install_requires=['indy-plenum==1.12.0',
                       'timeout-decorator==0.4.0',
                       'distro==1.3.0'],
     setup_requires=['pytest-runner'],

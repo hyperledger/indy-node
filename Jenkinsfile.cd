@@ -89,11 +89,11 @@ def systemTests = { component, releaseVersion ->
         pkgVersion = releaseVersion
         testSchema = [
             ['test_ledger.py'],
-            ['test_vc.py'],
-            ['test_consensus.py'],
+            ['TestViewChangeSuite.py'],
+            ['TestConsensusSuite.py'],
             ['test_state_proof.py']
         ]
-        testVersion = 'v0.8.20'
+        testVersion = 'v0.8.28'
         testVersionByTag = true
         delegate.gatherLogs = gatherLogs
     }

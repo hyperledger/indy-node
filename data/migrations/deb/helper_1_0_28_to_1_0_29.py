@@ -2,7 +2,6 @@
 import json
 import os
 import shutil
-import subprocess
 
 from common.serializers.compact_serializer import CompactSerializer
 from common.serializers.json_serializer import JsonSerializer

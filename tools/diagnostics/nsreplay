@@ -32,7 +32,6 @@ from indy_common.config_helper import NodeConfigHelper
 from indy_common.config_util import getConfig
 from indy_node.server.config_helper import create_config_dirs
 from indy_node.server.node import Node
-from os.path import abspath, basename, dirname, isfile, isdir, join
 from os import listdir, makedirs
 from plenum.common.constants import CLIENT_STACK_SUFFIX, KeyValueStorageType
 from plenum.recorder.recorder import Recorder
@@ -150,13 +149,13 @@ class NodeStateReplayer:
     #       Create base class with print_directory function?
     # Print the contents of a directory
     def print_directory(self, d):
-        only_files = [f for f in listdir(d) if isfile(join(d, f))]
-        only_dirs = [f for f in listdir(d) if isdir(join(d, f))]
+        only_files = [f for f in listdir(d) if os.path.isfile(os.path.join(d, f))]
+        only_dirs = [f for f in listdir(d) if os.path.isdir(os.path.join(d, f))]
         logger.debug("In {}:".format(d))
         for file in only_files:
             logger.debug("\t{}".format(file))
         for dir_ent in only_dirs:
-            self.print_directory(join(d, dir_ent))
+            self.print_directory(os.path.join(d, dir_ent))
 
     # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
     #       Create base class with _extract_tarball function?
@@ -208,8 +207,8 @@ class NodeStateReplayer:
             raise ArchiveError("{} must be a tarfile or a zipfile".format(file))
 
     def split_name(self, file):
-        abs_file = abspath(file)
-        base_name = basename(abs_file)
+        abs_file = os.path.abspath(file)
+        base_name = os.path.basename(abs_file)
         base_name_elements = base_name.split('.')
         file_name = None
         file_extension = None
@@ -217,7 +216,7 @@ class NodeStateReplayer:
             file_name = base_name_elements[0]
         if len(base_name_elements) > 1:
             file_extension = ".".join(base_name_elements[1:])
-        return dirname(abs_file), base_name, file_name, file_extension
+        return os.path.dirname(abs_file), base_name, file_name, file_extension
 
     def unpack_recording(self, s1=None):
         # Validate inputs
@@ -229,7 +228,7 @@ class NodeStateReplayer:
          self.s1_extension) = self.split_name(s1)
 
         # s1 must either be a tarball, zipfile, or a directory
-        if isfile(s1):
+        if os.path.isfile(s1):
             # If s1 is a file, it must be a tarball or a zipfile
             # Extract s1 contents into a temporary directory
             try:
@@ -240,7 +239,7 @@ class NodeStateReplayer:
                 self.s1tempdir = tempdir
                 self.s1dir = tempdir
                 self.s1_is_temp = True
-        elif isdir(s1):
+        elif os.path.isdir(s1):
             if self.log_level <= logging.INFO:
                 self.print_directory(s1)
             self.s1dir = s1
@@ -262,9 +261,9 @@ class NodeStateReplayer:
         return getConfig()
 
     def get_recorders_from_node_data_dir(self, node_data_dir, node_name) -> Tuple[Recorder, Recorder]:
-        node_rec_path = join(node_data_dir, node_name, 'recorder')
+        node_rec_path = os.path.join(node_data_dir, node_name, 'recorder')
         client_stack_name = node_name + CLIENT_STACK_SUFFIX
-        client_rec_path = join(node_data_dir, client_stack_name, 'recorder')
+        client_rec_path = os.path.join(node_data_dir, client_stack_name, 'recorder')
         # TODO: Change to rocksdb
         client_rec_kv_store = initKeyValueStorageIntKeys(
             KeyValueStorageType.Leveldb, client_rec_path, client_stack_name)
@@ -302,10 +301,10 @@ class NodeStateReplayer:
 
         general_config_dir = create_config_dirs(replay_node_dir)
 
-        recording_config_path = join(orig_node_pool_dir, 'config')
+        recording_config_path = os.path.join(orig_node_pool_dir, 'config')
         for filename in os.listdir(recording_config_path):
-            if os.path.isfile(join(recording_config_path, filename)):
-                shutil.copy(join(recording_config_path, filename), general_config_dir)
+            if os.path.isfile(os.path.join(recording_config_path, filename)):
+                shutil.copy(os.path.join(recording_config_path, filename), general_config_dir)
 
         config = getConfig(general_config_dir)
         self.update_loaded_config(config)
@@ -313,24 +312,24 @@ class NodeStateReplayer:
         pool_name = config.NETWORK_NAME
 
         # strip left '/' for proper path join
-        app_dir = join(replay_node_dir, get_system_dirs().NODE_INFO_DIR.lstrip('/'))
-        pool_dir = join(app_dir, pool_name)
-        orig_node_data_dir = join(orig_node_pool_dir, 'data')
+        app_dir = os.path.join(replay_node_dir, get_system_dirs().NODE_INFO_DIR.lstrip('/'))
+        pool_dir = os.path.join(app_dir, pool_name)
+        orig_node_data_dir = os.path.join(orig_node_pool_dir, 'data')
         makedirs(pool_dir, exist_ok=True)
 
         for file in listdir(orig_node_pool_dir):
             if file.endswith('.json') or file.endswith('_genesis'):
-                shutil.copy(join(orig_node_pool_dir, file), pool_dir)
+                shutil.copy(os.path.join(orig_node_pool_dir, file), pool_dir)
 
-        shutil.copytree(join(orig_node_pool_dir, 'keys'),
-                        join(pool_dir, 'keys'))
-        shutil.copytree(join(self.s1dir, 'plugins'),
-                        join(app_dir,
+        shutil.copytree(os.path.join(orig_node_pool_dir, 'keys'),
+                        os.path.join(pool_dir, 'keys'))
+        shutil.copytree(os.path.join(self.s1dir, 'plugins'),
+                        os.path.join(app_dir,
                              'plugins'))
 
         node_rec, client_rec = get_recorders_from_node_data_dir(
-            join(orig_node_pool_dir, 'data'), node_name)
-        start_times_file = join(orig_node_data_dir, node_name, 'start_times')
+            os.path.join(orig_node_pool_dir, 'data'), node_name)
+        start_times_file = os.path.join(orig_node_data_dir, node_name, 'start_times')
         with open(start_times_file, 'r') as f:
             start_times = json.loads(f.read())
 

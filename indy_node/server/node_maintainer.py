@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from collections import deque
-from datetime import datetime, timedelta
-from typing import Tuple, Callable
+from datetime import timedelta
+from typing import Callable
 
 from stp_core.common.log import getlogger
 from plenum.server.has_action_queue import HasActionQueue
