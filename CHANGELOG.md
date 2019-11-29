@@ -70,8 +70,8 @@ Although every attempt has been made to make this information as accurate as pos
 
 ### Major Changes
 - Improve primary selection algorithm
-- Recover state from audit ledger
-- Fix new nodes adding
+- Take into account transaction history when recovering state for new nodes
+- Fix new nodes adding when there are old AUTH_RULE or plugin transactions
 
 ### Detailed Changelog
 
@@ -89,7 +89,6 @@ Although every attempt has been made to make this information as accurate as pos
 | Take into account txn history when recovering state from the ledger for new nodes | | [INDY-2292](https://jira.hyperledger.org/browse/INDY-2292) |
 | Do not restore Primaries from the audit ledger | | [INDY-2298](https://jira.hyperledger.org/browse/INDY-2298) |
 | Start View change on receiving a quorum of ViewChange messages | | [INDY-2236](https://jira.hyperledger.org/browse/INDY-2236) |
-| Audit manual reconnection logic in ZStack | | [INDY-2261](https://jira.hyperledger.org/browse/INDY-2261) |
 | PBFT View change: cleanup and debug Part 3 | | [INDY-2267](https://jira.hyperledger.org/browse/INDY-2267) |
 | A Node missing a View Change may not be able to finish it if NODE txns have been sent | | [INDY-2275](https://jira.hyperledger.org/browse/INDY-2275) |
 | PrePrepare's Digest need to take into account all PrePrepare's fields | | [INDY-2285](https://jira.hyperledger.org/browse/INDY-2285) |
