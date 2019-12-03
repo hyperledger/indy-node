@@ -371,7 +371,7 @@ class NodeControlUtil:
                     p = d
                     v = ''
                 if p in hold_list and \
-                    (p not in deps_map or deps_map[p] == ''):
+                        (p not in deps_map or deps_map[p] == ''):
                     deps_map[p] = v
             cls.get_deps_tree_filtered(*deps, hold_list=hold_list, depth=depth + 1, deps_map=deps_map)
 
