@@ -66,7 +66,7 @@ try {
             ['TestAdHocSuite.py'],
             ['TestProductionSuite.py']
         ]
-        testVersion = 'v0.8.25'
+        testVersion = 'v0.8.30'
         testVersionByTag = true
         delegate.gatherLogs = gatherLogs
     }
