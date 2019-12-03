@@ -92,26 +92,21 @@ class NodeControlTool:
         self.server.listen(1)
 
     def _get_deps_list(self, package):
+        # We assume, that package looks like 'package_name=1.2.3'
         logger.info('Getting dependencies for {}'.format(package))
         NodeControlUtil.update_package_cache()
-        app_holded = self.config.PACKAGES_TO_HOLD + self.hold_ext
-        dep_tree = NodeControlUtil.get_deps_tree_filtered(package, filter_list=app_holded)
-        ret = []
-        NodeControlUtil.dep_tree_traverse(dep_tree, ret)
-        # Filter deps according to system hold list
-        # in case of hold empty return only package
         holded = NodeControlUtil.get_sys_holds()
         if not holded:
             return package
-        else:
-            ret_list = []
-            for rl in ret:
-                name = rl.split("=", maxsplit=1)[0]
-                if name in holded:
-                    ret_list.append(rl)
-            if package not in ret_list:
-                ret_list.append(package)
-            return " ".join(ret_list)
+
+        app_holded = list(set(self.config.PACKAGES_TO_HOLD + self.hold_ext + holded))
+        deps_list = NodeControlUtil.get_deps_tree_filtered(package, hold_list=app_holded, deps_map={})
+        # we need to make sure, that all hold package should be presented
+        # in result list
+        if package not in deps_list:
+            deps_list.append(package)
+
+        return " ".join(deps_list)
 
     def _call_upgrade_script(self, pkg_name: str, pkg_ver: PackageVersion):
         logger.info(

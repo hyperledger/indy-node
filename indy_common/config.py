@@ -97,7 +97,12 @@ INCONSISTENCY_WATCHER_NETWORK_TIMEOUT = 90
 # Top level package to be updated via pool upgrade command
 UPGRADE_ENTRY = 'indy-node'
 
-PACKAGES_TO_HOLD = ['indy-plenum', 'indy-node', 'python3-indy-crypto', 'libindy-crypto']
+PACKAGES_TO_HOLD = ['indy-plenum', 'indy-node', 'python3-indy-crypto', 'libindy-crypto',
+                    'ioflo', 'orderedset', 'base58', 'prompt-toolkit', 'rlp', 'sha3',
+                    'libnacl', 'six', 'portalocker', 'sortedcontainers', 'setuptools',
+                    'python-dateutil', 'semver', 'pygments', 'psutil', 'pyzmq', 'intervaltree',
+                    'jsonpickle', 'python-rocksdb', 'pympler', 'packaging'
+                    ]
 
 authPolicy = CONFIG_LEDGER_AUTH_POLICY
 
