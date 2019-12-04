@@ -46,6 +46,11 @@ txn_author_agreement = AuthActionAdd(txn_type=TXN_AUTHOR_AGREEMENT,
                                      field='*',
                                      value='*')
 
+edit_txn_author_agreement = AuthActionEdit(txn_type=TXN_AUTHOR_AGREEMENT,
+                                           field='*',
+                                           old_value='*',
+                                           new_value='*')
+
 txn_author_agreement_aml = AuthActionAdd(txn_type=TXN_AUTHOR_AGREEMENT_AML,
                                          field='*',
                                          value='*')
@@ -223,6 +228,7 @@ auth_map = OrderedDict([
     (add_new_identity_owner.get_action_id(), endorser_or_steward_or_trustee_constraint),
     (key_rotation.get_action_id(), owner_constraint),
     (txn_author_agreement.get_action_id(), one_trustee_constraint),
+    (edit_txn_author_agreement.get_action_id(), one_trustee_constraint),
     (txn_author_agreement_aml.get_action_id(), one_trustee_constraint),
     (add_attrib.get_action_id(), owner_constraint),
     (edit_attrib.get_action_id(), owner_constraint),
