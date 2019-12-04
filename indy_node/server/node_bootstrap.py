@@ -13,6 +13,8 @@ from indy_node.server.request_handlers.config_req_handlers.pool_upgrade_handler 
 from indy_node.server.request_handlers.config_req_handlers.txn_author_agreement_aml_handler import \
     TxnAuthorAgreementAmlHandler
 from indy_node.server.request_handlers.config_req_handlers.txn_author_agreement_handler import TxnAuthorAgreementHandler
+from indy_node.server.request_handlers.config_req_handlers.txn_author_agreement_handler_v1 import \
+    TxnAuthorAgreementHandlerV1
 from indy_node.server.request_handlers.domain_req_handlers.idr_cache_nym_handler import IdrCacheNymHandler
 from indy_node.server.request_handlers.idr_cache_batch_handler import IdrCacheBatchHandler
 from indy_node.server.request_handlers.read_req_handlers.get_auth_rule_handler import GetAuthRuleHandler
@@ -157,6 +159,8 @@ class NodeBootstrap(PNodeBootstrap):
                                                        write_req_validator=self.node.write_req_validator)
         taa_handler = TxnAuthorAgreementHandler(database_manager=self.node.db_manager,
                                                 write_req_validator=self.node.write_req_validator)
+        taa_handler_v1 = TxnAuthorAgreementHandlerV1(database_manager=self.node.db_manager,
+                                                     write_req_validator=self.node.write_req_validator)
 
         get_taa_aml_handler = GetTxnAuthorAgreementAmlHandler(database_manager=self.node.db_manager)
         get_taa_handler = GetTxnAuthorAgreementHandler(database_manager=self.node.db_manager)
@@ -176,6 +180,8 @@ class NodeBootstrap(PNodeBootstrap):
         # Register write handlers for a version
         self.node.write_manager.register_req_handler_with_version(auth_rule_handler_1_9_1,
                                                                   version="1.9.1")
+        self.node.write_manager.register_req_handler_with_version(taa_handler_v1,
+                                                                  version="1")
 
     def _register_action_req_handlers(self):
         # Action handlers

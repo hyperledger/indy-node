@@ -8,7 +8,8 @@ from indy_node.server.request_handlers.domain_req_handlers.schema_handler import
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from indy_node.test.context.helper import W3C_BASE_CONTEXT
 from indy_node.test.request_handlers.helper import add_to_idr
-from plenum.common.constants import KeyValueStorageType
+from plenum.common.constants import KeyValueStorageType, TXN_TYPE, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_TEXT, \
+    TXN_AUTHOR_AGREEMENT_VERSION
 from plenum.common.request import Request
 from plenum.common.util import randomString
 from storage.helper import initKeyValueStorage
@@ -96,3 +97,12 @@ def auth_rule_request(creator):
                    reqId=5,
                    signature="sig",
                    operation=generate_auth_rule_operation())
+
+
+@pytest.fixture(scope="module")
+def taa_request(creator):
+    return Request(identifier=creator,
+                   signature="signature",
+                   operation={TXN_TYPE: TXN_AUTHOR_AGREEMENT,
+                              TXN_AUTHOR_AGREEMENT_TEXT: "text",
+                              TXN_AUTHOR_AGREEMENT_VERSION: "version"})
