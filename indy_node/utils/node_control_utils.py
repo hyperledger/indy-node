@@ -30,7 +30,7 @@ codecs.register_error('decode_errors', decode_err_handler)
 
 
 logger = getlogger()
-TIMEOUT = 300
+TIMEOUT = 600
 MAX_DEPS_DEPTH = 6
 
 
