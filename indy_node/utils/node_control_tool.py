@@ -19,7 +19,7 @@ from indy_node.utils.migration_tool import migrate
 from indy_node.utils.node_control_utils import NodeControlUtil
 
 
-TIMEOUT = 300
+TIMEOUT = 600
 BACKUP_FORMAT = 'zip'
 BACKUP_NUM = 10
 TMP_DIR = '/tmp/.indy_tmp'
