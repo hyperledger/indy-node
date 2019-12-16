@@ -1,5 +1,7 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.12.0](#1120)
+
 * [1.11.0](#1110)
 
 * [1.10.0](#1100)
@@ -51,6 +53,54 @@
 #### Disclosure
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
+
+## 1.12.0
+### Release date: Nov 29th, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.12.0 |
+| indy-node | 1.12.0 |
+| sovrin | 1.1.63 |
+
+### Additional Information:
+
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
+### Major Changes
+- Improve primary selection algorithm
+- Take into account transaction history when recovering state for new nodes
+- Fix new nodes adding when there are old AUTH_RULE or plugin transactions
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| The problem with a config state | | [INDY-2283](https://jira.hyperledger.org/browse/INDY-2283) |
+| Node loses consensus and unreachable by clients | | [INDY-2287](https://jira.hyperledger.org/browse/INDY-2287) |
+| A new added node failed to reach consensus | | [INDY-2254](https://jira.hyperledger.org/browse/INDY-2254) |
+
+#### Changes and Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| All nodes need to select the same primary during view change | | [INDY-2262](https://jira.hyperledger.org/browse/INDY-2262) |
+| Take into account txn history when recovering state from the ledger for new nodes | | [INDY-2292](https://jira.hyperledger.org/browse/INDY-2292) |
+| Do not restore Primaries from the audit ledger | | [INDY-2298](https://jira.hyperledger.org/browse/INDY-2298) |
+| Start View change on receiving a quorum of ViewChange messages | | [INDY-2236](https://jira.hyperledger.org/browse/INDY-2236) |
+| PBFT View change: cleanup and debug Part 3 | | [INDY-2267](https://jira.hyperledger.org/browse/INDY-2267) |
+| A Node missing a View Change may not be able to finish it if NODE txns have been sent | | [INDY-2275](https://jira.hyperledger.org/browse/INDY-2275) |
+| PrePrepare's Digest need to take into account all PrePrepare's fields | | [INDY-2285](https://jira.hyperledger.org/browse/INDY-2285) |
+| Investigate reasons of hundreds VCs during 15 txns per sec production load | | [INDY-2295](https://jira.hyperledger.org/browse/INDY-2295) |
+| Support historical req handlers for non-config ledgers | | [INDY-2307](https://jira.hyperledger.org/browse/INDY-2307) |
+
+#### Known Issues
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| A node lagging behind may not be able to finish view change if nodes have been added/demoted | | [INDY-2308](https://jira.hyperledger.org/browse/INDY-2308) |
+| GET_CRED_DEF for a Schema with a lot of attributes may fail with Timeout | | [INDY-2306](https://jira.hyperledger.org/browse/INDY-2306) |
+| Only Trustee or Node owner can be the author of NODE demotion txn regardless of endorsement or auth constraint rules set | | [INDY-2024](https://jira.hyperledger.org/browse/INDY-2024) |
 
 ## 1.11.0
 ### Release date: Nov 1st, 2019
