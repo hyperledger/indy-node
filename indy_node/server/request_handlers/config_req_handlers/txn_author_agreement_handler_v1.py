@@ -13,7 +13,7 @@ from plenum.server.request_handlers.utils import encode_state_value, decode_stat
 
 class TxnAuthorAgreementHandlerV1(TxnAuthorAgreementHandler):
 
-    def _update_txn_author_agreement(self, text, version, seq_no, txn_time, retired=False):
+    def _update_txn_author_agreement(self, digest, seq_no, txn_time, text, version, retired=False):
         digest = StaticTAAHelper.taa_digest(text, version)
         data = encode_state_value({
             TXN_AUTHOR_AGREEMENT_TEXT: text,
