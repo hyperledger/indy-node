@@ -12,6 +12,8 @@ from indy_node.server.request_handlers.config_req_handlers.pool_config_handler i
 from indy_node.server.request_handlers.config_req_handlers.pool_upgrade_handler import PoolUpgradeHandler
 from indy_node.server.request_handlers.config_req_handlers.txn_author_agreement_aml_handler import \
     TxnAuthorAgreementAmlHandler
+from indy_node.server.request_handlers.config_req_handlers.txn_author_agreement_disable_handler import \
+    TxnAuthorAgreementDisableHandler
 from indy_node.server.request_handlers.config_req_handlers.txn_author_agreement_handler import TxnAuthorAgreementHandler
 from indy_node.server.request_handlers.config_req_handlers.txn_author_agreement_handler_v1 import \
     TxnAuthorAgreementHandlerV1
@@ -162,6 +164,9 @@ class NodeBootstrap(PNodeBootstrap):
         taa_handler_v1 = TxnAuthorAgreementHandlerV1(database_manager=self.node.db_manager,
                                                      write_req_validator=self.node.write_req_validator)
 
+        taa_disable_handler = TxnAuthorAgreementDisableHandler(database_manager=self.node.db_manager,
+                                                               write_req_validator=self.node.write_req_validator)
+
         get_taa_aml_handler = GetTxnAuthorAgreementAmlHandler(database_manager=self.node.db_manager)
         get_taa_handler = GetTxnAuthorAgreementHandler(database_manager=self.node.db_manager)
         node_upgrade_handler = NodeUpgradeHandler(database_manager=self.node.db_manager)
@@ -172,6 +177,7 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.write_manager.register_req_handler(pool_upgrade_handler)
         self.node.write_manager.register_req_handler(taa_aml_handler)
         self.node.write_manager.register_req_handler(taa_handler)
+        self.node.write_manager.register_req_handler(taa_disable_handler)
         self.node.write_manager.register_req_handler(node_upgrade_handler)
         # Register read handlers
         self.node.read_manager.register_req_handler(get_auth_rule_handler)
