@@ -122,7 +122,7 @@ class TestAuthRuleUsing():
         auth_map.change_client_ip.get_action_id(): EditNodeClientIpTest,
         auth_map.change_client_port.get_action_id(): EditNodeClientPortTest,
         auth_map.change_bls_key.get_action_id(): EditNodeBlsTest,
-        # auth_map.disable_txn_author_agreement.get_action_id(): TAADisableTest,
+        auth_map.disable_txn_author_agreement.get_action_id(): TAADisableTest,
     })
 
     # TODO a workaround until sdk aceepts empty TAA to make possible its deactivation

@@ -11,7 +11,7 @@ from indy_node.test.helper import build_auth_rule_request_json
 from plenum.common.constants import TXN_AUTHOR_AGREEMENT_DISABLE, TXN_TYPE
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.util import randomString
-from plenum.test.helper import sdk_get_and_check_replies
+from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_request_from_dict
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_sign_and_send_prepared_request
 from plenum.test.txn_author_agreement.helper import sdk_send_txn_author_agreement
 
@@ -55,10 +55,8 @@ class TAADisableTest(AuthTest):
 
     def send_taa_disable_req(self, wallet):
         operation = {TXN_TYPE: TXN_AUTHOR_AGREEMENT_DISABLE}
-        req = Request(identifier=wallet[1],
-                      signature="sign",
-                      operation=operation)
-        self.send_and_check(json.dumps(req.as_dict), wallet)
+        req = sdk_sign_request_from_dict(self.looper, wallet, operation)
+        self.send_and_check(json.dumps(req), wallet)
 
     def run(self):
         # Step 1. Change auth rule
