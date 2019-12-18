@@ -1,5 +1,5 @@
 from plenum.common.constants import TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_DIGEST, \
-    TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_TIMESTAMP, TXN_AUTHOR_AGREEMENT_RETIRED
+    TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_RATIFIED, TXN_AUTHOR_AGREEMENT_RETIRED
 import time
 
 from indy_node.test.helper import start_stopped_node
@@ -69,21 +69,21 @@ def test_recover_taa_from_ledger(txnPoolNodeSet,
     # Step 8. Ensure, that all TAAs was written
     res_1 = sdk_get_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version=version_1)[1]
     assert TXN_AUTHOR_AGREEMENT_DIGEST not in res_1['result']['data']
-    assert TXN_AUTHOR_AGREEMENT_TIMESTAMP not in res_1['result']['data']
+    assert TXN_AUTHOR_AGREEMENT_RATIFIED not in res_1['result']['data']
     assert res_1['result']['data'][TXN_AUTHOR_AGREEMENT_VERSION] == version_1
 
     res_2 = sdk_get_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version=version_2)[1]
 
     assert TXN_AUTHOR_AGREEMENT_DIGEST in res_2['result']['data']
-    assert TXN_AUTHOR_AGREEMENT_TIMESTAMP in res_2['result']['data']
+    assert TXN_AUTHOR_AGREEMENT_RATIFIED in res_2['result']['data']
     assert res_2['result']['data'][TXN_AUTHOR_AGREEMENT_VERSION] == version_2
     assert res_2['result']['data'][TXN_AUTHOR_AGREEMENT_RETIRED] == retired_time
-    assert res_2['result']['data'][TXN_AUTHOR_AGREEMENT_TIMESTAMP] == retired_time - 20
+    assert res_2['result']['data'][TXN_AUTHOR_AGREEMENT_RATIFIED] == retired_time - 20
 
     res_3 = sdk_get_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version=version_3)[1]
 
     assert TXN_AUTHOR_AGREEMENT_DIGEST in res_3['result']['data']
-    assert TXN_AUTHOR_AGREEMENT_TIMESTAMP in res_3['result']['data']
+    assert TXN_AUTHOR_AGREEMENT_RATIFIED in res_3['result']['data']
     assert res_3['result']['data'][TXN_AUTHOR_AGREEMENT_VERSION] == version_3
 
     # Step 9. Return previous disconnected node back
