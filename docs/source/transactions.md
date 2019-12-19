@@ -23,7 +23,8 @@
     * [AUTH_RULE](#auth_rule)
     * [AUTH_RULES](#auth_rules)
     * [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)
-    * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)    
+    * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)
+    * [TRANSACTION_AUTHOR_AGREEMENT_DISABLE](#transaction_author_agreement_disable)    
     
 * [Actions](#actions)
     * [POOL_RESTART](#pool_restart)    
@@ -1293,14 +1294,18 @@ Please note, that list elements of `GET_AUTH_RULE` output can be used as an inpu
 
 #### TRANSACTION_AUTHOR_AGREEMENT
 
-Setting (enabling/disabling) a transaction author agreement for the pool.
-If transaction author agreement is set, then all write requests to Domain ledger (transactions) must include additional metadata pointing to the latest transaction author agreement's digest which is signed by the transaction author.
+Adding a transaction author agreement for the pool.
+If transaction author agreement is set, then all write requests to Domain ledger (transactions) must include additional metadata pointing to any of active transaction author agreements digests which is signed by the transaction author.
 
-If no transaction author agreement is set, or it's disabled, then no additional metadata is required.
+For any given version of transaction author agreement text and ratification date cannot be changed once set. Ratification date cannot be in future.
 
-Transaction author agreement can be disabled by setting an agreement with an empty text.
+If no transaction author agreement is set, or there are no active transaction author agreements, then no additional metadata is required.
 
-Each transaction author agreement has a unique version.
+Individual transaction author agreements can be disabled by setting retirement date using same transaction. Retirement date can be in future, in this case deactivation of agreement won't happen immediately, it will be automatically deactivated at required date instead. It is also possible to change (or delete) existing retirement date of agreement if it didn't occur yet.
+
+Latest transaction author agreement cannot be disabled using this transaction.  It is possible to disable all currently active transaction author agreements (including latest) using separate transaction [TRANSACTION_AUTHOR_AGREEMENT_DISABLE](#transaction_author_agreement_disable).
+
+Each transaction author agreement has a unique version. If TRANSACTION_AUTHOR_AGREEMENT transaction is sent for already existing version it is considered an update (for example of retirement date), in this case text and ratification date should be either absent or equal to original values.
 
 At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_aml) must be set on the ledger before submitting TRANSACTION_AUTHOR_AGREEMENT txn.
 
@@ -1308,23 +1313,31 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
 
     Unique version of the transaction author agreement
 
-
-- `text` (string):
+- `text` (string; optional):
 
     Transaction author agreement's text
+
+- `ratified` (integer; optional):
+
+    Timestamp of Transaction Author Agreement ratification date
+
+- `retired` (integer; optional):
+
+    Timestamp of Transaction Author Agreement retirement date.
+
 
 **Example:**
 ```
 {
-    "ver":1,
+    "ver": 2,
     "txn": {
         "type":4,
         "protocolVersion":2,
 
         "data": {
-            "ver":1,
             "version": "1.0",
             "text": "Please read carefully before writing anything to the ledger",
+            "ratified": 1577836799
         },
 
         "metadata": {
@@ -1335,7 +1348,7 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
         },
     },
     "txnMetadata": {
-        "txnTime":1513945121,
+        "txnTime":1577836799,
         "seqNo": 10,
     },
     "reqSignature": {
