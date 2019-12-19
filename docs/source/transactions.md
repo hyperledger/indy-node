@@ -24,7 +24,7 @@
     * [AUTH_RULES](#auth_rules)
     * [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)
     * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)
-    * [TRANSACTION_AUTHOR_AGREEMENT_DISABLE](#transaction_author_agreement_disable)    
+    * [TRANSACTION_AUTHOR_AGREEMENT_DISABLE](#transaction_author_agreement_disable)
     
 * [Actions](#actions)
     * [POOL_RESTART](#pool_restart)    
@@ -1335,6 +1335,7 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
         "protocolVersion":2,
 
         "data": {
+            "ver": 2,
             "version": "1.0",
             "text": "Please read carefully before writing anything to the ledger",
             "ratified": 1577836799
@@ -1384,7 +1385,6 @@ Each acceptance mechanisms list has a unique version.
     A context information about Acceptance mechanisms list (may be URL to external resource).   
     
     
-
 **Example:**
 ```
 {
@@ -1414,6 +1414,43 @@ Each acceptance mechanisms list has a unique version.
     },
     "txnMetadata": {
         "txnTime":1513945121,
+        "seqNo": 10,
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
+#### TRANSACTION_AUTHOR_AGREEMENT_DISABLE
+
+Immediately retires all active Transaction Author Agreements at once by setting current timestamp as a retirement date.
+
+**Example:**
+```
+{
+    "ver": 1,
+    "txn": {
+        "type":8,
+        "protocolVersion":2,
+
+        "data": {
+            "ver": 1,
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1577836799,
         "seqNo": 10,
     },
     "reqSignature": {
