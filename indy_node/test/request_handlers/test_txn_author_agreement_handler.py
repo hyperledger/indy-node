@@ -28,15 +28,6 @@ def set_aml(txn_author_agreement_handler):
                                                               serializer=config_state_serializer))
 
 
-@pytest.fixture(scope="module")
-def taa_request(txn_author_agreement_handler, creator):
-    return Request(identifier=creator,
-                   signature="signature",
-                   operation={TXN_TYPE: TXN_AUTHOR_AGREEMENT,
-                              TXN_AUTHOR_AGREEMENT_TEXT: "text",
-                              TXN_AUTHOR_AGREEMENT_VERSION: "version"})
-
-
 def test_dynamic_validation_without_permission(taa_request,
                                                txn_author_agreement_handler: TxnAuthorAgreementHandler,
                                                creator,

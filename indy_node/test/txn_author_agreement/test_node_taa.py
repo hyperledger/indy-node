@@ -16,21 +16,6 @@ from plenum.common.util import randomString
 from plenum.test.txn_author_agreement.helper import sdk_send_txn_author_agreement, sdk_get_txn_author_agreement
 
 
-@pytest.fixture(scope="module")
-def taa_aml_request_module(looper, sdk_pool_handle, sdk_wallet_trustee):
-    return looper.loop.run_until_complete(build_acceptance_mechanisms_request(
-        sdk_wallet_trustee[1],
-        json.dumps({
-            'Nice way': 'very good way to accept agreement'}),
-        randomString(), randomString()))
-
-
-@pytest.fixture(scope="module")
-def setup_aml(looper, txnPoolNodeSet, taa_aml_request_module, sdk_pool_handle, sdk_wallet_trustee):
-    req = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee, sdk_pool_handle, taa_aml_request_module)
-    sdk_get_and_check_replies(looper, [req])
-
-
 def test_send_valid_txn_author_agreement_succeeds(looper, setup_aml, txnPoolNodeSet, sdk_pool_handle,
                                                   sdk_wallet_trustee, sdk_wallet_client):
     text = randomString(1024)

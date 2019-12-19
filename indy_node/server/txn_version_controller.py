@@ -2,10 +2,10 @@ from indy_common.constants import NODE_UPGRADE, ACTION, COMPLETE, POOL_UPGRADE, 
 from plenum.common.constants import VERSION, DATA
 from plenum.common.txn_util import get_type, get_payload_data, get_from, get_txn_time
 from plenum.common.util import SortedDict
-from plenum.server.txn_version_controller import ITxnVersionController
+from plenum.server.txn_version_controller import TxnVersionController as TVController
 
 
-class TxnVersionController(ITxnVersionController):
+class TxnVersionController(TVController):
 
     def __init__(self) -> None:
         self._versions = SortedDict()
@@ -16,7 +16,7 @@ class TxnVersionController(ITxnVersionController):
     def version(self):
         return self._versions.peekitem(-1)[1] if self._versions else None
 
-    def get_version(self, timestamp):
+    def get_pool_version(self, timestamp):
         if timestamp is None:
             return self.version
         last_version = None
