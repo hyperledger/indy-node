@@ -1,8 +1,10 @@
+from indy_common.state.state_constants import LAST_UPDATE_TIME
 from plenum.common.constants import TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_DIGEST, \
-    TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_RATIFIED, TXN_AUTHOR_AGREEMENT_RETIRED
+    TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_RATIFIED, TXN_AUTHOR_AGREEMENT_RETIRED, CURRENT_TXN_VERSIONS
 import time
 
 from indy_node.test.helper import start_stopped_node
+from plenum.common.txn_util import get_txn_time
 from plenum.common.util import randomString
 from plenum.test.node_catchup.helper import ensure_all_nodes_have_same_data
 from plenum.test.pool_transactions.helper import disconnect_node_and_ensure_disconnected
@@ -19,7 +21,6 @@ def test_recover_taa_from_ledger(txnPoolNodeSet,
                                  tdir,
                                  allPluginsPath):
     orig_handlers = {}
-
     # Step 1. Stop one node
     node_to_stop = txnPoolNodeSet[-1]
     rest_pool = txnPoolNodeSet[:-1]
@@ -55,7 +56,7 @@ def test_recover_taa_from_ledger(txnPoolNodeSet,
     # Step 5. Send another TAA txn in new way without optional parameters
     text_2 = randomString(1024)
     version_2 = randomString(16)
-    sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, text_2, version_2)
+    res_0 = sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, text_2, version_2)[1]
 
     # Step 6. Send another TAA txn in new way without optional parameter
     text = randomString(1024)
@@ -78,7 +79,7 @@ def test_recover_taa_from_ledger(txnPoolNodeSet,
     assert TXN_AUTHOR_AGREEMENT_RATIFIED in res_2['result']['data']
     assert res_2['result']['data'][TXN_AUTHOR_AGREEMENT_VERSION] == version_2
     assert res_2['result']['data'][TXN_AUTHOR_AGREEMENT_RETIRED] == retired_time
-    assert res_2['result']['data'][TXN_AUTHOR_AGREEMENT_RATIFIED] == retired_time - 20
+    assert res_2['result']['data'][TXN_AUTHOR_AGREEMENT_RATIFIED] == get_txn_time(res_0['result'])
 
     res_3 = sdk_get_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version=version_3)[1]
 
