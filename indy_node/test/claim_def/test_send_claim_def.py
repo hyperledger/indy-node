@@ -2,15 +2,13 @@ import json
 
 import pytest
 from indy.anoncreds import issuer_create_and_store_credential_def, issuer_create_schema
-from indy.ledger import build_cred_def_request, parse_get_schema_response, \
-    build_get_schema_request, build_schema_request
+from indy.ledger import build_cred_def_request, build_schema_request
 
 from indy_common.constants import REF
-from indy_node.test.api.helper import sdk_write_schema
 from indy_node.test.helper import modify_field
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.types import OPERATION
-from plenum.test.helper import sdk_sign_and_submit_req, sdk_get_and_check_replies, sdk_get_reply, max_3pc_batch_limits
+from plenum.test.helper import sdk_sign_and_submit_req, sdk_get_and_check_replies, max_3pc_batch_limits
 
 
 def sdk_send_claim_def(looper, sdk_pool_handle, sdk_wallet, tag, schema_json):
@@ -23,18 +21,6 @@ def sdk_send_claim_def(looper, sdk_pool_handle, sdk_wallet, tag, schema_json):
     return reply
 
 
-@pytest.fixture(scope="module")
-def schema_json(looper, sdk_pool_handle, sdk_wallet_trustee):
-    wallet_handle, identifier = sdk_wallet_trustee
-    schema_json, _ = sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_trustee)
-    schema_id = json.loads(schema_json)['id']
-
-    request = looper.loop.run_until_complete(build_get_schema_request(identifier, schema_id))
-    reply = sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request))[1]
-    _, schema_json = looper.loop.run_until_complete(parse_get_schema_response(json.dumps(reply)))
-    return schema_json
-
-
 def test_send_claim_def_succeeds(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, schema_json):
     wallet_handle, identifier = sdk_wallet_trustee
@@ -42,7 +28,17 @@ def test_send_claim_def_succeeds(
     _, definition_json = looper.loop.run_until_complete(issuer_create_and_store_credential_def(
         wallet_handle, identifier, schema_json, "some_tag", "CL", json.dumps({"support_revocation": True})))
     request = looper.loop.run_until_complete(build_cred_def_request(identifier, definition_json))
-    reply = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
+    sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
+
+
+def test_send_claim_def_succeeds_for_large_schema(
+        looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, large_schema_json):
+    wallet_handle, identifier = sdk_wallet_trustee
+
+    _, definition_json = looper.loop.run_until_complete(issuer_create_and_store_credential_def(
+        wallet_handle, identifier, large_schema_json, "some_tag", "CL", json.dumps({"support_revocation": True})))
+    request = looper.loop.run_until_complete(build_cred_def_request(identifier, definition_json))
+    sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
 
 
 def test_send_claim_def_schema_and_claim_def_in_one_batch(
