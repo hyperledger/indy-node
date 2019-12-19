@@ -1,15 +1,10 @@
-import json
-
 import pytest
-from indy.ledger import build_get_schema_request, parse_get_schema_response
 
 from indy_node.test.auth_rule.auth_framework.claim_def import get_schema_json
 from plenum.common.exceptions import RequestRejectedException
 
 from indy_node.test.claim_def.test_send_claim_def import sdk_send_claim_def
 from plenum.common.types import OPERATION
-
-from indy_node.test.api.helper import sdk_write_schema
 
 from indy_node.test.helper import build_auth_rule_request_json
 from plenum.common.constants import TRUSTEE, STEWARD, DATA
@@ -18,8 +13,7 @@ from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.constants import CLAIM_DEF
 
-from plenum.test.helper import sdk_get_and_check_replies, \
-    sdk_get_reply, sdk_sign_and_submit_req, sdk_sign_and_submit_op
+from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_and_submit_op
 from indy_node.test.auth_rule.helper import sdk_send_and_check_req_json
 
 
