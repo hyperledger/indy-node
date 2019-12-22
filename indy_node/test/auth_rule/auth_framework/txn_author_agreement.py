@@ -34,16 +34,16 @@ class TxnAuthorAgreementTest(AuthTest):
 
         # Step 2. Check, that we cannot do txn the old way
         with pytest.raises(RequestRejectedException):
-            sdk_send_txn_author_agreement(self.looper, self.sdk_pool_handle, self.trustee_wallet, 'some_text', 'v1')
+            sdk_send_txn_author_agreement(self.looper, self.sdk_pool_handle, self.trustee_wallet, 'v1', 'some_text')
 
         # Step 3. Check, that new auth rule is used
-        sdk_send_txn_author_agreement(self.looper, self.sdk_pool_handle, self.new_default_wallet, 'other_text', 'v2')
+        sdk_send_txn_author_agreement(self.looper, self.sdk_pool_handle, self.new_default_wallet, 'v2', 'other_text')
 
         # Step 4. Return default auth rule
         self.send_and_check(self.default_auth_rule, wallet=self.trustee_wallet)
 
         # Step 5. Check, that default auth rule works
-        sdk_send_txn_author_agreement(self.looper, self.sdk_pool_handle, self.trustee_wallet, 'another_text', 'v3')
+        sdk_send_txn_author_agreement(self.looper, self.sdk_pool_handle, self.trustee_wallet, 'v3', 'another_text')
 
     def result(self):
         pass
