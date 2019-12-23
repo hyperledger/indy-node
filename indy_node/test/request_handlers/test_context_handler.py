@@ -221,18 +221,18 @@ def make_context_exist(context_request, context_handler):
 def test_context_dynamic_validation_failed_existing_context(context_request, context_handler):
     make_context_exist(context_request, context_handler)
     with pytest.raises(UnauthorizedClientRequest, match=str(AuthConstraintForbidden())):
-        context_handler.dynamic_validation(context_request)
+        context_handler.dynamic_validation(context_request, 0)
 
 
 def test_context_dynamic_validation_failed_not_authorised(context_request, context_handler):
     add_to_idr(context_handler.database_manager.idr_cache, context_request.identifier, None)
     with pytest.raises(UnauthorizedClientRequest):
-        context_handler.dynamic_validation(context_request)
+        context_handler.dynamic_validation(context_request, 0)
 
 
 def test_schema_dynamic_validation_passes(context_request, context_handler):
     add_to_idr(context_handler.database_manager.idr_cache, context_request.identifier, TRUSTEE)
-    context_handler.dynamic_validation(context_request)
+    context_handler.dynamic_validation(context_request, 0)
 
 
 def test_update_state(context_request, context_handler):

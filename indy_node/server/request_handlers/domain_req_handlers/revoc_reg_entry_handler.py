@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Callable
+from typing import Callable, Optional
 
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
@@ -28,7 +28,7 @@ class RevocRegEntryHandler(WriteRequestHandler):
     def static_validation(self, request: Request):
         pass
 
-    def dynamic_validation(self, request: Request):
+    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
         rev_reg_tags = request.operation[REVOC_REG_DEF_ID]
         author_did, req_id, operation = get_request_data(request)

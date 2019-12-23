@@ -1,3 +1,5 @@
+from typing import Optional
+
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
@@ -38,7 +40,7 @@ class RevocRegDefHandler(WriteRequestHandler):
                                        "Expected: 'did:marker:signature_type:schema_ref' or "
                                        "'did:marker:signature_type:schema_ref:tag'".format(CRED_DEF_ID))
 
-    def dynamic_validation(self, request: Request):
+    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
         operation = request.operation
         cred_def_id = operation.get(CRED_DEF_ID)
