@@ -18,8 +18,16 @@ class TxnAuthorAgreementHandlerV1(TxnAuthorAgreementHandler):
         # TODO: Have real implementation here?
         pass
 
-    # TODO: Overriding just this function (not even update_state) looks like an ugly fragile hack
-    def _update_txn_author_agreement(self, digest, seq_no, txn_time, text, version, retired=False, ratified=None):
+    def update_state(self, txn, prev_result, request, is_committed=False):
+        self._validate_txn_type(txn)
+        payload = get_payload_data(txn)
+        text = payload.get(TXN_AUTHOR_AGREEMENT_TEXT)
+        version = payload[TXN_AUTHOR_AGREEMENT_VERSION]
+        seq_no = get_seq_no(txn)
+        txn_time = get_txn_time(txn)
+        self._update_txn_author_agreement(seq_no, txn_time, text, version)
+
+    def _update_txn_author_agreement(self, seq_no, txn_time, text, version):
         digest = StaticTAAHelper.taa_digest(text, version)
         data = encode_state_value({
             TXN_AUTHOR_AGREEMENT_TEXT: text,
