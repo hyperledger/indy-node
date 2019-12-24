@@ -1,3 +1,5 @@
+from typing import Optional
+
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 
@@ -32,7 +34,7 @@ class ContextHandler(WriteRequestHandler):
         data = request.operation[DATA]
         self._validate_context(data[CONTEXT_CONTEXT], request.identifier, request.reqId)
 
-    def dynamic_validation(self, request: Request):
+    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         # we can not add a Context with already existent NAME and VERSION
         # since a Context needs to be identified by seqNo
         self._validate_request_type(request)

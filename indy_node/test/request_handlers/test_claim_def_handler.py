@@ -56,7 +56,7 @@ def claim_def_request(creator, schema):
 def test_claim_def_dynamic_validation_without_schema(claim_def_request,
                                                      claim_def_handler: ClaimDefHandler):
     with pytest.raises(InvalidClientRequest) as e:
-        claim_def_handler.dynamic_validation(claim_def_request)
+        claim_def_handler.dynamic_validation(claim_def_request, 0)
     assert "Mentioned seqNo ({}) doesn't exist.".format(claim_def_request.operation[REF]) \
            in e._excinfo[1].args[0]
 
@@ -64,7 +64,7 @@ def test_claim_def_dynamic_validation_without_schema(claim_def_request,
 def test_claim_def_dynamic_validation_for_new_claim_def(claim_def_request, schema,
                                                         claim_def_handler: ClaimDefHandler):
     claim_def_handler.ledger.appendTxns([schema])
-    claim_def_handler.dynamic_validation(claim_def_request)
+    claim_def_handler.dynamic_validation(claim_def_request, 0)
 
 
 def test_claim_def_dynamic_validation_without_permission(claim_def_request, schema,
@@ -80,7 +80,7 @@ def test_claim_def_dynamic_validation_without_permission(claim_def_request, sche
                       operation=claim_def_request.operation)
     with pytest.raises(UnauthorizedClientRequest,
                        match="Not enough .* signatures"):
-        claim_def_handler.dynamic_validation(request)
+        claim_def_handler.dynamic_validation(request, 0)
 
 
 def test_claim_def_dynamic_validation_for_unknown_identifier(claim_def_request, schema,
@@ -92,7 +92,7 @@ def test_claim_def_dynamic_validation_for_unknown_identifier(claim_def_request, 
                       operation=claim_def_request.operation)
     with pytest.raises(UnauthorizedClientRequest,
                        match='DID {} is not found in the Ledger'.format(test_identifier)):
-        claim_def_handler.dynamic_validation(request)
+        claim_def_handler.dynamic_validation(request, 0)
 
 
 def test_claim_def_dynamic_validation_without_ref_to_not_schema(claim_def_request, schema,
@@ -102,7 +102,7 @@ def test_claim_def_dynamic_validation_without_ref_to_not_schema(claim_def_reques
     claim_def_request.operation[REF] = get_seq_no(nym)
     claim_def_handler.ledger.appendTxns([nym])
     with pytest.raises(InvalidClientRequest) as e:
-        claim_def_handler.dynamic_validation(claim_def_request)
+        claim_def_handler.dynamic_validation(claim_def_request, 0)
     assert "Mentioned seqNo ({}) isn't seqNo of the schema.".format(claim_def_request.operation[REF]) \
            in e._excinfo[1].args[0]
 

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from common.serializers.serialization import config_state_serializer
 from indy_node.server.request_handlers.config_req_handlers.txn_author_agreement_handler import TxnAuthorAgreementHandler
 from plenum.common.constants import TXN_AUTHOR_AGREEMENT, CONFIG_LEDGER_ID, TXN_AUTHOR_AGREEMENT_VERSION, \
@@ -12,8 +14,12 @@ from plenum.server.request_handlers.utils import encode_state_value, decode_stat
 
 
 class TxnAuthorAgreementHandlerV1(TxnAuthorAgreementHandler):
+    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+        # TODO: Have real implementation here?
+        pass
 
-    def _update_txn_author_agreement(self, digest, seq_no, txn_time, text, version, retired=False):
+    # TODO: Overriding just this function (not even update_state) looks like an ugly fragile hack
+    def _update_txn_author_agreement(self, digest, seq_no, txn_time, text, version, retired=False, ratified=None):
         digest = StaticTAAHelper.taa_digest(text, version)
         data = encode_state_value({
             TXN_AUTHOR_AGREEMENT_TEXT: text,
