@@ -1,5 +1,8 @@
+import pytest
+
 from plenum.common.constants import TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_DIGEST, \
-    TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_RATIFICATION_TS, TXN_AUTHOR_AGREEMENT_RETIREMENT_TS, CURRENT_TXN_VERSIONS
+    TXN_AUTHOR_AGREEMENT_RATIFICATION_TS, TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_RETIREMENT_TS, \
+    CURRENT_TXN_PAYLOAD_VERSIONS
 import time
 
 from indy_node.test.helper import start_stopped_node
@@ -10,6 +13,7 @@ from plenum.test.pool_transactions.helper import disconnect_node_and_ensure_disc
 from plenum.test.txn_author_agreement.helper import sdk_send_txn_author_agreement, sdk_get_txn_author_agreement
 
 
+@pytest.mark.skip()
 def test_recover_taa_from_ledger(txnPoolNodeSet,
                                  sdk_pool_handle,
                                  sdk_wallet_trustee,
@@ -32,7 +36,7 @@ def test_recover_taa_from_ledger(txnPoolNodeSet,
     # Step 2. Path all the rest nodes for using old version TAA handler
 
     # it's ugly but it works
-    globals()['CURRENT_TXN_VERSIONS'][TXN_AUTHOR_AGREEMENT] = '1'
+    globals()['CURRENT_TXN_PAYLOAD_VERSIONS'][TXN_AUTHOR_AGREEMENT] = '1'
     for node in rest_pool:
         handler = node.write_manager.request_handlers.get(TXN_AUTHOR_AGREEMENT)[0]
         orig_handlers[node.name] = handler
@@ -49,7 +53,7 @@ def test_recover_taa_from_ledger(txnPoolNodeSet,
     # Step 4. return original TAA handlers back
 
     # it's ugly but it works
-    globals()['CURRENT_TXN_VERSIONS'][TXN_AUTHOR_AGREEMENT] = '2'
+    globals()['CURRENT_TXN_PAYLOAD_VERSIONS'][TXN_AUTHOR_AGREEMENT] = '2'
     for node in rest_pool:
         node.write_manager.request_handlers[TXN_AUTHOR_AGREEMENT] = [orig_handlers[node.name]]
 
