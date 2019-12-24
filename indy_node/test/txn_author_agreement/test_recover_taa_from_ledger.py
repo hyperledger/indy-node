@@ -43,8 +43,6 @@ def test_recover_taa_from_ledger(txnPoolNodeSet,
     # Step 3. Send TAA txn in old way
     text = randomString(1024)
     version_1 = randomString(16)
-
-    # TODO: INDY-2313 why is this failing even though we use old request handler?
     sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version_1, text)
 
     # Step 4. return original TAA handlers back
