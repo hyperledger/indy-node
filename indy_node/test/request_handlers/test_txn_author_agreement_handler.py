@@ -34,7 +34,7 @@ def test_dynamic_validation_without_permission(taa_request,
                                                set_aml):
     add_to_idr(txn_author_agreement_handler.database_manager.idr_cache, creator, STEWARD)
     with pytest.raises(UnauthorizedClientRequest, match="Not enough TRUSTEE signatures"):
-        txn_author_agreement_handler.dynamic_validation(taa_request)
+        txn_author_agreement_handler.dynamic_validation(taa_request, 0)
 
 
 def test_dynamic_validation(taa_request,
@@ -42,5 +42,5 @@ def test_dynamic_validation(taa_request,
                             creator,
                             set_aml):
     add_to_idr(txn_author_agreement_handler.database_manager.idr_cache, creator, TRUSTEE)
-    txn_author_agreement_handler.dynamic_validation(taa_request)
+    txn_author_agreement_handler.dynamic_validation(taa_request, 0)
 

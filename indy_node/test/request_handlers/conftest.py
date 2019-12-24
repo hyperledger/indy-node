@@ -9,7 +9,7 @@ from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from indy_node.test.context.helper import W3C_BASE_CONTEXT
 from indy_node.test.request_handlers.helper import add_to_idr
 from plenum.common.constants import KeyValueStorageType, TXN_TYPE, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_TEXT, \
-    TXN_AUTHOR_AGREEMENT_VERSION
+    TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_RATIFICATION_TS
 from plenum.common.request import Request
 from plenum.common.util import randomString
 from storage.helper import initKeyValueStorage
@@ -105,4 +105,5 @@ def taa_request(creator):
                    signature="signature",
                    operation={TXN_TYPE: TXN_AUTHOR_AGREEMENT,
                               TXN_AUTHOR_AGREEMENT_TEXT: "text",
-                              TXN_AUTHOR_AGREEMENT_VERSION: "version"})
+                              TXN_AUTHOR_AGREEMENT_VERSION: "version",
+                              TXN_AUTHOR_AGREEMENT_RATIFICATION_TS: 0})
