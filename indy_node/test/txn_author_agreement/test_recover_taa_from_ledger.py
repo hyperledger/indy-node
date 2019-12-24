@@ -1,3 +1,5 @@
+import pytest
+
 from indy_common.state.state_constants import LAST_UPDATE_TIME
 from plenum.common.constants import TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_DIGEST, \
     TXN_AUTHOR_AGREEMENT_RATIFICATION_TS, TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_RETIREMENT_TS, \
@@ -12,6 +14,7 @@ from plenum.test.pool_transactions.helper import disconnect_node_and_ensure_disc
 from plenum.test.txn_author_agreement.helper import sdk_send_txn_author_agreement, sdk_get_txn_author_agreement
 
 
+@pytest.mark.skip()
 def test_recover_taa_from_ledger(txnPoolNodeSet,
                                  sdk_pool_handle,
                                  sdk_wallet_trustee,
