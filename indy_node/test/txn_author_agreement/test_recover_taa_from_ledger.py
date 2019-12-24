@@ -14,7 +14,6 @@ from plenum.test.pool_transactions.helper import disconnect_node_and_ensure_disc
 from plenum.test.txn_author_agreement.helper import sdk_send_txn_author_agreement, sdk_get_txn_author_agreement
 
 
-@pytest.mark.skip()
 def test_recover_taa_from_ledger(txnPoolNodeSet,
                                  sdk_pool_handle,
                                  sdk_wallet_trustee,
