@@ -73,6 +73,7 @@ def test_recover_taa_from_ledger(txnPoolNodeSet,
 
     # Step 7. Send taa updating for the second taa transaction (for checking txn with optional parameter)
     retired_time = int(time.time()) + 20
+    retired_time_in_past = int(time.time()) - 20
     sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version_2, retired=retired_time)
 
     # Step 8. Ensure, that all TAAs was written
@@ -82,17 +83,10 @@ def test_recover_taa_from_ledger(txnPoolNodeSet,
     assert res_1['result']['data'][TXN_AUTHOR_AGREEMENT_VERSION] == version_1
 
     res_2 = sdk_get_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version=version_2)[1]
-
-    assert TXN_AUTHOR_AGREEMENT_DIGEST in res_2['result']['data']
-    assert res_2['result']['data'][TXN_AUTHOR_AGREEMENT_VERSION] == version_2
-    assert res_2['result']['data'][TXN_AUTHOR_AGREEMENT_RETIREMENT_TS] == retired_time
-    assert res_2['result']['data'][TXN_AUTHOR_AGREEMENT_RATIFICATION_TS] == ratified_2
+    check_new_format_taa(res_2, version_2, ratified_2, retired_time)
 
     res_3 = sdk_get_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version=version_3)[1]
-
-    assert TXN_AUTHOR_AGREEMENT_DIGEST in res_3['result']['data']
-    assert res_3['result']['data'][TXN_AUTHOR_AGREEMENT_VERSION] == version_3
-    assert res_3['result']['data'][TXN_AUTHOR_AGREEMENT_RATIFICATION_TS] == ratified_3
+    check_new_format_taa(res_3, version_3, ratified_3)
 
     # Step 9. Return previous disconnected node back
     node_to_stop = start_stopped_node(node_to_stop, looper,
@@ -112,23 +106,24 @@ def test_recover_taa_from_ledger(txnPoolNodeSet,
     ensure_all_nodes_have_same_data(looper, txnPoolNodeSet)
 
     # Step 13. Retire TAA written using old handler, make sure ratification date is not spoiled
-    sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version_1, retired=retired_time)
+    sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version_1, retired=retired_time_in_past)
     res_1 = sdk_get_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version=version_1)[1]
+    check_new_format_taa(res_1, version_1, taa_1_ratification_ts, retired_time_in_past)
 
-    assert TXN_AUTHOR_AGREEMENT_DIGEST in res_1['result']['data']
-    assert TXN_AUTHOR_AGREEMENT_RATIFICATION_TS in res_1['result']['data']
-    assert res_1['result']['data'][TXN_AUTHOR_AGREEMENT_VERSION] == version_1
-    assert res_1['result']['data'][TXN_AUTHOR_AGREEMENT_RETIREMENT_TS] == retired_time
-    assert res_1['result']['data'][TXN_AUTHOR_AGREEMENT_RATIFICATION_TS] == taa_1_ratification_ts
-
-    # Step 14. Disable TAA written using old handler, make sure ratification date is not spoiled
+    # Step 14. Disable TAAs written using old handler, make sure ratification date is not spoiled
     disable_res = sdk_send_txn_author_agreement_disable(looper, sdk_pool_handle, sdk_wallet_trustee)[1]
+
     res_0 = sdk_get_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version=version_0)[1]
+    check_new_format_taa(res_0, version_0, taa_0_ratification_ts, get_txn_time(disable_res['result']))
 
-    assert TXN_AUTHOR_AGREEMENT_DIGEST in res_0['result']['data']
-    assert TXN_AUTHOR_AGREEMENT_RATIFICATION_TS in res_0['result']['data']
-    assert res_0['result']['data'][TXN_AUTHOR_AGREEMENT_VERSION] == version_0
-    assert res_0['result']['data'][TXN_AUTHOR_AGREEMENT_RETIREMENT_TS] == get_txn_time(disable_res['result'])
-    assert res_0['result']['data'][TXN_AUTHOR_AGREEMENT_RATIFICATION_TS] == taa_0_ratification_ts
+    res_1 = sdk_get_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version=version_1)[1]
+    check_new_format_taa(res_1, version_1, taa_1_ratification_ts, retired_time_in_past)
 
 
+def check_new_format_taa(result, version, ratification_ts, retired_time=None):
+    assert TXN_AUTHOR_AGREEMENT_DIGEST in result['result']['data']
+    assert TXN_AUTHOR_AGREEMENT_RATIFICATION_TS in result['result']['data']
+    assert result['result']['data'][TXN_AUTHOR_AGREEMENT_VERSION] == version
+    assert result['result']['data'][TXN_AUTHOR_AGREEMENT_RATIFICATION_TS] == ratification_ts
+    if retired_time:
+        assert result['result']['data'][TXN_AUTHOR_AGREEMENT_RETIREMENT_TS] == retired_time
