@@ -8,7 +8,8 @@ from plenum.common.txn_util import get_txn_time
 from plenum.common.util import randomString, get_utc_epoch
 from plenum.test.node_catchup.helper import ensure_all_nodes_have_same_data
 from plenum.test.pool_transactions.helper import disconnect_node_and_ensure_disconnected
-from plenum.test.txn_author_agreement.helper import sdk_send_txn_author_agreement, sdk_get_txn_author_agreement
+from plenum.test.txn_author_agreement.helper import sdk_send_txn_author_agreement, sdk_get_txn_author_agreement, \
+    sdk_send_txn_author_agreement_disable
 
 
 def test_recover_taa_from_ledger(txnPoolNodeSet,
@@ -42,8 +43,13 @@ def test_recover_taa_from_ledger(txnPoolNodeSet,
 
     # Step 3. Send TAA txn in old way
     text = randomString(1024)
+    version_0 = randomString(16)
+    res = sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version_0, text)[1]
+    taa_0_ratification_ts = get_txn_time(res['result'])
+
     version_1 = randomString(16)
-    sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version_1, text)
+    res = sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version_1, text)[1]
+    taa_1_ratification_ts = get_txn_time(res['result'])
 
     # Step 4. return original TAA handlers back
 
@@ -113,4 +119,16 @@ def test_recover_taa_from_ledger(txnPoolNodeSet,
     assert TXN_AUTHOR_AGREEMENT_RATIFICATION_TS in res_1['result']['data']
     assert res_1['result']['data'][TXN_AUTHOR_AGREEMENT_VERSION] == version_1
     assert res_1['result']['data'][TXN_AUTHOR_AGREEMENT_RETIREMENT_TS] == retired_time
-    assert res_1['result']['data'][TXN_AUTHOR_AGREEMENT_RATIFICATION_TS] == get_txn_time(res_0['result'])
+    assert res_1['result']['data'][TXN_AUTHOR_AGREEMENT_RATIFICATION_TS] == taa_1_ratification_ts
+
+    # Step 14. Disable TAA written using old handler, make sure ratification date is not spoiled
+    disable_res = sdk_send_txn_author_agreement_disable(looper, sdk_pool_handle, sdk_wallet_trustee)[1]
+    res_0 = sdk_get_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_trustee, version=version_0)[1]
+
+    assert TXN_AUTHOR_AGREEMENT_DIGEST in res_0['result']['data']
+    assert TXN_AUTHOR_AGREEMENT_RATIFICATION_TS in res_0['result']['data']
+    assert res_0['result']['data'][TXN_AUTHOR_AGREEMENT_VERSION] == version_0
+    assert res_0['result']['data'][TXN_AUTHOR_AGREEMENT_RETIREMENT_TS] == get_txn_time(disable_res['result'])
+    assert res_0['result']['data'][TXN_AUTHOR_AGREEMENT_RATIFICATION_TS] == taa_0_ratification_ts
+
+
