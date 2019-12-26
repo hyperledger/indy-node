@@ -1,6 +1,7 @@
 from _sha256 import sha256
 from copy import deepcopy
 from json import JSONDecodeError
+from typing import Optional
 
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
@@ -54,7 +55,7 @@ class AttributeHandler(WriteRequestHandler):
                                            'Attribute field must be dict while adding it as a row field'.
                                            format(TARGET_NYM))
 
-    def dynamic_validation(self, request: Request):
+    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
 
         identifier, req_id, operation = get_request_data(request)

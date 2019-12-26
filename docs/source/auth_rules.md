@@ -700,4 +700,12 @@
   </tr>    
 
         
-</table>  
+</table>
+
+### Endorser using
+
+- Endorser is required only when the transaction is endorsed, that is signed by someone else besides the author.
+- If transaction is endorsed, Endorser must sign the transaction.
+- If author of txn has role `ENDORSER`, then no multi-sig is required, since he's already signed the txn.
+- Endorser is required for unprivileged roles only.
+- Unprivileged users cannot submit any transaction (including administrative transactions like pool upgrade or restart) without a signature from a DID with the endorser role that is specified in the endorser field.
