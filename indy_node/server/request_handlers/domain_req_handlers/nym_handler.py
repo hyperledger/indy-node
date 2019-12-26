@@ -1,4 +1,5 @@
 from binascii import hexlify
+from typing import Optional
 
 from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
@@ -41,7 +42,7 @@ class NymHandler(PNymHandler):
                                        "{} not a valid role".
                                        format(role))
 
-    def dynamic_validation(self, request: Request):
+    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
         operation = request.operation
 

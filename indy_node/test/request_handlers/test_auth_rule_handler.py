@@ -53,13 +53,13 @@ def test_auth_rule_dynamic_validation_without_permission(auth_rule_request,
                                                          auth_rule_handler: AuthRuleHandler, creator):
     add_to_idr(auth_rule_handler.database_manager.idr_cache, creator, STEWARD)
     with pytest.raises(UnauthorizedClientRequest):
-        auth_rule_handler.dynamic_validation(auth_rule_request)
+        auth_rule_handler.dynamic_validation(auth_rule_request, 0)
 
 
 def test_auth_rule_dynamic_validation(auth_rule_request,
                                       auth_rule_handler: AuthRuleHandler, creator):
     add_to_idr(auth_rule_handler.database_manager.idr_cache, creator, TRUSTEE)
-    auth_rule_handler.dynamic_validation(auth_rule_request)
+    auth_rule_handler.dynamic_validation(auth_rule_request, 0)
 
 
 def test_update_state(auth_rule_request, auth_rule_handler: AuthRuleHandler):

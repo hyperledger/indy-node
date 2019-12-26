@@ -36,7 +36,7 @@ def test_revoc_reg_entry_dynamic_validation_without_req_def(revoc_reg_entry_hand
                                                             revoc_reg_entry_request):
     with pytest.raises(InvalidClientRequest,
                        match="There is no any REVOC_REG_DEF by path"):
-        revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request)
+        revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request, 0)
 
 
 def test_revoc_reg_entry_dynamic_validation_passes(revoc_reg_entry_handler,
@@ -48,7 +48,7 @@ def test_revoc_reg_entry_dynamic_validation_passes(revoc_reg_entry_handler,
     revoc_reg_entry_handler.state.set(revoc_reg_entry_request.operation[REVOC_REG_DEF_ID].encode(),
                                       encode_state_value({VALUE: {ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT}},
                                                          "seqNo", "txnTime"))
-    revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request)
+    revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request, 0)
 
 
 def test_revoc_reg_entry_dynamic_validation_fail_in_strategy(revoc_reg_entry_handler,
@@ -63,7 +63,7 @@ def test_revoc_reg_entry_dynamic_validation_fail_in_strategy(revoc_reg_entry_han
                                                 REVOKED: [1]}
     with pytest.raises(InvalidClientRequest, match="Can not have an index in both "
                                                    "'issued' and 'revoked' lists"):
-        revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request)
+        revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request, 0)
 
 
 def test_revoc_reg_entry_dynamic_validation_without_permission(revoc_reg_entry_handler,
@@ -79,7 +79,7 @@ def test_revoc_reg_entry_dynamic_validation_without_permission(revoc_reg_entry_h
     with pytest.raises(UnauthorizedClientRequest, match="1 TRUSTEE signature is required and needs to be owner OR "
                                                         "1 STEWARD signature is required and needs to be owner OR "
                                                         "1 ENDORSER signature is required and needs to be owner"):
-        revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request)
+        revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request, 0)
 
 
 def test_failed_update_state(revoc_reg_entry_handler, revoc_reg_entry_request):

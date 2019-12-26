@@ -17,6 +17,7 @@
     * [AUTH_RULES](#auth_rules)
     * [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)
     * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)    
+    * [TRANSACTION_AUTHOR_AGREEMENT_DISABLE](#transaction_author_agreement_disable)
     * [SET_CONTEXT](#set_context)
 
 * [Read Requests](#read-requests)
@@ -322,7 +323,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
                 
                 - `mechanism` (string): a mechanism used to accept the signature; must be present in the latest list of transaction author agreement acceptane mechanisms on the ledger  
                 
-                - `time` (integer as POSIX timestamp): transaction author agreement acceptance time
+                - `time` (integer as POSIX timestamp): transaction author agreement acceptance time. The time needs to be rounded to date to prevent correlation of different transactions which is possible when acceptance time is too precise.
                   
   
 - `txnMetadata` (dict):
@@ -1721,13 +1722,36 @@ A client will receive NACK for
 ### TRANSACTION_AUTHOR_AGREEMENT
 
 Setting (enabling/disabling) a transaction author agreement for the pool.
+
 If transaction author agreement is set, then all write requests to Domain ledger (transactions) must include additional metadata pointing to the latest transaction author agreement's digest which is signed by the transaction author.
-
-If no transaction author agreement is set, or it's disabled, then no additional metadata is required.
-
-Transaction author agreement can be disabled by setting an agreement with an empty text.
+If no transaction author agreement is set, or there are no active transaction author agreements, then no additional metadata is required.
 
 Each transaction author agreement has a unique version.
+If TRANSACTION_AUTHOR_AGREEMENT transaction is sent for already existing version it is considered an update 
+(for example of retirement timestamp), in this case text and ratification timestamp should be either absent or equal to original values.
+
+For any given version of transaction author agreement text and ratification timestamp cannot be changed once set. Ratification timestamp cannot be in future.
+In order to update Transaction Author Agreement `TRANSACTION_AUTHOR_AGREEMENT` transaction should be sent, 
+containing new version and new text of agreement. This makes it possible to use new Transaction Author Agreement, but doesn't disable previous one automatically.
+
+Individual transaction author agreements can be disabled by setting retirement timestamp using same transaction.
+Retirement timestamp can be in future, in this case deactivation of agreement won't happen immediately, it will be automatically deactivated at required time instead.
+
+It is possible to change existing retirement timestamp of agreement by sending a `TRANSACTION_AUTHOR_AGREEMENT` transaction with a new retirement timestamp.
+This may potentially re-enable already retired Agreement.
+Re-enabling retired Agreement needs to be considered as an exceptional case used mostly for fixing disabling by mistake or with incorrect retirement timestamp specified.
+ 
+It is possible to delete retirement timestamp of agreement by sending a `TRANSACTION_AUTHOR_AGREEMENT` transaction without a retirement timestamp or retirement timestamp set to `None`.
+This will either cancel retirement (if it hasn't occurred yet), or disable retirement of already retired transaction (re-enable the Agreement).
+Re-enabling retired Agreement needs to be considered as an exceptional case used mostly for fixing disabling by mistake or with incorrect retirement timestamp specified.
+
+Latest transaction author agreement cannot be disabled using this transaction.
+ 
+It is possible to disable all currently active transaction author agreements (including latest) using separate transaction [TRANSACTION_AUTHOR_AGREEMENT_DISABLE](#transaction_author_agreement_disable).
+This will immediately set current timestamp as retirement one for all not yet retired Transaction Author Agreements.
+
+It's not possible to re-enable an Agreement right after disabling all agreements because there is no active latest Agreement at this point.
+A new Agreement needs to be sent instead.
 
 At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_aml) must be set on the ledger before submitting TRANSACTION_AUTHOR_AGREEMENT txn.
 
@@ -1735,18 +1759,32 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
 
     Unique version of the transaction author agreement
 
+- `text` (string; optional):
 
-- `text` (string):
+    Transaction author agreement's text. Must be specified when creating a new Agreement.
+    Should be either omitted or equal to existing value in case of updating an existing Agreement (setting `retirement_ts`) .
 
-    Transaction author agreement's text
+- `ratification_ts` (integer as POSIX timestamp; optional):
 
-*Request Example*:
+    Timestamp of Transaction Author Agreement ratification date as POSIX timestamp. May have any precision up to seconds.
+    Must be specified when creating a new Agreement.
+    Should be either omitted or equal to existing value in case of updating an existing Agreement (setting `retirement_ts`).
+
+- `retirement_ts` (integer as POSIX timestamp; optional):
+
+    Timestamp of Transaction Author Agreement retirement date as POSIX timestamp. May have any precision up to seconds.
+    Can be any timestamp either in future or in the past (the Agreement will be retired immediately in the latter case).
+    Must be omitted when creating a new (latest) Agreement.
+    Should be used for updating (deactivating) non-latest Agreement on the ledger.
+    
+*New Agreement Request Example*:
 ```
 {
     'operation': {
         'type': '4'
         'version': '1.0',
         'text': 'Please read carefully before writing anything to the ledger',
+        'ratification_ts': 1514304094738044
     },
     
     'identifier': '21BPzYYrFzbuECcBV3M1FH',
@@ -1756,7 +1794,7 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
 }
 ```
 
-*Reply Example*:
+*New Agreement Reply Example*:
 ```
 {
     'op': 'REPLY', 
@@ -1770,10 +1808,69 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
                 "ver":1,
                 'version': '1.0',
                 'text': 'Please read carefully before writing anything to the ledger',
+                'ratification_ts': 1514304094738044
             },
             
             "metadata": {
                 "reqId":1514304094738044,
+                "from":"21BPzYYrFzbuECcBV3M1FH",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "21BPzYYrFzbuECcBV3M1FH",
+                "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
+            }]
+        },
+        
+        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
+        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+    }
+}
+```
+
+
+*Retire Agreement Request Example*:
+```
+{
+    'operation': {
+        'type': '4'
+        'version': '1.0',
+        'retirement_ts': 1515415195838044
+    },
+    
+    'identifier': '21BPzYYrFzbuECcBV3M1FH',
+    'reqId': 1514304094738066,
+    'protocolVersion': 2,
+    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+}
+```
+
+*Retire Agreement Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        "ver":1,
+        "txn": {
+            "type":4,
+            "protocolVersion":2,
+            
+            "data": {
+                "ver":1,
+                'version': '1.0',
+                'retirement_ts': 1515415195838044
+            },
+            
+            "metadata": {
+                "reqId":1514304094738066,
                 "from":"21BPzYYrFzbuECcBV3M1FH",
                 "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
                 "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
@@ -1862,6 +1959,62 @@ Each acceptance mechanisms list has a unique version.
                 },
                 "amlContext": "http://aml-context-descr"
             },
+            
+            "metadata": {
+                "reqId":1514304094738044,
+                "from":"21BPzYYrFzbuECcBV3M1FH",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "21BPzYYrFzbuECcBV3M1FH",
+                "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
+            }]
+        },
+        
+        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
+        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+    }
+}
+```
+
+### TRANSACTION_AUTHOR_AGREEMENT_DISABLE
+Immediately retires all active Transaction Author Agreements at once by setting current timestamp as a retirement one.
+
+It's not possible to re-enable an Agreement right after disabling all agreements because there is no active latest Agreement at this point.
+A new Agreement needs to be sent instead.
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '8'
+    },
+    'identifier': '21BPzYYrFzbuECcBV3M1FH',
+    'reqId': 1514304094738044,
+    'protocolVersion': 2,
+    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY',
+    'result': {
+        "ver":1,
+        "txn": {
+            "type":8,
+            "protocolVersion":2,
+            
+            "data": {},
             
             "metadata": {
                 "reqId":1514304094738044,
@@ -2815,6 +2968,8 @@ Gets a transaction author agreement.
 - Gets a transaction author agreement by its version if `version` is set.
 - Gets the latest (current) transaction author agreement at the given time (from ledger point of view) if `timestamp` is set.
 
+The result contains Agreement's version, text, digest, ratification timestamp and retirement timestamp if it's set.
+
 All input parameters are optional and mutually exclusive. 
 
 - `digest` (sha256 digest hex string):
@@ -2861,6 +3016,9 @@ All input parameters are optional and mutually exclusive.
         'data': {
             "version": "1.0",
             "text": "Please read carefully before writing anything to the ledger",
+            "digest": "ca11c39b44ce4ec8666a8f63efd5bacf98a8e26c4f8890c87f629f126a3b74f3"
+            "ratification_ts": 1514304094738044,
+            "retirement_ts": 1515415195838044
         },
 
         'state_proof': {
