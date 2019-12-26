@@ -307,10 +307,10 @@ def sign_and_validate(looper, node, action_id, signer, op, did_ledger=None):
     request = Request(**json.loads(s_req))
 
     if auth_check(action_id, signer, op, did_ledger):
-        node.write_manager.dynamic_validation(request)
+        node.write_manager.dynamic_validation(request, 0)
     else:
         with pytest.raises(UnauthorizedClientRequest):
-            node.write_manager.dynamic_validation(request)
+            node.write_manager.dynamic_validation(request, 0)
 
 
 # TESTS

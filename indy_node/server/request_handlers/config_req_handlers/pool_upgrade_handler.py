@@ -1,3 +1,5 @@
+from typing import Optional
+
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 
 from indy_common.config_util import getConfig
@@ -46,7 +48,7 @@ class PoolUpgradeHandler(WriteRequestHandler):
                                            "{} not a valid schedule since {}".
                                            format(schedule, msg))
 
-    def dynamic_validation(self, request: Request):
+    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
         status = '*'
