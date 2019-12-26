@@ -12,7 +12,7 @@ def test_validation_cred_def_not_present(build_revoc_def_by_default,
     node = create_node_and_not_start
     req = build_revoc_def_by_default
     with pytest.raises(InvalidClientRequest, match="There is no any CRED_DEF"):
-        node.write_manager.dynamic_validation(Request(**req))
+        node.write_manager.dynamic_validation(Request(**req), 0)
 
 
 def test_invalid_cred_def_id_format(build_revoc_def_by_default,
