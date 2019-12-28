@@ -1,5 +1,7 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.12.1](#1121)
+
 * [1.12.0](#1120)
 
 * [1.11.0](#1110)
@@ -53,6 +55,61 @@
 #### Disclosure
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
+
+## 1.12.1
+### Release date: Dec 28th, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.12.1 |
+| indy-node | 1.12.1 |
+| sovrin | 1.1.66 |
+
+### Additional Information:
+
+**Use forced simultaneous pool upgrade.**
+
+**Please be careful with demoting/promoting/adding nodes (see Known Issues for details).**
+
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
+### Major Changes
+- Multiple active TAAs implementation
+- Stability fixes
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Sovrin upgrade fails due to incorrect package dependencies | | [INDY-2303](https://jira.hyperledger.org/browse/INDY-2303) |
+| GET_CRED_DEF for a Schema with a lot of attributes may fail with Timeout | | [INDY-2306](https://jira.hyperledger.org/browse/INDY-2306) |
+| Only Trustee or Node owner can be the author of NODE demotion txn regardless of endorsement or auth constraint rules set | | [INDY-2024](https://jira.hyperledger.org/browse/INDY-2024) |
+
+#### Changes and Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Allow multiple active TAAs | | [INDY-2302](https://jira.hyperledger.org/browse/INDY-2302) |
+| Allow multiple active TAAs: Debug | | [INDY-2316](https://jira.hyperledger.org/browse/INDY-2316) |
+| Improve TAA acceptance date validation | | [INDY-2313](https://jira.hyperledger.org/browse/INDY-2313) |
+| Get TAA should return the hash | | [INDY-2297](https://jira.hyperledger.org/browse/INDY-2297) |
+| Auth_Rules documentation should explain how endorsers work | | [INDY-2304](https://jira.hyperledger.org/browse/INDY-2304) |
+| Document PBFT view change protocol | | [INDY-2138](https://jira.hyperledger.org/browse/INDY-2138) |
+| Backups should start ordering in new view only after master instance ordered till prepared cert from NewView | | [INDY-2299](https://jira.hyperledger.org/browse/INDY-2299) |
+| Get rid of transport batches | | [INDY-2294](https://jira.hyperledger.org/browse/INDY-2294) |
+| Enable zeroMQ auto-reconnection | | [INDY-2289](https://jira.hyperledger.org/browse/INDY-2289) |
+| Improve simulation tests to include NODE txns | | [INDY-2286](https://jira.hyperledger.org/browse/INDY-2286) |
+| Improve BLS signature performance | | [INDY-2280](https://jira.hyperledger.org/browse/INDY-2280) |
+| Improve simulation tests to include processing of InstanceChanges | | [INDY-2263](https://jira.hyperledger.org/browse/INDY-2263) |
+
+#### Known Issues
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| A node lagging behind may not be able to finish view change if nodes have been added/demoted | | [INDY-2308](https://jira.hyperledger.org/browse/INDY-2308) |
+| Up to F Nodes may not be able to finish View Change if there are uncommitted NODE txns | | [INDY-2319](https://jira.hyperledger.org/browse/INDY-2319) |
+| A node may start re-sending messages in a loop in case of connection issues | | [INDY-2318](https://jira.hyperledger.org/browse/INDY-2318) |
+| A lagging node may use wrong N and F quorum values and never finish view change if there are NODE txns being processed | | [INDY-2320](https://jira.hyperledger.org/browse/INDY-2320) |
 
 ## 1.12.0
 ### Release date: Nov 29th, 2019
