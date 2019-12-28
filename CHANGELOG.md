@@ -64,7 +64,7 @@ Although every attempt has been made to make this information as accurate as pos
 | --- | --- |
 | indy-plenum | 1.12.1 |
 | indy-node | 1.12.1 |
-| sovrin | 1.1.66 |
+| sovrin | 1.1.67 |
 
 ### Additional Information:
 
