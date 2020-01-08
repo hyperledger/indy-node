@@ -44,7 +44,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
     FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, RS_TYPE, CONTEXT_TYPE, \
-    META
+    META, TAG_LIMIT_SIZE
 from indy_common.version import SchemaVersion, ContextVersion
 
 
@@ -155,26 +155,26 @@ class RevocDefValueField(MessageValidator):
                                             ISSUANCE_ON_DEMAND))),
         (MAX_CRED_NUM, IntegerField()),
         (PUBLIC_KEYS, AnyMapField()),
-        (TAILS_HASH, NonEmptyStringField()),
-        (TAILS_LOCATION, NonEmptyStringField()),
+        (TAILS_HASH, LimitedLengthStringField()),
+        (TAILS_LOCATION, LimitedLengthStringField()),
     )
 
 
 class ClientRevocDefSubmitField(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(REVOC_REG_DEF)),
-        (ID, NonEmptyStringField()),
-        (REVOC_TYPE, NonEmptyStringField()),
-        (TAG, NonEmptyStringField()),
-        (CRED_DEF_ID, NonEmptyStringField()),
+        (ID, LimitedLengthStringField()),
+        (REVOC_TYPE, LimitedLengthStringField()),
+        (TAG, LimitedLengthStringField(max_length=TAG_LIMIT_SIZE)),
+        (CRED_DEF_ID, LimitedLengthStringField()),
         (VALUE, RevocDefValueField())
     )
 
 
 class RevocRegEntryValueField(MessageValidator):
     schema = (
-        (PREV_ACCUM, NonEmptyStringField(optional=True)),
-        (ACCUM, NonEmptyStringField()),
+        (PREV_ACCUM, LimitedLengthStringField(optional=True)),
+        (ACCUM, LimitedLengthStringField()),
         (ISSUED, IterableField(inner_field_type=IntegerField(), optional=True)),
         (REVOKED, IterableField(inner_field_type=IntegerField(), optional=True))
     )
@@ -183,8 +183,8 @@ class RevocRegEntryValueField(MessageValidator):
 class ClientRevocRegEntrySubmitField(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(REVOC_REG_ENTRY)),
-        (REVOC_REG_DEF_ID, NonEmptyStringField()),
-        (REVOC_TYPE, NonEmptyStringField()),
+        (REVOC_REG_DEF_ID, LimitedLengthStringField()),
+        (REVOC_TYPE, LimitedLengthStringField()),
         (VALUE, RevocRegEntryValueField())
     )
 

@@ -1,21 +1,21 @@
 from collections import OrderedDict
 from indy_common.types import RevocRegEntryValueField, ClientRevocRegEntrySubmitField
-from plenum.common.messages.fields import NonEmptyStringField, IterableField, ConstantField
+from plenum.common.messages.fields import NonEmptyStringField, IterableField, ConstantField, LimitedLengthStringField
 from indy_common.constants import REVOC_REG_DEF_ID, REVOC_TYPE, VALUE, PREV_ACCUM, \
     ACCUM, ISSUED, REVOKED, TXN_TYPE
 
 
 EXPECTED_REVOC_DEF_ENTRY_VALUE_FIELDS = OrderedDict([
-    (PREV_ACCUM, NonEmptyStringField),
-    (ACCUM, NonEmptyStringField),
+    (PREV_ACCUM, LimitedLengthStringField),
+    (ACCUM, LimitedLengthStringField),
     (ISSUED, IterableField),
     (REVOKED, IterableField),
 ])
 
 EXPECTED_REVOC_DEF_ENTRY_SUBMIT_FIELDS = OrderedDict([
     (TXN_TYPE, ConstantField),
-    (REVOC_REG_DEF_ID, NonEmptyStringField),
-    (REVOC_TYPE, NonEmptyStringField),
+    (REVOC_REG_DEF_ID, LimitedLengthStringField),
+    (REVOC_TYPE, LimitedLengthStringField),
     (VALUE, RevocRegEntryValueField)
 ])
 
