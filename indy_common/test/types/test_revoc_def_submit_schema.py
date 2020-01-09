@@ -10,8 +10,8 @@ EXPECTED_REVOC_DEF_VALUE_FIELDS = OrderedDict([
     (ISSUANCE_TYPE, ChooseField),
     (MAX_CRED_NUM, IntegerField),
     (PUBLIC_KEYS, AnyMapField),
-    (TAILS_HASH, LimitedLengthStringField),
-    (TAILS_LOCATION, LimitedLengthStringField),
+    (TAILS_HASH, NonEmptyStringField),
+    (TAILS_LOCATION, NonEmptyStringField),
 ])
 
 EXPECTED_REVOC_DEF_SUBMIT_FIELDS = OrderedDict([

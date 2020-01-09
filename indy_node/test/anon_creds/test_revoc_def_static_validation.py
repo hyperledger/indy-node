@@ -4,7 +4,7 @@ import random
 
 import pytest
 
-from indy_common.constants import REVOC_TYPE, ID, CRED_DEF_ID, TAG, TAG_LIMIT_SIZE, TAILS_HASH, TAILS_LOCATION, VALUE
+from indy_common.constants import REVOC_TYPE, TAG, TAG_LIMIT_SIZE
 from plenum.common.constants import GENERAL_LIMIT_SIZE, REQNACK, REJECT
 from plenum.common.types import OPERATION
 from plenum.common.util import randomString
@@ -17,7 +17,7 @@ def _lt_eq_gt(request):
     return request.param
 
 
-@pytest.fixture(scope="module", params=[REVOC_TYPE, TAG, TAILS_HASH, TAILS_LOCATION])
+@pytest.fixture(scope="module", params=[REVOC_TYPE, TAG])
 def _res_field_size(request, _lt_eq_gt):
     _field = request.param
     _expected = REQNACK if _lt_eq_gt == 'gt' else REJECT
@@ -38,10 +38,7 @@ def revoc_def_req(looper,
     _expected, _field, _size = _res_field_size
     _req = copy.deepcopy(build_revoc_def_by_default)
 
-    if _field in (TAILS_HASH, TAILS_LOCATION):
-        _req[OPERATION][VALUE][_field] = randomString(_size)
-    else:
-        _req[OPERATION][_field] = randomString(_size)
+    _req[OPERATION][_field] = randomString(_size)
 
     return _expected, sdk_sign_request_from_dict(looper, sdk_wallet_steward, _req['operation'])
 

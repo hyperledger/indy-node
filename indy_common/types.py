@@ -155,8 +155,8 @@ class RevocDefValueField(MessageValidator):
                                             ISSUANCE_ON_DEMAND))),
         (MAX_CRED_NUM, IntegerField()),
         (PUBLIC_KEYS, AnyMapField()),
-        (TAILS_HASH, LimitedLengthStringField()),
-        (TAILS_LOCATION, LimitedLengthStringField()),
+        (TAILS_HASH, NonEmptyStringField()),
+        (TAILS_LOCATION, NonEmptyStringField()),
     )
 
 
