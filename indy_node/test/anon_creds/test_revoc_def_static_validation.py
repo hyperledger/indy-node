@@ -4,7 +4,7 @@ import random
 
 import pytest
 
-from indy_common.constants import REVOC_TYPE, ID, CRED_DEF_ID, TAG, TAG_LIMIT_SIZE, TAILS_HASH, TAILS_LOCATION, VALUE,
+from indy_common.constants import REVOC_TYPE, ID, CRED_DEF_ID, TAG, TAG_LIMIT_SIZE, TAILS_HASH, TAILS_LOCATION, VALUE
 from plenum.common.constants import GENERAL_LIMIT_SIZE, REQNACK, REJECT
 from plenum.common.types import OPERATION
 from plenum.common.util import randomString
@@ -51,12 +51,12 @@ def revoc_def_req(looper,
     return _expected, sdk_sign_request_from_dict(looper, sdk_wallet_steward, _req['operation'])
 
 
-def test_revoc_def_static_validation_on_field_size(revoc_req,
+def test_revoc_def_static_validation_on_field_size(revoc_def_req,
                                                    looper,
                                                    txnPoolNodeSet,
                                                    sdk_pool_handle,
                                                    sdk_wallet_steward):
-    _expected, _req = revoc_req
+    _expected, _req = revoc_def_req
     results = sdk_send_signed_requests(sdk_pool_handle, [json.dumps(_req)])
     _reply = sdk_get_replies(looper, results)[0][1]
     assert _expected == _reply['op']
