@@ -6,15 +6,15 @@ from indy_common.constants import REVOC_REG_DEF_ID, REVOC_TYPE, VALUE, PREV_ACCU
 
 
 EXPECTED_REVOC_DEF_ENTRY_VALUE_FIELDS = OrderedDict([
-    (PREV_ACCUM, LimitedLengthStringField),
-    (ACCUM, LimitedLengthStringField),
+    (PREV_ACCUM, NonEmptyStringField),
+    (ACCUM, NonEmptyStringField),
     (ISSUED, IterableField),
     (REVOKED, IterableField),
 ])
 
 EXPECTED_REVOC_DEF_ENTRY_SUBMIT_FIELDS = OrderedDict([
     (TXN_TYPE, ConstantField),
-    (REVOC_REG_DEF_ID, LimitedLengthStringField),
+    (REVOC_REG_DEF_ID, NonEmptyStringField),
     (REVOC_TYPE, LimitedLengthStringField),
     (VALUE, RevocRegEntryValueField)
 ])

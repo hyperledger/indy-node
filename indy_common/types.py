@@ -163,18 +163,18 @@ class RevocDefValueField(MessageValidator):
 class ClientRevocDefSubmitField(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(REVOC_REG_DEF)),
-        (ID, LimitedLengthStringField()),
+        (ID, NonEmptyStringField()),
         (REVOC_TYPE, LimitedLengthStringField()),
         (TAG, LimitedLengthStringField(max_length=TAG_LIMIT_SIZE)),
-        (CRED_DEF_ID, LimitedLengthStringField()),
+        (CRED_DEF_ID, NonEmptyStringField()),
         (VALUE, RevocDefValueField())
     )
 
 
 class RevocRegEntryValueField(MessageValidator):
     schema = (
-        (PREV_ACCUM, LimitedLengthStringField(optional=True)),
-        (ACCUM, LimitedLengthStringField()),
+        (PREV_ACCUM, NonEmptyStringField(optional=True)),
+        (ACCUM, NonEmptyStringField()),
         (ISSUED, IterableField(inner_field_type=IntegerField(), optional=True)),
         (REVOKED, IterableField(inner_field_type=IntegerField(), optional=True))
     )
@@ -183,7 +183,7 @@ class RevocRegEntryValueField(MessageValidator):
 class ClientRevocRegEntrySubmitField(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(REVOC_REG_ENTRY)),
-        (REVOC_REG_DEF_ID, LimitedLengthStringField()),
+        (REVOC_REG_DEF_ID, NonEmptyStringField()),
         (REVOC_TYPE, LimitedLengthStringField()),
         (VALUE, RevocRegEntryValueField())
     )

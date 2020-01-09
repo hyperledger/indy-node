@@ -16,10 +16,10 @@ EXPECTED_REVOC_DEF_VALUE_FIELDS = OrderedDict([
 
 EXPECTED_REVOC_DEF_SUBMIT_FIELDS = OrderedDict([
     (TXN_TYPE, ConstantField),
-    (ID, LimitedLengthStringField),
+    (ID, NonEmptyStringField),
     (REVOC_TYPE, LimitedLengthStringField),
     (TAG, LimitedLengthStringField),
-    (CRED_DEF_ID, LimitedLengthStringField),
+    (CRED_DEF_ID, NonEmptyStringField),
     (VALUE, RevocDefValueField)
 ])
 
