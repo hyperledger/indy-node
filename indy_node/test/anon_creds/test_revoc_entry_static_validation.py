@@ -31,7 +31,7 @@ def _entry_skeleton():
     }
 
 
-@pytest.fixture(scope="module", params=[REVOC_TYPE, REVOC_REG_DEF_ID, PREV_ACCUM, ACCUM])
+@pytest.fixture(scope="module", params=[REVOC_TYPE])
 def _res_field_size(request, _lt_eq_gt):
     _field = request.param
     _expected = REQNACK if _lt_eq_gt == 'gt' else REJECT
@@ -54,10 +54,7 @@ def revoc_entry(looper,
     _req = copy.deepcopy(_entry_skeleton)
     _value = randomString(_size)
 
-    if _field in (PREV_ACCUM, ACCUM):
-        _req[VALUE][_field] = _value
-    else:
-        _req[_field] = _value
+    _req[_field] = _value
 
     return _expected, sdk_sign_request_from_dict(looper, sdk_wallet_steward, _req)
 

@@ -17,7 +17,7 @@ def _lt_eq_gt(request):
     return request.param
 
 
-@pytest.fixture(scope="module", params=[ID, REVOC_TYPE, TAG, CRED_DEF_ID, TAILS_HASH, TAILS_LOCATION])
+@pytest.fixture(scope="module", params=[REVOC_TYPE, TAG, TAILS_HASH, TAILS_LOCATION])
 def _res_field_size(request, _lt_eq_gt):
     _field = request.param
     _expected = REQNACK if _lt_eq_gt == 'gt' else REJECT
@@ -37,16 +37,11 @@ def revoc_def_req(looper,
                   _res_field_size):
     _expected, _field, _size = _res_field_size
     _req = copy.deepcopy(build_revoc_def_by_default)
-    _specific_value = ''
-
-    if _field == CRED_DEF_ID:
-        _orig_value = _req[OPERATION][CRED_DEF_ID]
-        _specific_value = _orig_value + randomString(_size - len(_orig_value))
 
     if _field in (TAILS_HASH, TAILS_LOCATION):
         _req[OPERATION][VALUE][_field] = randomString(_size)
     else:
-        _req[OPERATION][_field] = _specific_value if _specific_value else randomString(_size)
+        _req[OPERATION][_field] = randomString(_size)
 
     return _expected, sdk_sign_request_from_dict(looper, sdk_wallet_steward, _req['operation'])
 
