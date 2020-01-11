@@ -118,12 +118,12 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
      Identifier of the transaction author as base58-encoded string
      for 16 or 32 bit DID value.
  
-     For read requests this is read request submitter. It can be any DID (not necessary present on the ledger as a NYM txn)
+     For read requests, the identifier is the submitter of the read request. It can be any DID (not necessary present on the ledger as a NYM txn)
  
-     For write requests this is transaction author.
-     It may differ from `endorser` field who submits the transaction on behalf of `identifier`. If `endorser` is absent,
-     then the author (`identifier`) plays the role of endorser and submits request by his own.
-     It also may differ from `dest` field for some of requests (for example NYM), where `dest` is a 
+     For write requests, the identifier is the transaction author.
+     It may differ from the `endorser` field who submits the transaction on behalf of an `identifier`. If `endorser` is absent,
+     then the author (`identifier`) plays the role of the endorser and submits a request on his own.
+     It also may differ from `dest` field for some of the requests (for example NYM), where `dest` is a 
      target identifier (for example, a newly created DID identifier).
      
      *Example*:
