@@ -1,3 +1,5 @@
+import pytest
+
 from plenum.test.test_node import ensureElectionsDone
 
 from plenum.common.util import randomString, hexToFriendly
@@ -35,6 +37,7 @@ def _wait_view_change_finish(looper, nodes, view_no):
     ensureElectionsDone(looper=looper, nodes=nodes)
 
 
+@pytest.mark.skip()
 def testDemoteNodeWhichWasNeverActive(looper, nodeSet, sdk_pool_handle,
                                       sdk_wallet_trustee, tdir, tconf,
                                       allPluginsPath):
