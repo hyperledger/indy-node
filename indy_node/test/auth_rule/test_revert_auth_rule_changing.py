@@ -18,6 +18,7 @@ from plenum.test.view_change.helper import ensure_view_change, ensure_view_chang
 from stp_core.loop.eventually import eventually
 
 
+@pytest.mark.skip()
 def test_revert_auth_rule_changing(looper,
                                    txnPoolNodeSet,
                                    sdk_wallet_trustee,

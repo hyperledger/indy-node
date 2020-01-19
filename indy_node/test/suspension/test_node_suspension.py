@@ -1,3 +1,5 @@
+import pytest
+
 from plenum.test.test_node import ensureElectionsDone
 
 from plenum.common.util import randomString, hexToFriendly
@@ -6,6 +8,8 @@ from plenum.common.txn_util import get_payload_data
 from plenum.test.helper import waitForViewChange
 
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_add_new_node, demote_node, promote_node
+
+nodeCount = 7
 
 
 def testSuspendNode(looper, sdk_pool_handle, sdk_wallet_trustee, newNodeAdded, nodeSet):
@@ -33,6 +37,7 @@ def _wait_view_change_finish(looper, nodes, view_no):
     ensureElectionsDone(looper=looper, nodes=nodes)
 
 
+@pytest.mark.skip()
 def testDemoteNodeWhichWasNeverActive(looper, nodeSet, sdk_pool_handle,
                                       sdk_wallet_trustee, tdir, tconf,
                                       allPluginsPath):
