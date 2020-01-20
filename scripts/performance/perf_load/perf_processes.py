@@ -14,8 +14,10 @@ from datetime import datetime
 import yaml
 import logging
 import shutil
+import random
+import testinfra
 
-from indy import pool
+from indy import pool, wallet, did, ledger
 
 import perf_load
 from perf_load.perf_client_msgs import ClientReady, ClientStop, ClientSend
@@ -100,6 +102,9 @@ parser.add_argument('--taa_text', default="test transaction author agreement tex
 
 parser.add_argument('--taa_version', default="test_taa", type=str, required=False,
                     help='Transaction author agreement version')
+
+parser.add_argument('--demote_promote', default=0, type=int, required=False,
+                    help='Enable real pool nodes\' demotions and promotions with defined interval (0 means never)')
 
 
 class LoadRunner:
@@ -448,6 +453,66 @@ def check_genesis(gen_path):
         shutil.rmtree(dir_to_dlt, ignore_errors=True)
 
 
+def demote_promote(gen_path, interval):
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(pool.set_protocol_version(2))
+    pool_cfg = json.dumps({"genesis_txn": gen_path})
+    pool_name = "pool_{}".format(random_string(24))
+    loop.run_until_complete(pool.create_pool_ledger_config(pool_name, pool_cfg))
+    pool_handle = loop.run_until_complete(pool.open_pool_ledger(pool_name, None))
+    wallet_cfg = json.dumps({"id": "wallet_{}".format(random_string(24))})
+    wallet_creds = json.dumps({"key": ""})
+    loop.run_until_complete(wallet.create_wallet(wallet_cfg, wallet_creds))
+    wallet_handle = loop.run_until_complete(wallet.open_wallet(wallet_cfg, wallet_creds))
+
+    # read genesis to get aliases and dests
+    with open(dict_args["genesis_path"], 'r') as f:
+        data = f.read()
+        jsons = [json.loads(x) for x in data.split('\n')]
+        aliases = [_json['txn']['data']['data']['alias'] for _json in jsons]
+        dests = [_json['txn']['data']['dest'] for _json in jsons]
+
+    # create stewards
+    names = ['Steward{}'.format(i) for i in range(1, len(jsons) + 1)]
+    seeds = ['{:0>32}'.format(name) for name in names]
+    dids = []
+    for seed in seeds:
+        steward_did, _ = loop.run_until_complete(did.create_and_store_my_did(wallet_handle, json.dumps({'seed': seed})))
+        dids.append(steward_did)
+
+    # put all into list of dicts
+    pool_data = [
+        {'node_alias': node_alias,
+         'steward_did': steward_did,
+         'node_dest': node_dest}
+        for node_alias, steward_did, node_dest in zip(aliases, dids, dests)
+    ]
+
+    async def _demote_promote():
+        # pick random node from pool to demote/promote it
+        req_data = random.choice(pool_data)
+
+        _data = {
+            'alias': req_data['node_alias'],
+            'services': []
+        }
+        req = await ledger.build_node_request(req_data['steward_did'], req_data['node_dest'], json.dumps(_data))
+        await ledger.sign_and_submit_request(pool_handle, wallet_handle, req_data['steward_did'], req)
+
+        # wait for an interval
+        await asyncio.sleep(interval)
+
+        _data['services'] = ['VALIDATOR']
+        req = await ledger.build_node_request(req_data['steward_did'], req_data['node_dest'], json.dumps(_data))
+        await ledger.sign_and_submit_request(pool_handle, wallet_handle, req_data['steward_did'], req)
+        # restart promoted node
+        host = testinfra.get_host('ssh://persistent_node' + req_data['node_alias'][4:])
+        host.run('systemctl restart indy-node')
+
+    while True:
+        loop.run_until_complete(_demote_promote())
+
+
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')
     args, extra = parser.parse_known_args()
@@ -488,6 +553,9 @@ if __name__ == '__main__':
 
     if dict_args["test_conn"]:
         exit(0)
+
+    if dict_args["demote_promote"] > 0:
+        demote_promote(dict_args["genesis_path"], dict_args["demote_promote"])
 
     tr = LoadRunner(dict_args["clients"], dict_args["genesis_path"], dict_args["seed"], dict_args["req_kind"],
                     dict_args["batch_size"], dict_args["refresh_rate"], dict_args["buff_req"], out_dir,
