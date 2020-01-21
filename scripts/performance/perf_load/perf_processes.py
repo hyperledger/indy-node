@@ -508,7 +508,7 @@ def demote_promote(gen_path, interval):
             await ledger.sign_and_submit_request(pool_handle, wallet_handle, req_data['steward_did'], req)
             # restart promoted node
             host = testinfra.get_host('ssh://persistent_node' + req_data['node_alias'][4:])
-            host.run('systemctl restart indy-node')
+            host.run('sudo systemctl restart indy-node')
 
     # https://stackoverflow.com/questions/37512182/how-can-i-periodically-execute-a-function-with-asyncio
     task = loop.create_task(_demote_promote_periodic())
