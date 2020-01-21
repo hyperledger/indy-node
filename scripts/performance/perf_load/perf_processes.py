@@ -512,7 +512,7 @@ def demote_promote(gen_path, interval):
 
     # https://stackoverflow.com/questions/37512182/how-can-i-periodically-execute-a-function-with-asyncio
     task = loop.create_task(_demote_promote_periodic())
-    loop.call_later(interval*5, task.cancel)
+    loop.call_later(interval * 1000, task.cancel)  # define delay before looping task stopping
 
     try:
         loop.run_until_complete(task)
