@@ -488,29 +488,36 @@ def demote_promote(gen_path, interval):
         for node_alias, steward_did, node_dest in zip(aliases, dids, dests)
     ]
 
-    async def _demote_promote():
-        # pick random node from pool to demote/promote it
-        req_data = random.choice(pool_data)
+    async def _demote_promote_periodic():
+        while True:
+            # pick random node from pool to demote/promote it
+            req_data = random.choice(pool_data)
 
-        _data = {
-            'alias': req_data['node_alias'],
-            'services': []
-        }
-        req = await ledger.build_node_request(req_data['steward_did'], req_data['node_dest'], json.dumps(_data))
-        await ledger.sign_and_submit_request(pool_handle, wallet_handle, req_data['steward_did'], req)
+            _data = {
+                'alias': req_data['node_alias'],
+                'services': []
+            }
+            req = await ledger.build_node_request(req_data['steward_did'], req_data['node_dest'], json.dumps(_data))
+            await ledger.sign_and_submit_request(pool_handle, wallet_handle, req_data['steward_did'], req)
 
-        # wait for an interval
-        await asyncio.sleep(interval)
+            # wait for an interval
+            await asyncio.sleep(interval)
 
-        _data['services'] = ['VALIDATOR']
-        req = await ledger.build_node_request(req_data['steward_did'], req_data['node_dest'], json.dumps(_data))
-        await ledger.sign_and_submit_request(pool_handle, wallet_handle, req_data['steward_did'], req)
-        # restart promoted node
-        host = testinfra.get_host('ssh://persistent_node' + req_data['node_alias'][4:])
-        host.run('systemctl restart indy-node')
+            _data['services'] = ['VALIDATOR']
+            req = await ledger.build_node_request(req_data['steward_did'], req_data['node_dest'], json.dumps(_data))
+            await ledger.sign_and_submit_request(pool_handle, wallet_handle, req_data['steward_did'], req)
+            # restart promoted node
+            host = testinfra.get_host('ssh://persistent_node' + req_data['node_alias'][4:])
+            host.run('systemctl restart indy-node')
 
-    while True:
-        loop.run_until_complete(_demote_promote())
+    # https://stackoverflow.com/questions/37512182/how-can-i-periodically-execute-a-function-with-asyncio
+    task = loop.create_task(_demote_promote_periodic())
+    loop.call_later(interval*5, task.cancel)
+
+    try:
+        loop.run_until_complete(task)
+    except asyncio.CancelledError:
+        pass
 
 
 if __name__ == '__main__':
