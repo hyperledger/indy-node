@@ -24,6 +24,7 @@ from perf_load.perf_gen_req_parser import ReqTypeParser
 from perf_load.perf_client import LoadClient
 from perf_load.perf_client_runner import ClientRunner
 from perf_load.perf_client_fees import LoadClientFees
+from perf_load.perf_utils import PoolRegistry
 
 
 parser = argparse.ArgumentParser(description='The script generates bunch of txns for the pool with Indy SDK. '
@@ -101,7 +102,7 @@ parser.add_argument('--taa_text', default="test transaction author agreement tex
 parser.add_argument('--taa_version', default="test_taa", type=str, required=False,
                     help='Transaction author agreement version')
 
-parser.add_argument('--shift', default=0, type=int, required=False,
+parser.add_argument('--promotion_shift', default=0, type=int, required=False,
                     help='Shift between demotions and promotions')
 
 
@@ -465,6 +466,8 @@ if __name__ == '__main__':
     args, extra = parser.parse_known_args()
     dict_args = vars(args)
 
+    pool_registry = PoolRegistry(dict_args["genesis_path"], dict_args["promotion_shift"])
+
     if len(extra) > 1:
         raise argparse.ArgumentTypeError("Only path to config file expected, but found extra arguments: {}".format(extra))
 
@@ -505,7 +508,7 @@ if __name__ == '__main__':
                     dict_args["batch_size"], dict_args["refresh_rate"], dict_args["buff_req"], out_dir,
                     dict_args["val_sep"], dict_args["wallet_key"], dict_args["mode"], dict_args["pool_config"],
                     dict_args["sync_mode"], dict_args["load_rate"], dict_args["out_file"], dict_args["load_time"],
-                    dict_args["taa_text"], dict_args["taa_version"], dict_args["shift"], dict_args["ext_set"],
+                    dict_args["taa_text"], dict_args["taa_version"], dict_args["promotion_shift"], dict_args["ext_set"],
                     client_runner=LoadClient.run if not dict_args["ext_set"] else LoadClientFees.run,
                     log_lvl=log_lvl, short_stat=dict_args["short_stat"])
     tr.load_run()

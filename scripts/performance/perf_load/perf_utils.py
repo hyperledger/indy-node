@@ -133,20 +133,26 @@ def gen_input_output(addr_txos, val):
     return None, None, None
 
 
-class PoolRegistry:
+class Singleton(type):
 
-    # instantiate it once
-    def __new__(cls, genesis_path):
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(PoolRegistry, cls).__new__(cls)
-        return cls.instance
+    _instances = {}
 
-    def __init__(self, genesis_path):
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class PoolRegistry(metaclass=Singleton):  # instantiate it once
+
+    def __init__(self, genesis_path=None, promotion_shift=None):
+        self._genesis_path = genesis_path
+        self._promotion_shift = promotion_shift
         self._pool_data = None
         self._current_node = None
 
         # read genesis to get aliases and dests
-        with open(genesis_path, 'r') as f:
+        with open(self._genesis_path, 'r') as f:
             data = f.read()
             jsons = [json.loads(x) for x in data.split('\n')]
             aliases = [_json['txn']['data']['data']['alias'] for _json in jsons]
@@ -169,3 +175,7 @@ class PoolRegistry:
     @property
     def current_node(self):
         return self._current_node if self._current_node else random.choice(self._pool_data)
+
+    @property
+    def promotion_shift(self):
+        return self._promotion_shift

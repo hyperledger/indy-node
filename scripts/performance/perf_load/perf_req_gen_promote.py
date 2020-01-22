@@ -5,7 +5,6 @@ import testinfra
 
 from perf_load.perf_req_gen import RequestGenerator
 from perf_load.perf_utils import PoolRegistry
-from perf_load.perf_processes import tr
 
 
 class RGPromoteNode(RequestGenerator):
@@ -13,15 +12,16 @@ class RGPromoteNode(RequestGenerator):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._pool_registry = PoolRegistry()
 
     def _rand_data(self):
         # pick current node from PoolRegistry to promote it
-        result = PoolRegistry(tr.genesis_path).current_node
+        result = self._pool_registry.current_node
         return result
 
     async def _gen_req(self, submitter_did, req_data):
         # promotion shift from demotions
-        await asyncio.sleep(tr.promotion_shift)
+        await asyncio.sleep(self._pool_registry.promotion_shift)
         data = {
             'alias': req_data['node_alias'],
             'services': ['VALIDATOR']

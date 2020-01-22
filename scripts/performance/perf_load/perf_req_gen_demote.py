@@ -3,7 +3,6 @@ import json
 
 from perf_load.perf_req_gen import RequestGenerator
 from perf_load.perf_utils import PoolRegistry
-from perf_load.perf_processes import tr
 
 
 class RGDemoteNode(RequestGenerator):
@@ -11,10 +10,11 @@ class RGDemoteNode(RequestGenerator):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._pool_registry = PoolRegistry()
 
     def _rand_data(self):
         # pick random node from PoolRegistry to demote it
-        result = PoolRegistry(tr.genesis_path).get_node()
+        result = self._pool_registry.get_node()
         return result
 
     async def _gen_req(self, submitter_did, req_data):
