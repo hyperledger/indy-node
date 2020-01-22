@@ -5,7 +5,7 @@ from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.constants import ROLE
 from indy_node.test.auth_rule.test_auth_rule_transaction import sdk_send_and_check_auth_rule_request
 from indy_node.test.auth_rule.test_check_rule_for_add_action_changing import create_verkey_did
-from plenum.common.constants import STEWARD, NYM, STEWARD_STRING, PREPARE, COMMIT
+from plenum.common.constants import STEWARD, NYM, STEWARD_STRING, PREPARE, COMMIT, DOMAIN_LEDGER_ID, CONFIG_LEDGER_ID
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.startable import Mode
 from plenum.test import waits
@@ -13,12 +13,10 @@ from plenum.test.delayers import cDelay, pDelay, msg_rep_delay
 from plenum.test.helper import assertExp
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.stasher import delay_rules_without_processing
-from plenum.test.test_node import ensureElectionsDone
-from plenum.test.view_change.helper import ensure_view_change, ensure_view_change_complete
+from plenum.test.view_change.helper import ensure_view_change_complete
 from stp_core.loop.eventually import eventually
 
 
-@pytest.mark.skip()
 def test_revert_auth_rule_changing(looper,
                                    txnPoolNodeSet,
                                    sdk_wallet_trustee,
@@ -62,8 +60,18 @@ def test_revert_auth_rule_changing(looper,
         Catchup should revert config_state and discard rule changing
         """
         for n in txnPoolNodeSet:
+            n.start_catchup()
+        # clear all request queues to not re-send the AuthRule txns again
+        for n in txnPoolNodeSet:
             n.requests.clear()
-        ensure_view_change_complete(looper, txnPoolNodeSet)
+            for r in n.replicas.values():
+                r._ordering_service.requestQueues[DOMAIN_LEDGER_ID].clear()
+                r._ordering_service.requestQueues[CONFIG_LEDGER_ID].clear()
+        looper.run(
+            eventually(lambda nodes: assertExp(all([n.mode == Mode.participating for n in nodes])), txnPoolNodeSet))
+
+    # do view change to not send PrePrepares with the same ppSeqNo and viewNo
+    ensure_view_change_complete(looper, txnPoolNodeSet)
 
     """
     Try to create new steward by steward
