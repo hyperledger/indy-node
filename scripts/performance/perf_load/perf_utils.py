@@ -135,12 +135,12 @@ def gen_input_output(addr_txos, val):
 
 class Singleton(type):
 
-    _instances = {}
+    _instance = None
 
     def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
+        if cls._instance is None:
+            cls._instance = super().__call__(*args, **kwargs)
+        return cls._instance
 
 
 class PoolRegistry(metaclass=Singleton):  # instantiate it once
