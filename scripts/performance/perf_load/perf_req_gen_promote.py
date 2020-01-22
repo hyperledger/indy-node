@@ -1,6 +1,7 @@
 from indy import ledger
 import json
 import asyncio
+import testinfra
 
 from perf_load.perf_req_gen import RequestGenerator
 from perf_load.perf_utils import PoolRegistry
@@ -26,3 +27,8 @@ class RGPromoteNode(RequestGenerator):
             'services': ['VALIDATOR']
         }
         return await ledger.build_node_request(submitter_did, req_data['node_dest'], json.dumps(data))
+
+    async def on_request_replied(self, req_data, gen_req, resp_or_exp):
+        # restart promoted node
+        host = testinfra.get_host('ssh://persistent_node' + req_data['node_alias'][4:])
+        host.run('sudo systemctl restart indy-node')

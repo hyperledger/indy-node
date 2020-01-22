@@ -14,10 +14,8 @@ from datetime import datetime
 import yaml
 import logging
 import shutil
-import random
-import testinfra
 
-from indy import pool, wallet, did, ledger
+from indy import pool
 
 import perf_load
 from perf_load.perf_client_msgs import ClientReady, ClientStop, ClientSend
