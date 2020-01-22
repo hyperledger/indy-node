@@ -103,15 +103,15 @@ parser.add_argument('--taa_text', default="test transaction author agreement tex
 parser.add_argument('--taa_version', default="test_taa", type=str, required=False,
                     help='Transaction author agreement version')
 
-parser.add_argument('--demote_promote', default=0, type=int, required=False,
-                    help='Enable real pool nodes\' demotions and promotions with defined interval (0 means never)')
+parser.add_argument('--shift', default=0, type=int, required=False,
+                    help='Shift between demotions and promotions')
 
 
 class LoadRunner:
     def __init__(self, clients=0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
                  seed=["000000000000000000000000Trustee1"], req_kind="nym", batch_size=10, refresh_rate=10,
                  buff_req=30, out_dir=".", val_sep="|", wallet_key="key", mode="p", pool_config='',
-                 sync_mode="freeflow", load_rate=10, out_file="", load_time=0, taa_text="", taa_version="",
+                 sync_mode="freeflow", load_rate=10, out_file="", load_time=0, taa_text="", taa_version="", shift=0,
                  ext_set=None, client_runner=LoadClient.run, log_lvl=logging.INFO,
                  short_stat=False):
         self._client_runner = client_runner
@@ -141,6 +141,7 @@ class LoadRunner:
         self._batch_rate = 1 / lr
         self._taa_text = taa_text
         self._taa_version = taa_version
+        self._shift = shift
         self._ext_set = ext_set
         if pool_config:
             try:
@@ -152,6 +153,14 @@ class LoadRunner:
         self._logger = logging.getLogger(__name__)
         self._out_file = self.prepare_fs(out_file)
         self._short_stat = short_stat
+
+    @property
+    def genesis_path(self):
+        return self._genesis_path
+
+    @property
+    def promotion_shift(self):
+        return self._shift
 
     def process_reqs(self, stat, name: str = ""):
         assert self._failed_f
@@ -453,73 +462,6 @@ def check_genesis(gen_path):
         shutil.rmtree(dir_to_dlt, ignore_errors=True)
 
 
-def demote_promote(gen_path, interval):
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(pool.set_protocol_version(2))
-    pool_cfg = json.dumps({"genesis_txn": gen_path})
-    pool_name = "pool_{}".format(random_string(24))
-    loop.run_until_complete(pool.create_pool_ledger_config(pool_name, pool_cfg))
-    pool_handle = loop.run_until_complete(pool.open_pool_ledger(pool_name, None))
-    wallet_cfg = json.dumps({"id": "wallet_{}".format(random_string(24))})
-    wallet_creds = json.dumps({"key": ""})
-    loop.run_until_complete(wallet.create_wallet(wallet_cfg, wallet_creds))
-    wallet_handle = loop.run_until_complete(wallet.open_wallet(wallet_cfg, wallet_creds))
-
-    # read genesis to get aliases and dests
-    with open(dict_args["genesis_path"], 'r') as f:
-        data = f.read()
-        jsons = [json.loads(x) for x in data.split('\n')]
-        aliases = [_json['txn']['data']['data']['alias'] for _json in jsons]
-        dests = [_json['txn']['data']['dest'] for _json in jsons]
-
-    # create stewards
-    names = ['Steward{}'.format(i) for i in range(1, len(jsons) + 1)]
-    seeds = ['{:0>32}'.format(name) for name in names]
-    dids = []
-    for seed in seeds:
-        steward_did, _ = loop.run_until_complete(did.create_and_store_my_did(wallet_handle, json.dumps({'seed': seed})))
-        dids.append(steward_did)
-
-    # put all into list of dicts
-    pool_data = [
-        {'node_alias': node_alias,
-         'steward_did': steward_did,
-         'node_dest': node_dest}
-        for node_alias, steward_did, node_dest in zip(aliases, dids, dests)
-    ]
-
-    async def _demote_promote_periodic():
-        while True:
-            # pick random node from pool to demote/promote it
-            req_data = random.choice(pool_data)
-
-            _data = {
-                'alias': req_data['node_alias'],
-                'services': []
-            }
-            req = await ledger.build_node_request(req_data['steward_did'], req_data['node_dest'], json.dumps(_data))
-            await ledger.sign_and_submit_request(pool_handle, wallet_handle, req_data['steward_did'], req)
-
-            # wait for an interval
-            await asyncio.sleep(interval)
-
-            _data['services'] = ['VALIDATOR']
-            req = await ledger.build_node_request(req_data['steward_did'], req_data['node_dest'], json.dumps(_data))
-            await ledger.sign_and_submit_request(pool_handle, wallet_handle, req_data['steward_did'], req)
-            # restart promoted node
-            host = testinfra.get_host('ssh://persistent_node' + req_data['node_alias'][4:])
-            host.run('sudo systemctl restart indy-node')
-
-    # https://stackoverflow.com/questions/37512182/how-can-i-periodically-execute-a-function-with-asyncio
-    task = loop.create_task(_demote_promote_periodic())
-    loop.call_later(interval * 1000, task.cancel)  # define delay before looping task stopping
-
-    try:
-        loop.run_until_complete(task)
-    except asyncio.CancelledError:
-        pass
-
-
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')
     args, extra = parser.parse_known_args()
@@ -561,14 +503,11 @@ if __name__ == '__main__':
     if dict_args["test_conn"]:
         exit(0)
 
-    if dict_args["demote_promote"] > 0:
-        demote_promote(dict_args["genesis_path"], dict_args["demote_promote"])
-
     tr = LoadRunner(dict_args["clients"], dict_args["genesis_path"], dict_args["seed"], dict_args["req_kind"],
                     dict_args["batch_size"], dict_args["refresh_rate"], dict_args["buff_req"], out_dir,
                     dict_args["val_sep"], dict_args["wallet_key"], dict_args["mode"], dict_args["pool_config"],
                     dict_args["sync_mode"], dict_args["load_rate"], dict_args["out_file"], dict_args["load_time"],
-                    dict_args["taa_text"], dict_args["taa_version"], dict_args["ext_set"],
+                    dict_args["taa_text"], dict_args["taa_version"], dict_args["shift"], dict_args["ext_set"],
                     client_runner=LoadClient.run if not dict_args["ext_set"] else LoadClientFees.run,
                     log_lvl=log_lvl, short_stat=dict_args["short_stat"])
     tr.load_run()
