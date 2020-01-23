@@ -166,7 +166,7 @@ class PoolRegistry(metaclass=Singleton):  # instantiate it once
         ]
 
     # pick random node from pool and set it as current (for demotion)
-    def get_node(self):
+    def select_new_random_node(self):
         current_node = random.choice(self._pool_data)
         self._current_node = current_node
         return current_node

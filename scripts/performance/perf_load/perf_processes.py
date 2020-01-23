@@ -102,7 +102,7 @@ parser.add_argument('--taa_text', default="test transaction author agreement tex
 parser.add_argument('--taa_version', default="test_taa", type=str, required=False,
                     help='Transaction author agreement version')
 
-parser.add_argument('--promotion_shift', default=0, type=int, required=False,
+parser.add_argument('--promotion_shift', default=60, type=int, required=False,
                     help='Shift between demotions and promotions')
 
 
@@ -110,7 +110,7 @@ class LoadRunner:
     def __init__(self, clients=0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
                  seed=["000000000000000000000000Trustee1"], req_kind="nym", batch_size=10, refresh_rate=10,
                  buff_req=30, out_dir=".", val_sep="|", wallet_key="key", mode="p", pool_config='',
-                 sync_mode="freeflow", load_rate=10, out_file="", load_time=0, taa_text="", taa_version="", shift=0,
+                 sync_mode="freeflow", load_rate=10, out_file="", load_time=0, taa_text="", taa_version="", shift=60,
                  ext_set=None, client_runner=LoadClient.run, log_lvl=logging.INFO,
                  short_stat=False):
         self._client_runner = client_runner

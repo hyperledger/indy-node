@@ -14,7 +14,7 @@ class RGDemoteNode(RequestGenerator):
 
     def _rand_data(self):
         # pick random node from PoolRegistry to demote it
-        result = self._pool_registry.get_node()
+        result = self._pool_registry.select_new_random_node()
         return result
 
     async def _gen_req(self, submitter_did, req_data):
