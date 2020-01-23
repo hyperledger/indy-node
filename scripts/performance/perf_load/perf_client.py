@@ -400,7 +400,7 @@ class LoadClient:
         if self._taa_text == "":
             return req
 
-        if '"type":"10001"' in req:
+        if json.loads(req)['operation']['type'] in ['10001', '0']:
             return req
 
         return await ledger.append_txn_author_agreement_acceptance_to_request(

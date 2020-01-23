@@ -8,6 +8,7 @@ import base58
 import libnacl
 import logging
 import time
+import random
 
 PUB_XFER_TXN_ID = "10001"
 
@@ -130,3 +131,51 @@ def gen_input_output(addr_txos, val):
                 addr_txos[address].append(s_a)
 
     return None, None, None
+
+
+class Singleton(type):
+
+    _instance = None
+
+    def __call__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__call__(*args, **kwargs)
+        return cls._instance
+
+
+class PoolRegistry(metaclass=Singleton):  # instantiate it once
+
+    def __init__(self, genesis_path=None, promotion_shift=None):
+        self._genesis_path = genesis_path
+        self._promotion_shift = promotion_shift
+        self._pool_data = None
+        self._current_node = None
+
+        # read genesis to get aliases and dests
+        with open(self._genesis_path, 'r') as f:
+            data = f.read()
+            jsons = [json.loads(x) for x in data.split('\n')]
+            aliases = [_json['txn']['data']['data']['alias'] for _json in jsons]
+            dests = [_json['txn']['data']['dest'] for _json in jsons]
+
+        # put all into list of dicts
+        self._pool_data = [
+            {'node_alias': node_alias,
+             'node_dest': node_dest}
+            for node_alias, node_dest in zip(aliases, dests)
+        ]
+
+    # pick random node from pool and set it as current (for demotion)
+    def select_new_random_node(self):
+        current_node = random.choice(self._pool_data)
+        self._current_node = current_node
+        return current_node
+
+    # return current node or random node if there is no current node yet (for promotion)
+    @property
+    def current_node(self):
+        return self._current_node if self._current_node else random.choice(self._pool_data)
+
+    @property
+    def promotion_shift(self):
+        return self._promotion_shift
