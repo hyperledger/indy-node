@@ -216,8 +216,7 @@ class Restarter(NodeMaintainer):
         """
         logger.info("Timeout exceeded for {}".format(ev_data.when))
         last = self._actionLog.last_event
-        if (last and last.ev_type == RestartLog.Events.failed and
-                last.data == ev_data):
+        if last and last.ev_type == RestartLog.Events.failed and last.data == ev_data:
             return None
 
         self._action_failed(ev_data,

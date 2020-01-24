@@ -27,7 +27,7 @@ from common.version import GenericVersion
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ConstraintsEnum, CONSTRAINT_ID, AUTH_CONSTRAINTS, METADATA, \
     NEED_TO_BE_OWNER, SIG_COUNT, ROLE, OFF_LEDGER_SIGNATURE
-from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT, CONTEXT_SIZE_LIMIT
+from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT, CONTEXT_SIZE_LIMIT, JSON_LD_LIMIT
 from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     POOL_UPGRADE, POOL_CONFIG, \
@@ -39,13 +39,14 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
     GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, \
     SET_CONTEXT, GET_CONTEXT, CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT, CONTEXT_FROM, \
-    SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
+    RS_JSON_LD_TYPE, RS_JSON_LD_ID, SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
     FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, RS_TYPE, CONTEXT_TYPE, \
-    META, TAG_LIMIT_SIZE
-from indy_common.version import SchemaVersion, ContextVersion
+    SET_RS_SCHEMA, RS_META_VERSION, RS_META_NAME, RS_META_TYPE, RS_SCHEMA, RS_META, \
+    RS_SCHEMA_META_TYPE, RS_SCHEMA_FROM, GET_RS_SCHEMA, META, TAG_LIMIT_SIZE
+from indy_common.version import SchemaVersion, ContextVersion, RsMetaVersion
 
 
 class Request(PRequest):
@@ -139,6 +140,53 @@ class GetContextField(MessageValidator):
     schema = (
         (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (CONTEXT_VERSION, VersionField(version_cls=ContextVersion))
+    )
+
+
+class RsSchemaMetaField(MessageValidator):
+    schema = (
+        (RS_META_TYPE, ConstantField(RS_SCHEMA_META_TYPE)),
+        (RS_META_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_META_VERSION, VersionField(version_cls=RsMetaVersion)),
+    )
+
+
+class RsSchemaField(MessageValidator):
+    SCHEMA_IS_STRICT = False
+    schema = (
+        (RS_JSON_LD_TYPE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_JSON_LD_ID, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+    )
+    _base_types = None
+
+    def __init__(self, max_size=None, **kwargs):
+        if max_size is not None:
+            if not isinstance(max_size, int):
+                raise PlenumTypeError('max_size', max_size, int)
+            if not max_size > 0:
+                raise PlenumValueError('max_size', max_size, '> 0')
+        super().__init__(**kwargs)
+
+
+class SetRsSchemaDataField(MessageValidator):
+    schema = (
+        (RS_SCHEMA, RsSchemaField(max_size=JSON_LD_LIMIT)),
+    )
+
+
+class ClientSetRsSchemaOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(SET_RS_SCHEMA)),
+        (RS_META, RsSchemaMetaField()),
+        (DATA, SetRsSchemaDataField()),
+    )
+
+
+class ClientGetRsSchemaOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(GET_RS_SCHEMA)),
+        (RS_SCHEMA_FROM, IdentifierField()),
+        (META, RsSchemaMetaField()),
     )
 
 
@@ -497,6 +545,8 @@ class ClientOperationField(PClientOperationField):
         GET_REVOC_REG_DELTA: ClientGetRevocRegDeltaField(),
         SET_CONTEXT: ClientSetContextOperation(),  # Rich Schema
         GET_CONTEXT: ClientGetContextOperation(),
+        SET_RS_SCHEMA: ClientSetRsSchemaOperation(),
+        GET_RS_SCHEMA: ClientGetRsSchemaOperation()
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class

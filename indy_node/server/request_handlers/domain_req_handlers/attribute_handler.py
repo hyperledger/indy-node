@@ -60,8 +60,7 @@ class AttributeHandler(WriteRequestHandler):
 
         identifier, req_id, operation = get_request_data(request)
 
-        if not (not operation.get(TARGET_NYM) or
-                self.__has_nym(operation[TARGET_NYM], is_committed=False)):
+        if not (not operation.get(TARGET_NYM) or self.__has_nym(operation[TARGET_NYM], is_committed=False)):
             raise InvalidClientRequest(identifier, request.reqId,
                                        '{} should be added before adding '
                                        'attribute for it'.
