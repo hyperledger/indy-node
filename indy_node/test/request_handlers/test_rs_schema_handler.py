@@ -17,23 +17,23 @@ def make_rs_schema_exist(rs_schema_request, rs_schema_handler):
 def test_rs_schema_dynamic_validation_failed_existing_schema(rs_schema_request, rs_schema_handler):
     make_rs_schema_exist(rs_schema_request, rs_schema_handler)
     with pytest.raises(UnauthorizedClientRequest, match=str(AuthConstraintForbidden())):
-        rs_schema_handler.dynamic_validation(rs_schema_request)
+        rs_schema_handler.dynamic_validation(rs_schema_request, 0)
 
 
 def test_rs_schema_dynamic_validation_failed_not_authorised(rs_schema_request, rs_schema_handler):
     add_to_idr(rs_schema_handler.database_manager.idr_cache, rs_schema_request.identifier, None)
     with pytest.raises(UnauthorizedClientRequest):
-        rs_schema_handler.dynamic_validation(rs_schema_request)
+        rs_schema_handler.dynamic_validation(rs_schema_request, 0)
 
 
 def test_rs_schema_dynamic_validation_passes(rs_schema_request, rs_schema_handler):
     add_to_idr(rs_schema_handler.database_manager.idr_cache, rs_schema_request.identifier, TRUSTEE)
-    rs_schema_handler.dynamic_validation(rs_schema_request)
+    rs_schema_handler.dynamic_validation(rs_schema_request, 0)
 
 
 def test_adam_rs_schema_nightmare(rs_schema_broken_request, rs_schema_handler):
     add_to_idr(rs_schema_handler.database_manager.idr_cache, rs_schema_broken_request.identifier, TRUSTEE)
-    rs_schema_handler.dynamic_validation(rs_schema_broken_request)
+    rs_schema_handler.dynamic_validation(rs_schema_broken_request, 0)
 
 
 def test_update_state(rs_schema_request, rs_schema_handler):
