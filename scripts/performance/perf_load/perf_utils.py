@@ -181,7 +181,7 @@ class PoolRegistry(metaclass=Singleton):  # instantiate it once
     @property
     def current_node(self):
         try:
-            return self._nodes_queue.get()
+            return self._nodes_queue.get(block=False)
         except Empty:
             return random.choice(self._pool_data)
 
