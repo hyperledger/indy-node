@@ -44,7 +44,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
     FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, RS_TYPE, CONTEXT_TYPE, \
-    META
+    META, TAG_LIMIT_SIZE
 from indy_common.version import SchemaVersion, ContextVersion
 
 
@@ -164,8 +164,8 @@ class ClientRevocDefSubmitField(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(REVOC_REG_DEF)),
         (ID, NonEmptyStringField()),
-        (REVOC_TYPE, NonEmptyStringField()),
-        (TAG, NonEmptyStringField()),
+        (REVOC_TYPE, LimitedLengthStringField()),
+        (TAG, LimitedLengthStringField(max_length=TAG_LIMIT_SIZE)),
         (CRED_DEF_ID, NonEmptyStringField()),
         (VALUE, RevocDefValueField())
     )
@@ -184,7 +184,7 @@ class ClientRevocRegEntrySubmitField(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(REVOC_REG_ENTRY)),
         (REVOC_REG_DEF_ID, NonEmptyStringField()),
-        (REVOC_TYPE, NonEmptyStringField()),
+        (REVOC_TYPE, LimitedLengthStringField()),
         (VALUE, RevocRegEntryValueField())
     )
 

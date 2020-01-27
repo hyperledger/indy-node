@@ -107,7 +107,8 @@ def sdk_node_theta_added(looper,
                          allPluginsPath,
                          node_config_helper_class,
                          testNodeClass,
-                         name=None):
+                         name=None,
+                         services=[VALIDATOR]):
     new_steward_name = "testClientSteward" + randomString(3)
     new_node_name = name or "Theta"
 
@@ -132,7 +133,7 @@ def sdk_node_theta_added(looper,
                              nodePort=nodePort,
                              bls_key=bls_key,
                              sigseed=sigseed,
-                             services=[VALIDATOR],
+                             services=services,
                              key_proof=key_proof))
 
     # sending request using 'sdk_' functions
@@ -148,8 +149,9 @@ def sdk_node_theta_added(looper,
                                          testNodeClass,
                                          configClass=node_config_helper_class)
 
-    txnPoolNodeSet.append(new_node)
-    looper.run(checkNodesConnected(txnPoolNodeSet))
+    if services == [VALIDATOR]:
+        txnPoolNodeSet.append(new_node)
+        looper.run(checkNodesConnected(txnPoolNodeSet))
     sdk_pool_refresh(looper, sdk_pool_handle)
     return new_steward_wallet, new_node
 

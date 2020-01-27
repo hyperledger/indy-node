@@ -2,12 +2,12 @@ import functools
 import time
 
 import pytest
+from orderedset._orderedset import OrderedSet
 
 from indy_common.constants import CONFIG_LEDGER_ID
 from indy_common.state import config
 from indy_node.test.request_handlers.test_update_state_config_req_handler import prepare_request
 from plenum.server.consensus.ordering_service import OrderingService
-from plenum.server.replica import Replica
 from plenum.test.testing_utils import FakeSomething
 
 
@@ -17,7 +17,8 @@ def fake_ordering_service(config_ledger,
                  db_manager):
     ordering_service = FakeSomething(db_manager=db_manager,
                                      post_batch_rejection=lambda *args, **kwargs: True,
-                                     _logger=FakeSomething(info=lambda *args, **kwargs: True))
+                                     _logger=FakeSomething(info=lambda *args, **kwargs: True),
+                                     requestQueues={0: OrderedSet(), 1: OrderedSet(), 2: OrderedSet()})
     ordering_service._revert = functools.partial(OrderingService._revert, ordering_service)
     return ordering_service
 
