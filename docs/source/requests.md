@@ -118,12 +118,12 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
      Identifier of the transaction author as base58-encoded string
      for 16 or 32 bit DID value.
  
-     For read requests this is read request submitter. It can be any DID (not necessary present on the ledger as a NYM txn)
+     For read requests, the identifier is the submitter of the read request. It can be any DID (not necessary present on the ledger as a NYM txn)
  
-     For write requests this is transaction author.
-     It may differ from `endorser` field who submits the transaction on behalf of `identifier`. If `endorser` is absent,
-     then the author (`identifier`) plays the role of endorser and submits request by his own.
-     It also may differ from `dest` field for some of requests (for example NYM), where `dest` is a 
+     For write requests, the identifier is the transaction author.
+     It may differ from the `endorser` field who submits the transaction on behalf of an `identifier`. If `endorser` is absent,
+     then the author (`identifier`) plays the role of the endorser and submits a request on his own.
+     It also may differ from `dest` field for some of the requests (for example NYM), where `dest` is a 
      target identifier (for example, a newly created DID identifier).
      
      *Example*:
@@ -370,12 +370,12 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
 
 ## Reply Structure for Read Requests
 
-The structure below is not applicable for [GET_TXN](#get_txn).
+The structure below is not applicable to [GET_TXN](#get_txn).
 
 Each Reply to read requests has a number of common metadata fields and state-proof related fields.
 Some of these fields are actually metadata fields of a transaction in the Ledger (see [transactions](transactions.md)).
 
-These common metadata values are added to result's JSON at the same level as real data.
+These common metadata values are added to the result's JSON at the same level as real data.
 
 **TODO**: consider distinguishing and separating real transaction data and metadata into different levels.
 
@@ -446,7 +446,7 @@ These common metadata values are added to result's JSON at the same level as rea
 
 - `txnTime` (integer as POSIX timestamp): 
 
-    the time when transaction was written to the Ledger as POSIX timestamp
+    the time when the transaction was written to the Ledger as POSIX timestamp
     
 - `state_proof` (dict):
 
@@ -477,18 +477,18 @@ The format of each request-specific data for each type of request.
 
 ### NYM
 Creates a new NYM record for a specific user, endorser, steward or trustee.
-Note that only trustees and stewards can create new endorsers and trustee can be created only by other trusties (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md)).
+Note that only trustees and stewards can create new endorsers and trustee can be created only by other trustees (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md)).
 
 The request can be used for 
-creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
+creation of new DIDs, setting, and rotation of verification key, setting and changing of roles.
 
 - `dest` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 byte DID value.
     It may differ from `identifier` metadata field, where `identifier` is the DID of the submitter.
-    If they are equal (in permissionless case), then transaction must be signed by the newly created `verkey`.
+    If they are equal (in permissionless case), then the transaction must be signed by the newly created `verkey`.
     
-    *Example*: `identifier` is a DID of a Endorser creating a new DID, and `dest` is a newly created DID.
+    *Example*: `identifier` is a DID of an Endorser creating a new DID, and `dest` is a newly created DID.
      
 - `role` (enum number as string; optional): 
 
@@ -508,18 +508,18 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     it's abbreviated verkey and should be 16 bytes long when decoded, otherwise it's a full verkey
     which should be 32 bytes long when decoded. If not set, then either the target identifier
     (`dest`) is 32-bit cryptonym CID (this is deprecated), or this is a user under guardianship
-    (doesnt owns the identifier yet).
-    Verkey can be changed to None by owner, it means that this user goes back under guardianship.
+    (doesn't own the identifier yet).
+    Verkey can be changed to None by the owner, it means that this user goes back under guardianship.
 
 - `alias` (string; optional): 
 
     NYM's alias.
     
 
-If there is no NYM transaction with the specified DID (`dest`), then it can be considered as creation of a new DID.
+If there is no NYM transaction with the specified DID (`dest`), then it can be considered as the creation of a new DID.
 
 If there is a NYM transaction with the specified DID (`dest`),  then this is update of existing DID.
-In this case we can specify only the values we would like to override. All unspecified values remain the same.
+In this case, we can specify only the values we would like to override. All unspecified values remain the same.
 So, if key rotation needs to be performed, the owner of the DID needs to send a NYM request with
 `dest` and `verkey` only. `role` and `alias` will stay the same.
 
@@ -590,18 +590,18 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 
 ### ATTRIB
 
-Adds attribute to a NYM record.
+Adds or updates an attribute to a NYM record.
 
 - `dest` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
-    *Example*: `identifier` is a DID of a Endorser setting an attribute for a DID, and `dest` is the DID we set an attribute for.
+    *Example*: `identifier` is a DID of an Endorser setting an attribute for a DID, and `dest` is the DID we set an attribute for.
     
 - `raw` (json; mutually exclusive with `hash` and `enc`):
 
-    Raw data is represented as json, where key is attribute name and value is attribute value.
+    Raw data is represented as json, where the key is attribute name and value is attribute value.
 
 - `hash` (sha256 hash string; mutually exclusive with `raw` and `enc`):
 
@@ -673,7 +673,7 @@ Adds attribute to a NYM record.
 ### SCHEMA
 Adds Claim's schema.
 
-It's not possible to update existing Schema.
+It's not possible to update an existing Schema.
 So, if the Schema needs to be evolved, a new Schema with a new version or name needs to be created.
 
 - `data` (dict):
