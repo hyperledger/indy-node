@@ -69,6 +69,8 @@ Supported txns:
 * cfg_writes - Config ledger txn - set writable property of pool to True
 * demoted_node - Pool ledger txn - add new demoted node
 * get_txn - Multi ledger txn - request txn by ledger id and seq_no
+* demote - Demote random pool nodes, use it with 'promote' at the same rate and set --promotion_shift interval
+* promote - Promote pool nodes demoted by 'demote', use it with 'demote' at the same rate and set --promotion_shift interval
 
 Note: At the moment revoc_reg_entry requests could be used only with batch size equal to 1. After each entry write request revoc registery is recreated. So each entry req generates 3 request to ledger in total.
 
@@ -94,6 +96,8 @@ Note: batches are evenly distributed, but txs inside one batch are sent as fast 
 '--ext_set' : Parameter allow to configure plugins settings. Should be provided in form of JSON. For now only payment plugins supported. Default is empty.
 
 '--test_conn' : Check connection to pool with provided genesis file only. Do not send reqs, do not create test dirs or files. Just do pool open and make initial catchup and exit.
+
+'--promotion_shift' : Delay between demotion and promotion when 'demote' and 'promote' are used.
 
 One or more parameters could be stored in config file. Format of the config is simple YAML. Long parameter name should be used. Config name should be passed to script as an additional unnamed argument.
 ```
