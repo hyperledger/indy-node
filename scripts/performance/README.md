@@ -99,6 +99,8 @@ Note: batches are evenly distributed, but txs inside one batch are sent as fast 
 
 '--promotion_shift' : Delay between demotion and promotion when 'demote' and 'promote' are used.
 
+'--nodes_untouched' : Number of nodes to keep them safe from demotions and promotions when 'demote' and 'promote' are used.
+
 One or more parameters could be stored in config file. Format of the config is simple YAML. Long parameter name should be used. Config name should be passed to script as an additional unnamed argument.
 ```
 python3 perf_processes.py -n 1000 -k nym config_file_name

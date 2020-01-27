@@ -3,6 +3,7 @@ import os
 import argparse
 from collections import Sequence
 from typing import Dict, List
+from queue import Queue, Empty
 
 import base58
 import libnacl
@@ -145,11 +146,12 @@ class Singleton(type):
 
 class PoolRegistry(metaclass=Singleton):  # instantiate it once
 
-    def __init__(self, genesis_path=None, promotion_shift=None):
+    def __init__(self, genesis_path=None, promotion_shift=None, nodes_untouched=0):
         self._genesis_path = genesis_path
         self._promotion_shift = promotion_shift
+        self._nodes_untouched = nodes_untouched
         self._pool_data = None
-        self._current_node = None
+        self._nodes_queue = Queue()
 
         # read genesis to get aliases and dests
         with open(self._genesis_path, 'r') as f:
@@ -165,16 +167,23 @@ class PoolRegistry(metaclass=Singleton):  # instantiate it once
             for node_alias, node_dest in zip(aliases, dests)
         ]
 
-    # pick random node from pool and set it as current (for demotion)
+        # remove untouched nodes from the tail
+        if self._nodes_untouched > 0:
+            self._pool_data = self._pool_data[:-self._nodes_untouched]
+
+    # pick random node from pool and add to nodes queue (for demotion)
     def select_new_random_node(self):
         current_node = random.choice(self._pool_data)
-        self._current_node = current_node
+        self._nodes_queue.put(current_node)
         return current_node
 
-    # return current node or random node if there is no current node yet (for promotion)
+    # return first node from nodes queue or random node if queue is empty (for promotion)
     @property
     def current_node(self):
-        return self._current_node if self._current_node else random.choice(self._pool_data)
+        try:
+            return self._nodes_queue.get()
+        except Empty:
+            return random.choice(self._pool_data)
 
     @property
     def promotion_shift(self):

@@ -105,13 +105,16 @@ parser.add_argument('--taa_version', default="test_taa", type=str, required=Fals
 parser.add_argument('--promotion_shift', default=60, type=int, required=False,
                     help='Shift between demotions and promotions')
 
+parser.add_argument('--nodes_untouched', default=0, type=int, required=False,
+                    help='Number of nodes to keep them safe from demotions and promotions')
+
 
 class LoadRunner:
     def __init__(self, clients=0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
                  seed=["000000000000000000000000Trustee1"], req_kind="nym", batch_size=10, refresh_rate=10,
                  buff_req=30, out_dir=".", val_sep="|", wallet_key="key", mode="p", pool_config='',
                  sync_mode="freeflow", load_rate=10, out_file="", load_time=0, taa_text="", taa_version="", shift=60,
-                 ext_set=None, client_runner=LoadClient.run, log_lvl=logging.INFO,
+                 nodes_untouched=0, ext_set=None, client_runner=LoadClient.run, log_lvl=logging.INFO,
                  short_stat=False):
         self._client_runner = client_runner
         self._clients = dict()  # key process future; value ClientRunner
@@ -141,6 +144,7 @@ class LoadRunner:
         self._taa_text = taa_text
         self._taa_version = taa_version
         self._shift = shift
+        self._nodes_untouched = nodes_untouched
         self._ext_set = ext_set
         if pool_config:
             try:
@@ -152,14 +156,6 @@ class LoadRunner:
         self._logger = logging.getLogger(__name__)
         self._out_file = self.prepare_fs(out_file)
         self._short_stat = short_stat
-
-    @property
-    def genesis_path(self):
-        return self._genesis_path
-
-    @property
-    def promotion_shift(self):
-        return self._shift
 
     def process_reqs(self, stat, name: str = ""):
         assert self._failed_f
@@ -466,7 +462,7 @@ if __name__ == '__main__':
     args, extra = parser.parse_known_args()
     dict_args = vars(args)
 
-    pool_registry = PoolRegistry(dict_args["genesis_path"], dict_args["promotion_shift"])
+    pool_registry = PoolRegistry(dict_args["genesis_path"], dict_args["promotion_shift"], dict_args["nodes_untouched"])
 
     if len(extra) > 1:
         raise argparse.ArgumentTypeError("Only path to config file expected, but found extra arguments: {}".format(extra))
