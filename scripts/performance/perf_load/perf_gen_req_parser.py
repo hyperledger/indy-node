@@ -13,6 +13,8 @@ from perf_load.perf_req_gen_get_taa import RGGetTAA
 from perf_load.perf_req_gen_get_taa_aml import RGGetTAAAML
 from perf_load.perf_req_gen_get_auth_rules import RGGetAuthRules
 from perf_load.perf_req_gen_fees import RGGetFees
+from perf_load.perf_req_gen_demote import RGDemoteNode
+from perf_load.perf_req_gen_promote import RGPromoteNode
 
 
 class ReqTypeParser:
@@ -23,7 +25,7 @@ class ReqTypeParser:
          "get_revoc_reg_delta": RGGetRevocRegDelta, "get_payment_sources": RGGetPaymentSources, "payment": RGPayment,
          "verify_payment": RGVerifyPayment, "cfg_writes": RGConfigChangeState, "demoted_node": RGPoolNewDemotedNode,
          "get_txn": RGGetTxn, 'get_taa': RGGetTAA, 'get_taa_aml': RGGetTAAAML, 'get_auth_rule': RGGetAuthRules,
-         "get_fees": RGGetFees}
+         "get_fees": RGGetFees, "demote": RGDemoteNode, "promote": RGPromoteNode}
 
     @classmethod
     def supported_requests(cls):

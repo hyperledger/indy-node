@@ -17,6 +17,7 @@ from plenum.test.node_catchup.helper import ensure_all_nodes_have_same_data
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.stasher import start_delaying, stop_delaying_and_process, delay_rules
 from plenum.test.test_node import ensureElectionsDone
+from plenum.test.view_change_service.helper import trigger_view_change
 from stp_core.loop.eventually import eventually
 
 
@@ -75,8 +76,7 @@ def test_view_change_during_alternating_unstash(looper, txnPoolNodeSet, sdk_pool
 
     # Start view change and allow slow node to get remaining commits
     with delay_rules(all_stashers, icDelay()):
-        for node in txnPoolNodeSet:
-            node.view_changer.on_master_degradation()
+        trigger_view_change(txnPoolNodeSet)
         looper.runFor(0.1)
     stop_delaying_and_process(slow_node_after_5)
 

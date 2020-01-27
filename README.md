@@ -84,8 +84,14 @@ Indy Node repo consists of the following parts:
 
 - Bugs, stories, and backlog for this codebase are managed in [Hyperledger's Jira](https://jira.hyperledger.org).
 Use project name `INDY`.
-- Join us on [Jira's Rocket.Chat](https://chat.hyperledger.org/channel/indy) at `#indy` and/or `#indy-node` channels to discuss.
 
+
+[chat-url-indy]:https://chat.hyperledger.org/channel/indy
+[chat-url-indy-node]:https://chat.hyperledger.org/channel/indy-node
+[chat-image-indy]:https://raw.githubusercontent.com/hyperledger/chat-assets/master/indy.svg?sanitize=true
+[chat-image-indy-node]:https://raw.githubusercontent.com/hyperledger/chat-assets/master/indy-node.svg?sanitize=true
+
+- Join us on [Hyperledger's chat](https://chat.hyperledger.org/) in [![indy][chat-image-indy]][chat-url-indy] or [![indy-node][chat-image-indy-node]][chat-url-indy-node] to discuss.
 
 ## How to Contribute
 

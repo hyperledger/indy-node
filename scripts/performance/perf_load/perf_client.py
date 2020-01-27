@@ -160,7 +160,7 @@ class LoadClient:
             # Try to set taa
             if text != "":
                 set_taa = await ledger.build_txn_author_agreement_request(self._test_did, text, version,
-                                                                          ratification_ts=42)
+                                                                          ratification_ts=1500000000)
             else:
                 set_taa = await ledger.build_disable_all_txn_author_agreements_request(self._test_did)
             await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, set_taa)
@@ -400,7 +400,7 @@ class LoadClient:
         if self._taa_text == "":
             return req
 
-        if '"type":"10001"' in req:
+        if json.loads(req)['operation']['type'] in ['10001', '0']:
             return req
 
         return await ledger.append_txn_author_agreement_acceptance_to_request(
