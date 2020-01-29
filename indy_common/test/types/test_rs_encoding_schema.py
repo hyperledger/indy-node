@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from indy_common.types import RsEncodingMetaField, ClientSetRsEncodingOperation, SetRsEncodingDataField, RsEncodingField
+from indy_common.types import RsEncodingMetaField, ClientSetRsEncodingOperation, SetRsEncodingDataField
 from plenum.common.messages.fields import ConstantField, VersionField, LimitedLengthStringField
 
 EXPECTED_ENCODING_META_FIELDS = OrderedDict([
@@ -22,7 +22,7 @@ def test_meta_has_expected_validators_s():
 
 
 EXPECTED_RS_ENCODING_DATA_FIELDS = OrderedDict([
-    ('encoding', RsEncodingField),
+    ("encoding", LimitedLengthStringField),
 ])
 
 

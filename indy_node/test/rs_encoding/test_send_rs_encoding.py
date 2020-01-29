@@ -39,7 +39,7 @@ def test_can_not_send_rs_encoding_missing_meta_type(looper, sdk_pool_handle, sdk
     reqId = uuid.uuid1().fields[0]
     txn_dict = {
         'operation': {
-            'type': "203",
+            'type': "202",
             'meta': {
                 #'type': "encode",
                 'name': name,
@@ -70,7 +70,7 @@ def test_can_not_send_rs_encoding_invalid_meta_type(looper, sdk_pool_handle, sdk
     reqId = uuid.uuid1().fields[0]
     txn_dict = {
         'operation': {
-            'type': "201",
+            'type': "202",
             'meta': {
                 'type': "Allen",
                 'name': name,

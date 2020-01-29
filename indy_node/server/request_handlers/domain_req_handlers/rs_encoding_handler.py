@@ -11,9 +11,6 @@ from plenum.common.request import Request
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 from plenum.server.request_handlers.utils import encode_state_value
-from stp_core.common.log import getlogger
-
-logger = getlogger()
 
 
 class RsEncodingHandler(WriteRequestHandler):
@@ -30,10 +27,6 @@ class RsEncodingHandler(WriteRequestHandler):
         pass
 
     def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
-        logger.trace(
-            "{} entering rs schema dynamic_validation with {}"
-            "".format(self, request)
-        )
         self._validate_request_type(request)
         author = request.identifier
         name = request.operation[RS_META][RS_META_NAME]

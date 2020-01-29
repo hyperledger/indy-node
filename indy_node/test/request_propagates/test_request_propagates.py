@@ -25,7 +25,7 @@ def emulate_received(node, msg):
     )
 
 
-@pytest.fixture(scope="module", params=["ATTRIB", "SCHEMA", "RS_ENCODING" "CLAIM_DEF", "NYM"])
+@pytest.fixture(scope="module", params=["ATTRIB", "SCHEMA", "RS_ENCODING", "CLAIM_DEF", "NYM"])
 def req(request, looper, sdk_pool_handle, sdk_wallet_steward):
     wallet_handle, identifier = sdk_wallet_steward
     if request.param == "ATTRIB":
