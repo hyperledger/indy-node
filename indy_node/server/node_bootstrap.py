@@ -29,6 +29,7 @@ from indy_node.server.request_handlers.domain_req_handlers.context_handler impor
 from indy_node.server.request_handlers.domain_req_handlers.attribute_handler import AttributeHandler
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
+from indy_node.server.request_handlers.domain_req_handlers.rs_encoding_handler import RsEncodingHandler
 
 from indy_common.authorize.auth_map import auth_map
 
@@ -45,6 +46,7 @@ from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_delta_han
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_handler import GetRevocRegHandler
 from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
 from indy_node.server.request_handlers.read_req_handlers.get_context_handler import GetContextHandler
+from indy_node.server.request_handlers.read_req_handlers.get_rs_encoding_handler import GetRsEncodingHandler
 
 from indy_node.server.restarter import Restarter
 from indy_node.server.upgrader import Upgrader
@@ -97,6 +99,7 @@ class NodeBootstrap(PNodeBootstrap):
         get_attribute_handler = GetAttributeHandler(database_manager=self.node.db_manager)
         get_schema_handler = GetSchemaHandler(database_manager=self.node.db_manager)
         get_context_handler = GetContextHandler(database_manager=self.node.db_manager)
+        get_rs_encoding_handler = GetRsEncodingHandler(database_manager=self.node.db_manager)
         get_claim_def_handler = GetClaimDefHandler(database_manager=self.node.db_manager)
         get_revoc_reg_def_handler = GetRevocRegDefHandler(database_manager=self.node.db_manager)
         get_revoc_reg_handler = GetRevocRegHandler(database_manager=self.node.db_manager)
@@ -112,6 +115,8 @@ class NodeBootstrap(PNodeBootstrap):
                                        write_req_validator=self.node.write_req_validator)
         context_handler = ContextHandler(database_manager=self.node.db_manager,
                                          write_req_validator=self.node.write_req_validator)
+        rs_encoding_handler = RsEncodingHandler(database_manager=self.node.db_manager,
+                                                write_req_validator=self.node.write_req_validator)
         claim_def_handler = ClaimDefHandler(database_manager=self.node.db_manager,
                                             write_req_validator=self.node.write_req_validator)
         revoc_reg_def_handler = RevocRegDefHandler(database_manager=self.node.db_manager,
@@ -124,6 +129,7 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.write_manager.register_req_handler(attrib_handler)
         self.node.write_manager.register_req_handler(schema_handler)
         self.node.write_manager.register_req_handler(context_handler)
+        self.node.write_manager.register_req_handler(rs_encoding_handler)
         self.node.write_manager.register_req_handler(claim_def_handler)
         self.node.write_manager.register_req_handler(revoc_reg_def_handler)
         self.node.write_manager.register_req_handler(revoc_reg_entry_handler)
@@ -134,6 +140,7 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.read_manager.register_req_handler(get_attribute_handler)
         self.node.read_manager.register_req_handler(get_schema_handler)
         self.node.read_manager.register_req_handler(get_context_handler)
+        self.node.read_manager.register_req_handler(get_rs_encoding_handler)
         self.node.read_manager.register_req_handler(get_claim_def_handler)
         self.node.read_manager.register_req_handler(get_revoc_reg_def_handler)
         self.node.read_manager.register_req_handler(get_revoc_reg_handler)

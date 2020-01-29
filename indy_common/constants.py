@@ -10,9 +10,24 @@ Environment = NamedTuple("Environment", [
     ("domainLedger", str)
 ])
 
-# Rich Schema
+# RICH SCHEMA
+RS_META = 'meta'
+RS_META_NAME = 'name'
+RS_META_TYPE = 'type'
+RS_META_VERSION = 'version'
+RS_META_ID = 'id'
+RS_DATA = 'data'
+RS_JSON_LD_ID = '@id'
+RS_JSON_LD_TYPE = '@type'
+RS_JSON_LD_CONTEXT = '@context'
 RS_TYPE = "type"
 META = "meta"
+# ENCODING
+RS_ENCODING_FROM = "from"
+RS_ENCODING = "encoding"
+RS_ENCODING_META_TYPE = "encode"
+DOMAIN_LEDGER_ID = 1
+
 # CONTEXT
 CONTEXT_NAME = "name"
 CONTEXT_VERSION = "version"
@@ -173,6 +188,8 @@ CHANGE_KEY = IndyTransactions.CHANGE_KEY.value
 # Rich Schema
 SET_CONTEXT = IndyTransactions.SET_CONTEXT.value
 GET_CONTEXT = IndyTransactions.GET_CONTEXT.value
+SET_RS_ENCODING = IndyTransactions.SET_RS_ENCODING.value
+GET_RS_ENCODING = IndyTransactions.GET_RS_ENCODING.value
 
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value

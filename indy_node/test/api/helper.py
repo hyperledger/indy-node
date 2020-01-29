@@ -1,14 +1,25 @@
+import random
 import json
 import base58
 
 from indy.anoncreds import issuer_create_schema
-from indy.ledger import build_schema_request
+from indy.ledger import build_schema_request, sign_request, submit_request
 
 from indy_common.state.state_constants import MARKER_CONTEXT
 from plenum.common.constants import TXN_TYPE, DATA, CURRENT_PROTOCOL_VERSION
 
 from indy_common.constants import SET_CONTEXT, CONTEXT_TYPE, META, RS_TYPE, CONTEXT_NAME, CONTEXT_VERSION
 from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req, sdk_get_and_check_replies
+
+
+def req_id():
+    id = random.randint(1, 100000000)
+    while True:
+        yield id
+        id += 1
+
+
+_reqId = req_id()
 
 
 # Utility predicates
@@ -198,6 +209,47 @@ def sdk_build_schema_request(looper, sdk_wallet_client,
     )
 
 
+def build_get_rs_encoding_request( did, txnId):
+    identifier, type, name, version = txnId.split(':')
+    txn_dict = {
+        'operation': {
+            'type': "302",
+            'from': identifier,
+            'meta': {
+                'name': name,
+                'version': version,
+                'type': 'encode'
+            }
+        },
+        "identifier": did,
+        "reqId": next(_reqId),
+        "protocolVersion": 2
+    }
+    encoding_json = json.dumps(txn_dict)
+    return encoding_json
+
+
+def build_rs_encoding_request(identifier, encoding="", name="", version=""):
+    txn_dict = {
+        'operation': {
+            'type': "202",
+            'meta': {
+                'name': name,
+                'version': version,
+                'type': "encode"
+            },
+            'data': {
+                'encoding': encoding
+            }
+        },
+        "identifier": identifier,
+        "reqId": next(_reqId),
+        "protocolVersion": 2
+    }
+    encoding_json = json.dumps(txn_dict)
+    return encoding_json
+
+
 def sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_client, multi_attribute=[], name="", version=""):
     _, identifier = sdk_wallet_client
     if multi_attribute:
@@ -216,6 +268,16 @@ def sdk_write_schema_and_check(looper, sdk_pool_handle, sdk_wallet_client,
     request = sdk_build_schema_request(looper, sdk_wallet_client,
                                        attributes, name, version)
     req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, request)
+    rep = sdk_get_and_check_replies(looper, [req])
+    return rep
+
+
+def sdk_write_request(looper, sdk_pool_handle, sdk_wallet, request):
+    return sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, request))[1]
+
+
+def sdk_write_request_and_check(looper, sdk_pool_handle, sdk_wallet, request):
+    req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, request)
     rep = sdk_get_and_check_replies(looper, [req])
     return rep
 

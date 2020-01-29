@@ -1,9 +1,15 @@
+import random
+
 import pytest
-from indy_common.constants import SCHEMA, REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG, CONTEXT_TYPE
+from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG, CONTEXT_TYPE, \
+    RS_META, RS_META_TYPE, RS_META_NAME, RS_META_VERSION, RS_DATA, RS_JSON_LD_ID, RS_JSON_LD_CONTEXT, \
+    RS_JSON_LD_TYPE
+from indy_common.state.state_constants import MARKER_RS_ENCODING
 
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
+from indy_node.server.request_handlers.domain_req_handlers.rs_encoding_handler import RsEncodingHandler
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from indy_node.test.context.helper import W3C_BASE_CONTEXT
@@ -36,13 +42,39 @@ def schema_request():
     return Request(identifier=randomString(),
                    reqId=5,
                    signature="sig",
-                   operation={'type': SCHEMA,
+                   operation={'type': "101",
                               'data': {
                                   'version': '1.0',
                                   'name': 'Degree',
                                   'attr_names': ['last_name',
                                                  'first_name', ]
                               }})
+
+
+@pytest.fixture(scope="module")
+def rs_encoding_handler(db_manager, write_auth_req_validator):
+    return RsEncodingHandler(db_manager, write_auth_req_validator)
+
+
+@pytest.fixture(scope="function")
+def rs_encoding_request():
+    authors_did, name, version, _type = "2hoqvcwupRTUNkXn6ArYzs", randomString(), "1.1", "9"
+    _id = authors_did + ':' + _type + ':' + name + ':' + version
+    return Request(identifier=authors_did,
+                   reqId=random.randint(1, 10000000),
+                   signature="sig",
+                   protocolVersion=2,
+                   operation={
+                       "type": "202",
+                       "meta": {
+                           "type": "encode",
+                           "name": name,
+                           "version": version
+                       },
+                       "data": {
+                           "encoding": "UTF-8_SHA-256"
+                       }
+                   })
 
 
 @pytest.fixture(scope="module")

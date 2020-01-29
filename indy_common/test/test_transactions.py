@@ -1,5 +1,6 @@
 from indy_common.constants import NYM, NODE, ATTRIB, SCHEMA, CLAIM_DEF, DISCLO, GET_ATTR, GET_NYM, GET_TXNS, \
-    GET_SCHEMA, SET_CONTEXT, GET_CONTEXT, GET_CLAIM_DEF, POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, REVOC_REG_DEF, REVOC_REG_ENTRY, \
+    GET_SCHEMA, SET_CONTEXT, GET_CONTEXT, SET_RS_ENCODING, GET_RS_ENCODING, GET_CLAIM_DEF, POOL_UPGRADE, \
+    NODE_UPGRADE, POOL_CONFIG, REVOC_REG_DEF, REVOC_REG_ENTRY, \
     GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA, POOL_RESTART, VALIDATOR_INFO, CHANGE_KEY, AUTH_RULE, \
     GET_AUTH_RULE, AUTH_RULES
 from indy_common.transactions import IndyTransactions
@@ -37,6 +38,8 @@ def test_transactions_are_encoded():
 
     assert SET_CONTEXT == "200"
     assert GET_CONTEXT == "300"
+    assert SET_RS_ENCODING == "202"
+    assert GET_RS_ENCODING == "302"
 
 
 def test_transaction_enum_decoded():
@@ -71,6 +74,8 @@ def test_transaction_enum_decoded():
 
     assert IndyTransactions.SET_CONTEXT.name == "SET_CONTEXT"
     assert IndyTransactions.GET_CONTEXT.name == "GET_CONTEXT"
+    assert IndyTransactions.SET_RS_ENCODING.name == "SET_RS_ENCODING"
+    assert IndyTransactions.GET_RS_ENCODING.name == "GET_RS_ENCODING"
 
 
 def test_transaction_enum_encoded():
@@ -101,6 +106,8 @@ def test_transaction_enum_encoded():
 
     assert IndyTransactions.SET_CONTEXT.value == "200"
     assert IndyTransactions.GET_CONTEXT.value == "300"
+    assert IndyTransactions.SET_RS_ENCODING.value == "202"
+    assert IndyTransactions.GET_RS_ENCODING.value == "302"
 
 
 def test_get_name_from_code():
@@ -132,5 +139,7 @@ def test_get_name_from_code():
 
     assert IndyTransactions.get_name_from_code(IndyTransactions.SET_CONTEXT.value) == "SET_CONTEXT"
     assert IndyTransactions.get_name_from_code(IndyTransactions.GET_CONTEXT.value) == "GET_CONTEXT"
+    assert IndyTransactions.get_name_from_code(IndyTransactions.SET_RS_ENCODING.value) == "SET_RS_ENCODING"
+    assert IndyTransactions.get_name_from_code(IndyTransactions.GET_RS_ENCODING.value) == "GET_RS_ENCODING"
 
     assert IndyTransactions.get_name_from_code("some_unexpected_code") == "Unknown_transaction_type"

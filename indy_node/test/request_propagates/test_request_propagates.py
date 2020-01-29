@@ -7,7 +7,7 @@ from indy.ledger import build_attrib_request, sign_request, build_schema_request
 
 from indy_node.test.helper import createHalfKeyIdentifierAndAbbrevVerkey
 from indy_common.types import Request
-from indy_node.test.api.helper import sdk_write_schema
+from indy_node.test.api.helper import sdk_write_schema, build_rs_encoding_request
 from plenum.common.messages.node_messages import Propagate
 from plenum.common.types import f
 from plenum.server.message_handlers import PropagateHandler
@@ -25,7 +25,7 @@ def emulate_received(node, msg):
     )
 
 
-@pytest.fixture(scope="module", params=["ATTRIB", "SCHEMA", "CLAIM_DEF", "NYM"])
+@pytest.fixture(scope="module", params=["ATTRIB", "SCHEMA", "RS_ENCODING" "CLAIM_DEF", "NYM"])
 def req(request, looper, sdk_pool_handle, sdk_wallet_steward):
     wallet_handle, identifier = sdk_wallet_steward
     if request.param == "ATTRIB":
@@ -36,6 +36,9 @@ def req(request, looper, sdk_pool_handle, sdk_wallet_steward):
         _, schema_json = looper.loop.run_until_complete(
             issuer_create_schema(identifier, "name", "1.0", json.dumps(["first", "last"])))
         request_json = looper.loop.run_until_complete(build_schema_request(identifier, schema_json))
+    elif request.param == "RS_ENCODING":
+        rs_encoding = "UTF-8_SHA-256"
+        request_json = build_rs_encoding_request(identifier, rs_encoding, "indy-encoding-sha-256", "1.1")
     elif request.param == "CLAIM_DEF":
         schema_json, _ = sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_steward)
         schema_id = json.loads(schema_json)['id']
