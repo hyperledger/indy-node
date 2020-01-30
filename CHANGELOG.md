@@ -86,10 +86,6 @@ Although every attempt has been made to make this information as accurate as pos
 | REV_REG_DEF `tag` field is not validated | | [INDY-2314](https://jira.hyperledger.org/browse/INDY-2314) |
 | A node may re-send messages in a loop in case of connection issues | | [INDY-2318](https://jira.hyperledger.org/browse/INDY-2318) |
 | Up to F Nodes may not be able to finish View Change if there are uncommitted NODE txns | | [INDY-2319](https://jira.hyperledger.org/browse/INDY-2319) |
-
-#### Changes and Additions
-| Description | Additional Information | Ticket Number |
-| --- | --- | --- |
 | A node lagging behind may not be able to finish view change if nodes have been added/demoted | | [INDY-2308](https://jira.hyperledger.org/browse/INDY-2308) |
 | A lagging node may use wrong N and F quorum values and never finish view change if there are NODE txns being processed | | [INDY-2320](https://jira.hyperledger.org/browse/INDY-2320) |
 | A lagging node may be the only one who started view change in case of F Nodes added/promoted in 1 batch | | [INDY-2322](https://jira.hyperledger.org/browse/INDY-2322) |
