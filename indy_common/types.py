@@ -158,19 +158,18 @@ class RsSchemaField(MessageValidator):
         (RS_JSON_LD_ID, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
     )
     _base_types = None
+    max_size = JSON_LD_LIMIT
 
-    def __init__(self, max_size=None, **kwargs):
-        if max_size is not None:
-            if not isinstance(max_size, int):
-                raise PlenumTypeError('max_size', max_size, int)
-            if not max_size > 0:
-                raise PlenumValueError('max_size', max_size, '> 0')
-        super().__init__(**kwargs)
+    def validate(self, json_ld):
+        size = len(json_ld)
+        if size > self.max_size:
+            raise ValueError('length of rs_schema is ' + str(size) + '; should be <= ' + str(self.max_size))
+        super().validate(json_ld)
 
 
 class SetRsSchemaDataField(MessageValidator):
     schema = (
-        (RS_SCHEMA, RsSchemaField(max_size=JSON_LD_LIMIT)),
+        (RS_SCHEMA, RsSchemaField()),
     )
 
 

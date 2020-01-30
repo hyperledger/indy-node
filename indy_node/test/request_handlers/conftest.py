@@ -1,10 +1,7 @@
 import random
 
 import pytest
-from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG, CONTEXT_TYPE, \
-    RS_META, RS_META_TYPE, RS_META_NAME, RS_META_VERSION, RS_DATA, RS_JSON_LD_ID, RS_JSON_LD_CONTEXT, \
-    RS_JSON_LD_TYPE
-from indy_common.state.state_constants import MARKER_RS_SCHEMA
+from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG, CONTEXT_TYPE
 
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
@@ -19,6 +16,8 @@ from plenum.common.constants import KeyValueStorageType, TXN_TYPE, TXN_AUTHOR_AG
 from plenum.common.request import Request
 from plenum.common.util import randomString
 from storage.helper import initKeyValueStorage
+from indy_node.test.api.helper import req_id
+_reqId = req_id()
 
 
 @pytest.fixture(scope="module")
@@ -61,7 +60,7 @@ def rs_schema_request():
     authors_did, name, version, _type = "2hoqvcwupRTUNkXn6ArYzs", randomString(), "1.1", "8"
     _id = authors_did + ':' + _type + ':' + name + ':' + version
     return Request(identifier=authors_did,
-                   reqId=random.randint(1, 10000000000000000000),
+                   reqId=next(_reqId),
                    signature="sig",
                    protocolVersion=2,
                    operation={

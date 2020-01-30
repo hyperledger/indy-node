@@ -1,6 +1,8 @@
 import json
 
 import pytest
+
+from indy_node.test.rs_schema.templates import TEST_1
 from plenum.common.exceptions import RequestNackedException
 
 from plenum.test.helper import sdk_sign_and_submit_req, sdk_get_and_check_replies
@@ -55,36 +57,8 @@ def send_rs_schema_seq_no(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
     _, identifier = sdk_wallet_trustee
     authors_did, name, version, type = identifier, "ISO18023_Drivers_License", "1.1", "8"
     _id = identifier + ':' + type + ':' + name + ':' + version
-    schema = {
-            '@id': _id,
-            '@context': "ctx:sov:2f9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
-            '@type': "rdfs:Class",
-            "rdfs:comment": "ISO18013 International Driver License",
-            "rdfs:label": "Driver License",
-            "rdfs:subClassOf": {
-                "@id": "sch:Thing"
-            },
-            "driver": "Driver",
-            "dateOfIssue": "Date",
-            "dateOfExpiry": "Date",
-            "issuingAuthority": "Text",
-            "licenseNumber": "Text",
-            "categoriesOfVehicles": {
-                "vehicleType": "Text",
-                "vehicleType-input": {
-                    "@type": "sch:PropertyValueSpecification",
-                    "valuePattern": "^(A|B|C|D|BE|CE|DE|AM|A1|A2|B1|C1|D1|C1E|D1E)$"
-                },
-                "dateOfIssue": "Date",
-                "dateOfExpiry": "Date",
-                "restrictions": "Text",
-                "restrictions-input": {
-                    "@type": "sch:PropertyValueSpecification",
-                    "valuePattern": "^([A-Z]|[1-9])$"
-                }
-            },
-            "administrativeNumber": "Text"
-        }
+    schema = TEST_1
+    schema['@id'] = _id
     request_json = build_rs_schema_request(identifier, schema, name, version)
     schema_json, reply = sdk_write_rs_schema(looper, sdk_pool_handle, sdk_wallet_trustee, request_json)
     return reply['result']['txnMetadata']['seqNo']
@@ -95,36 +69,8 @@ def send_rs_schema_req(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
     _, identifier = sdk_wallet_trustee
     authors_did, name, version, type = identifier, "ISO18023_Drivers_License", "1.1", "8"
     _id = identifier + ':' + type + ':' + name + ':' + version
-    schema = {
-            '@id': _id,
-            '@context': "ctx:sov:2f9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
-            '@type': "rdfs:Class",
-            "rdfs:comment": "ISO18013 International Driver License",
-            "rdfs:label": "Driver License",
-            "rdfs:subClassOf": {
-                "@id": "sch:Thing"
-            },
-            "driver": "Driver",
-            "dateOfIssue": "Date",
-            "dateOfExpiry": "Date",
-            "issuingAuthority": "Text",
-            "licenseNumber": "Text",
-            "categoriesOfVehicles": {
-                "vehicleType": "Text",
-                "vehicleType-input": {
-                    "@type": "sch:PropertyValueSpecification",
-                    "valuePattern": "^(A|B|C|D|BE|CE|DE|AM|A1|A2|B1|C1|D1|C1E|D1E)$"
-                },
-                "dateOfIssue": "Date",
-                "dateOfExpiry": "Date",
-                "restrictions": "Text",
-                "restrictions-input": {
-                    "@type": "sch:PropertyValueSpecification",
-                    "valuePattern": "^([A-Z]|[1-9])$"
-                }
-            },
-            "administrativeNumber": "Text"
-        }
+    schema = TEST_1
+    schema['@id'] = _id
     request_json = build_rs_schema_request(identifier, schema, name, version)
     schema_json, reply = sdk_write_rs_schema(looper, sdk_pool_handle, sdk_wallet_trustee, request_json)
     return schema_json, reply
