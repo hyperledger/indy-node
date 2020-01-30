@@ -10,9 +10,33 @@ Environment = NamedTuple("Environment", [
     ("domainLedger", str)
 ])
 
-# Rich Schema
+# RICH SCHEMA
+RS_META = 'meta'
+RS_META_NAME = 'name'
+RS_META_TYPE = 'type'
+RS_META_VERSION = 'version'
+RS_META_ID = 'id'
+RS_DATA = 'data'
+RS_JSON_LD_ID = '@id'
+RS_JSON_LD_TYPE = '@type'
+RS_JSON_LD_CONTEXT = '@context'
 RS_TYPE = "type"
 META = "meta"
+# RS CLAIM DEF
+RS_CLAIM_DEF_FROM = "from"
+RS_CLAIM_DEF = "definition"
+RS_CLAIM_DEF_META_TYPE = "cred_def"
+RS_CLAIM_DEF_SIGNATURE_TYPE = "signature_type"
+RS_CLAIM_DEF_SCHEMA_REF = "ref"
+RS_CLAIM_DEF_TAG = "tag"
+RS_CLAIM_DEF_PUBLIC_KEYS = "data"
+RS_CLAIM_DEF_FROM = "origin"
+RS_CLAIM_DEF_PRIMARY = "primary"
+RS_CLAIM_DEF_REVOCATION = "revocation"
+RS_CLAIM_DEF_TAG_DEFAULT = "tag"
+RS_CLAIM_DEF_CL = "CL"
+DOMAIN_LEDGER_ID = 1
+
 # CONTEXT
 CONTEXT_NAME = "name"
 CONTEXT_VERSION = "version"
@@ -173,6 +197,9 @@ CHANGE_KEY = IndyTransactions.CHANGE_KEY.value
 # Rich Schema
 SET_CONTEXT = IndyTransactions.SET_CONTEXT.value
 GET_CONTEXT = IndyTransactions.GET_CONTEXT.value
+SET_RS_CLAIM_DEF = IndyTransactions.SET_RS_CLAIM_DEF.value
+GET_RS_CLAIM_DEF = IndyTransactions.GET_RS_CLAIM_DEF.value
+
 
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value
