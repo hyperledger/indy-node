@@ -19,16 +19,18 @@ def test_send_rs_encoding(looper, sdk_pool_handle, sdk_wallet_endorser):
 
 def test_can_not_send_same_rs_encoding(looper, sdk_pool_handle, sdk_wallet_endorser):
     _, identifier = sdk_wallet_endorser
-    authors_did, name, version, type = identifier, "indy_encoding_sha", "1.1", "9"
+    authors_did, name, version, type = identifier, "indy_encoding_sha", "1.2", "9"
     _id = identifier + ':' + type + ':' + name + ':' + version
     encoding = "UTF-8_SHA-256-2"
     request_json = build_rs_encoding_request(identifier, encoding, name, version)
     sdk_write_request_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
 
-    with pytest.raises(RequestRejectedException,
-                       match=str(AuthConstraintForbidden())):
-        request_json = build_rs_encoding_request(identifier, encoding, name, version)
+    request_json = build_rs_encoding_request(identifier, encoding, name, version)
+    with pytest.raises(RequestRejectedException) as ex_info:
         sdk_write_request_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
+    ex_info.match(
+        "The action is forbidden"
+    )
 
 
 def test_can_not_send_rs_encoding_missing_meta_type(looper, sdk_pool_handle, sdk_wallet_endorser):
@@ -64,7 +66,7 @@ def test_can_not_send_rs_encoding_missing_meta_type(looper, sdk_pool_handle, sdk
 
 def test_can_not_send_rs_encoding_invalid_meta_type(looper, sdk_pool_handle, sdk_wallet_endorser):
     _, identifier = sdk_wallet_endorser
-    authors_did, name, version, type = identifier, "indy_encoding_sha", "1.3", "9"
+    authors_did, name, version, type = identifier, "indy_encoding_sha", "1.4", "9"
     _id = identifier + ':' + type + ':' + name + ':' + version
     encoding = "UTF-8_SHA-256-2"
     reqId = uuid.uuid1().fields[0]

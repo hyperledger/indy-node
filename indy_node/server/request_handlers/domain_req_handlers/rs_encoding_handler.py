@@ -32,8 +32,8 @@ class RsEncodingHandler(WriteRequestHandler):
         name = request.operation[RS_META][RS_META_NAME]
         version = request.operation[RS_META][RS_META_VERSION]
         state_path = RsEncodingHandler.make_state_path(author, name, version)
-        schema, _, _ = self.get_from_state(state_path)
-        if schema:
+        encoding, _, _ = self.get_from_state(state_path)
+        if encoding:
             self.write_req_validator.validate(request,
                                               [AuthActionEdit(txn_type=SET_RS_ENCODING,
                                                               field='*',
