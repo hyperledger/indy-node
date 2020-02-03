@@ -3,7 +3,7 @@ import json
 import pytest
 from indy_common.authorize.auth_constraints import AuthConstraintForbidden
 from indy_common.types import SetRsSchemaDataField
-from indy_node.test.api.helper import sdk_write_rs_schema_and_check, build_rs_schema_request
+from indy_node.test.api.helper import sdk_write_request_and_check, build_rs_schema_request
 from indy_node.test.rs_schema.templates import TEST_1
 from plenum.common.exceptions import RequestRejectedException
 from indy_node.test.api.helper import req_id
@@ -17,7 +17,7 @@ def test_send_rs_schema_multiple_attrib(looper, sdk_pool_handle, sdk_wallet_endo
     schema = TEST_1
     schema['@id'] = _id
     request_json = build_rs_schema_request(identifier, schema, name, version)
-    sdk_write_rs_schema_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
+    sdk_write_request_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
 
 
 def test_send_rs_schema_one_attrib(looper, sdk_pool_handle, sdk_wallet_endorser):
@@ -27,7 +27,7 @@ def test_send_rs_schema_one_attrib(looper, sdk_pool_handle, sdk_wallet_endorser)
     schema = {'@id': _id,
               '@type': "0od"}
     request_json = build_rs_schema_request(identifier, schema, name, version)
-    sdk_write_rs_schema_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
+    sdk_write_request_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
 
 
 def test_can_not_send_same_rs_schema(looper, sdk_pool_handle, sdk_wallet_endorser):
@@ -37,12 +37,12 @@ def test_can_not_send_same_rs_schema(looper, sdk_pool_handle, sdk_wallet_endorse
     schema = {'@id': _id,
               '@type': "0od"}
     request_json = build_rs_schema_request(identifier, schema, name, version)
-    sdk_write_rs_schema_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
+    sdk_write_request_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
 
     with pytest.raises(RequestRejectedException,
                        match=str(AuthConstraintForbidden())):
         request_json = build_rs_schema_request(identifier, schema, name, version)
-        sdk_write_rs_schema_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
+        sdk_write_request_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
 
 
 def test_can_not_send_rs_schema_missing_id(looper, sdk_pool_handle, sdk_wallet_endorser):
@@ -53,7 +53,7 @@ def test_can_not_send_rs_schema_missing_id(looper, sdk_pool_handle, sdk_wallet_e
     request_json = build_rs_schema_request(identifier, schema, name, version)
 
     with pytest.raises(Exception) as ex_info:
-        sdk_write_rs_schema_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
+        sdk_write_request_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
     ex_info.match(
         "validation error"
     )
@@ -67,7 +67,7 @@ def test_can_not_send_rs_schema_missing_type(looper, sdk_pool_handle, sdk_wallet
     request_json = build_rs_schema_request(identifier, schema, name, version)
 
     with pytest.raises(Exception) as ex_info:
-        sdk_write_rs_schema_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
+        sdk_write_request_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
     ex_info.match(
         "validation error"
     )
@@ -97,7 +97,7 @@ def test_can_not_send_rs_schema_missing_meta_type(looper, sdk_pool_handle, sdk_w
     request_json = json.dumps(txn_dict)
 
     with pytest.raises(Exception) as ex_info:
-        sdk_write_rs_schema_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
+        sdk_write_request_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
     ex_info.match("validation error")
 
 
@@ -125,7 +125,7 @@ def test_can_not_send_rs_schema_invalid_meta_type(looper, sdk_pool_handle, sdk_w
     request_json = json.dumps(txn_dict)
 
     with pytest.raises(Exception) as ex_info:
-        sdk_write_rs_schema_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
+        sdk_write_request_and_check(looper, sdk_pool_handle, sdk_wallet_endorser, request_json)
     ex_info.match(
         "validation error"
     )

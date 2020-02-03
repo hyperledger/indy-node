@@ -323,16 +323,6 @@ def sdk_write_request_and_check(looper, sdk_pool_handle, sdk_wallet, request):
     return rep
 
 
-def sdk_write_rs_schema(looper, sdk_pool_handle, sdk_wallet, request):
-    return sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, request))[1]
-
-
-def sdk_write_rs_schema_and_check(looper, sdk_pool_handle, sdk_wallet, request):
-    req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, request)
-    rep = sdk_get_and_check_replies(looper, [req])
-    return rep
-
-
 def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context=[], name="", version=""):
     _wh, did = sdk_wallet_steward
     # create json

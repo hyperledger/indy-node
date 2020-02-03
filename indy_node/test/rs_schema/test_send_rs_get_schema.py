@@ -7,7 +7,7 @@ from plenum.common.exceptions import RequestNackedException
 
 from plenum.test.helper import sdk_sign_and_submit_req, sdk_get_and_check_replies
 
-from indy_node.test.api.helper import sdk_write_rs_schema, build_rs_schema_request, \
+from indy_node.test.api.helper import sdk_write_request, build_rs_schema_request, \
     build_get_rs_schema_request
 from indy_node.test.helper import createUuidIdentifier
 
@@ -48,7 +48,7 @@ def send_rs_schema(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
             "administrativeNumber": "Text"
         }
     request_json = build_rs_schema_request(identifier, schema, name, version)
-    reply = sdk_write_rs_schema(looper, sdk_pool_handle, sdk_wallet_trustee, request_json)
+    reply = sdk_write_request(looper, sdk_pool_handle, sdk_wallet_trustee, request_json)
     return reply['result']['txnMetadata']['txnId']
 
 
@@ -60,7 +60,7 @@ def send_rs_schema_seq_no(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
     schema = TEST_1
     schema['@id'] = _id
     request_json = build_rs_schema_request(identifier, schema, name, version)
-    schema_json, reply = sdk_write_rs_schema(looper, sdk_pool_handle, sdk_wallet_trustee, request_json)
+    schema_json, reply = sdk_write_request(looper, sdk_pool_handle, sdk_wallet_trustee, request_json)
     return reply['result']['txnMetadata']['seqNo']
 
 
@@ -72,7 +72,7 @@ def send_rs_schema_req(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
     schema = TEST_1
     schema['@id'] = _id
     request_json = build_rs_schema_request(identifier, schema, name, version)
-    schema_json, reply = sdk_write_rs_schema(looper, sdk_pool_handle, sdk_wallet_trustee, request_json)
+    schema_json, reply = sdk_write_request(looper, sdk_pool_handle, sdk_wallet_trustee, request_json)
     return schema_json, reply
 
 
