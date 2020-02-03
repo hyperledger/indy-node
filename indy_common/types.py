@@ -45,9 +45,9 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     AUTH_TYPE, \
     FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, RS_TYPE, CONTEXT_TYPE, \
     SET_RS_CRED_DEF, RS_META_VERSION, RS_META_NAME, RS_META_TYPE, RS_CRED_DEF, RS_META, \
-    RS_CRED_DEF_META_TYPE, RS_CRED_DEF_FROM, GET_RS_CRED_DEF, META, TAG_LIMIT_SIZE, RS_CLAIM_DEF_MAPPING, \
-    RS_CLAIM_DEF_CONTEXT, RS_CLAIM_DEF_ISSUER, RS_CLAIM_DEF_SIGNATURE_TYPE, RS_CLAIM_DEF_PRIMARY, \
-    RS_CLAIM_DEF_REVOCATION
+    RS_CRED_DEF_META_TYPE, RS_CRED_DEF_FROM, GET_RS_CRED_DEF, META, TAG_LIMIT_SIZE, RS_CRED_DEF_MAPPING, \
+    RS_CRED_DEF_CONTEXT, RS_CRED_DEF_ISSUER, RS_CRED_DEF_SIGNATURE_TYPE, RS_CRED_DEF_PRIMARY, \
+    RS_CRED_DEF_REVOCATION
 from indy_common.version import SchemaVersion, ContextVersion, RsMetaVersion
 
 
@@ -158,12 +158,12 @@ class RsCredDefField(MessageValidator):
     schema = (
         (RS_JSON_LD_ID, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (RS_JSON_LD_TYPE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (RS_CLAIM_DEF_CONTEXT, TxnSeqNoField()),
-        (RS_CLAIM_DEF_MAPPING, TxnSeqNoField()),
-        (RS_CLAIM_DEF_ISSUER, IdentifierField()),
-        (RS_CLAIM_DEF_SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
-        (RS_CLAIM_DEF_PRIMARY, AnyMapField()),
-        (RS_CLAIM_DEF_REVOCATION, AnyMapField()),
+        (RS_CRED_DEF_CONTEXT, TxnSeqNoField()),
+        (RS_CRED_DEF_MAPPING, TxnSeqNoField()),
+        (RS_CRED_DEF_ISSUER, IdentifierField()),
+        (RS_CRED_DEF_SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
+        (RS_CRED_DEF_PRIMARY, AnyMapField()),
+        (RS_CRED_DEF_REVOCATION, AnyMapField()),
     )
     _base_types = None
     max_size = JSON_LD_LIMIT

@@ -6,7 +6,7 @@ from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstrain
     AuthConstraintForbidden
 from indy_common.constants import ENDORSER, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
     CLAIM_DEF, SCHEMA, SET_CONTEXT, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF, ATTRIB, \
-    AUTH_RULES, SET_RS_CLAIM_DEF, GET_RS_CLAIM_DEF
+    AUTH_RULES, SET_RS_CRED_DEF, GET_RS_CRED_DEF
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML, \
     TXN_AUTHOR_AGREEMENT_DISABLE
 
@@ -98,11 +98,11 @@ edit_claim_def = AuthActionEdit(txn_type=CLAIM_DEF,
                                 old_value='*',
                                 new_value='*')
 
-add_rs_claim_def = AuthActionAdd(txn_type=SET_RS_CLAIM_DEF,
+add_rs_claim_def = AuthActionAdd(txn_type=SET_RS_CRED_DEF,
                                  field='*',
                                  value='*')
 
-edit_rs_claim_def = AuthActionEdit(txn_type=SET_RS_CLAIM_DEF,
+edit_rs_claim_def = AuthActionEdit(txn_type=SET_RS_CRED_DEF,
                                    field='*',
                                    old_value='*',
                                    new_value='*')

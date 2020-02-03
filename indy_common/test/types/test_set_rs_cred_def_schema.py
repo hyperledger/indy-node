@@ -87,7 +87,7 @@ def test_has_expected_validators():
     "type": "cred_def"
 },
 "data":{
-    cred_def : {
+    definition : {
       "@context_ref": "ctx:sov:44bBhN4mwLJQQCCS2CG9f53JsuyqLwz3MtxM9uLw",
       "@id": "cdf:sov:Q6kuSqnxE57waPFs2xAs7q:3:CL:12:CDL1",
       "@type": "sch:sov:22KpkXgecryx9k7N6XN1QoN3gXwBkSU8SfyyYQG",

@@ -23,21 +23,21 @@ RS_JSON_LD_CONTEXT = '@context'
 RS_TYPE = "type"
 META = "meta"
 # RS CLAIM DEF
-RS_CLAIM_DEF_MAPPING = "mapping_ref"
-RS_CLAIM_DEF_CONTEXT = "@context_ref"
-RS_CLAIM_DEF_FROM = "from"
-RS_CLAIM_DEF_ISSUER = "issuer"
-RS_CLAIM_DEF = "definition"
-RS_CLAIM_DEF_META_TYPE = "cred_def"
-RS_CLAIM_DEF_SIGNATURE_TYPE = "signature_type"
-RS_CLAIM_DEF_SCHEMA_REF = "ref"
-RS_CLAIM_DEF_TAG = "tag"
-RS_CLAIM_DEF_PUBLIC_KEYS = "data"
-RS_CLAIM_DEF_FROM = "origin"
-RS_CLAIM_DEF_PRIMARY = "primary"
-RS_CLAIM_DEF_REVOCATION = "revocation"
-RS_CLAIM_DEF_TAG_DEFAULT = "tag"
-RS_CLAIM_DEF_CL = "CL"
+RS_CRED_DEF_MAPPING = "mapping_ref"
+RS_CRED_DEF_CONTEXT = "@context_ref"
+RS_CRED_DEF_FROM = "from"
+RS_CRED_DEF_ISSUER = "issuer"
+RS_CRED_DEF = "definition"
+RS_CRED_DEF_META_TYPE = "cred_def"
+RS_CRED_DEF_SIGNATURE_TYPE = "signature_type"
+RS_CRED_DEF_SCHEMA_REF = "ref"
+RS_CRED_DEF_TAG = "tag"
+RS_CRED_DEF_PUBLIC_KEYS = "data"
+RS_CRED_DEF_FROM = "origin"
+RS_CRED_DEF_PRIMARY = "primary"
+RS_CRED_DEF_REVOCATION = "revocation"
+RS_CRED_DEF_TAG_DEFAULT = "tag"
+RS_CRED_DEF_CL = "CL"
 DOMAIN_LEDGER_ID = 1
 
 # CONTEXT
@@ -200,8 +200,9 @@ CHANGE_KEY = IndyTransactions.CHANGE_KEY.value
 # Rich Schema
 SET_CONTEXT = IndyTransactions.SET_CONTEXT.value
 GET_CONTEXT = IndyTransactions.GET_CONTEXT.value
-SET_RS_CLAIM_DEF = IndyTransactions.SET_RS_CLAIM_DEF.value
-GET_RS_CLAIM_DEF = IndyTransactions.GET_RS_CLAIM_DEF.value
+SET_RS_CRED_DEF = IndyTransactions.SET_RS_CRED_DEF.value
+GET_RS_CRED_DEF = IndyTransactions.GET_RS_CRED_DEF.value
+SET_MAPPING = IndyTransactions.SET_MAPPING.value
 
 
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
