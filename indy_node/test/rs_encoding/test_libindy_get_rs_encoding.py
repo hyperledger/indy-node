@@ -43,6 +43,12 @@ def send_rs_encoding_req(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
     return encoding_json, reply
 
 
+def send_bad_request(looper, pool, wallet, request, error_message):
+    with pytest.raises(RequestNackedException) as e:
+        sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(pool, wallet, request)])
+    e.match(error_message)
+
+
 def test_send_get_rs_encoding_succeeds(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, send_rs_encoding):
     _, did = sdk_wallet_trustee
@@ -98,9 +104,7 @@ def test_send_get_rs_encoding_fails_with_invalid_version_syntax(
     identifier, type, name, version = send_rs_encoding.split(':')
     _id = identifier + ':' + type + ':' + name + ':' + "asd"
     request = build_get_rs_encoding_request(did, _id)
-    with pytest.raises(RequestNackedException) as e:
-        sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
-    e.match("Invalid version: 'asd'")
+    send_bad_request(looper, sdk_pool_handle, sdk_wallet_trustee, request, "Invalid version: 'asd'")
 
 
 def test_send_get_rs_encoding_fails_without_version(
@@ -112,9 +116,7 @@ def test_send_get_rs_encoding_fails_without_version(
     request = json.loads(request)
     del request['operation']['meta']['version']
     request = json.dumps(request)
-    with pytest.raises(RequestNackedException) as e:
-        sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
-    e.match('missed fields - version')
+    send_bad_request(looper, sdk_pool_handle, sdk_wallet_trustee, request, 'missed fields - version')
 
 
 def test_send_get_rs_encoding_fails_without_name(
@@ -126,9 +128,7 @@ def test_send_get_rs_encoding_fails_without_name(
     request = json.loads(request)
     del request['operation']['meta']['name']
     request = json.dumps(request)
-    with pytest.raises(RequestNackedException) as e:
-        sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
-    e.match('missed fields - name')
+    send_bad_request(looper, sdk_pool_handle, sdk_wallet_trustee, request, 'missed fields - name')
 
 
 def test_send_get_rs_encoding_fails_without_from(
@@ -140,9 +140,7 @@ def test_send_get_rs_encoding_fails_without_from(
     request = json.loads(request)
     del request['operation']['from']
     request = json.dumps(request)
-    with pytest.raises(RequestNackedException) as e:
-        sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
-    e.match('missed fields - from')
+    send_bad_request(looper, sdk_pool_handle, sdk_wallet_trustee, request, 'missed fields - from')
 
 
 def test_get_rs_encoding_fails_without_meta_data_type(
@@ -154,6 +152,4 @@ def test_get_rs_encoding_fails_without_meta_data_type(
     request = json.loads(request)
     del request['operation']['meta']['type']
     request = json.dumps(request)
-    with pytest.raises(RequestNackedException) as e:
-        sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
-    e.match('missed fields - type')
+    send_bad_request(looper, sdk_pool_handle, sdk_wallet_trustee, request, 'missed fields - type')

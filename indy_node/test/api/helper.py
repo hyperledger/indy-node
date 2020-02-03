@@ -266,8 +266,8 @@ def build_get_rs_encoding_request( did, txnId):
         "reqId": next(_reqId),
         "protocolVersion": 2
     }
-    encoding_json = json.dumps(txn_dict)
-    return encoding_json
+    json_string = json.dumps(txn_dict)
+    return json_string
 
 
 def build_rs_encoding_request(identifier, encoding="", name="", version=""):
