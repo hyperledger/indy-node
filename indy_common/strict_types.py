@@ -31,8 +31,7 @@ class strict_types:
 
         if self.is_complex_type(type_b):
             type_b = tuple(
-                getattr(type_b, '__args__', None) or
-                getattr(type_b, '__union_set_params__', None)
+                getattr(type_b, '__args__', None) or getattr(type_b, '__union_set_params__', None)
             )
 
         if self.is_complex_type(type_a):

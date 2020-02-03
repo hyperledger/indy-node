@@ -12,6 +12,7 @@
     * [REVOC_REG_DEF](#revoc_reg_def)
     * [REVOC_REG_ENTRY](#revoc_reg_entry)
     * [SET_CONTEXT](#set_context)
+    * [SET_RICH_SCHEMA](#set_rich_schema)
 
 * [Pool Ledger](#pool-ledger)
     * [NODE](#node)
@@ -129,6 +130,7 @@ transaction specific data:
         - AUTH_RULE = "120"
         - AUTH_RULES = "122"
         - SET_CONTEXT = "200"
+        - SET_RICH_SCHEMA = "201"
 
     - `protocolVersion` (integer; optional):
 
@@ -732,6 +734,193 @@ If the Context needs to be evolved, a new Context with a new version or new name
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
         }]
+    }
+}
+```
+
+
+#### SET_RICH_SCHEMA
+Adds Rich Schema.
+
+It's not possible to update existing Rich Schema.
+So, if the Rich Schema needs to be evolved, a new Rich Schema with a new version or name needs to be created.
+
+- `data` (dict):
+
+     Dictionary with Rich Schema's data:
+     
+    - `schema`: This value must be a json-ld, rich schema object. json-ld supports many parameters that are optional for a rich schema txn:
+        - `@id`:  The value of this property must be (or map to, via a context object) a URI.
+        - `@type`: The value of this property must be (or map to, via a context object) a URI.
+        - `@context`(optional): If present, the value of this property must be a context object or a URI which can be dereferenced to obtain a context object.
+        
+- `meta` (dict)
+
+    Dictionary with Rich Schema's metadata
+
+    - `name` (string): schema's name
+    - `version` (string): schema's version
+    - `type` (string): "sch"
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "201",
+        "data":{
+            "schema": {      
+                "@id":"<rich schema id>"    
+                "@context": {
+                    "schema": "http://schema.org/",
+                    "bibo": "http://purl.org/ontology/bibo/",
+                    "dc": "http://purl.org/dc/elements/1.1/",
+                    "dcat": "http://www.w3.org/ns/dcat#",
+                    "dct": "http://purl.org/dc/terms/",
+                    "dcterms": "http://purl.org/dc/terms/",
+                    "dctype": "http://purl.org/dc/dcmitype/",
+                    "eli": "http://data.europa.eu/eli/ontology#",
+                    "foaf": "http://xmlns.com/foaf/0.1/",
+                    "owl": "http://www.w3.org/2002/07/owl#",
+                    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+                    "rdfa": "http://www.w3.org/ns/rdfa#",
+                    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+                    "schema": "http://schema.org/",
+                    "skos": "http://www.w3.org/2004/02/skos/core#",
+                    "snomed": "http://purl.bioontology.org/ontology/SNOMEDCT/",
+                    "void": "http://rdfs.org/ns/void#",
+                    "xsd": "http://www.w3.org/2001/XMLSchema#",
+                    "xsd1": "hhttp://www.w3.org/2001/XMLSchema#"
+                },
+                "@graph": [
+                    {
+                        "@id": "schema:recipeIngredient",
+                        "@type": "rdf:Property",
+                        "rdfs:comment": "A single ingredient used in the recipe, e.g. sugar, flour or garlic.",
+                        "rdfs:label": "recipeIngredient",
+                        "rdfs:subPropertyOf": {
+                            "@id": "schema:supply"
+                        },
+                        "schema:domainIncludes": {
+                            "@id": "schema:Recipe"
+                        },
+                        "schema:rangeIncludes": {
+                            "@id": "schema:Text"
+                        }
+                    },
+                    {
+                        "@id": "schema:ingredients",
+                        "schema:supersededBy": {
+                            "@id": "schema:recipeIngredient"
+                        }
+                    }
+                ]
+            }
+        },
+        "meta": {
+            "name":"recipeIngredient",
+            "version":"1.0",
+            "type": "sch"
+        },
+    },
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+}
+```
+*Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "ver": 1,
+        "txn": {
+            "type":"201",
+            "protocolVersion":2,       
+            "data": {
+                "ver":1,
+                "data":{
+                    "schema": {    
+                        "@id": "<rich schema id>"      
+                        "@context": {
+                            "schema": "http://schema.org/",
+                            "bibo": "http://purl.org/ontology/bibo/",
+                            "dc": "http://purl.org/dc/elements/1.1/",
+                            "dcat": "http://www.w3.org/ns/dcat#",
+                            "dct": "http://purl.org/dc/terms/",
+                            "dcterms": "http://purl.org/dc/terms/",
+                            "dctype": "http://purl.org/dc/dcmitype/",
+                            "eli": "http://data.europa.eu/eli/ontology#",
+                            "foaf": "http://xmlns.com/foaf/0.1/",
+                            "owl": "http://www.w3.org/2002/07/owl#",
+                            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+                            "rdfa": "http://www.w3.org/ns/rdfa#",
+                            "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+                            "schema": "http://schema.org/",
+                            "skos": "http://www.w3.org/2004/02/skos/core#",
+                            "snomed": "http://purl.bioontology.org/ontology/SNOMEDCT/",
+                            "void": "http://rdfs.org/ns/void#",
+                            "xsd": "http://www.w3.org/2001/XMLSchema#",
+                            "xsd1": "hhttp://www.w3.org/2001/XMLSchema#"
+                        },
+                        "@graph": [
+                            {
+                                "@id": "schema:recipeIngredient",
+                                "@type": "rdf:Property",
+                                "rdfs:comment": "A single ingredient used in the recipe, e.g. sugar, flour or garlic.",
+                                "rdfs:label": "recipeIngredient",
+                                "rdfs:subPropertyOf": {
+                                    "@id": "schema:supply"
+                                },
+                                "schema:domainIncludes": {
+                                    "@id": "schema:Recipe"
+                                },
+                                "schema:rangeIncludes": {
+                                    "@id": "schema:Text"
+                                }
+                            },
+                            {
+                                "@id": "schema:ingredients",
+                                "schema:supersededBy": {
+                                    "@id": "schema:recipeIngredient"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "meta": {
+                    "name":"recipeIngredient",
+                    "version":"1.0",
+                    "type": "sch",
+                    "tag": "sometag"
+                },
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1:recipeIngredient:1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
+		
     }
 }
 ```

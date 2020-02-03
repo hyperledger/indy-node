@@ -20,9 +20,8 @@ def req_id():
 
 
 _reqId = req_id()
-
-
 # Utility predicates
+
 
 def is_one_of(*args):
     def check(v):
@@ -209,6 +208,48 @@ def sdk_build_schema_request(looper, sdk_wallet_client,
     )
 
 
+def build_get_rs_schema_request( did, txnId):
+    identifier, type, name, version = txnId.split(':')
+    #_id = identifier + ':' + type + ':' + name + ':' + version
+    txn_dict = {
+        'operation': {
+            'type': "301",
+            'from': identifier,
+            'meta': {
+                'name': name,
+                'version': version,
+                'type': 'sch' #type
+            }
+        },
+        "identifier": did,
+        "reqId": next(_reqId),
+        "protocolVersion": 2
+    }
+    schema_json = json.dumps(txn_dict)
+    return schema_json
+
+
+def build_rs_schema_request(identifier, schema={}, name="", version=""):
+    txn_dict = {
+        'operation': {
+            'type': "201",
+            'meta': {
+                'name': name,
+                'version': version,
+                'type': "sch"
+            },
+            'data': {
+                'schema': schema
+            }
+        },
+        "identifier": identifier,
+        "reqId": next(_reqId),
+        "protocolVersion": 2
+    }
+    schema_json = json.dumps(txn_dict)
+    return schema_json
+
+
 def build_get_rs_encoding_request( did, txnId):
     identifier, type, name, version = txnId.split(':')
     txn_dict = {
@@ -277,6 +318,16 @@ def sdk_write_request(looper, sdk_pool_handle, sdk_wallet, request):
 
 
 def sdk_write_request_and_check(looper, sdk_pool_handle, sdk_wallet, request):
+    req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, request)
+    rep = sdk_get_and_check_replies(looper, [req])
+    return rep
+
+
+def sdk_write_rs_schema(looper, sdk_pool_handle, sdk_wallet, request):
+    return sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, request))[1]
+
+
+def sdk_write_rs_schema_and_check(looper, sdk_pool_handle, sdk_wallet, request):
     req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, request)
     rep = sdk_get_and_check_replies(looper, [req])
     return rep

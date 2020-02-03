@@ -113,9 +113,9 @@ class LoadRunner:
     def __init__(self, clients=0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
                  seed=["000000000000000000000000Trustee1"], req_kind="nym", batch_size=10, refresh_rate=10,
                  buff_req=30, out_dir=".", val_sep="|", wallet_key="key", mode="p", pool_config='',
-                 sync_mode="freeflow", load_rate=10, out_file="", load_time=0, taa_text="", taa_version="", shift=60,
-                 nodes_untouched=0, ext_set=None, client_runner=LoadClient.run, log_lvl=logging.INFO,
-                 short_stat=False):
+                 sync_mode="freeflow", load_rate=10, out_file="", load_time=0, taa_text="", taa_version="",
+                 promotion_shift=60, nodes_untouched=0, ext_set=None, client_runner=LoadClient.run,
+                 log_lvl=logging.INFO, short_stat=False):
         self._client_runner = client_runner
         self._clients = dict()  # key process future; value ClientRunner
         self._loop = asyncio.get_event_loop()
@@ -143,7 +143,7 @@ class LoadRunner:
         self._batch_rate = 1 / lr
         self._taa_text = taa_text
         self._taa_version = taa_version
-        self._shift = shift
+        self._promotion_shift = promotion_shift
         self._nodes_untouched = nodes_untouched
         self._ext_set = ext_set
         if pool_config:
@@ -504,7 +504,9 @@ if __name__ == '__main__':
                     dict_args["batch_size"], dict_args["refresh_rate"], dict_args["buff_req"], out_dir,
                     dict_args["val_sep"], dict_args["wallet_key"], dict_args["mode"], dict_args["pool_config"],
                     dict_args["sync_mode"], dict_args["load_rate"], dict_args["out_file"], dict_args["load_time"],
-                    dict_args["taa_text"], dict_args["taa_version"], dict_args["promotion_shift"], dict_args["ext_set"],
+                    dict_args["taa_text"], dict_args["taa_version"], dict_args["promotion_shift"],
+                    dict_args["nodes_untouched"], dict_args["ext_set"],
                     client_runner=LoadClient.run if not dict_args["ext_set"] else LoadClientFees.run,
-                    log_lvl=log_lvl, short_stat=dict_args["short_stat"])
+                    log_lvl=log_lvl,
+                    short_stat=dict_args["short_stat"])
     tr.load_run()

@@ -12,8 +12,7 @@ def test_node_version_fallback_str():
 
 def test_node_version_fallback_repr():
     version = '1.2.3'
-    assert (repr(NodeVersionFallback(version)) ==
-            "{}(version='{}')".format(NodeVersionFallback.__name__, version))
+    assert (repr(NodeVersionFallback(version)) == "{}(version='{}')".format(NodeVersionFallback.__name__, version))
 
 
 @pytest.mark.parametrize(

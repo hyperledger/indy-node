@@ -20,13 +20,17 @@ RS_DATA = 'data'
 RS_JSON_LD_ID = '@id'
 RS_JSON_LD_TYPE = '@type'
 RS_JSON_LD_CONTEXT = '@context'
+# RICH SCHEMA SCHEMA
+RS_SCHEMA_FROM = "from"
+RS_SCHEMA = "schema"
+RS_SCHEMA_META_TYPE = "sch"
+DOMAIN_LEDGER_ID = 1
 RS_TYPE = "type"
 META = "meta"
 # ENCODING
 RS_ENCODING_FROM = "from"
 RS_ENCODING = "encoding"
 RS_ENCODING_META_TYPE = "encode"
-DOMAIN_LEDGER_ID = 1
 
 # CONTEXT
 CONTEXT_NAME = "name"
@@ -190,6 +194,8 @@ SET_CONTEXT = IndyTransactions.SET_CONTEXT.value
 GET_CONTEXT = IndyTransactions.GET_CONTEXT.value
 SET_RS_ENCODING = IndyTransactions.SET_RS_ENCODING.value
 GET_RS_ENCODING = IndyTransactions.GET_RS_ENCODING.value
+SET_RS_SCHEMA = IndyTransactions.SET_RS_SCHEMA.value
+GET_RS_SCHEMA = IndyTransactions.GET_RS_SCHEMA.value
 
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value

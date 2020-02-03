@@ -44,8 +44,9 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
     FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, RS_TYPE, CONTEXT_TYPE, \
-    SET_RS_ENCODING, RS_META_VERSION, RS_META_NAME, RS_META_TYPE, RS_ENCODING, RS_META, \
-    RS_ENCODING_META_TYPE, RS_ENCODING_FROM, GET_RS_ENCODING, META, TAG_LIMIT_SIZE
+    SET_RS_SCHEMA, SET_RS_ENCODING, RS_META_VERSION, RS_META_NAME, RS_META_TYPE, RS_SCHEMA, RS_ENCODING, RS_META, \
+    RS_SCHEMA_META_TYPE, RS_SCHEMA_FROM, GET_RS_SCHEMA, RS_ENCODING_META_TYPE, RS_ENCODING_FROM, GET_RS_ENCODING, \
+    META, TAG_LIMIT_SIZE
 from indy_common.version import SchemaVersion, ContextVersion, RsMetaVersion
 
 
@@ -150,6 +151,13 @@ class RsEncodingMetaField(MessageValidator):
         (RS_META_VERSION, VersionField(version_cls=RsMetaVersion)),
     )
 
+class RsSchemaMetaField(MessageValidator):
+    schema = (
+        (RS_META_TYPE, ConstantField(RS_SCHEMA_META_TYPE)),
+        (RS_META_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_META_VERSION, VersionField(version_cls=RsMetaVersion)),
+    )
+
 
 class SetRsEncodingDataField(MessageValidator):
     schema = (
@@ -170,6 +178,44 @@ class ClientGetRsEncodingOperation(MessageValidator):
         (TXN_TYPE, ConstantField(GET_RS_ENCODING)),
         (RS_ENCODING_FROM, IdentifierField()),
         (META, RsEncodingMetaField()),
+    )
+
+
+class RsSchemaField(MessageValidator):
+    SCHEMA_IS_STRICT = False
+    schema = (
+        (RS_JSON_LD_TYPE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_JSON_LD_ID, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+    )
+    _base_types = None
+    max_size = JSON_LD_LIMIT
+
+    def validate(self, json_ld):
+        size = len(json_ld)
+        if size > self.max_size:
+            raise ValueError('length of rs_schema is ' + str(size) + '; should be <= ' + str(self.max_size))
+        super().validate(json_ld)
+
+
+class SetRsSchemaDataField(MessageValidator):
+    schema = (
+        (RS_SCHEMA, RsSchemaField()),
+    )
+
+
+class ClientSetRsSchemaOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(SET_RS_SCHEMA)),
+        (RS_META, RsSchemaMetaField()),
+        (DATA, SetRsSchemaDataField()),
+    )
+
+
+class ClientGetRsSchemaOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(GET_RS_SCHEMA)),
+        (RS_SCHEMA_FROM, IdentifierField()),
+        (META, RsSchemaMetaField()),
     )
 
 
@@ -529,7 +575,9 @@ class ClientOperationField(PClientOperationField):
         SET_CONTEXT: ClientSetContextOperation(),  # Rich Schema
         GET_CONTEXT: ClientGetContextOperation(),
         SET_RS_ENCODING: ClientSetRsEncodingOperation(),
-        GET_RS_ENCODING: ClientGetRsEncodingOperation()
+        GET_RS_ENCODING: ClientGetRsEncodingOperation(),
+        SET_RS_SCHEMA: ClientSetRsSchemaOperation(),
+        GET_RS_SCHEMA: ClientGetRsSchemaOperation()
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class

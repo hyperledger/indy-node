@@ -24,7 +24,7 @@ def test_attrib_with_enc_raw_hash_at_same_time_fails():
     }
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
-    ex_info.match("validation error \[ClientAttribOperation\]: only one field "
+    ex_info.match(r"validation error \[ClientAttribOperation\]: only one field "
                   "from {}, {}, {} is expected"
                   "".format(RAW, ENC, HASH))
 
@@ -37,7 +37,7 @@ def test_attrib_without_enc_raw_hash_fails():
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
     ex_info.match(
-        "validation error \[ClientAttribOperation\]: missed fields - {}, {}, {}"
+        r"validation error \[ClientAttribOperation\]: missed fields - {}, {}, {}"
         "".format(
             RAW,
             ENC,
@@ -52,8 +52,8 @@ def test_attrib_with_raw_string_fails():
     }
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
-    ex_info.match("validation error \[ClientAttribOperation\]: should be a "
-                  "valid JSON string \({}=foo\)".format(RAW))
+    ex_info.match(r"validation error \[ClientAttribOperation\]: should be a "
+                  r"valid JSON string \({}=foo\)".format(RAW))
 
 
 def test_attrib_with_raw_empty_json_fails():
@@ -65,8 +65,8 @@ def test_attrib_with_raw_empty_json_fails():
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
     ex_info.match(
-        "validation error \[ClientAttribOperation\]: should contain one attribute "
-        "\({}={{}}\)".format(RAW))
+        r"validation error \[ClientAttribOperation\]: should contain one attribute "
+        r"\({}={{}}\)".format(RAW))
 
 
 def test_attrib_with_raw_array_fails():
@@ -78,8 +78,8 @@ def test_attrib_with_raw_array_fails():
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
     ex_info.match(
-        "validation error \[ClientAttribOperation\]: should be a dict "
-        "\({}=<class 'list'>\)".format(RAW))
+        r"validation error \[ClientAttribOperation\]: should be a dict "
+        r"\({}=<class 'list'>\)".format(RAW))
 
 
 def test_attrib_with_raw_having_more_one_attrib_fails():
@@ -91,8 +91,8 @@ def test_attrib_with_raw_having_more_one_attrib_fails():
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
     ex_info.match(
-        "validation error \[ClientAttribOperation\]: should contain one attribute "
-        "\({}={{.*}}\)".format(RAW))
+        r"validation error \[ClientAttribOperation\]: should contain one attribute "
+        r"\({}={{.*}}\)".format(RAW))
 
 
 def test_attrib_with_raw_having_one_attrib_passes():
@@ -140,8 +140,8 @@ def test_attrib_with_raw_having_endpoint_ha_with_ip_address_only_fails():
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
     ex_info.match(
-        "validation error \[ClientAttribOperation\]: invalid endpoint format ip_address:port "
-        "\({}={{'ha': '8.8.8.8'}}\)".format(ENDPOINT))
+        r"validation error \[ClientAttribOperation\]: invalid endpoint format ip_address:port "
+        r"\({}={{'ha': '8.8.8.8'}}\)".format(ENDPOINT))
 
 
 def test_attrib_with_raw_having_endpoint_ha_with_invalid_port_fails():
@@ -153,8 +153,8 @@ def test_attrib_with_raw_having_endpoint_ha_with_invalid_port_fails():
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
     ex_info.match(
-        "validation error \[ClientAttribOperation\]: invalid endpoint port "
-        "\(ha=8.8.8.8:65536\)")
+        r"validation error \[ClientAttribOperation\]: invalid endpoint port "
+        r"\(ha=8.8.8.8:65536\)")
 
 
 def test_attrib_with_raw_having_endpoint_ha_with_invalid_ip_address_fails():
@@ -166,8 +166,8 @@ def test_attrib_with_raw_having_endpoint_ha_with_invalid_ip_address_fails():
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
     ex_info.match(
-        "validation error \[ClientAttribOperation\]: invalid endpoint address "
-        "\(ha=256.8.8.8:9700\)")
+        r"validation error \[ClientAttribOperation\]: invalid endpoint address "
+        r"\(ha=256.8.8.8:9700\)")
 
 
 def test_attrib_with_valid_hash_passes():
@@ -188,8 +188,8 @@ def test_attrib_with_shorter_hash_fails():
     }
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
-    ex_info.match("validation error \[ClientAttribOperation\]: not a valid hash "
-                  "\(needs to be in hex too\) \({}={}\)".format(HASH, invalid_hash))
+    ex_info.match(r"validation error \[ClientAttribOperation\]: not a valid hash "
+                  r"\(needs to be in hex too\) \({}={}\)".format(HASH, invalid_hash))
 
 
 def test_attrib_with_longer_hash_fails():
@@ -201,8 +201,8 @@ def test_attrib_with_longer_hash_fails():
     }
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
-    ex_info.match("validation error \[ClientAttribOperation\]: not a valid hash "
-                  "\(needs to be in hex too\) \({}={}\)".format(HASH, invalid_hash))
+    ex_info.match(r"validation error \[ClientAttribOperation\]: not a valid hash "
+                  r"\(needs to be in hex too\) \({}={}\)".format(HASH, invalid_hash))
 
 
 def test_attrib_with_invalid_hash_fails():
@@ -216,8 +216,8 @@ def test_attrib_with_invalid_hash_fails():
     }
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
-    ex_info.match("validation error \[ClientAttribOperation\]: not a valid hash "
-                  "\(needs to be in hex too\) \({}={}\)".format(HASH, invalid_hash))
+    ex_info.match(r"validation error \[ClientAttribOperation\]: not a valid hash "
+                  r"\(needs to be in hex too\) \({}={}\)".format(HASH, invalid_hash))
 
 
 def test_attrib_with_empty_hash_fails():
@@ -229,8 +229,8 @@ def test_attrib_with_empty_hash_fails():
     }
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
-    ex_info.match("validation error \[ClientAttribOperation\]: not a valid hash "
-                  "\(needs to be in hex too\) \({}={}\)".format(HASH, empty_hash))
+    ex_info.match(r"validation error \[ClientAttribOperation\]: not a valid hash "
+                  r"\(needs to be in hex too\) \({}={}\)".format(HASH, empty_hash))
 
     empty_hash = None
     msg = {
@@ -240,8 +240,8 @@ def test_attrib_with_empty_hash_fails():
     }
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
-    ex_info.match("validation error \[ClientAttribOperation\]: expected types "
-                  "'str', got 'NoneType' \({}={}\)".format(HASH, empty_hash))
+    ex_info.match(r"validation error \[ClientAttribOperation\]: expected types "
+                  r"'str', got 'NoneType' \({}={}\)".format(HASH, empty_hash))
 
 
 def test_attrib_with_enc_passes():
@@ -265,8 +265,8 @@ def test_attrib_with_empty_enc_fails():
     }
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
-    ex_info.match("validation error \[ClientAttribOperation\]: "
-                  "empty string \({}={}\)".format(ENC, empty_enc))
+    ex_info.match(r"validation error \[ClientAttribOperation\]: "
+                  r"empty string \({}={}\)".format(ENC, empty_enc))
 
     empty_enc = None
     msg = {
@@ -276,5 +276,5 @@ def test_attrib_with_empty_enc_fails():
     }
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
-    ex_info.match("validation error \[ClientAttribOperation\]: expected types "
-                  "'str', got 'NoneType' \({}={}\)".format(ENC, empty_enc))
+    ex_info.match(r"validation error \[ClientAttribOperation\]: expected types "
+                  r"'str', got 'NoneType' \({}={}\)".format(ENC, empty_enc))

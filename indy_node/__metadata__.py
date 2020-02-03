@@ -41,7 +41,7 @@ def load_manifest(manifest_file: str = MANIFEST_FILE) -> Any:
     try:
         with open(manifest_file, 'r') as _f:
             return json.load(_f)
-    except IOError as exc:
+    except IOError:
         return None
 
 

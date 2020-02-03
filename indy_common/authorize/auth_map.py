@@ -5,8 +5,8 @@ from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr, accepted_roles, IDENTITY_OWNER, \
     AuthConstraintForbidden
 from indy_common.constants import ENDORSER, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
-    CLAIM_DEF, SCHEMA, SET_CONTEXT, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF, ATTRIB, \
-    AUTH_RULES, SET_RS_ENCODING, GET_RS_ENCODING
+    CLAIM_DEF, SCHEMA, SET_CONTEXT, SET_RS_SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, \
+    REVOC_REG_DEF, ATTRIB, AUTH_RULES, SET_RS_ENCODING, GET_RS_ENCODING
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML, \
     TXN_AUTHOR_AGREEMENT_DISABLE
 
@@ -96,6 +96,14 @@ edit_rs_encoding = AuthActionEdit(txn_type=SET_RS_ENCODING,
                                   field='*',
                                   old_value='*',
                                   new_value='*')
+add_rs_schema = AuthActionAdd(txn_type=SET_RS_SCHEMA,
+                              field='*',
+                              value='*')
+
+edit_rs_schema = AuthActionEdit(txn_type=SET_RS_SCHEMA,
+                                field='*',
+                                old_value='*',
+                                new_value='*')
 
 add_claim_def = AuthActionAdd(txn_type=CLAIM_DEF,
                               field='*',
@@ -253,6 +261,8 @@ auth_map = OrderedDict([
     (edit_context.get_action_id(), no_one_constraint),
     (add_rs_encoding.get_action_id(), endorser_or_steward_or_trustee_constraint),
     (edit_rs_encoding.get_action_id(), no_one_constraint),
+    (add_rs_schema.get_action_id(), endorser_or_steward_or_trustee_constraint),
+    (edit_rs_schema.get_action_id(), no_one_constraint),
     (add_claim_def.get_action_id(), endorser_or_steward_or_trustee_constraint),
     (edit_claim_def.get_action_id(), owner_constraint),
     (adding_new_node.get_action_id(), steward_owner_constraint),
