@@ -23,7 +23,10 @@ RS_JSON_LD_CONTEXT = '@context'
 RS_TYPE = "type"
 META = "meta"
 # RS CLAIM DEF
+RS_CLAIM_DEF_MAPPING = "mapping_ref"
+RS_CLAIM_DEF_CONTEXT = "@context_ref"
 RS_CLAIM_DEF_FROM = "from"
+RS_CLAIM_DEF_ISSUER = "issuer"
 RS_CLAIM_DEF = "definition"
 RS_CLAIM_DEF_META_TYPE = "cred_def"
 RS_CLAIM_DEF_SIGNATURE_TYPE = "signature_type"

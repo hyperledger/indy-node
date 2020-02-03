@@ -41,6 +41,8 @@ class IndyTransactions(Transactions):
     # Rich Schema
     SET_CONTEXT = "200"
     GET_CONTEXT = "300"
+    SET_RS_CRED_DEF = "203"
+    GET_RS_CRED_DEF = "303"
 
     @staticmethod
     def get_name_from_code(code: str):
