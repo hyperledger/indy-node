@@ -64,7 +64,7 @@ class ReqTypeParser:
             return cls._supported_requests[req_kind_arg], {"label": req_kind_arg}
         try:
             reqs = json.loads(req_kind_arg)
-        except Exception as e:
+        except Exception:
             raise RuntimeError("Invalid parameter format")
 
         ret_reqs = []

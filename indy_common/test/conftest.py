@@ -16,7 +16,7 @@ strict_types.defaultShouldCheck = True
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import GENERAL_CONFIG_DIR, \
-    txnPoolNodesLooper, overriddenConfigValues  # noqa
+    overriddenConfigValues  # noqa
 
 logger = getlogger()
 
