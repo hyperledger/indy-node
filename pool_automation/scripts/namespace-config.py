@@ -133,8 +133,7 @@ class InvVars(InvBase):
 
             if role_ref.defaults:
                 _s = yaml.safe_dump(role_ref.defaults, default_flow_style=False)
-                stream.write(''.join(["\n# defaults\n\n"] +
-                             ["#{}".format(_l) for _l in _s.splitlines(True)]))
+                stream.write(''.join(["\n# defaults\n\n"] + ["#{}".format(_l) for _l in _s.splitlines(True)]))
 
 
 def _load_roles():
