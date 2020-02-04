@@ -151,6 +151,7 @@ class RsEncodingMetaField(MessageValidator):
         (RS_META_VERSION, VersionField(version_cls=RsMetaVersion)),
     )
 
+
 class RsSchemaMetaField(MessageValidator):
     schema = (
         (RS_META_TYPE, ConstantField(RS_SCHEMA_META_TYPE)),
