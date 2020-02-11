@@ -3,7 +3,7 @@ from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 
 from indy_common.constants import SET_RS_ENCODING, \
-    RS_META, RS_META_VERSION, RS_DATA, RS_META_NAME, DOMAIN_LEDGER_ID, RS_ENCODING_FROM
+    RS_META, RS_META_VERSION, RS_DATA, RS_META_NAME, DOMAIN_LEDGER_ID, RS_ENCODING_FROM, RS_ID
 
 from indy_common.state.state_constants import MARKER_RS_ENCODING
 
@@ -27,9 +27,8 @@ class RsEncodingHandler(WriteRequestHandler):
         pass
 
     def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
-        self._validate_request_type(request)
         author = request.identifier
-        name = request.operation[RS_META][RS_META_NAME]
+        _id = request.operation[RS_DATA][RS_ID]
         version = request.operation[RS_META][RS_META_VERSION]
         state_path = RsEncodingHandler.make_state_path(author, name, version)
         encoding, _, _ = self.get_from_state(state_path)

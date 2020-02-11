@@ -126,3 +126,19 @@ def test_data_has_expected_validators_s():
     for field, validator in EXPECTED_RS_ALGORITHM_FIELDS.items():
         assert isinstance(schema[field], validator)
 
+
+EXPECTED_ENCODING_HASH_FIELDS = OrderedDict([
+    ("type", ConstantField),
+    ("value", LimitedLengthStringField)
+])
+
+
+def test_data_has_expected_fields_s():
+    actual_field_names = OrderedDict(HashField.schema).keys()
+    assert actual_field_names == EXPECTED_ENCODING_HASH_FIELDS.keys()
+
+
+def test_data_has_expected_validators_s():
+    schema = dict(HashField.schema)
+    for field, validator in EXPECTED_ENCODING_HASH_FIELDS.items():
+        assert isinstance(schema[field], validator)
