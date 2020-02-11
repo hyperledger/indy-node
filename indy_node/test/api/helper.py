@@ -208,41 +208,55 @@ def sdk_build_schema_request(looper, sdk_wallet_client,
     )
 
 
-def build_get_rs_schema_request( did, txnId):
+def build_get_rs_schema_request(did, txn_id):
+    return build_3xx_request("301", "sch", did, txn_id)
+
+
+def build_rs_schema_request(identifier, schema={}, name="", version=""):
+    return build_2xx_txn("201", name, version, "sch", {"schema": schema}, identifier)
+
+
+def build_rs_mapping_request(identifier, mapping={}, name="", version=""):
+    return build_2xx_txn("204", name, version, "mapping", {"mapping": mapping}, identifier)
+
+
+def build_get_rs_mapping_request(did, txn_id):
+    return build_3xx_request("304", "mapping", did, txn_id)
+
+
+def build_2xx_txn(txn_type, name, version, meta_type, data, identifier):
+    txn_dict = {
+        'operation': {
+            'type': txn_type,
+            'meta': {
+                'name': name,
+                'version': version,
+                'type': meta_type
+            },
+            'data': data
+        },
+        "identifier": identifier,
+        "reqId": next(_reqId),
+        "protocolVersion": 2
+    }
+    txn_json = json.dumps(txn_dict)
+    return txn_json
+
+
+def build_3xx_request(txn_type, meta_type, did, txnId):
     identifier, type, name, version = txnId.split(':')
     #_id = identifier + ':' + type + ':' + name + ':' + version
     txn_dict = {
         'operation': {
-            'type': "301",
+            'type': txn_type,
             'from': identifier,
             'meta': {
                 'name': name,
                 'version': version,
-                'type': 'sch' #type
+                'type': meta_type
             }
         },
         "identifier": did,
-        "reqId": next(_reqId),
-        "protocolVersion": 2
-    }
-    schema_json = json.dumps(txn_dict)
-    return schema_json
-
-
-def build_rs_schema_request( identifier, schema={}, name="", version=""):
-    txn_dict = {
-        'operation': {
-            'type': "201",
-            'meta': {
-                'name': name,
-                'version': version,
-                'type': "sch"
-            },
-            'data': {
-                'schema': schema
-            }
-        },
-        "identifier": identifier,
         "reqId": next(_reqId),
         "protocolVersion": 2
     }
@@ -277,6 +291,16 @@ def sdk_write_rs_schema(looper, sdk_pool_handle, sdk_wallet, request):
 
 
 def sdk_write_rs_schema_and_check(looper, sdk_pool_handle, sdk_wallet, request):
+    req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, request)
+    rep = sdk_get_and_check_replies(looper, [req])
+    return rep
+
+
+def submit_req(looper, sdk_pool_handle, sdk_wallet, request):
+    return sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, request))[1]
+
+
+def submit_n_check_req(looper, sdk_pool_handle, sdk_wallet, request):
     req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, request)
     rep = sdk_get_and_check_replies(looper, [req])
     return rep

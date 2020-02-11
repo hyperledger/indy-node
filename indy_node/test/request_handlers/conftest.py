@@ -7,6 +7,7 @@ from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
 from indy_node.server.request_handlers.domain_req_handlers.rs_schema_handler import RsSchemaHandler
+from indy_node.server.request_handlers.domain_req_handlers.rs_mapping_handler import RsMappingHandler
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from indy_node.test.context.helper import W3C_BASE_CONTEXT
@@ -125,6 +126,58 @@ def rs_schema_broken_request():
                                    'name': 'ISO18023_Drivers_License'}
                               }
                    )
+
+
+@pytest.fixture(scope="module")
+def rs_mapping_handler(db_manager, write_auth_req_validator):
+    return RsMappingHandler(db_manager, write_auth_req_validator)
+
+
+@pytest.fixture(scope="function")
+def rs_mapping_request():
+    authors_did, name, version, _type = "2hoqvcwupRTUNkXn6ArYgs", randomString(), "1.1", "10"
+    _id = authors_did + ':' + _type + ':' + name + ':' + version
+    return Request(identifier=authors_did,
+                   reqId=random.randint(1, 10000000),
+                   signature="sig",
+                   protocolVersion=2,
+                   operation={
+                       "type": "204",
+                       "meta": {
+                           "type": "encode",
+                           "name": name,
+                           "version": version
+                       },
+                       "data": {
+                          "@context": [
+                            "https://w3.org/2018/credentials/v1",
+                            "ctx:sov:3FtTB4kzSyApkyJ6hEEtxNH4H",
+                            "ctx:sov:map:v1",
+                            "ctx:sov:enc:v1",
+                            {
+                              "UTF-8_SHA-256": "enc:sov:49ob1bkSq415i3m2NhkczAjJMN77F",
+                              "DateRFC3339_SecondsSince1970": "enc:sov:AE3wtUQn6EUA5sfZSHij7B",
+                              "DateRFC3339_DaysSince1900": "enc:sov:UWsJwJaSmaQMFkqbc1khGmtoT",
+                              "EmploymentRecord": "sch:sov:7L6jCikco4kAdwa3yjNWrmwy19deEiWgY",
+                              "Schema_1": "sch:sov:7L6jCikco4kAdwa3yjNWrmwy19deEiWGY",
+                            }
+                          ],
+                          "@id": "map:sov:2YhmsE2hNTALqKZABiHZz4X2mGUXWUCkBt8ba3Em1An",
+                          "@type": [
+                            "EmploymentRecord"
+                          ],
+                          "schemas": [
+                            "Schema_1",
+                            "sch:sov:7L6jCikco4kAdwa3yjNWrmwy19deEiWgY"
+                          ],
+                          "attributes": [
+                              "json-ld://2hoqvcwupRTUNkXn6ArYzs@sovrin:main/88?en=UTF-8_SHA-256#attribute_1",
+                              "json-ld://2hoqvcwupRTUNkXn6ArYzs@sovrin:main/89?en=DateRFC3339_SecondsSince1970#attribute_2",
+                              "json-ld://2hoqvcwupRTUNkXn6ArYzs@sovrin:main/89?en=UTF-8_SHA-256#attribute_3",
+                              "json-ld://2hoqvcwupRTUNkXn6ArYzs@sovrin:main/90?en=UTF-8_SHA-256#attribute_4",
+                          ]
+                       }
+                   })
 
 
 @pytest.fixture(scope="module")

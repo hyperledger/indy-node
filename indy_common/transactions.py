@@ -43,6 +43,8 @@ class IndyTransactions(Transactions):
     GET_CONTEXT = "300"
     SET_RS_SCHEMA = "201"
     GET_RS_SCHEMA = "301"
+    SET_RS_MAPPING = "204"
+    GET_RS_MAPPING = "304"
 
     @staticmethod
     def get_name_from_code(code: str):

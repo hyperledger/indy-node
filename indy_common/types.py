@@ -44,8 +44,10 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
     FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, RS_TYPE, CONTEXT_TYPE, \
-    SET_RS_SCHEMA, RS_META_VERSION, RS_META_NAME, RS_META_TYPE, RS_SCHEMA, RS_META, \
-    RS_SCHEMA_META_TYPE, RS_SCHEMA_FROM, GET_RS_SCHEMA, META, TAG_LIMIT_SIZE
+    SET_RS_SCHEMA, SET_RS_MAPPING, RS_META_VERSION, RS_META_NAME, RS_META_TYPE, RS_SCHEMA, RS_MAPPING, RS_META, \
+    RS_SCHEMA_META_TYPE, RS_SCHEMA_FROM, GET_RS_SCHEMA, RS_MAPPING_META_TYPE, RS_MAPPING_FROM, GET_RS_MAPPING, \
+    META, TAG_LIMIT_SIZE, RS_JSON_LD_CONTEXT, RS_MAPPING_SCHEMA_REF, RS_MAPPING_ATTRIBUTE_MAP, RS_MAPPING_GRAPH_PATH, \
+    RS_MAPPING_ENCODING, RS_MAPPING_GRAPH_PATH_LIST
 from indy_common.version import SchemaVersion, ContextVersion, RsMetaVersion
 
 
@@ -186,6 +188,66 @@ class ClientGetRsSchemaOperation(MessageValidator):
         (TXN_TYPE, ConstantField(GET_RS_SCHEMA)),
         (RS_SCHEMA_FROM, IdentifierField()),
         (META, RsSchemaMetaField()),
+    )
+
+
+class RsMappingMetaField(MessageValidator):
+    schema = (
+        (RS_META_TYPE, ConstantField(RS_MAPPING_META_TYPE)),
+        (RS_META_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_META_VERSION, VersionField(version_cls=RsMetaVersion)),
+    )
+
+
+class MappingAttributeKeyField(MessageValidator):
+    SCHEMA_IS_STRICT = False
+    schema = (
+        (RS_MAPPING_GRAPH_PATH_LIST, IterableField(
+            LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
+            min_length=1,
+            max_length=SCHEMA_ATTRIBUTES_LIMIT))
+    )
+
+
+class RsMappingAttributeField(MessageValidator):
+    schema = (
+        (RS_MAPPING_GRAPH_PATH, AnyMapField()),
+        (RS_MAPPING_ENCODING, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT))
+    )
+
+
+class RsMappingField(MessageValidator):
+    schema = (
+        (RS_JSON_LD_ID, LimitedLengthStringField()),
+        (RS_JSON_LD_TYPE, LimitedLengthStringField()),
+        (RS_JSON_LD_CONTEXT, ContextField(max_size=CONTEXT_SIZE_LIMIT)),
+        (RS_MAPPING_SCHEMA_REF, IterableField(
+            LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
+            min_length=1,
+            max_length=SCHEMA_ATTRIBUTES_LIMIT)),
+        (RS_MAPPING_ATTRIBUTE_MAP, RsMappingAttributeField)
+    )
+
+
+class SetRsMappingDataField(MessageValidator):
+    schema = (
+        (RS_MAPPING, RsMappingField()),
+    )
+
+
+class ClientSetRsMappingOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(SET_RS_MAPPING)),
+        (RS_META, RsMappingMetaField()),
+        (DATA, SetRsMappingDataField()),
+    )
+
+
+class ClientGetRsMappingOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(GET_RS_MAPPING)),
+        (RS_MAPPING_FROM, IdentifierField()),
+        (META, RsMappingMetaField()),
     )
 
 
@@ -545,7 +607,9 @@ class ClientOperationField(PClientOperationField):
         SET_CONTEXT: ClientSetContextOperation(),  # Rich Schema
         GET_CONTEXT: ClientGetContextOperation(),
         SET_RS_SCHEMA: ClientSetRsSchemaOperation(),
-        GET_RS_SCHEMA: ClientGetRsSchemaOperation()
+        GET_RS_SCHEMA: ClientGetRsSchemaOperation(),
+        SET_RS_MAPPING: ClientSetRsMappingOperation(),
+        GET_RS_MAPPING: ClientGetRsMappingOperation(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class

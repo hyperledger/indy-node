@@ -30,6 +30,7 @@ from indy_node.server.request_handlers.domain_req_handlers.attribute_handler imp
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
 from indy_node.server.request_handlers.domain_req_handlers.rs_schema_handler import RsSchemaHandler
+from indy_node.server.request_handlers.domain_req_handlers.rs_mapping_handler import RsMappingHandler
 
 from indy_common.authorize.auth_map import auth_map
 
@@ -47,6 +48,7 @@ from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_handler i
 from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
 from indy_node.server.request_handlers.read_req_handlers.get_context_handler import GetContextHandler
 from indy_node.server.request_handlers.read_req_handlers.get_rs_schema_handler import GetRsSchemaHandler
+from indy_node.server.request_handlers.read_req_handlers.get_rs_mapping_handler import GetRsMappingHandler
 
 from indy_node.server.restarter import Restarter
 from indy_node.server.upgrader import Upgrader
@@ -100,6 +102,7 @@ class NodeBootstrap(PNodeBootstrap):
         get_schema_handler = GetSchemaHandler(database_manager=self.node.db_manager)
         get_context_handler = GetContextHandler(database_manager=self.node.db_manager)
         get_rs_schema_handler = GetRsSchemaHandler(database_manager=self.node.db_manager)
+        get_rs_mapping_handler = GetRsMappingHandler(database_manager=self.node.db_manager)
         get_claim_def_handler = GetClaimDefHandler(database_manager=self.node.db_manager)
         get_revoc_reg_def_handler = GetRevocRegDefHandler(database_manager=self.node.db_manager)
         get_revoc_reg_handler = GetRevocRegHandler(database_manager=self.node.db_manager)
@@ -117,6 +120,8 @@ class NodeBootstrap(PNodeBootstrap):
                                          write_req_validator=self.node.write_req_validator)
         rs_schema_handler = RsSchemaHandler(database_manager=self.node.db_manager,
                                             write_req_validator=self.node.write_req_validator)
+        rs_mapping_handler = RsMappingHandler(database_manager=self.node.db_manager,
+                                              write_req_validator=self.node.write_req_validator)
         claim_def_handler = ClaimDefHandler(database_manager=self.node.db_manager,
                                             write_req_validator=self.node.write_req_validator)
         revoc_reg_def_handler = RevocRegDefHandler(database_manager=self.node.db_manager,
@@ -130,6 +135,7 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.write_manager.register_req_handler(schema_handler)
         self.node.write_manager.register_req_handler(context_handler)
         self.node.write_manager.register_req_handler(rs_schema_handler)
+        self.node.write_manager.register_req_handler(rs_mapping_handler)
         self.node.write_manager.register_req_handler(claim_def_handler)
         self.node.write_manager.register_req_handler(revoc_reg_def_handler)
         self.node.write_manager.register_req_handler(revoc_reg_entry_handler)
@@ -141,6 +147,7 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.read_manager.register_req_handler(get_schema_handler)
         self.node.read_manager.register_req_handler(get_context_handler)
         self.node.read_manager.register_req_handler(get_rs_schema_handler)
+        self.node.read_manager.register_req_handler(get_rs_mapping_handler)
         self.node.read_manager.register_req_handler(get_claim_def_handler)
         self.node.read_manager.register_req_handler(get_revoc_reg_def_handler)
         self.node.read_manager.register_req_handler(get_revoc_reg_handler)

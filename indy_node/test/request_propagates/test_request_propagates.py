@@ -7,7 +7,7 @@ from indy.ledger import build_attrib_request, sign_request, build_schema_request
 
 from indy_node.test.helper import createHalfKeyIdentifierAndAbbrevVerkey
 from indy_common.types import Request
-from indy_node.test.api.helper import sdk_write_schema, build_rs_schema_request
+from indy_node.test.api.helper import sdk_write_schema, build_rs_schema_request, build_rs_mapping_request
 from plenum.common.messages.node_messages import Propagate
 from plenum.common.types import f
 from plenum.server.message_handlers import PropagateHandler
@@ -25,7 +25,7 @@ def emulate_received(node, msg):
     )
 
 
-@pytest.fixture(scope="module", params=["ATTRIB", "SCHEMA", "RS_SCHEMA", "CLAIM_DEF", "NYM"])
+@pytest.fixture(scope="module", params=["ATTRIB", "SCHEMA", "RS_SCHEMA", "CLAIM_DEF", "RS_MAPPING", "NYM"])
 def req(request, looper, sdk_pool_handle, sdk_wallet_steward):
     wallet_handle, identifier = sdk_wallet_steward
     if request.param == "ATTRIB":
@@ -39,6 +39,9 @@ def req(request, looper, sdk_pool_handle, sdk_wallet_steward):
     elif request.param == "RS_SCHEMA":
         rs_schema = {'@id': "fakeId234e", '@type': "0od"}
         request_json = build_rs_schema_request(identifier, rs_schema, "ISO18023_Drivers_License", "1.1")
+    elif request.param == "RS_MAPPING":
+        mapping = "UTF-8_SHA-256"
+        request_json = build_rs_mapping_request(identifier, mapping, "indy-mapping-example", "1.1")
     elif request.param == "CLAIM_DEF":
         schema_json, _ = sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_steward)
         schema_id = json.loads(schema_json)['id']

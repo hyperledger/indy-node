@@ -28,6 +28,15 @@ DOMAIN_LEDGER_ID = 1
 
 RS_TYPE = "type"
 META = "meta"
+# RICH SCHEMA MAPPING
+RS_MAPPING_FROM = "from"
+RS_MAPPING = "mapping"
+RS_MAPPING_ATTRIBUTE_MAP = "attribute_map"
+RS_MAPPING_META_TYPE = "encode"
+RS_MAPPING_SCHEMA_REF = "schemas"
+RS_MAPPING_ENCODING = "encoding"
+RS_MAPPING_GRAPH_PATH = "graph_path"
+RS_MAPPING_GRAPH_PATH_LIST = "@list"
 # CONTEXT
 CONTEXT_NAME = "name"
 CONTEXT_VERSION = "version"
@@ -190,6 +199,8 @@ SET_CONTEXT = IndyTransactions.SET_CONTEXT.value
 GET_CONTEXT = IndyTransactions.GET_CONTEXT.value
 SET_RS_SCHEMA = IndyTransactions.SET_RS_SCHEMA.value
 GET_RS_SCHEMA = IndyTransactions.GET_RS_SCHEMA.value
+SET_RS_MAPPING = IndyTransactions.SET_RS_MAPPING.value
+GET_RS_MAPPING = IndyTransactions.GET_RS_MAPPING.value
 
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value
