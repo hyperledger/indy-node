@@ -38,8 +38,8 @@ def test_transactions_are_encoded():
 
     assert SET_CONTEXT == "200"
     assert GET_CONTEXT == "300"
-    assert SET_RS_ENCODING == "202"
-    assert GET_RS_ENCODING == "302"
+    assert SET_RS_ENCODING == "204"
+    assert GET_RS_ENCODING == "304"
     assert SET_RS_SCHEMA == "201"
     assert GET_RS_SCHEMA == "301"
 
@@ -110,8 +110,8 @@ def test_transaction_enum_encoded():
 
     assert IndyTransactions.SET_CONTEXT.value == "200"
     assert IndyTransactions.GET_CONTEXT.value == "300"
-    assert IndyTransactions.SET_RS_ENCODING.value == "202"
-    assert IndyTransactions.GET_RS_ENCODING.value == "302"
+    assert IndyTransactions.SET_RS_ENCODING.value == "204"
+    assert IndyTransactions.GET_RS_ENCODING.value == "304"
     assert IndyTransactions.SET_RS_SCHEMA.value == "201"
     assert IndyTransactions.GET_RS_SCHEMA.value == "301"
 

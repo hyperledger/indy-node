@@ -41,8 +41,8 @@ class IndyTransactions(Transactions):
     # Rich Schema
     SET_CONTEXT = "200"
     GET_CONTEXT = "300"
-    SET_RS_ENCODING = "202"
-    GET_RS_ENCODING = "302"
+    SET_RS_ENCODING = "204"
+    GET_RS_ENCODING = "304"
     SET_RS_SCHEMA = "201"
     GET_RS_SCHEMA = "301"
 

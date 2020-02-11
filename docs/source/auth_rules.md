@@ -303,7 +303,7 @@
     <td><sub>No one can edit existing Context</sub></td>
     <td><sub>Editing a Context</sub></td>
   </tr>
-    <tr>
+  <tr>
     <td><sub>SET_RICH_SCHEMA</sub></td>
     <td><sub>ADD</sub></td>
     <td><sub><code>*</code></sub></td>
@@ -320,6 +320,24 @@
     <td><sub><code>*</code></sub></td>
     <td><sub>No one can edit existing Context</sub></td>
     <td><sub>Editing a Rich Schema</sub></td>
+  </tr>
+      <tr>
+    <td><sub>SET_ENCODING</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 ENDORSER</sub></td>
+    <td><sub>Adding a new Encoding</sub></td>
+  </tr>
+  <tr>
+    <td><sub>SET_ENCODING</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>No one can edit existing Context</sub></td>
+    <td><sub>Editing a Encoding</sub></td>
   </tr>
   <tr>
     <td><sub>CLAIM_DEF</sub></td>
@@ -607,6 +625,18 @@
     <td><sub>SET_RICH_SCHEMA</sub></td>
     <td><sub>EDIT</sub></td>
     <td><sub>The DID used to create the RICH_SCHEMA</sub></td>
+  </tr>
+  
+  <tr>
+    <td><sub>SET_ENCODING</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>    
+
+  <tr>
+    <td><sub>SET_ENCODING</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>The DID used to create the SET_ENCODING</sub></td>
   </tr>  
   
   <tr>

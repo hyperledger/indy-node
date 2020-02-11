@@ -254,7 +254,7 @@ def build_get_rs_encoding_request( did, txnId):
     identifier, type, name, version = txnId.split(':')
     txn_dict = {
         'operation': {
-            'type': "302",
+            'type': "304",
             'from': identifier,
             'meta': {
                 'name': name,

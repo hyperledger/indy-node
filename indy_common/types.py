@@ -46,7 +46,9 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, RS_TYPE, CONTEXT_TYPE, \
     SET_RS_SCHEMA, SET_RS_ENCODING, RS_META_VERSION, RS_META_NAME, RS_META_TYPE, RS_SCHEMA, RS_ENCODING, RS_META, \
     RS_SCHEMA_META_TYPE, RS_SCHEMA_FROM, GET_RS_SCHEMA, RS_ENCODING_META_TYPE, RS_ENCODING_FROM, GET_RS_ENCODING, \
-    META, TAG_LIMIT_SIZE
+    META, TAG_LIMIT_SIZE, RS_DATA, RS_ENCODING_PUT_TYPE, RS_ENCODING_INPUT, RS_ENCODING_OUTPUT, RS_ENCODING_ALGORITHM, \
+    RS_ENCODING_TEST_VECTOR, RS_ENCODING_ALGORITHM_DESCRIPTION, RS_ENCODING_ALGORITHM_DOCUMENTAION, \
+    RS_ENCODING_ALGORITHM_IMPLEMENTATION, RS_ENCODING_CONTENT, RS_HASH, RS_VALUE, RS_FROM
 from indy_common.version import SchemaVersion, ContextVersion, RsMetaVersion
 
 
@@ -144,14 +146,6 @@ class GetContextField(MessageValidator):
     )
 
 
-class RsEncodingMetaField(MessageValidator):
-    schema = (
-        (RS_META_TYPE, ConstantField(RS_ENCODING_META_TYPE)),
-        (RS_META_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (RS_META_VERSION, VersionField(version_cls=RsMetaVersion)),
-    )
-
-
 class RsSchemaMetaField(MessageValidator):
     schema = (
         (RS_META_TYPE, ConstantField(RS_SCHEMA_META_TYPE)),
@@ -160,25 +154,71 @@ class RsSchemaMetaField(MessageValidator):
     )
 
 
+class HashField(MessageValidator):
+    schema = (
+        (RS_TYPE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+    )
+
+
+class Puts(MessageValidator):
+    schema = (
+        (ID, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_ENCODING_PUT_TYPE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT))
+    )
+
+
+class EncodingAlgorithm(MessageValidator):
+    schema = (
+        (RS_ENCODING_ALGORITHM_DESCRIPTION, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_ENCODING_ALGORITHM_DOCUMENTAION, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_ENCODING_ALGORITHM_IMPLEMENTATION, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+    )
+
+
+class SetRsEncodingField(MessageValidator):
+    schema = (
+        (RS_ENCODING_INPUT, Puts()),
+        (RS_ENCODING_OUTPUT, Puts()),
+        (RS_ENCODING_ALGORITHM, EncodingAlgorithm()),
+        (RS_ENCODING_TEST_VECTOR, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+    )
+
+
 class SetRsEncodingDataField(MessageValidator):
     schema = (
-        (RS_ENCODING, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_ENCODING, SetRsEncodingField()),
+    )
+
+
+class SetRsEncodingContentField(MessageValidator):
+    schema = (
+        (RS_META_TYPE, ConstantField(RS_SCHEMA_META_TYPE)),
+        (RS_META_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_META_VERSION, VersionField(version_cls=RsMetaVersion)),
+        (RS_HASH, HashField()),
+        (RS_DATA, SetRsEncodingDataField()),
+    )
+
+
+class SetRsEncodingOpDataField(MessageValidator):
+    schema = (
+        (ID, IdentifierField()),
+        (RS_ENCODING_CONTENT, SetRsEncodingContentField()),
     )
 
 
 class ClientSetRsEncodingOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(SET_RS_ENCODING)),
-        (RS_META, RsEncodingMetaField()),
-        (DATA, SetRsEncodingDataField()),
+        (DATA, SetRsEncodingOpDataField()),
     )
 
 
 class ClientGetRsEncodingOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(GET_RS_ENCODING)),
-        (RS_ENCODING_FROM, IdentifierField()),
-        (META, RsEncodingMetaField()),
+        (RS_FROM, IdentifierField()),
     )
 
 

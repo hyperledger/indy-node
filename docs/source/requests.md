@@ -20,6 +20,7 @@
     * [TRANSACTION_AUTHOR_AGREEMENT_DISABLE](#transaction_author_agreement_disable)
     * [SET_CONTEXT](#set_context)
     * [SET_RICH_SCHEMA](#set_rich_schema)
+    * [SET_ENCODING](#set_encoding)
 
 * [Read Requests](#read-requests)
 
@@ -35,6 +36,7 @@
     * [GET_TRANSACTION_AUTHOR_AGREEMENT_AML](#get_transaction_author_agreement_aml)
     * [GET_CONTEXT](#get_context)
     * [GET_RICH_SCHEMA](#get_rich_schema)
+    * [GET_ENCODING](#get_encoding)
     * [GET_TXN](#get_txn)
 
 * [Action Requests](#action-requests)
@@ -98,6 +100,7 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
             - AUTH_RULES = "122"
             - SET_CONTEXT = "200"
             - SET_RICH_SCHEMA = "201"
+            - SET_ENCODING = "204"
             
         - read requests:
         
@@ -114,6 +117,7 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
             - GET_AUTH_RULE = "121"
             - GET_CONTEXT = "300"      
             - GET_RICH_SCHEMA = "301"
+            - GET_ENCODING = "304"
             
     - request-specific data
 
@@ -280,6 +284,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         - AUTH_RULE = "120"
         - SET_CONTEXT = "200"
         - SET_RICH_SCHEMA = "201"
+        - SET_ENCODING = "204"
 
     - `protocolVersion` (integer; optional): 
     
@@ -436,6 +441,7 @@ These common metadata values are added to the result's JSON at the same level as
     - GET_AUTH_RULE = "121"    
     - GET_CONTEXT = "300"
     - GET_RICH_SCHEMA = "301"
+    - GET_ENCODING = "304"
 
 - `identifier` (base58-encoded string):
  
@@ -2347,6 +2353,152 @@ So, if the Rich Schema needs to be evolved, a new Rich Schema with a new version
     }
 }
 ```
+### SET_ENCODIING
+- `data` (dict):
+
+  Dictionary with encoding object's data:
+
+  - `id`: The encoding object's DID 
+  - `content`: 
+    - `type`: "enc"
+    - `name`: encoding object's name string
+    - `version`: encoding object's version string
+    - `hash`:
+      - `type`: the type of hash,
+      - `value`: the hexadecimal value of the hash of the canonical form of
+      the data object
+    - `data`: The value of this property is an encoding object
+      - `encoding`:
+        - `input`: a description of the input value.
+        - `output`: a description of the output value
+        - `algorithm`:
+          - `documentation`: a URL which references a specific github commit of
+            the documentation that fully describes the transformation algorithm.
+          - `implementation`: a URL that links to a reference implementation of the
+             transformation algorithm. It is not necessary to use the implementation
+             linked to here, as long as the implementation used implements the same
+             transformation algorithm.
+          - `description`: a brief description of the transformation algorithm.
+        - `test_vectors`:
+       
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "204",
+        "data":{
+            "id": "CVCZsz8oQzBKp86tmXbasEd8gBzX6mc1MCb5MSbeg8fD",
+            "content":{
+                "type": "enc",
+                "name":"DateRFC3339_UnixTime",
+                "version":"1.0",
+                "hash":{
+                    "type": "SHA2-256",
+                    "value": "aaa9e5c64e1177e1bce6a174d27b6169b4f167ebd8168516f9f9512664fbf58c"
+                },
+                "data":{
+                    "encoding": {
+                        "input": {
+                            "id": "DateRFC3339",
+                            "type": "string"
+                        },
+                        "output": {
+                            "id": "UnixTime",
+                            "type": "integer"
+                        },
+                        "algorithm": {
+                            "description": "This encoding transforms an
+                                RFC3339-formatted datetime object into the number
+                                of seconds since January 1, 1970 (the Unix epoch).",
+                            "documentation": "https://github.com/sovrin-foundation/aries-credx-framework-rs/commit/efba6afd119ac53220ed4745265a95fd3344737d",
+                            "implementation": "https://github.com/sovrin-foundation/aries-credx-framework-rs/"
+                        },
+                        "test_vectors": "https://github.com/sovrin-foundation/aries-credx-framework-rs/commit/a7b1712bd19c27b97a0db37920d98bfb9a3a6722"
+                    }
+                }
+            }
+        }
+    },
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+}
+```
+*Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "ver": 1,
+        "txn": {
+            "type":"204",
+            "protocolVersion":2,
+            
+            "data": {
+                "ver":1,
+                "data":{
+                    "id": "CVCZsz8oQzBKp86tmXbasEd8gBzX6mc1MCb5MSbeg8fD",
+                    "content":{
+                        "type": "enc",
+                        "name":"DateRFC3339_UnixTime",
+                        "version":"1.0",
+                        "hash":{
+                            "type": "SHA2-256",
+                            "value": "aaa9e5c64e1177e1bce6a174d27b6169b4f167ebd8168516f9f9512664fbf58c"
+                        },
+                        "data":{
+                            "encoding": {
+                                "input": {
+                                    "id": "DateRFC3339",
+                                    "type": "string"
+                                },
+                                "output": {
+                                    "id": "UnixTime",
+                                    "type": "integer"
+                                },
+                                "algorithm": {
+                                    "description": "This encoding transforms an
+                                        RFC3339-formatted datetime object into the number
+                                        of seconds since January 1, 1970 (the Unix epoch).",
+                                    "documentation": "https://github.com/sovrin-foundation/aries-credx-framework-rs/commit/efba6afd119ac53220ed4745265a95fd3344737d",
+                                    "implementation": "https://github.com/sovrin-foundation/aries-credx-framework-rs/"
+                                },
+                                "test_vectors": "https://github.com/sovrin-foundation/aries-credx-framework-rs/commit/a7b1712bd19c27b97a0db37920d98bfb9a3a6722"
+                            }
+                        }
+                    }
+                }
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"7dxgcjqck9gPubLxMpkNniA6v",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
+		
+    }
+}
+```
 
 ## Read Requests
 
@@ -3520,6 +3672,98 @@ Gets a schema from the ledger.
             "tag": "someTag"
         },
         "dest": "2VkbBskPNNyWrLrZq7DBhk"
+    }
+}
+```
+
+#### GET_ENCODING
+
+Gets an encoding object from the ledger.
+
+- `dest` (base58-encoded string):
+
+    Encoding object DID as base58-encoded string for the 32 byte DID
+    value. It differs from `identifier` metadata field, where `identifier`
+    is the DID of the submitter.
+
+    *Example*: `identifier` is a DID of the read request sender, and `dest`
+    is the DID of the encoding object.
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "304"
+        "dest": "CVCZsz8oQzBKp86tmXbasEd8gBzX6mc1MCb5MSbeg8fD",
+    },
+    
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
+}
+```
+*Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "type": "304",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
+        
+        "seqNo": 10,
+        "txnTime": 1514214795,
+
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
+                },
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
+            }
+        },
+        
+        "data":{
+            "id": "CVCZsz8oQzBKp86tmXbasEd8gBzX6mc1MCb5MSbeg8fD",
+            "content":{
+                "type": "enc",
+                "name":"DateRFC3339_UnixTime",
+                "version":"1.0",
+                "hash":{
+                    "type": "SHA2-256",
+                    "value": "aaa9e5c64e1177e1bce6a174d27b6169b4f167ebd8168516f9f9512664fbf58c"
+                },
+                "data":{
+                    "encoding": {
+                        "input": {
+                            "id": "DateRFC3339",
+                            "type": "string"
+                        },
+                        "output": {
+                            "id": "UnixTime",
+                            "type": "integer"
+                        },
+                        "algorithm": {
+                            "description": "This encoding transforms an
+                                RFC3339-formatted datetime object into the number
+                                of seconds since January 1, 1970 (the Unix epoch).",
+                            "documentation": "https://github.com/sovrin-foundation/aries-credx-framework-rs/commit/efba6afd119ac53220ed4745265a95fd3344737d",
+                            "implementation": "https://github.com/sovrin-foundation/aries-credx-framework-rs/"
+                        },
+                        "test_vectors": "https://github.com/sovrin-foundation/aries-credx-framework-rs/commit/a7b1712bd19c27b97a0db37920d98bfb9a3a6722"
+                    }
+                }
+            }
+        },
+        
+        "dest": "CVCZsz8oQzBKp86tmXbasEd8gBzX6mc1MCb5MSbeg8fD"
     }
 }
 ```

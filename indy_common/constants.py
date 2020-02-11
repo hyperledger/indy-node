@@ -15,6 +15,9 @@ RS_META = 'meta'
 RS_META_NAME = 'name'
 RS_META_TYPE = 'type'
 RS_META_VERSION = 'version'
+RS_FROM = 'dest'
+RS_HASH = 'hash'
+RS_VALUE = 'value'
 RS_META_ID = 'id'
 RS_DATA = 'data'
 RS_JSON_LD_ID = '@id'
@@ -30,7 +33,16 @@ META = "meta"
 # ENCODING
 RS_ENCODING_FROM = "from"
 RS_ENCODING = "encoding"
+RS_ENCODING_CONTENT = "content"
 RS_ENCODING_META_TYPE = "encode"
+RS_ENCODING_INPUT = "input"
+RS_ENCODING_OUTPUT = "output"
+RS_ENCODING_PUT_TYPE = "type"
+RS_ENCODING_ALGORITHM = "algorithm"
+RS_ENCODING_ALGORITHM_DESCRIPTION = "description"
+RS_ENCODING_ALGORITHM_DOCUMENTAION = "documentation"
+RS_ENCODING_ALGORITHM_IMPLEMENTATION = "implementation"
+RS_ENCODING_TEST_VECTOR = "test_vectors"
 
 # CONTEXT
 CONTEXT_NAME = "name"
