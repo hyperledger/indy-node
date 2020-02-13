@@ -31,7 +31,7 @@ However if more than f nodes become affected then pool will not be able to do wr
 ### Where to get info
 
 Most useful places get info are the following:
-- either VALIDATOR_INFO command send through Indy CLI, or `validator-info` script run on validator node. 
+- either VALIDATOR_INFO command sent through Indy CLI, or `validator-info` script run on validator node. 
   These tools provide important information like how many nodes are connected to each other, when last write happened (due to freshness check it should happen at least once per 5 minutes), whether a view change is in progress now or other important data, which is useful to assess pool current health and can be a starting point for further investigation, when needed.
 - `journalctl` logs can be useful because they contain tracebacks of indy-node crashes, if they happened, and these logs are really easy to check. 
   Sometime crashes can be due to some bugs in code, but also they can be caused by insufficient resource (either memory or disk space), and if this is the case `journalctl` logs can provide a quick answer.
@@ -74,7 +74,12 @@ Most useful places get info are the following:
 
 ### Useful patterns in logs
 
+- `Starting up indy-node` - node just started. This can be useful to identify restart points among other events
+- `starting catchup (is_initial=<>)` - node started catching up
+- `transitioning from <state> to <state>` - node successfully progressed through catch up. If node fails to finish catch up this could help identify exact stage which failed
+- `caught up to <n> txns in last catch up` - node successfully finished a catch up
+- `initiating a view change` - this marks start of view change
+- `finished view change to view` - view change service accepted NEW_VIEW message (so there is enough connectivity between honest nodes to reach consensus), however there are some cases when ordering in new view fails and another view change will be needed
 - `started participating` - node finished all side activities (like catch up or view change) and started participating in consensus
 - `0 ordered batch request` - node master instance just managed to order one more batch of transactions (so there is write consensus)
-- `[1..9] ordered batch request` - some backup instance just managed to order one more batch (so there is write consensus on backups, but that doesn't mean write consensus on master, which matters for clients)
-- `initiating a view change` - this marks start of view change
+- `<n> ordered batch request` - some backup instance just managed to order one more batch (so there is write consensus on backups, but that doesn't mean write consensus on master, which matters for clients).
