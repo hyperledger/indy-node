@@ -14,7 +14,7 @@ from plenum.common.txn_util import get_request_data, reqToTxn, append_txn_metada
 from common.exceptions import LogicError
 from indy_common.constants import CONTEXT_TYPE, META, RS_TYPE, CONTEXT_CONTEXT
 
-from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
+from indy_node.server.request_handlers.domain_req_handlers.rich_schema.context_handler import ContextHandler
 from plenum.common.request import Request
 from indy_node.test.context.helper import W3C_BASE_CONTEXT, W3C_EXAMPLE_V1_CONTEXT
 from plenum.server.request_handlers.utils import encode_state_value

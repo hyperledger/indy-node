@@ -1,11 +1,15 @@
 from indy_common.constants import NYM, NODE, ATTRIB, SCHEMA, CLAIM_DEF, DISCLO, GET_ATTR, GET_NYM, GET_TXNS, \
-    GET_SCHEMA, SET_CONTEXT, GET_CONTEXT, SET_RS_SCHEMA, GET_RS_SCHEMA, GET_CLAIM_DEF, POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, REVOC_REG_DEF, REVOC_REG_ENTRY, \
+    GET_SCHEMA, GET_CLAIM_DEF, POOL_UPGRADE, NODE_UPGRADE, \
+    POOL_CONFIG, REVOC_REG_DEF, REVOC_REG_ENTRY, \
     GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA, POOL_RESTART, VALIDATOR_INFO, CHANGE_KEY, AUTH_RULE, \
-    GET_AUTH_RULE, AUTH_RULES
+    GET_AUTH_RULE, AUTH_RULES, SET_RICH_SCHEMA, SET_RICH_SCHEMA_ENCODING, \
+    SET_RICH_SCHEMA_MAPPING, SET_RICH_SCHEMA_CRED_DEF, SET_JSON_LD_CONTEXT, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
+    GET_RICH_SCHEMA_OBJECT_BY_ID
+
 from indy_common.transactions import IndyTransactions
 
 
-def test_transactions_are_encoded():
+def test_transactions_are_encoded(SET_RICH_SCHEMA_CONTEXT=None):
     assert NODE == "0"
     assert NYM == "1"
     assert GET_TXNS == "3"
@@ -35,10 +39,13 @@ def test_transactions_are_encoded():
     assert GET_AUTH_RULE == "121"
     assert AUTH_RULES == "122"
 
-    assert SET_CONTEXT == "200"
-    assert GET_CONTEXT == "300"
-    assert SET_RS_SCHEMA == "201"
-    assert GET_RS_SCHEMA == "301"
+    assert SET_JSON_LD_CONTEXT == "200"
+    assert SET_RICH_SCHEMA == "201"
+    assert SET_RICH_SCHEMA_ENCODING == "202"
+    assert SET_RICH_SCHEMA_MAPPING == "203"
+    assert SET_RICH_SCHEMA_CRED_DEF == "204"
+    assert GET_RICH_SCHEMA_OBJECT_BY_ID == "300"
+    assert GET_RICH_SCHEMA_OBJECT_BY_METADATA == "301"
 
 
 def test_transaction_enum_decoded():

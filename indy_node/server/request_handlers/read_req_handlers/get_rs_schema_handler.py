@@ -3,7 +3,7 @@ from indy_common.constants import GET_RS_SCHEMA, RS_META, RS_META_NAME, RS_META_
 from plenum.common.request import Request
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
-from indy_node.server.request_handlers.domain_req_handlers.rs_schema_handler import RsSchemaHandler
+from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rs_schema_handler import RsSchemaHandler
 
 
 class GetRsSchemaHandler(ReadRequestHandler):

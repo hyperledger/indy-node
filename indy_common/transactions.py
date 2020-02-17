@@ -39,10 +39,13 @@ class IndyTransactions(Transactions):
     AUTH_RULES = "122"
 
     # Rich Schema
-    SET_CONTEXT = "200"
-    GET_CONTEXT = "300"
-    SET_RS_SCHEMA = "201"
-    GET_RS_SCHEMA = "301"
+    SET_JSON_LD_CONTEXT = "200"
+    SET_RICH_SCHEMA = "201"
+    SET_RICH_SCHEMA_ENCODING = "202"
+    SET_RICH_SCHEMA_MAPPING = "203"
+    SET_RICH_SCHEMA_CRED_DEF = "204"
+    GET_RICH_SCHEMA_OBJECT_BY_ID = "300"
+    GET_RICH_SCHEMA_OBJECT_BY_METADATA = "301"
 
     @staticmethod
     def get_name_from_code(code: str):

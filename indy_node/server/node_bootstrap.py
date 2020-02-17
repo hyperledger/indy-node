@@ -24,12 +24,12 @@ from indy_node.server.request_handlers.read_req_handlers.get_auth_rule_handler i
 from indy_node.server.request_handlers.domain_req_handlers.claim_def_handler import ClaimDefHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handler import RevocRegEntryHandler
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
-from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
+from indy_node.server.request_handlers.domain_req_handlers.rich_schema.context_handler import ContextHandler
 
 from indy_node.server.request_handlers.domain_req_handlers.attribute_handler import AttributeHandler
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
-from indy_node.server.request_handlers.domain_req_handlers.rs_schema_handler import RsSchemaHandler
+from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rs_schema_handler import RsSchemaHandler
 
 from indy_common.authorize.auth_map import auth_map
 

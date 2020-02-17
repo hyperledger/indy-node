@@ -4,9 +4,9 @@ import pytest
 from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG, CONTEXT_TYPE
 
 from indy_node.persistence.idr_cache import IdrCache
-from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
+from indy_node.server.request_handlers.domain_req_handlers.rich_schema.context_handler import ContextHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
-from indy_node.server.request_handlers.domain_req_handlers.rs_schema_handler import RsSchemaHandler
+from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rs_schema_handler import RsSchemaHandler
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from indy_node.test.context.helper import W3C_BASE_CONTEXT

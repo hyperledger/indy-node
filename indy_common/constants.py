@@ -10,30 +10,7 @@ Environment = NamedTuple("Environment", [
     ("domainLedger", str)
 ])
 
-# RICH SCHEMA
-RS_META = 'meta'
-RS_META_NAME = 'name'
-RS_META_TYPE = 'type'
-RS_META_VERSION = 'version'
-RS_META_ID = 'id'
-RS_DATA = 'data'
-RS_JSON_LD_ID = '@id'
-RS_JSON_LD_TYPE = '@type'
-RS_JSON_LD_CONTEXT = '@context'
-# RICH SCHEMA SCHEMA
-RS_SCHEMA_FROM = "from"
-RS_SCHEMA = "schema"
-RS_SCHEMA_META_TYPE = "sch"
 DOMAIN_LEDGER_ID = 1
-
-RS_TYPE = "type"
-META = "meta"
-# CONTEXT
-CONTEXT_NAME = "name"
-CONTEXT_VERSION = "version"
-CONTEXT_CONTEXT = "@context"
-CONTEXT_FROM = "dest"
-CONTEXT_TYPE = 'ctx'
 
 # SCHEMA
 SCHEMA_NAME = "name"
@@ -185,12 +162,6 @@ GET_REVOC_REG = IndyTransactions.GET_REVOC_REG.value
 GET_REVOC_REG_DELTA = IndyTransactions.GET_REVOC_REG_DELTA.value
 CHANGE_KEY = IndyTransactions.CHANGE_KEY.value
 
-# Rich Schema
-SET_CONTEXT = IndyTransactions.SET_CONTEXT.value
-GET_CONTEXT = IndyTransactions.GET_CONTEXT.value
-SET_RS_SCHEMA = IndyTransactions.SET_RS_SCHEMA.value
-GET_RS_SCHEMA = IndyTransactions.GET_RS_SCHEMA.value
-
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value
 POOL_RESTART = IndyTransactions.POOL_RESTART.value
@@ -201,6 +172,15 @@ AUTH_RULE = IndyTransactions.AUTH_RULE.value
 AUTH_RULES = IndyTransactions.AUTH_RULES.value
 GET_AUTH_RULE = IndyTransactions.GET_AUTH_RULE.value
 
+# client Rich Schema transaction types
+SET_JSON_LD_CONTEXT = IndyTransactions.SET_JSON_LD_CONTEXT.value
+SET_RICH_SCHEMA = IndyTransactions.SET_RICH_SCHEMA.value
+SET_RICH_SCHEMA_ENCODING = IndyTransactions.SET_RICH_SCHEMA_ENCODING.value
+SET_RICH_SCHEMA_MAPPING = IndyTransactions.SET_RICH_SCHEMA_MAPPING.value
+SET_RICH_SCHEMA_CRED_DEF = IndyTransactions.SET_RICH_SCHEMA_CRED_DEF.value
+GET_RICH_SCHEMA_OBJECT_BY_ID = IndyTransactions.GET_RICH_SCHEMA_OBJECT_BY_ID.value
+GET_RICH_SCHEMA_OBJECT_BY_METADATA = IndyTransactions.GET_RICH_SCHEMA_OBJECT_BY_METADATA.value
+
 CONFIG_LEDGER_ID = 2
 JUSTIFICATION_MAX_SIZE = 1000
 
@@ -210,3 +190,24 @@ CONFIG_LEDGER_AUTH_POLICY = 2
 TAG_LIMIT_SIZE = 256
 
 APP_NAME = "indy-node"
+
+# RICH SCHEMA
+RS_ID = 'id'
+RS_TYPE = 'rsType'
+RS_NAME = 'rsName'
+RS_VERSION = 'rsVersion'
+RS_CONTENT = 'content'
+RS_FROM = 'from'
+RS_ENDORSER = 'endorser'
+
+JSON_LD_CONTEXT = "@context"
+JSON_LD_ID = "@id"
+JSON_LD_TYPE = "@type"
+
+# RICH SCHEMA type names
+RS_CONTEXT_TYPE_VALUE = 'ctx'
+RS_SCHEMA_TYPE_VALUE = 'sch'
+RS_ENCODING_TYPE_VALUE = 'enc'
+RS_MAPPING_TYPE_VALUE = 'map'
+RS_CRED_DEF_TYPE_VALUE = 'cdf'
+RS_PRES_DEF_TYPE_VALUE = 'pdf'

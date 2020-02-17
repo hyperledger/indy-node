@@ -1,6 +1,6 @@
 from indy_common.constants import GET_CONTEXT
 from indy_common.req_utils import get_read_context_from, get_read_context_name, get_read_context_version
-from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
+from indy_node.server.request_handlers.domain_req_handlers.rich_schema.context_handler import ContextHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.request import Request
 from plenum.server.database_manager import DatabaseManager
