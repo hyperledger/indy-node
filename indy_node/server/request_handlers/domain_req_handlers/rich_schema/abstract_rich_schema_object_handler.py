@@ -1,4 +1,3 @@
-import json
 from typing import Optional
 
 from common.serializers.json_serializer import JsonSerializer
@@ -56,9 +55,9 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler):
         txn_data = get_payload_data(txn)
 
         primary_key = txn_data[RS_ID].encode()
-        secondary_key = "{RS_TYPE}:{RS_NAME}:{RS_VERSION}".format(RS_TYPE=txn_data[RS_TYPE],
-                                                                  RS_NAME=txn_data[RS_NAME],
-                                                                  RS_VERSION=txn_data[RS_VERSION]).encode()
+        secondary_key = self.make_secondary_key(txn_data[RS_TYPE],
+                                                txn_data[RS_NAME],
+                                                txn_data[RS_VERSION])
 
         value = {
             RS_ID: txn_data[RS_ID],
@@ -80,3 +79,9 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler):
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
         return get_payload_data(txn)[RS_ID]
+
+    @staticmethod
+    def make_secondary_key(rs_type, rs_name, rs_version):
+        return "{RS_TYPE}:{RS_NAME}:{RS_VERSION}".format(RS_TYPE=rs_type,
+                                                         RS_NAME=rs_name,
+                                                         RS_VERSION=rs_version).encode()

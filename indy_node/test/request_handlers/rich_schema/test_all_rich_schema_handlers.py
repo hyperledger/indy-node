@@ -1,7 +1,8 @@
 import pytest
 
+from indy_common.authorize.auth_constraints import AuthConstraintForbidden
 from indy_common.constants import RS_CONTEXT_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, RS_CRED_DEF_TYPE_VALUE, \
-    RS_SCHEMA_TYPE_VALUE, RS_MAPPING_TYPE_VALUE, RS_ID, RS_TYPE, RS_NAME, RS_VERSION, RS_CONTENT
+    RS_SCHEMA_TYPE_VALUE, RS_MAPPING_TYPE_VALUE, RS_ID, RS_TYPE, RS_NAME, RS_VERSION, RS_CONTENT, ENDORSER
 from indy_common.types import Request
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.abstract_rich_schema_object_handler import \
     AbstractRichSchemaObjectHandler
@@ -14,10 +15,14 @@ from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_sche
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_handler import RichSchemaHandler
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_mapping_handler import \
     RichSchemaMappingHandler
+from indy_node.test.request_handlers.helper import add_to_idr
 from indy_node.test.request_handlers.rich_schema.helper import context_request, rich_schema_request, \
-    rich_schema_encoding_request, rich_schema_mapping_request, rich_schema_cred_def_request
-from plenum.common.constants import OP_VER
+    rich_schema_encoding_request, rich_schema_mapping_request, rich_schema_cred_def_request, \
+    make_rich_schema_object_exist
+from plenum.common.constants import OP_VER, TRUSTEE
+from plenum.common.exceptions import UnauthorizedClientRequest
 from plenum.common.txn_util import reqToTxn, append_txn_metadata
+from plenum.common.util import SortedDict
 
 
 @pytest.fixture(params=[RS_CONTEXT_TYPE_VALUE, RS_SCHEMA_TYPE_VALUE,
@@ -51,7 +56,7 @@ def test_update_state(handler_and_request):
         'rsType': op[RS_TYPE],
         'rsName': op[RS_NAME],
         'rsVersion': op[RS_VERSION],
-        'rsContent': op[RS_CONTENT],
+        'content': op[RS_CONTENT],
         'from': request.identifier,
         'endorser': request.endorser,
         'ver': op[OP_VER],
@@ -61,30 +66,34 @@ def test_update_state(handler_and_request):
                                                               RS_NAME=op['rsName'],
                                                               RS_VERSION=op['rsVersion']).encode()
 
-    assert handler.get_from_state(primary_key) == (value, seq_no, txn_time)
-    assert handler.get_from_state(secondary_key) == op[RS_ID]
+    value_from_state = handler.get_from_state(primary_key)
+    assert SortedDict(value_from_state[0]) == SortedDict(value)
+    assert value_from_state[1] == seq_no
+    assert value_from_state[2] == txn_time
+    assert handler.state.get(secondary_key) == op[RS_ID]
 
 
-def make_context_exist(context_request, context_handler):
-    identifier, req_id, operation = get_request_data(context_request)
-    context_name = get_write_context_name(context_request)
-    context_version = get_write_context_version(context_request)
-    path = ContextHandler.make_state_path_for_context(identifier, context_name, context_version)
-    context_handler.state.set(path, encode_state_value("value", "seqNo", "txnTime"))
+def test_dynamic_validation_for_existing(handler_and_request):
+    handler, request = handler_and_request
+    make_rich_schema_object_exist(handler, request)
+    add_to_idr(handler.database_manager.idr_cache, request.identifier, TRUSTEE)
+    add_to_idr(handler.database_manager.idr_cache, request.endorser, ENDORSER)
+    if isinstance(handler, RichSchemaCredDefHandler):
+        handler.dynamic_validation(request, 0)
+    else:
+        with pytest.raises(UnauthorizedClientRequest, match=str(AuthConstraintForbidden())):
+            handler.dynamic_validation(request, 0)
 
 
-def test_context_dynamic_validation_failed_existing_context(context_request, context_handler):
-    make_context_exist(context_request, context_handler)
-    with pytest.raises(UnauthorizedClientRequest, match=str(AuthConstraintForbidden())):
-        context_handler.dynamic_validation(context_request, 0)
-
-
-def test_context_dynamic_validation_failed_not_authorised(context_request, context_handler):
-    add_to_idr(context_handler.database_manager.idr_cache, context_request.identifier, None)
+def test_dynamic_validation_failed_not_authorised(handler_and_request):
+    handler, request = handler_and_request
+    add_to_idr(handler.database_manager.idr_cache, request.identifier, None)
     with pytest.raises(UnauthorizedClientRequest):
-        context_handler.dynamic_validation(context_request, 0)
+        handler.dynamic_validation(request, 0)
 
 
-def test_schema_dynamic_validation_passes(context_request, context_handler):
-    add_to_idr(context_handler.database_manager.idr_cache, context_request.identifier, TRUSTEE)
-    context_handler.dynamic_validation(context_request, 0)
+def test_schema_dynamic_validation_passes(handler_and_request):
+    handler, request = handler_and_request
+    add_to_idr(handler.database_manager.idr_cache, request.identifier, TRUSTEE)
+    add_to_idr(handler.database_manager.idr_cache, request.endorser, ENDORSER)
+    handler.dynamic_validation(request, 0)
