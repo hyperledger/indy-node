@@ -69,7 +69,6 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler):
             TXN_PAYLOAD_METADATA_FROM: get_from(txn),
             TXN_PAYLOAD_METADATA_ENDORSER: get_endorser(txn),
             TXN_PAYLOAD_VERSION: get_payload_txn_version(txn),
-
         }
         seq_no = get_seq_no(txn)
         txn_time = get_txn_time(txn)

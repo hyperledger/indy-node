@@ -21,9 +21,10 @@ def test_rich_schema_object_adding(write_request_validation, req, is_owner, txn_
                          [SET_JSON_LD_CONTEXT, SET_RICH_SCHEMA, SET_RICH_SCHEMA_ENCODING, SET_RICH_SCHEMA_MAPPING,
                           SET_RICH_SCHEMA_CRED_DEF])
 def test_rich_schema_object_editing(write_request_validation, req, is_owner, txn_type):
-    assert not write_request_validation(req,
-                                        [AuthActionEdit(txn_type=txn_type,
-                                                        field='some_field',
-                                                        old_value='old_value',
-                                                        new_value='new_value',
-                                                        is_owner=is_owner)])
+    authorized = is_owner and txn_type == SET_RICH_SCHEMA_CRED_DEF
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=txn_type,
+                                                                  field='some_field',
+                                                                  old_value='old_value',
+                                                                  new_value='new_value',
+                                                                  is_owner=is_owner)])

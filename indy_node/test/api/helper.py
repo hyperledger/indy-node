@@ -8,7 +8,6 @@ from indy.ledger import build_schema_request, sign_request, submit_request
 from indy_common.state.state_constants import MARKER_CONTEXT
 from plenum.common.constants import TXN_TYPE, DATA, CURRENT_PROTOCOL_VERSION
 
-from indy_common.constants import SET_CONTEXT, CONTEXT_TYPE, META, RS_TYPE, CONTEXT_NAME, CONTEXT_VERSION
 from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req, sdk_get_and_check_replies
 
 
@@ -272,7 +271,7 @@ def sdk_write_schema_and_check(looper, sdk_pool_handle, sdk_wallet_client,
     return rep
 
 
-def sdk_write_rs_schema(looper, sdk_pool_handle, sdk_wallet, request):
+def sdk_write_rich_schema(looper, sdk_pool_handle, sdk_wallet, request):
     return sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, request))[1]
 
 
