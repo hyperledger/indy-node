@@ -50,6 +50,8 @@ Most useful places get info are the following:
   Lately most of the time it was enough to use `grep` and `sort` command-line tools to analyze them (although we'd recommend using [ripgrep](https://github.com/BurntSushi/ripgrep/releases) instead of plain grep, as it has quite a bunch of usability and performance improvements over traditional grep, while having compatible interface and no extra dependencies).
   However we also have a [process_logs](https://github.com/hyperledger/indy-plenum/tree/master/scripts/process_logs) utility script, which also can be useful.
   More info about them will be provided in next sections.
+- Indy node control tool logs, located in `/var/log/indy/node_control.log`.
+  They can be useful when investigating upgrade-related problems.
 - In case of Sovrin network there are public websites showing contents of different ledgers, even if network is down (they basically mirror ledgers in their local database).
   We find most user-friendly one to be [indyscan.io](https://indyscan.io).
   This can be useful as a quick check whether some transaction type was written in the past when investigating transaction-specific problems.
