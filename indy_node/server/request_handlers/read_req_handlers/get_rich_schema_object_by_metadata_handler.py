@@ -8,7 +8,7 @@ from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
 
 
-class GetRichSchemaObjectByIdHandler(ReadRequestHandler):
+class GetRichSchemaObjectByMetadataHandler(ReadRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager):
         super().__init__(database_manager, GET_RICH_SCHEMA_OBJECT_BY_METADATA, DOMAIN_LEDGER_ID)
@@ -18,12 +18,14 @@ class GetRichSchemaObjectByIdHandler(ReadRequestHandler):
         secondary_key = AbstractRichSchemaObjectHandler.make_secondary_key(request.operation[RS_TYPE],
                                                                            request.operation[RS_NAME],
                                                                            request.operation[RS_VERSION])
+        value, seq_no, last_update_time, proof = None, None, None, None
         try:
-            id, _ = self._get_value_from_state(secondary_key, with_proof=False)
-            value, seq_no, last_update_time, proof = self.lookup(id, is_committed=True, with_proof=True)
-            return keys, seq_no, last_update_time, proof
+            id, proof = self._get_value_from_state(secondary_key, with_proof=False)
+            if id is not None:
+                value, seq_no, last_update_time, proof = self.lookup(id, is_committed=True, with_proof=True)
         except KeyError:
-            value, seq_no, last_update_time, proof = None, None, None, None
+            # means absence of data
+            pass
 
         return self.make_result(request=request,
                                 data=value,

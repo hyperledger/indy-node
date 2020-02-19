@@ -5,7 +5,7 @@ from indy_common.constants import SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VAL
     SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, RS_ID, RS_NAME, RS_TYPE, RS_VERSION, RS_CONTENT
 from indy_common.types import Request
 from indy_node.test.context.helper import W3C_BASE_CONTEXT
-from plenum.common.constants import TXN_TYPE, OP_VER
+from plenum.common.constants import TXN_TYPE, OP_VER, CURRENT_PROTOCOL_VERSION
 from plenum.common.txn_util import reqToTxn, append_txn_metadata
 from plenum.common.util import randomString
 
@@ -17,6 +17,7 @@ def rs_req(txn_type, rs_type, content):
                    reqId=1234,
                    signatures={author: "sig1", endorser: "sig2"},
                    endorser=endorser,
+                   protocolVersion=CURRENT_PROTOCOL_VERSION,
                    operation={
                        TXN_TYPE: txn_type,
                        OP_VER: '1.1',
