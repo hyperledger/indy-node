@@ -10,6 +10,8 @@ This protocol guarantees both safety and liveness as long as no more than **f=N/
 Protocol progresses (in other words - performs writes) as long as leader node (called **master primary**) creates new **batches** (sets of transactions to be executed), which are then agreed upon by at least of **N-f** of nodes, including master primary.
 Performance of pool is capped by performance of current master primary node - if it doesn't propose new batches then there is nothing to agree upon and execute by the rest of the pool.
 If master primary for some reason is down, or tries to perform some malicios actions (including trying to slow down writes) pool elects a new leader using subprotocol called **view change**.
+Note that during view change incoming write requests are rejected, however read requests are normally processed.
+
 In order to catch performance problems RBFT actually employs _f+1_ PBFT protocol instances, one of them called master, and other backups, each with its own leader node, called primary (so master primary is just a leader of master instance, and leaders of other instances are called **backup primaries**).
 Each instance works independently and spans all nodes (meaning all nodes run all instances), but only transactions ordered by master instance are actually executed.
 Sole purpose of backup instances is to compare their performance to master instance and initiate a view change if master primary is too slow.
@@ -83,8 +85,10 @@ In case of client-visible incidents first of all assess how bad situation is and
     This needs longer investigation, but on the other hand it doesn't affect all use cases.
     First place to look at should be journalctl to make sure nodes are not crashing on receiving transactions.
   - If problem affects all write transactions (meaning that write consensus is lost):
-    - Check whether at least _N-f_ nodes are online, if not - start more nodes
-    - Check that all online nodes (and especially master primary) are connected to each other, if not - most probably it is firewall issues
+    - Check whether there is an ongoing view change (write requests are rejected during view change), if so - it could be reasonable to give it some time to finish.
+    If it doesn't finish in 5 minutes proceed to next checks.
+    - Check whether at least _N-f_ nodes are online, if not - start more nodes.
+    - Check that all online nodes (and especially master primary) are connected to each other, if not - most probably it is firewall issues which need to be fixed.
     - Check that all started nodes are participating in consensus (i.e. not in catch-up or view change state)
       - if some are stuck in catch up or view change - try rebooting them individually, this could help if error condition is transient
       - if majority of nodes are stuck - send POOL_RESTART action to simultaneosly restart whole pool, this could help if error condition is transient
@@ -95,6 +99,7 @@ In case of client-visible incidents first of all assess how bad situation is and
 ### Recommended regular health checks
 
 Indy Node pool can function even with some nodes failing, however it is better to catch and fix these failures before too many nodes are affected and we end up with major incident. First things to look at are:
+- check that there are no crashes in journalctl, if there are some - investigate reasons, if it leads to finding some bugs - fix them
 - check that all nodes can connect to each other, if not - it is most likely firewall issue which needs to be fixed
 - check that all nodes participate in consensus, and are not stuck in view change or catch up, if not - investigate why they became stuck and reboot them
 - check that all nodes have correct ledgers and state, if not - investigate why it diverged and then fix (usually by deleting state or full data and letting node restore it)
