@@ -6,6 +6,7 @@
 From deployment point of view Indy Node is highly available replicated database, capable of withstanding crashes and malicious behavior of individual **validator** nodes, collectively called **pool**.
 In order to do so Indy Node uses protocol called RBFT, which is leader-based byzantine fault tolerant protocol for **ordering** transactions - agreeing upon global order between them on all non-faulty nodes, so that nodes will always write them in same order into their **ledgers** (which are basically transaction logs with merkle tree on top, so that consistency can be easily checked) and end up in same **state** (which is a key-value storage based on Merkle Patricia Tree) after executing ordered transactions.
 This protocol guarantees both safety and liveness as long as no more than **f=N/3** nodes (rounding down) are faulty (either unavailable or performing malicious actions), where **N** is number of all validator nodes.
+
 Protocol progresses (in other words - performs writes) as long as leader node (called **master primary**) creates new **batches** (sets of transactions to be executed), which are then agreed upon by at least of **N-f** of nodes, including master primary.
 Performance of pool is capped by performance of current master primary node - if it doesn't propose new batches then there is nothing to agree upon and execute by the rest of the pool.
 If master primary for some reason is down, or tries to perform some malicios actions (including trying to slow down writes) pool elects a new leader using subprotocol called **view change**.
@@ -13,8 +14,10 @@ In order to catch performance problems RBFT actually employs _f+1_ PBFT protocol
 Each instance works independently and spans all nodes (meaning all nodes run all instances), but only transactions ordered by master instance are actually executed.
 Sole purpose of backup instances is to compare their performance to master instance and initiate a view change if master primary is too slow.
 Instances are numbered, master is always 0, and backups are assigned numbers starting from 1.
+
 When node is starting up or detects that it is lagging behind the rest of the pool it can start process of **catch up**, which is basically downloading (along with consistency checks) of latest parts of ledgers from other nodes and applying transactions to state.
 More info about internals of Indy Node, including sequence diagrams of different processes can be found [here](https://github.com/hyperledger/indy-plenum/tree/master/docs/source/diagrams).
+
 In order to be capable of automatically [upgrading](https://github.com/hyperledger/indy-node/blob/master/docs/source/pool-upgrade.md) itself Indy Node employs separate service called `indy-node-control`, which runs along with main service called `indy-node`.
 Also it is worth noting that `indy-node` service is configured to automatically restart node process in case it crashes.
 
@@ -129,6 +132,28 @@ Indy Node pool can function even with some nodes failing, however it is better t
   There is twist however - even if offending node is fixed other nodes retain their blacklists until restart.
 
 ### Useful fields in validator info output
+
+- `Software` - this can be useful for checking what exact versions of indy-related packages are installed
+- `Pool_info` - shows generic pool parameters and connectivity status, most useful fields are:
+  - `Total_nodes_count` - number of validator nodes in pool
+  - `f_value` - maximum number of faulty nodes that can be tolerated without affecting consensus, should be `Total_nodes_count/3` rounded down
+  - `Unreachable_nodes_count` - number of nodes that cannot be reached, ideally should be 0, if more than `f_value` write consensus is impossible
+  - `Unreachable_nodes` - list of unreachable nodes, ideally should be empty
+  - `Blacklisted_nodes` - list of blacklisted nodes, should be empty, if not and blacklisted nodes were already fixed blacklisting node should be rebooted to clear this list
+- `Node_info` - shows information about node
+  - `Mode` - operation mode of node, normally it should be `participating`, if not - node is not participating in write consensus
+  - `Freshness_status` - status of freshness checks (periodic attempts to order some batch on master instance) per ledger, usually either all are successfull, or all are failed. Latter case means that at least on this node write consensus is broken. If write consensus is broken on more than _f_ nodes then it is certainly broken on all nodes, meaning pool has lost write consensus and cannot process write transactions.
+  - `Catchup_status` - status of either last completed or currently ongoing catchup
+    - `Ledger_statuses` - catchup statuses of individaul ledgers, if some are not `synced` then it means that there is an ongoing catchup
+  - `View_change_status` - status of either last completed or currently ongoing view change
+    - `View_No` - current view no, should be same on all nodes.
+    If there is an ongoing view change this will indicate target view no.
+    - `VC_in_progress` - indicates that there is an ongoing view change at least on this node, this shouldn't last for more than 5 minutes (actually in most cases view change should complete in under 1 minute).
+    Usually all nodes should start and finish view change approximately at the same time, but sometimes due to some edge cases less than _f_ nodes can enter (or fail to finish) view change and linger in this state indefinitely.
+    In this case it is advised to try to reboot such nodes, and if doesn't help - investigate situation further.
+    - `Last_complete_view_no` - indicates view no of last completed view change
+    - `IC_queue` - list of received instance change messages (effectively votes for view change) which didn't trigger a view change yet (at least _N-f_ votes for view change to same view_no is needed)
+
 
 ### Useful patterns in logs
 
