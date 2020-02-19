@@ -82,9 +82,11 @@ def rich_schema_cred_def_request():
                   content={"test1": "test2"})
 
 
-def make_rich_schema_object_exist(handler, request):
+def make_rich_schema_object_exist(handler, request, commit=False):
     seq_no = 1
     txn_time = 1560241033
     txn = reqToTxn(request)
     append_txn_metadata(txn, seq_no, txn_time)
     handler.update_state(txn, None, context_request)
+    if commit:
+        handler.state.commit()

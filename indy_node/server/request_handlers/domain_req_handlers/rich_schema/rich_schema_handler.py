@@ -26,4 +26,4 @@ class RichSchemaHandler(AbstractRichSchemaObjectHandler):
         if JSON_LD_TYPE not in content_as_dict:
             raise InvalidClientRequest(request.identifier, request.reqId,
                                        "Rich Schema must be a JSON-LD object and contain '{}' field in '{}'".format(
-                                           JSON_LD_ID, RS_CONTENT))
+                                           JSON_LD_TYPE, RS_CONTENT))

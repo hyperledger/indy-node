@@ -16,7 +16,6 @@ class GetRichSchemaObjectByIdHandler(ReadRequestHandler):
 
         try:
             value, seq_no, last_update_time, proof = self.lookup(id, is_committed=True, with_proof=True)
-            return keys, seq_no, last_update_time, proof
         except KeyError:
             value, seq_no, last_update_time, proof = None, None, None, None
 

@@ -24,24 +24,22 @@ class JsonLdContextHandler(AbstractRichSchemaObjectHandler):
 
         self._validate_context(content_as_dict[JSON_LD_CONTEXT], request.identifier, request.reqId)
 
+    def _validate_context(self, context, id, reqId):
+        if isinstance(context, list):
+            for ctx in context:
+                if not isinstance(ctx, dict):
+                    if self._bad_uri(ctx):
+                        raise InvalidClientRequest(id, reqId, '@context URI {} badly formed'.format(ctx))
+        elif isinstance(context, dict):
+            pass
+        elif isinstance(context, str):
+            if self._bad_uri(context):
+                raise InvalidClientRequest(id, reqId, '@context URI {} badly formed'.format(context))
+        else:
+            raise InvalidClientRequest(id, reqId, "'@context' value must be url, array, or object")
 
-def _validate_context(self, context, id, reqId):
-    if isinstance(context, list):
-        for ctx in context:
-            if not isinstance(ctx, dict):
-                if self._bad_uri(ctx):
-                    raise InvalidClientRequest(id, reqId, '@context URI {} badly formed'.format(ctx))
-    elif isinstance(context, dict):
-        pass
-    elif isinstance(context, str):
-        if self._bad_uri(context):
-            raise InvalidClientRequest(id, reqId, '@context URI {} badly formed'.format(context))
-    else:
-        raise InvalidClientRequest(id, reqId, "'@context' value must be url, array, or object")
-
-
-def _bad_uri(self, uri_string):
-    url = findall(URI_REGEX, uri_string)
-    if not url:
-        return True
-    return False
+    def _bad_uri(self, uri_string):
+        url = findall(URI_REGEX, uri_string)
+        if not url:
+            return True
+        return False
