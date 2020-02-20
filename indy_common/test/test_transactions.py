@@ -9,7 +9,7 @@ from indy_common.constants import NYM, NODE, ATTRIB, SCHEMA, CLAIM_DEF, DISCLO, 
 from indy_common.transactions import IndyTransactions
 
 
-def test_transactions_are_encoded(SET_RICH_SCHEMA_CONTEXT=None):
+def test_transactions_are_encoded():
     assert NODE == "0"
     assert NYM == "1"
     assert GET_TXNS == "3"
