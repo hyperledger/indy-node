@@ -488,7 +488,7 @@ Adds a claim definition (in particular, public key), that Issuer creates and pub
             },
             "ref":12,
             "signature_type":"CL",
-            'tag': 'some_tag'
+            "tag": "some_tag"
         },
 
         "metadata": {
@@ -550,16 +550,16 @@ It contains public keys, maximum number of credentials the registry may contain,
 
         "data": {
             "ver":1,
-            'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-            'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
-            'revocDefType': 'CL_ACCUM',
-            'tag': 'tag1',
-            'value': {
-                'maxCredNum': 1000000,
-                'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
-                'tailsLocation': 'http://tails.location.com',
-                'issuanceType': 'ISSUANCE_BY_DEFAULT',
-                'publicKeys': {},
+            "id": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+            "credDefId": "FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag"
+            "revocDefType": "CL_ACCUM",
+            "tag": "tag1",
+            "value": {
+                "maxCredNum": 1000000,
+                "tailsHash": "6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297",
+                "tailsLocation": "http://tails.location.com",
+                "issuanceType": "ISSUANCE_BY_DEFAULT",
+                "publicKeys": {},
             },
         },
 
@@ -567,8 +567,8 @@ It contains public keys, maximum number of credentials the registry may contain,
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
             "endorser": "D6HG5g65TDQr1PPHHRoiGf",
-            'digest': '4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453',
-            'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
             "taaAcceptance": {
                 "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
                 "mechanism": "EULA",
@@ -617,13 +617,13 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
 
         "data": {
             "ver":1,
-            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
-            'revocDefType': 'CL_ACCUM',
-            'value': {
-                'accum': 'accum_value',
-                'prevAccum': 'prev_acuum_value',
-                'issued': [],
-                'revoked': [10, 36, 3478],
+            "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1"
+            "revocDefType": "CL_ACCUM",
+            "value": {
+                "accum": "accum_value",
+                "prevAccum": "prev_acuum_value",
+                "issued": [],
+                "revoked": [10, 36, 3478],
             },
         },
 
@@ -631,8 +631,8 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
             "endorser": "D6HG5g65TDQr1PPHHRoiGf",
-            'digest': '4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453',
-            'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
             "taaAcceptance": {
                 "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
                 "mechanism": "EULA",
@@ -677,7 +677,7 @@ If the Context needs to be evolved, a new Context with a new version or new name
     
     - `name`: Context's name string
     - `version`: Context's version string
-    - `type`: 'ctx'
+    - `type`: "ctx"
 
 
 **Example**:
@@ -1239,17 +1239,17 @@ The `constraint_id` fields is where one can define the desired auth constraint f
     
         Constraint Type. As of now, the following constraint types are supported:
             
-            - 'ROLE': a constraint defining how many siganatures of a given role are required
-            - 'OR': logical disjunction for all constraints from `auth_constraints` 
-            - 'AND': logical conjunction for all constraints from `auth_constraints`
+            - "ROLE": a constraint defining how many siganatures of a given role are required
+            - "OR": logical disjunction for all constraints from `auth_constraints` 
+            - "AND": logical conjunction for all constraints from `auth_constraints`
             
-    - fields if `'constraint_id': 'OR'` or `'constraint_id': 'AND'`
+    - fields if `"constraint_id": "OR"` or `"constraint_id": "AND"`
     
         - `auth_constraints` (list)
         
             A list of constraints. Any number of nested constraints is supported recursively
         
-    - fields if `'constraint_id': 'ROLE'`:
+    - fields if `"constraint_id": "ROLE"`:
                 
         - `role` (string enum)    
             
@@ -1276,7 +1276,7 @@ The `constraint_id` fields is where one can define the desired auth constraint f
         
             Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
         
-    - fields if `'constraint_id': 'FORBIDDEN'`:
+    - fields if `"constraint_id": "FORBIDDEN"`:
     
         no fields
 
@@ -1288,52 +1288,52 @@ Let's consider an example of changing a value of a NODE transaction's `service` 
 
 ```
 {  
-   'txn':{  
-      'type':'120',
-      'protocolVersion':2,
-      'data':{  
-        'auth_type': '0', 
-        'auth_action': 'EDIT',
-        'field' :'services',
-        'old_value': [VALIDATOR],
-        'new_value': []
-        'constraint':{
-              'constraint_id': 'OR',
-              'auth_constraints': [{'constraint_id': 'ROLE', 
-                                    'role': '0',
-                                    'sig_count': 2, 
-                                    'need_to_be_owner': False, 
-                                    'metadata': {}}, 
+   "txn":{  
+      "type":"120",
+      "protocolVersion":2,
+      "data":{  
+        "auth_type": "0", 
+        "auth_action": "EDIT",
+        "field" :"services",
+        "old_value": [VALIDATOR],
+        "new_value": []
+        "constraint":{
+              "constraint_id": "OR",
+              "auth_constraints": [{"constraint_id": "ROLE", 
+                                    "role": "0",
+                                    "sig_count": 2, 
+                                    "need_to_be_owner": False, 
+                                    "metadata": {}}, 
                                    
-                                   {'constraint_id': 'ROLE', 
-                                    'role': '2',
-                                    'sig_count': 1, 
-                                    'need_to_be_owner': True, 
-                                    'metadata': {}}
+                                   {"constraint_id": "ROLE", 
+                                    "role": "2",
+                                    "sig_count": 1, 
+                                    "need_to_be_owner": True, 
+                                    "metadata": {}}
                                    ]
         }, 
       },
-      'metadata':{  
-         'reqId':252174114,
-         'from':'M9BJDuS24bqbJNvBRsoGg3',
-         'digest':'6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c',
-         'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
+      "metadata":{  
+         "reqId":252174114,
+         "from":"M9BJDuS24bqbJNvBRsoGg3",
+         "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+         "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
       }
    },
-   'txnMetadata':{  
-      'txnTime':1551785798,
-      'seqNo':1
+   "txnMetadata":{  
+      "txnTime":1551785798,
+      "seqNo":1
    },   
-   'reqSignature':{  
-      'type':'ED25519',
-      'values':[  
+   "reqSignature":{  
+      "type":"ED25519",
+      "values":[  
          {  
-            'value':'4wpLLAtkT6SeiKEXPVsMcCirx9KvkeKKd11Q4VsMXmSv2tnJrRw1TQKFyov4m2BuPP4C5oCiZ6RUwS9w3EPdywnz',
-            'from':'M9BJDuS24bqbJNvBRsoGg3'
+            "value":"4wpLLAtkT6SeiKEXPVsMcCirx9KvkeKKd11Q4VsMXmSv2tnJrRw1TQKFyov4m2BuPP4C5oCiZ6RUwS9w3EPdywnz",
+            "from":"M9BJDuS24bqbJNvBRsoGg3"
          }
       ]
    },
-   'ver':'1'
+   "ver":"1"
 }
 ```
 
@@ -1383,18 +1383,18 @@ Please note, that list elements of `GET_AUTH_RULE` output can be used as an inpu
     
         Constraint Type. As of now, the following constraint types are supported:
             
-            - 'ROLE': a constraint defining how many siganatures of a given role are required
-            - 'OR': logical disjunction for all constraints from `auth_constraints` 
-            - 'AND': logical conjunction for all constraints from `auth_constraints`
-            - 'FORBIDDEN': a constraint for not allowed actions
+            - "ROLE": a constraint defining how many siganatures of a given role are required
+            - "OR": logical disjunction for all constraints from `auth_constraints` 
+            - "AND": logical conjunction for all constraints from `auth_constraints`
+            - "FORBIDDEN": a constraint for not allowed actions
             
-    - fields if `'constraint_id': 'OR'` or `'constraint_id': 'AND'`
+    - fields if `"constraint_id": "OR"` or `"constraint_id": "AND"`
     
         - `auth_constraints` (list)
         
             A list of constraints. Any number of nested constraints is supported recursively
         
-    - fields if `'constraint_id': 'ROLE'`:
+    - fields if `"constraint_id": "ROLE"`:
                 
         - `role` (string enum)    
             
@@ -1421,7 +1421,7 @@ Please note, that list elements of `GET_AUTH_RULE` output can be used as an inpu
         
             Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
     
-    - fields if `'constraint_id': 'FORBIDDEN'`:
+    - fields if `"constraint_id": "FORBIDDEN"`:
     
         no fields
 
@@ -1429,55 +1429,55 @@ Please note, that list elements of `GET_AUTH_RULE` output can be used as an inpu
 
 ```
 {  
-   'txn':{  
-      'type':'120',
-      'protocolVersion':2,
-      'data':{
+   "txn":{  
+      "type":"120",
+      "protocolVersion":2,
+      "data":{
         rules: [
-           {'auth_type': '0', 
-            'auth_action': 'EDIT',
-            'field' :'services',
-            'old_value': [VALIDATOR],
-            'new_value': []
-            'constraint':{
-                  'constraint_id': 'OR',
-                  'auth_constraints': [{'constraint_id': 'ROLE', 
-                                        'role': '0',
-                                        'sig_count': 2, 
-                                        'need_to_be_owner': False, 
-                                        'metadata': {}}, 
+           {"auth_type": "0", 
+            "auth_action": "EDIT",
+            "field" :"services",
+            "old_value": [VALIDATOR],
+            "new_value": []
+            "constraint":{
+                  "constraint_id": "OR",
+                  "auth_constraints": [{"constraint_id": "ROLE", 
+                                        "role": "0",
+                                        "sig_count": 2, 
+                                        "need_to_be_owner": False, 
+                                        "metadata": {}}, 
                                        
-                                       {'constraint_id': 'ROLE', 
-                                        'role': '2',
-                                        'sig_count': 1, 
-                                        'need_to_be_owner': True, 
-                                        'metadata': {}}
+                                       {"constraint_id": "ROLE", 
+                                        "role": "2",
+                                        "sig_count": 1, 
+                                        "need_to_be_owner": True, 
+                                        "metadata": {}}
                                        ]
             }, 
           },
           ...
         ]
-      'metadata':{  
-         'reqId':252174114,
-         'from':'M9BJDuS24bqbJNvBRsoGg3',
-         'digest':'6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c',
-         'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
+      "metadata":{  
+         "reqId":252174114,
+         "from":"M9BJDuS24bqbJNvBRsoGg3",
+         "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+         "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
       }
    },
-   'txnMetadata':{  
-      'txnTime':1551785798,
-      'seqNo':1
+   "txnMetadata":{  
+      "txnTime":1551785798,
+      "seqNo":1
    },   
-   'reqSignature':{  
-      'type':'ED25519',
-      'values':[  
+   "reqSignature":{  
+      "type":"ED25519",
+      "values":[  
          {  
-            'value':'4wpLLAtkT6SeiKEXPVsMcCirx9KvkeKKd11Q4VsMXmSv2tnJrRw1TQKFyov4m2BuPP4C5oCiZ6RUwS9w3EPdywnz',
-            'from':'M9BJDuS24bqbJNvBRsoGg3'
+            "value":"4wpLLAtkT6SeiKEXPVsMcCirx9KvkeKKd11Q4VsMXmSv2tnJrRw1TQKFyov4m2BuPP4C5oCiZ6RUwS9w3EPdywnz",
+            "from":"M9BJDuS24bqbJNvBRsoGg3"
          }
       ]
    },
-   'ver':'1'
+   "ver":"1"
 }
 ```
 

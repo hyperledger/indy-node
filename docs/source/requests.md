@@ -56,19 +56,19 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
 
 ```
 {
-    'operation': {
-        'type': <request type>,
+    "operation": {
+        "type": <request type>,
         <request-specific fields>
     },
     
-    'identifier': <author DID>,
-    `endorser`: <endorser DID>, 
-    'reqId': <req_id unique integer>,
-    'protocolVersion': 2,
-    'signature': <signature_value>,
-    # 'signatures': {
-    #      `did1`: <sig1>,
-    #      `did2`: <sig2>,
+    "identifier": <author DID>,
+    "endorser": <endorser DID>, 
+    "reqId": <req_id unique integer>,
+    "protocolVersion": 2,
+    "signature": <signature_value>,
+    # "signatures": {
+    #      "did1": <sig1>,
+    #      "did2": <sig2>,
     #  }    
            
 }
@@ -163,22 +163,22 @@ Write requests to Domain and added-by-plugins ledgers may have additional Transa
 
 ```
 {
-    'operation': {
-        'type': <request type>,
+    "operation": {
+        "type": <request type>,
         <request-specific fields>
     },
     
-    'identifier': <author DID>,
-    'endorser': <endorser DID>,
-    'reqId': <req_id unique integer>,
-    'taaAcceptance': {
-        'taaDigest': <digest hex string>,
-        'mechanism': <mechaism string>,
-        'time': <time integer>
+    "identifier": <author DID>,
+    "endorser": <endorser DID>,
+    "reqId": <req_id unique integer>,
+    "taaAcceptance": {
+        "taaDigest": <digest hex string>,
+        "mechanism": <mechaism string>,
+        "time": <time integer>
      }
-    'protocolVersion': 2,
-    'signature': <signature_value>,
-    # 'signatures': {
+    "protocolVersion": 2,
+    "signature": <signature_value>,
+    # "signatures": {
     #      `did1`: <sig1>,
     #      `did2`: <sig2>,
     #  }    
@@ -209,8 +209,8 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
 
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": <...>,
         "txn": {
             "type": <...>,
@@ -247,8 +247,8 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
             }]
         }
     
-        'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'],
+        "rootHash": "5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
     }
 }
 ```
@@ -387,32 +387,32 @@ These common metadata values are added to the result's JSON at the same level as
 
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '105',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514214863899317,
+    "op": "REPLY", 
+    "result": {
+        "type": "105",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514214863899317,
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'state_proof': {
-            'root_hash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514214795,
-                    'ledger_id': 1, 
-                    'txn_root_hash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-                    'pool_state_root_hash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-                    'state_root_hash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK'
+        "state_proof": {
+            "root_hash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514214795,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+                    "pool_state_root_hash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+                    "state_root_hash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK"
                 },
-                'signature': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
-        'data': <transaction-specific data>,
+        "data": <transaction-specific data>,
         
         <request-specific data>
 }
@@ -533,25 +533,25 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '1'
-        'dest': 'GEzcdDLhCpGCYRHW82kjHd',
-        'role': '101',
-        'verkey': '~HmUWn928bnFT6Ephf65YXv'
+    "operation": {
+        "type": "1"
+        "dest": "GEzcdDLhCpGCYRHW82kjHd",
+        "role": "101",
+        "verkey": "~HmUWn928bnFT6Ephf65YXv"
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514213797569745,
-    'protocolVersion': 2,
-    'signature': '49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba',
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514213797569745,
+    "protocolVersion": 2,
+    "signature": "49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba",
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":"1",
@@ -584,12 +584,12 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
             }]
         }
 		
-        'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'],
+        "rootHash": "5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
 		
-        'dest': 'N22KY2Dyvmuu2PyyqSFKue',
-        'role': '101',
-        'verkey': '31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE'
+        "dest": "N22KY2Dyvmuu2PyyqSFKue",
+        "role": "101",
+        "verkey": "31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE"
     }
 }
 ```
@@ -620,24 +620,24 @@ Adds or updates an attribute to a NYM record.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '100'
-        'dest': 'N22KY2Dyvmuu2PyyqSFKue',
-        'raw': '{"name": "Alice"}'
+    "operation": {
+        "type": "100"
+        "dest": "N22KY2Dyvmuu2PyyqSFKue",
+        "raw": "{"name": "Alice"}"
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514213797569745,
-    'protocolVersion': 2,
-    'signature': '49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba',
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514213797569745,
+    "protocolVersion": 2,
+    "signature": "49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba",
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":"100",
@@ -646,7 +646,7 @@ Adds or updates an attribute to a NYM record.
             "data": {
                 "ver":1,
                 "dest":"N22KY2Dyvmuu2PyyqSFKue",
-                'raw': '{"name":"Alice"}'
+                "raw": "{"name":"Alice"}"
             },
             
             "metadata": {
@@ -669,8 +669,8 @@ Adds or updates an attribute to a NYM record.
             }]
         }    
     
-        'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'],
+        "rootHash": "5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
 		
     }
 }
@@ -693,28 +693,28 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '101',
-        'data': {
-            'version': '1.0',
-            'name': 'Degree',
-            'attr_names': ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad', 'expiry_date']
+    "operation": {
+        "type": "101",
+        "data": {
+            "version": "1.0",
+            "name": "Degree",
+            "attr_names": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
         },
     },
 
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
-    'reqId': 1514280215504647,
-    'protocolVersion': 2,
-    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":"101",
@@ -725,7 +725,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
                 "data": {
                     "name": "Degree",
                     "version": "1.0",
-                    'attr_names': ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad', 'expiry_date']
+                    "attr_names": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
                 }
             },
             
@@ -750,8 +750,8 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
             }]
         }
  		
-        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
 		
     }
 }
@@ -788,30 +788,30 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '102',
-        'signature_type': 'CL',
-        'ref': 10,
-        'tag': 'some_tag',    
-        'data': {
-            'primary': ....,
-            'revocation': ....
+    "operation": {
+        "type": "102",
+        "signature_type": "CL",
+        "ref": 10,
+        "tag": "some_tag",    
+        "data": {
+            "primary": ....,
+            "revocation": ....
         }
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
-    'reqId': 1514280215504647,
-    'protocolVersion': 2,
-    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":"102",
@@ -820,11 +820,11 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
             "data": {
                 "ver":1,
                 "signature_type":"CL",
-                'ref': 10,    
-                'tag': 'some_tag',
-                'data': {
-                    'primary': ....,
-                    'revocation': ....
+                "ref": 10,    
+                "tag": "some_tag",
+                "data": {
+                    "primary": ....,
+                    "revocation": ....
                 }
             },
             
@@ -849,8 +849,8 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
             }]
         },
         
-        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
         
     }
 }
@@ -880,34 +880,34 @@ It contains public keys, maximum number of credentials the registry may contain,
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '113',
-        'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-        'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
-        'revocDefType': 'CL_ACCUM',
-        'tag': 'tag1',
-        'value': {
-            'maxCredNum': 1000000,
-            'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
-            'tailsLocation': 'http://tails.location.com',
-            'issuanceType': 'ISSUANCE_BY_DEFAULT',
-            'publicKeys': {},
+    "operation": {
+        "type": "113",
+        "id": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        "credDefId": "FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag"
+        "revocDefType": "CL_ACCUM",
+        "tag": "tag1",
+        "value": {
+            "maxCredNum": 1000000,
+            "tailsHash": "6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297",
+            "tailsLocation": "http://tails.location.com",
+            "issuanceType": "ISSUANCE_BY_DEFAULT",
+            "publicKeys": {},
         },
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
-    'reqId': 1514280215504647,
-    'protocolVersion': 2,
-    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":"113",
@@ -915,16 +915,16 @@ It contains public keys, maximum number of credentials the registry may contain,
             
             "data": {
                 "ver":1,
-                'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-                'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
-                'revocDefType': 'CL_ACCUM',
-                'tag': 'tag1',
-                'value': {
-                    'maxCredNum': 1000000,
-                    'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
-                    'tailsLocation': 'http://tails.location.com',
-                    'issuanceType': 'ISSUANCE_BY_DEFAULT',
-                    'publicKeys': {},
+                "id": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+                "credDefId": "FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag"
+                "revocDefType": "CL_ACCUM",
+                "tag": "tag1",
+                "value": {
+                    "maxCredNum": 1000000,
+                    "tailsHash": "6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297",
+                    "tailsLocation": "http://tails.location.com",
+                    "issuanceType": "ISSUANCE_BY_DEFAULT",
+                    "publicKeys": {},
                 },
             },
             
@@ -949,8 +949,8 @@ It contains public keys, maximum number of credentials the registry may contain,
             }]
         },
         
-        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
         
     }
 }
@@ -974,31 +974,31 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '114',
-            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
-            'revocDefType': 'CL_ACCUM',
-            'value': {
-                'accum': 'accum_value',
-                'prevAccum': 'prev_acuum_value',
-                'issued': [],
-                'revoked': [10, 36, 3478],
+    "operation": {
+        "type": "114",
+            "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1"
+            "revocDefType": "CL_ACCUM",
+            "value": {
+                "accum": "accum_value",
+                "prevAccum": "prev_acuum_value",
+                "issued": [],
+                "revoked": [10, 36, 3478],
             },
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
-    'reqId': 1514280215504647,
-    'protocolVersion': 2,
-    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":"114",
@@ -1006,13 +1006,13 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
             
             "data": {
                 "ver":1,
-                'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
-                'revocDefType': 'CL_ACCUM',
-                'value': {
-                    'accum': 'accum_value',
-                    'prevAccum': 'prev_acuum_value',
-                    'issued': [],
-                    'revoked': [10, 36, 3478],
+                "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1"
+                "revocDefType": "CL_ACCUM",
+                "value": {
+                    "accum": "accum_value",
+                    "prevAccum": "prev_acuum_value",
+                    "issued": [],
+                    "revoked": [10, 36, 3478],
                 },
             },
             
@@ -1037,8 +1037,8 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
             }]
         },
         
-        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
         
     }
 }
@@ -1076,32 +1076,32 @@ There is no need to specify all other fields in `data`, and they will remain the
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '0'
-     	'data': {
-     		'alias': 'Node1',
-     		'client_ip': '127.0.0.1',
-     		'client_port': 7588,
-     		'node_ip': '127.0.0.1', 
-     		'node_port': 7587,
-     		'blskey': '00000000000000000000000000000000',
-     		'services': ['VALIDATOR']}
+    "operation": {
+        "type": "0"
+     	"data": {
+     		"alias": "Node1",
+     		"client_ip": "127.0.0.1",
+     		"client_port": 7588,
+     		"node_ip": "127.0.0.1", 
+     		"node_port": 7587,
+     		"blskey": "00000000000000000000000000000000",
+     		"services": ["VALIDATOR"]}
      	} ,
-     	'dest': '6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8'
+     	"dest": "6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8"
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 2,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":0,
@@ -1109,16 +1109,16 @@ There is no need to specify all other fields in `data`, and they will remain the
             
             "data": {
                 "ver":1,
-                'data': {
-                    'alias': 'Node1',
-                    'client_ip': '127.0.0.1',
-                    'client_port': 7588,
-                    'node_ip': '127.0.0.1', 
-                    'node_port': 7587,
-                    'blskey': '00000000000000000000000000000000',
-                    'services': ['VALIDATOR']}
+                "data": {
+                    "alias": "Node1",
+                    "client_ip": "127.0.0.1",
+                    "client_port": 7588,
+                    "node_ip": "127.0.0.1", 
+                    "node_port": 7587,
+                    "blskey": "00000000000000000000000000000000",
+                    "services": ["VALIDATOR"]}
                 } ,
-                'dest': '6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8'
+                "dest": "6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8"
             },
             
             "metadata": {
@@ -1140,8 +1140,8 @@ There is no need to specify all other fields in `data`, and they will remain the
             }]
         }
  		
-        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
-        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
+        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
     }
 }
 ```
@@ -1198,30 +1198,30 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '109'
-        'name': `upgrade-13`,
-        'action': `start`,
-        'version': `1.3`,
-        'schedule': {"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2":"2017-12-25T10:25:58.271857+00:00","AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3":"2017-12-25T10:26:16.271857+00:00","DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2":"2017-12-25T10:26:25.271857+00:00","JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ":"2017-12-25T10:26:07.271857+00:00"},
-        'sha256': `db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55`,
-        'force': false,
-        'reinstall': false,
-        'timeout': 1
+    "operation": {
+        "type": "109"
+        "name": "upgrade-13",
+        "action": "start",
+        "version": "1.3",
+        "schedule": {"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2":"2017-12-25T10:25:58.271857+00:00","AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3":"2017-12-25T10:26:16.271857+00:00","DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2":"2017-12-25T10:26:25.271857+00:00","JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ":"2017-12-25T10:26:07.271857+00:00"},
+        "sha256": "db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55",
+        "force": false,
+        "reinstall": false,
+        "timeout": 1
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 2,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":109,
@@ -1259,8 +1259,8 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
             }]
         },
         
-        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
-        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
+        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
     }
 }
 ```
@@ -1287,24 +1287,24 @@ Command to change Pool's configuration
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '111'
-        'writes':false,
-        'force':true
+    "operation": {
+        "type": "111"
+        "writes":false,
+        "force":true
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 2,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver":1,
         "txn": {
             "type":111,
@@ -1335,8 +1335,8 @@ Command to change Pool's configuration
             }]
         },
         
-        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
-        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
+        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
     }
 }
 ```
@@ -1392,18 +1392,18 @@ The `constraint_id` fields is where one can define the desired auth constraint f
     
         Constraint Type. As of now, the following constraint types are supported:
             
-            - 'ROLE': a constraint defining how many signatures of a given role are required
-            - 'OR': logical disjunction for all constraints from `auth_constraints` 
-            - 'AND': logical conjunction for all constraints from `auth_constraints`
-            - 'FORBIDDEN': a constraint for not allowed actions
+            - "ROLE": a constraint defining how many signatures of a given role are required
+            - "OR": logical disjunction for all constraints from `auth_constraints` 
+            - "AND": logical conjunction for all constraints from `auth_constraints`
+            - "FORBIDDEN": a constraint for not allowed actions
             
-    - fields if `'constraint_id': 'OR'` or `'constraint_id': 'AND'`
+    - fields if `"constraint_id": "OR"` or `"constraint_id": "AND"`
     
         - `auth_constraints` (list)
         
             A list of constraints. Any number of nested constraints is supported recursively
         
-    - fields if `'constraint_id': 'ROLE'`:
+    - fields if `"constraint_id": "ROLE"`:
                 
         - `role` (string enum)    
             
@@ -1430,7 +1430,7 @@ The `constraint_id` fields is where one can define the desired auth constraint f
         
             Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
         
-    - fields if `'constraint_id': 'FORBIDDEN'`:
+    - fields if `"constraint_id": "FORBIDDEN"`:
     
         no fields
 
@@ -1442,89 +1442,89 @@ Let's consider an example of changing a value of a NODE transaction's `service` 
  
 ```
 {
-    'operation': {
-        'type':'120',
-        'auth_type': '0', 
-        'auth_action': 'EDIT',
-        'field' :'services',
-        'old_value': [VALIDATOR],
-        'new_value': []
-        'constraint':{
-              'constraint_id': 'OR',
-              'auth_constraints': [{'constraint_id': 'ROLE', 
-                                    'role': '0',
-                                    'sig_count': 2, 
-                                    'need_to_be_owner': False, 
-                                    'metadata': {}}, 
+    "operation": {
+        "type":"120",
+        "auth_type": "0", 
+        "auth_action": "EDIT",
+        "field" :"services",
+        "old_value": [VALIDATOR],
+        "new_value": []
+        "constraint":{
+              "constraint_id": "OR",
+              "auth_constraints": [{"constraint_id": "ROLE", 
+                                    "role": "0",
+                                    "sig_count": 2, 
+                                    "need_to_be_owner": False, 
+                                    "metadata": {}}, 
                                    
-                                   {'constraint_id': 'ROLE', 
-                                    'role': '2',
-                                    'sig_count': 1, 
-                                    'need_to_be_owner': True, 
-                                    'metadata': {}}
+                                   {"constraint_id": "ROLE", 
+                                    "role": "2",
+                                    "sig_count": 1, 
+                                    "need_to_be_owner": True, 
+                                    "metadata": {}}
                                    ]
         }, 
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 2,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj'
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
 }
 ```
 
 *Reply Example*:
 ```
-{     'op':'REPLY',
-      'result':{  
-         'txnMetadata':{  
-            'seqNo':1,
-            'txnTime':1551776783
+{     "op":"REPLY",
+      "result":{  
+         "txnMetadata":{  
+            "seqNo":1,
+            "txnTime":1551776783
          },
-         'reqSignature':{  
-            'values':[  
+         "reqSignature":{  
+            "values":[  
                {  
-                  'value':'4j99V2BNRX1dn2QhnR8L9C3W9XQt1W3ScD1pyYaqD1NUnDVhbFGS3cw8dHRe5uVk8W7DoFtHb81ekMs9t9e76Fg',
-                  'from':'M9BJDuS24bqbJNvBRsoGg3'
+                  "value":"4j99V2BNRX1dn2QhnR8L9C3W9XQt1W3ScD1pyYaqD1NUnDVhbFGS3cw8dHRe5uVk8W7DoFtHb81ekMs9t9e76Fg",
+                  "from":"M9BJDuS24bqbJNvBRsoGg3"
                }
             ],
-            'type':'ED25519'
+            "type":"ED25519"
          },
-         'txn':{  
-            'data':{  
-                'auth_type': '0', 
-                'auth_action': 'EDIT',
-                'field' :'services',
-                'old_value': [VALIDATOR],
-                'new_value': []            
-                'constraint':{  
-                          'constraint_id': 'OR',
-                          'auth_constraints': [{'constraint_id': 'ROLE', 
-                                                'role': '0',
-                                                'sig_count': 2, 
-                                                'need_to_be_owner': False, 
-                                                'metadata': {}}, 
+         "txn":{  
+            "data":{  
+                "auth_type": "0", 
+                "auth_action": "EDIT",
+                "field" :"services",
+                "old_value": [VALIDATOR],
+                "new_value": []            
+                "constraint":{  
+                          "constraint_id": "OR",
+                          "auth_constraints": [{"constraint_id": "ROLE", 
+                                                "role": "0",
+                                                "sig_count": 2, 
+                                                "need_to_be_owner": False, 
+                                                "metadata": {}}, 
                                                
-                                               {'constraint_id': 'ROLE', 
-                                                'role': '2',
-                                                'sig_count': 1, 
-                                                'need_to_be_owner': True, 
-                                                'metadata': {}}
+                                               {"constraint_id": "ROLE", 
+                                                "role": "2",
+                                                "sig_count": 1, 
+                                                "need_to_be_owner": True, 
+                                                "metadata": {}}
                                                ]
                 }, 
             },
-            'protocolVersion':2,
-            'metadata':{  
-               'from':'M9BJDuS24bqbJNvBRsoGg3',
-               'digest':'ea13f0a310c7f4494d2828bccbc8ff0bd8b77d0c0bfb1ed9a84104bf55ad0436',
-               'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
-               'reqId':711182024
+            "protocolVersion":2,
+            "metadata":{  
+               "from":"M9BJDuS24bqbJNvBRsoGg3",
+               "digest":"ea13f0a310c7f4494d2828bccbc8ff0bd8b77d0c0bfb1ed9a84104bf55ad0436",
+               "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+               "reqId":711182024
             },
-            'type':'120'
+            "type":"120"
          },
-         'ver':'1',
-         'rootHash':'GJNfknLWDAb8R93cgAX3Bw6CYDo23HBhiwZnzb4fHtyi',
-         'auditPath':['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6']
+         "ver":"1",
+         "rootHash":"GJNfknLWDAb8R93cgAX3Bw6CYDo23HBhiwZnzb4fHtyi",
+         "auditPath":["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"]
       }
    }
 ```
@@ -1540,7 +1540,7 @@ The list of actions is static and can be found in [auth_rules.md](auth_rules.md)
 There is a default Auth Constraint for every action (defined in [auth_rules.md](auth_rules.md)). 
 
 The `AUTH_RULES` command allows to change the Auth Constraints.
-So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for the given action.
+So, it"s not possible to register new actions by this command. But it's possible to override authentication constraints (values) for the given action.
 
 Please note, that list elements of `GET_AUTH_RULE` output can be used as an input (with a required changes) for the field `rules` in `AUTH_RULES`.
 
@@ -1583,18 +1583,18 @@ A client will receive NACK for
     
         Constraint Type. As of now, the following constraint types are supported:
             
-            - 'ROLE': a constraint defining how many signatures of a given role are required
-            - 'OR': logical disjunction for all constraints from `auth_constraints` 
-            - 'AND': logical conjunction for all constraints from `auth_constraints`
-            - 'FORBIDDEN': a constraint for not allowed actions
+            - "ROLE": a constraint defining how many signatures of a given role are required
+            - "OR": logical disjunction for all constraints from `auth_constraints` 
+            - "AND": logical conjunction for all constraints from `auth_constraints`
+            - "FORBIDDEN": a constraint for not allowed actions
             
-    - fields if `'constraint_id': 'OR'` or `'constraint_id': 'AND'`
+    - fields if `"constraint_id": "OR"` or `"constraint_id": "AND"`
     
         - `auth_constraints` (list)
         
             A list of constraints. Any number of nested constraints is supported recursively
         
-    - fields if `'constraint_id': 'ROLE'`:
+    - fields if `"constraint_id": "ROLE"`:
                 
         - `role` (string enum)    
             
@@ -1621,103 +1621,103 @@ A client will receive NACK for
         
             Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
         
-    - fields if `'constraint_id': 'FORBIDDEN'`:
+    - fields if `"constraint_id": "FORBIDDEN"`:
     
         no fields
 
 *Request Example*:
 ```
 {
-    'operation': {
-           'type':'122',
-           'rules': [
-                {'constraint':{  
-                     'constraint_id': 'OR',
-                     'auth_constraints': [{'constraint_id': 'ROLE', 
-                                           'role': '0',
-                                           'sig_count': 1, 
-                                           'need_to_be_owner': False, 
-                                           'metadata': {}}, 
+    "operation": {
+           "type":"122",
+           "rules": [
+                {"constraint":{  
+                     "constraint_id": "OR",
+                     "auth_constraints": [{"constraint_id": "ROLE", 
+                                           "role": "0",
+                                           "sig_count": 1, 
+                                           "need_to_be_owner": False, 
+                                           "metadata": {}}, 
                                                                
-                                           {'constraint_id': 'ROLE', 
-                                            'role': '2',
-                                            'sig_count': 1, 
-                                            'need_to_be_owner': True, 
-                                            'metadata': {}}
+                                           {"constraint_id": "ROLE", 
+                                            "role": "2",
+                                            "sig_count": 1, 
+                                            "need_to_be_owner": True, 
+                                            "metadata": {}}
                                            ]
                    }, 
-                 'field' :'services',
-                 'auth_type': '0', 
-                 'auth_action': 'EDIT',
-                 'old_value': [VALIDATOR],
-                 'new_value': []
+                 "field" :"services",
+                 "auth_type": "0", 
+                 "auth_action": "EDIT",
+                 "old_value": [VALIDATOR],
+                 "new_value": []
                 },
                 ...
            ]
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 1,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj'
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 1,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
 }
 ```
 
 *Reply Example*:
 ```
-{     'op':'REPLY',
-      'result':{  
-         'txnMetadata':{  
-            'seqNo':1,
-            'txnTime':1551776783
+{     "op":"REPLY",
+      "result":{  
+         "txnMetadata":{  
+            "seqNo":1,
+            "txnTime":1551776783
          },
-         'reqSignature':{  
-            'values':[  
+         "reqSignature":{  
+            "values":[  
                {  
-                  'value':'4j99V2BNRX1dn2QhnR8L9C3W9XQt1W3ScD1pyYaqD1NUnDVhbFGS3cw8dHRe5uVk8W7DoFtHb81ekMs9t9e76Fg',
-                  'from':'M9BJDuS24bqbJNvBRsoGg3'
+                  "value":"4j99V2BNRX1dn2QhnR8L9C3W9XQt1W3ScD1pyYaqD1NUnDVhbFGS3cw8dHRe5uVk8W7DoFtHb81ekMs9t9e76Fg",
+                  "from":"M9BJDuS24bqbJNvBRsoGg3"
                }
             ],
-            'type':'ED25519'
+            "type":"ED25519"
          },
-         'txn':{  
-            'type':'122',
-            'data':{
-               'rules': [
-                    {'constraint':{  
-                         'constraint_id': 'OR',
-                         'auth_constraints': [{'constraint_id': 'ROLE', 
-                                               'role': '0',
-                                               'sig_count': 1, 
-                                               'need_to_be_owner': False, 
-                                               'metadata': {}}, 
+         "txn":{  
+            "type":"122",
+            "data":{
+               "rules": [
+                    {"constraint":{  
+                         "constraint_id": "OR",
+                         "auth_constraints": [{"constraint_id": "ROLE", 
+                                               "role": "0",
+                                               "sig_count": 1, 
+                                               "need_to_be_owner": False, 
+                                               "metadata": {}}, 
                                                                    
-                                               {'constraint_id': 'ROLE', 
-                                                'role': '2',
-                                                'sig_count': 1, 
-                                                'need_to_be_owner': True, 
-                                                'metadata': {}}
+                                               {"constraint_id": "ROLE", 
+                                                "role": "2",
+                                                "sig_count": 1, 
+                                                "need_to_be_owner": True, 
+                                                "metadata": {}}
                                                ]
                        }, 
-                     'field' :'services',
-                     'auth_type': '0', 
-                     'auth_action': 'EDIT',
-                     'old_value': [VALIDATOR],
-                     'new_value': []
+                     "field" :"services",
+                     "auth_type": "0", 
+                     "auth_action": "EDIT",
+                     "old_value": [VALIDATOR],
+                     "new_value": []
                     },
                     ...
                ]
             }
-            'protocolVersion':2,
-            'metadata':{  
-               'from':'M9BJDuS24bqbJNvBRsoGg3',
-               'digest':'ea13f0a310c7f4494d2828bccbc8ff0bd8b77d0c0bfb1ed9a84104bf55ad0436',
-               'reqId':711182024
+            "protocolVersion":2,
+            "metadata":{  
+               "from":"M9BJDuS24bqbJNvBRsoGg3",
+               "digest":"ea13f0a310c7f4494d2828bccbc8ff0bd8b77d0c0bfb1ed9a84104bf55ad0436",
+               "reqId":711182024
             }
          },
-         'ver':'1',
-         'rootHash':'GJNfknLWDAb8R93cgAX3Bw6CYDo23HBhiwZnzb4fHtyi',
-         'auditPath':[  
+         "ver":"1",
+         "rootHash":"GJNfknLWDAb8R93cgAX3Bw6CYDo23HBhiwZnzb4fHtyi",
+         "auditPath":[  
 
          ]
       }
@@ -1786,25 +1786,25 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
 *New Agreement Request Example*:
 ```
 {
-    'operation': {
-        'type': '4'
-        'version': '1.0',
-        'text': 'Please read carefully before writing anything to the ledger',
-        'ratification_ts': 1514304094738044
+    "operation": {
+        "type": "4"
+        "version": "1.0",
+        "text": "Please read carefully before writing anything to the ledger",
+        "ratification_ts": 1514304094738044
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 2,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
 }
 ```
 
 *New Agreement Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver":1,
         "txn": {
             "type":4,
@@ -1812,9 +1812,9 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
             
             "data": {
                 "ver":1,
-                'version': '1.0',
-                'text': 'Please read carefully before writing anything to the ledger',
-                'ratification_ts': 1514304094738044
+                "version": "1.0",
+                "text": "Please read carefully before writing anything to the ledger",
+                "ratification_ts": 1514304094738044
             },
             
             "metadata": {
@@ -1836,8 +1836,8 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
             }]
         },
         
-        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
-        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
+        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
     }
 }
 ```
@@ -1846,24 +1846,24 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
 *Retire Agreement Request Example*:
 ```
 {
-    'operation': {
-        'type': '4'
-        'version': '1.0',
-        'retirement_ts': 1515415195838044
+    "operation": {
+        "type": "4"
+        "version": "1.0",
+        "retirement_ts": 1515415195838044
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738066,
-    'protocolVersion': 2,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738066,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
 }
 ```
 
 *Retire Agreement Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver":1,
         "txn": {
             "type":4,
@@ -1871,8 +1871,8 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
             
             "data": {
                 "ver":1,
-                'version': '1.0',
-                'retirement_ts': 1515415195838044
+                "version": "1.0",
+                "retirement_ts": 1515415195838044
             },
             
             "metadata": {
@@ -1894,8 +1894,8 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
             }]
         },
         
-        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
-        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
+        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
     }
 }
 ```
@@ -1925,8 +1925,8 @@ Each acceptance mechanisms list has a unique version.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '5'
+    "operation": {
+        "type": "5"
         "version": "1.0",
         "aml": {
             "EULA": "Included in the EULA for the product being used",
@@ -1937,18 +1937,18 @@ Each acceptance mechanisms list has a unique version.
         "amlContext": "http://aml-context-descr"
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 2,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver":1,
         "txn": {
             "type":5,
@@ -1985,8 +1985,8 @@ Each acceptance mechanisms list has a unique version.
             }]
         },
         
-        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
-        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
+        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
     }
 }
 ```
@@ -2000,21 +2000,21 @@ A new Agreement needs to be sent instead.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '8'
+    "operation": {
+        "type": "8"
     },
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 2,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY',
-    'result': {
+    "op": "REPLY",
+    "result": {
         "ver":1,
         "txn": {
             "type":8,
@@ -2041,8 +2041,8 @@ A new Agreement needs to be sent instead.
             }]
         },
         
-        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
-        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
+        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
     }
 }
 ```
@@ -2068,13 +2068,13 @@ So, if the Context needs to be evolved, a new Context with a new version or name
     
     - `name`: Context's name string
     - `version`: Context's version string
-    - `type`: 'ctx'
+    - `type`: "ctx"
 
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '200',
+    "operation": {
+        "type": "200",
         "data":{
             "@context": [
                 {
@@ -2094,19 +2094,19 @@ So, if the Context needs to be evolved, a new Context with a new version or name
             "type": "ctx"
         },
     },
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
-    'reqId': 1514280215504647,
-    'protocolVersion': 2,
-    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":"200",
@@ -2155,8 +2155,8 @@ So, if the Context needs to be evolved, a new Context with a new version or name
             }]
         }
  		
-        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
 		
     }
 }
@@ -2363,48 +2363,48 @@ Gets information about a DID (NYM).
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '105'
-        'dest': '2VkbBskPNNyWrLrZq7DBhk'
+    "operation": {
+        "type": "105"
+        "dest": "2VkbBskPNNyWrLrZq7DBhk"
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '105',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "105",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
-        'data': '{"dest":"2VkbBskPNNyWrLrZq7DBhk","identifier":"L5AD5g65TDQr1PPHHRoiGf","role":null,"seqNo":10,"txnTime":1514308168,"verkey":"~6hAzy6ubo3qutnnw5A12RF"}',
+        "data": "{"dest":"2VkbBskPNNyWrLrZq7DBhk","identifier":"L5AD5g65TDQr1PPHHRoiGf","role":null,"seqNo":10,"txnTime":1514308168,"verkey":"~6hAzy6ubo3qutnnw5A12RF"}",
         
-        'dest': '2VkbBskPNNyWrLrZq7DBhk'
+        "dest": "2VkbBskPNNyWrLrZq7DBhk"
     }
 }
 ```
@@ -2437,50 +2437,50 @@ i.e. reply data contains requested value only.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '104'
-        'dest': 'AH4RRiPR78DUrCWatnCW2w',
-        'raw': 'dateOfBirth'
+    "operation": {
+        "type": "104"
+        "dest": "AH4RRiPR78DUrCWatnCW2w",
+        "raw": "dateOfBirth"
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '104',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "104",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
-        'data': '{"dateOfBirth":{"dayOfMonth":23,"month":5,"year":1984}}',
+        "data": "{"dateOfBirth":{"dayOfMonth":23,"month":5,"year":1984}}",
         
-        'dest': 'AH4RRiPR78DUrCWatnCW2w',
-        'raw': 'dateOfBirth'
+        "dest": "AH4RRiPR78DUrCWatnCW2w",
+        "raw": "dateOfBirth"
     }
 }
 ```
@@ -2506,56 +2506,56 @@ Gets Claim's Schema.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '107'
-        'dest': '2VkbBskPNNyWrLrZq7DBhk',
-        'data': {
-            'name': 'Degree',
-             'version': '1.0'
+    "operation": {
+        "type": "107"
+        "dest": "2VkbBskPNNyWrLrZq7DBhk",
+        "data": {
+            "name": "Degree",
+             "version": "1.0"
         },
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '107',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "107",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
-        'data': {
-            'name': 'Degree',
-            'version': '1.0',
-            'attr_names': ['attrib1', 'attrib2', 'attrib3']
+        "data": {
+            "name": "Degree",
+            "version": "1.0",
+            "attr_names": ["attrib1", "attrib2", "attrib3"]
         }, 
         
-        'dest': '2VkbBskPNNyWrLrZq7DBhk'
+        "dest": "2VkbBskPNNyWrLrZq7DBhk"
     }
 }
 ```
@@ -2584,57 +2584,57 @@ Gets Claim Definition.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '108'
-        'signature_type': 'CL',
-        'origin': '2VkbBskPNNyWrLrZq7DBhk',
-        'ref': 10,
-        'tag': 'some_tag',
+    "operation": {
+        "type": "108"
+        "signature_type": "CL",
+        "origin": "2VkbBskPNNyWrLrZq7DBhk",
+        "ref": 10,
+        "tag": "some_tag",
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '108',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "108",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
-        'data': {
-            'primary': ...,
-            'revocation': ...
+        "data": {
+            "primary": ...,
+            "revocation": ...
         },
         
-        'signature_type': 'CL',
-        'origin': '2VkbBskPNNyWrLrZq7DBhk',
-        'ref': 10,
-        'tag': 'some_tag'
+        "signature_type": "CL",
+        "origin": "2VkbBskPNNyWrLrZq7DBhk",
+        "ref": 10,
+        "tag": "some_tag"
     }
 }
 ```
@@ -2648,59 +2648,59 @@ Gets a Revocation Registry Definition, that Issuer creates and publishes for a p
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '115'
-        'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+    "operation": {
+        "type": "115"
+        "id": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
     },
     
-    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '115',
-        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "115",
+        "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        "id": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
         
-        'data': {
-            'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-            'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
-            'revocDefType': 'CL_ACCUM',
-            'tag': 'tag1',
-            'value': {
-                'maxCredNum': 1000000,
-                'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
-                'tailsLocation': 'http://tails.location.com',
-                'issuanceType': 'ISSUANCE_BY_DEFAULT',
-                'publicKeys': {},
+        "data": {
+            "id": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+            "credDefId": "FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag"
+            "revocDefType": "CL_ACCUM",
+            "tag": "tag1",
+            "value": {
+                "maxCredNum": 1000000,
+                "tailsHash": "6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297",
+                "tailsLocation": "http://tails.location.com",
+                "issuanceType": "ISSUANCE_BY_DEFAULT",
+                "publicKeys": {},
             },
         },
         
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
@@ -2722,56 +2722,56 @@ Gets a Revocation Registry Accumulator.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '116'
-        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-        'timestamp': 1514214800
+    "operation": {
+        "type": "116"
+        "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        "timestamp": 1514214800
     },
     
-    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '116',
-        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "116",
+        "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-        'timestamp': 1514214800
+        "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        "timestamp": 1514214800
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
         
-        'data': {
-            'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
-            'revocDefType': 'CL_ACCUM',
-            'value': {
-                'accum': 'accum_value',
+        "data": {
+            "id": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+            "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1"
+            "revocDefType": "CL_ACCUM",
+            "value": {
+                "accum": "accum_value",
             },
         },
         
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
@@ -2805,91 +2805,91 @@ If `from` is not set, then there is just one state proof (as usual) for both `ac
 *Request Example when both `from` and `to` present*:
 ```
 {
-    'operation': {
-        'type': '117'
-        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-        'from': 1514214100
-        'to': 1514214900
+    "operation": {
+        "type": "117"
+        "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        "from": 1514214100
+        "to": 1514214900
     },
     
-    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example when both `from` and `to` present*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '117',
-        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "117",
+        "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-        'from': 1514214100
-        'to': 1514214900
+        "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        "from": 1514214100
+        "to": 1514214900
         
-        'seqNo': 18,
-        'txnTime': 1514214795,
+        "seqNo": 18,
+        "txnTime": 1514214795,
         
-        'data': {
-            'revocDefType': 'CL_ACCUM',
-            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-            'value': {
-               'accum_to': {
-                   'revocDefType': 'CL_ACCUM', 
-                   'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1', 
-                   'txnTime': 1514214795, 
-                   'seqNo': 18,
-                   'value': {
-                      'accum': '9a512a7624'
+        "data": {
+            "revocDefType": "CL_ACCUM",
+            "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+            "value": {
+               "accum_to": {
+                   "revocDefType": "CL_ACCUM", 
+                   "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1", 
+                   "txnTime": 1514214795, 
+                   "seqNo": 18,
+                   "value": {
+                      "accum": "9a512a7624"
                    }
                 },
-                'revoked': [10, 11],
-                'issued': [1, 2, 3], 
-                'accum_from': {
-                    'revocDefType': 'CL_ACCUM',
-                    'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1', 
-                    'txnTime': 1514214105, 
-                    'seqNo': 16, 
-                    'value': {
-                       'accum': 'be080bd74b'
+                "revoked": [10, 11],
+                "issued": [1, 2, 3], 
+                "accum_from": {
+                    "revocDefType": "CL_ACCUM",
+                    "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1", 
+                    "txnTime": 1514214105, 
+                    "seqNo": 16, 
+                    "value": {
+                       "accum": "be080bd74b"
                     }
                  }
             },
-            'stateProofFrom': {
-                'multi_signature': {
-                     'participants': ['Delta', 'Gamma', 'Alpha'],
-                     'signature': 'QpP4oVm2MLQ7SzLVZknuFjneXfqYj6UStn3oQtCdSiKiYuS4n1kxRphKRDMwmS7LGeXgUmy3C8GtcVM5X9SN9qLr2MBApjpPtKE9DkBTwyieh3vN1UMq1Kwx2Jkz7vcSJNH2WzjEKSUnpFLEJk4mpFaibqd1xX2hrwruxzSDUi2uCT', 
-                     'value': {
-                         'state_root_hash': '2sfnQcEKkjw78KYnGJyk5Gw9gtwESvX6NdFFPEiQYQsz', 
-                         'ledger_id': 1,
-                         'pool_state_root_hash': 'JDt3NNrZenx3x41oxsvhWeuSFFerdyqEvQUWyGdHX7gx',
-                         'timestamp': 1514214105, 
-                         'txn_root_hash': 'FCkntnPqfaGx4fCX5tTdWeLr1mXdFuZnTNuEehiet32z'
+            "stateProofFrom": {
+                "multi_signature": {
+                     "participants": ["Delta", "Gamma", "Alpha"],
+                     "signature": "QpP4oVm2MLQ7SzLVZknuFjneXfqYj6UStn3oQtCdSiKiYuS4n1kxRphKRDMwmS7LGeXgUmy3C8GtcVM5X9SN9qLr2MBApjpPtKE9DkBTwyieh3vN1UMq1Kwx2Jkz7vcSJNH2WzjEKSUnpFLEJk4mpFaibqd1xX2hrwruxzSDUi2uCT", 
+                     "value": {
+                         "state_root_hash": "2sfnQcEKkjw78KYnGJyk5Gw9gtwESvX6NdFFPEiQYQsz", 
+                         "ledger_id": 1,
+                         "pool_state_root_hash": "JDt3NNrZenx3x41oxsvhWeuSFFerdyqEvQUWyGdHX7gx",
+                         "timestamp": 1514214105, 
+                         "txn_root_hash": "FCkntnPqfaGx4fCX5tTdWeLr1mXdFuZnTNuEehiet32z"
                      }
                 },
-                'root_hash': '2sfnQcEKkjw78KYnGJyk5Gw9gtwESvX6NdFFPEiQYQsz',
-                'proof_nodes': '+QLB+QE3uFEgOk1TaktUV2tQTHRZb1BFYVRGMVRVRGI6NDpNU2pLVFdrUEx0WW9QRWFURjFUVURiOjM6Q0w6MTM6c29tZV90YWc6Q0xfQUNDVU06YTk4ZWO44vjguN57ImxzbiI6MTYsImx1dCI6MTU1ODUyNDEzMSwidmFsIjp7InJldm9jRGVmVHlwZSI6IkNMX0FDQ1VNIiwicmV2b2NSZWdEZWZJZCI6Ik1TaktUV2tQTHRZb1BFYVRGMVRVRGI6NDpNU2pLVFdrUEx0WW9QRWFURjFUVURiOjM6Q0w6MTM6c29tZV90YWc6Q0xfQUNDVU06YTk4ZWMiLCJzZXFObyI6MTYsInR4blRpbWUiOjE1NTg1MjQxMzEsInZhbHVlIjp7ImFjY3VtIjoiYmUwODBiZDc0YiJ9fX34UYCAgICAoAgDh8v1CXNEJGFl302RO98x8R6Ozscy0ZFdRpiCobh3oCnaxHyPnZq6E+mbnfU6oC994Wv1nh7sf0pQOp5g93tbgICAgICAgICAgPkBMYCAgKBmZE7e2jSrhTw9usjxZcAb25uSisJV+TzkbXNUypyJvaA/KAFG4RQqB9dAGRfTgly2XjXvPCeVr7vBn6FSkN7sH4CAoBGxQDip9XfEC/CkgimSkkhCeMm9XnkxxwWiMJwzuhAjgKAmh0g8FUI60e7NBwTu7ukdfz6kaON6u9U87kTeTlPcXICgsk2X2G6MlVhEqMEzthWAT4ey6qRaKXpOuMZOA1kMODagQdHobiexMaAwqtI7P5bbfqNkQEoZD79m6z43DEGQGL6gXQfLXgd+xWWXypr1pDxPvjSU8UtHjfWhJ58aiuqAzmKgyee3YL7GFFd+5oxG9b/q4od/mRjFpLdXKR3YG2o/hAygRIVVdoVD0dpqktsN8kSc03UhYiI76nxdCejX+CV4OX6A'
+                "root_hash": "2sfnQcEKkjw78KYnGJyk5Gw9gtwESvX6NdFFPEiQYQsz",
+                "proof_nodes": "+QLB+QE3uFEgOk1TaktUV2tQTHRZb1BFYVRGMVRVRGI6NDpNU2pLVFdrUEx0WW9QRWFURjFUVURiOjM6Q0w6MTM6c29tZV90YWc6Q0xfQUNDVU06YTk4ZWO44vjguN57ImxzbiI6MTYsImx1dCI6MTU1ODUyNDEzMSwidmFsIjp7InJldm9jRGVmVHlwZSI6IkNMX0FDQ1VNIiwicmV2b2NSZWdEZWZJZCI6Ik1TaktUV2tQTHRZb1BFYVRGMVRVRGI6NDpNU2pLVFdrUEx0WW9QRWFURjFUVURiOjM6Q0w6MTM6c29tZV90YWc6Q0xfQUNDVU06YTk4ZWMiLCJzZXFObyI6MTYsInR4blRpbWUiOjE1NTg1MjQxMzEsInZhbHVlIjp7ImFjY3VtIjoiYmUwODBiZDc0YiJ9fX34UYCAgICAoAgDh8v1CXNEJGFl302RO98x8R6Ozscy0ZFdRpiCobh3oCnaxHyPnZq6E+mbnfU6oC994Wv1nh7sf0pQOp5g93tbgICAgICAgICAgPkBMYCAgKBmZE7e2jSrhTw9usjxZcAb25uSisJV+TzkbXNUypyJvaA/KAFG4RQqB9dAGRfTgly2XjXvPCeVr7vBn6FSkN7sH4CAoBGxQDip9XfEC/CkgimSkkhCeMm9XnkxxwWiMJwzuhAjgKAmh0g8FUI60e7NBwTu7ukdfz6kaON6u9U87kTeTlPcXICgsk2X2G6MlVhEqMEzthWAT4ey6qRaKXpOuMZOA1kMODagQdHobiexMaAwqtI7P5bbfqNkQEoZD79m6z43DEGQGL6gXQfLXgd+xWWXypr1pDxPvjSU8UtHjfWhJ58aiuqAzmKgyee3YL7GFFd+5oxG9b/q4od/mRjFpLdXKR3YG2o/hAygRIVVdoVD0dpqktsN8kSc03UhYiI76nxdCejX+CV4OX6A"
             }
         },
         
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
@@ -2903,64 +2903,64 @@ If `from` is not set, then there is just one state proof (as usual) for both `ac
 *Request Example when there is only `to` present*:
 ```
 {
-    'operation': {
-        'type': '117'
-        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-        'to': 1514214900
+    "operation": {
+        "type": "117"
+        "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        "to": 1514214900
     },
     
-    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example when there is only `to` present*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '117',
-        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "117",
+        "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-        'to': 1514214900
+        "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        "to": 1514214900
         
-        'seqNo': 18,
-        'txnTime': 1514214795,
+        "seqNo": 18,
+        "txnTime": 1514214795,
         
-        'data': {
-            'revocDefType': 'CL_ACCUM',
-            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-            'value': {
-               'accum_to': {
-                   'revocDefType': 'CL_ACCUM', 
-                   'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1', 
-                   'txnTime': 1514214795, 
-                   'seqNo': 18,
-                   'value': {
-                      'accum': '9a512a7624'
+        "data": {
+            "revocDefType": "CL_ACCUM",
+            "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+            "value": {
+               "accum_to": {
+                   "revocDefType": "CL_ACCUM", 
+                   "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1", 
+                   "txnTime": 1514214795, 
+                   "seqNo": 18,
+                   "value": {
+                      "accum": "9a512a7624"
                    }
                 },
-                'issued': [],
-                'revoked': [1, 2, 3, 4, 5]
+                "issued": [],
+                "revoked": [1, 2, 3, 4, 5]
         },
         
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
@@ -3007,76 +3007,76 @@ Each output list element is equal to the input of [AUTH_RULE](#auth_rule), so li
 *Request Example (for getting one rule)*:
 ```
   {  
-      'reqId':572495653,
-      'signature':'366f89ehxLuxPySGcHppxbURWRcmXVdkHeHrjtPKNYSRKnvaxzUXF8CEUWy9KU251u5bmnRL3TKvQiZgjwouTJYH',
-      'identifier':'M9BJDuS24bqbJNvBRsoGg3',
-      'operation':{  
-            'auth_type': '0', 
-            'auth_action': 'EDIT',
-            'field' :'services',
-            'old_value': [VALIDATOR],
-            'new_value': []
+      "reqId":572495653,
+      "signature":"366f89ehxLuxPySGcHppxbURWRcmXVdkHeHrjtPKNYSRKnvaxzUXF8CEUWy9KU251u5bmnRL3TKvQiZgjwouTJYH",
+      "identifier":"M9BJDuS24bqbJNvBRsoGg3",
+      "operation":{  
+            "auth_type": "0", 
+            "auth_action": "EDIT",
+            "field" :"services",
+            "old_value": [VALIDATOR],
+            "new_value": []
       },
-      'protocolVersion':2
+      "protocolVersion":2
    }
 ```
 
 *Reply Example (for getting one rule)*:
 ```
 {  
-      'op':'REPLY',
-      'result':{  
-         'type':'121',
-         'auth_type': '0', 
-         'auth_action': 'EDIT',
-         'field' :'services',
-         'old_value': [VALIDATOR],
-         'new_value': []
+      "op":"REPLY",
+      "result":{  
+         "type":"121",
+         "auth_type": "0", 
+         "auth_action": "EDIT",
+         "field" :"services",
+         "old_value": [VALIDATOR],
+         "new_value": []
          
-         'reqId':441933878,
-         'identifier':'M9BJDuS24bqbJNvBRsoGg3',
+         "reqId":441933878,
+         "identifier":"M9BJDuS24bqbJNvBRsoGg3",
          
-         'data':[  
+         "data":[  
               {
-                'auth_type': '0', 
-                'auth_action': 'EDIT',
-                'field' :'services',
-                'old_value': [VALIDATOR],
-                'new_value': []
-                'constraint':{
-                      'constraint_id': 'OR',
-                      'auth_constraints': [{'constraint_id': 'ROLE', 
-                                            'role': '0',
-                                            'sig_count': 2, 
-                                            'need_to_be_owner': False, 
-                                            'metadata': {}}, 
+                "auth_type": "0", 
+                "auth_action": "EDIT",
+                "field" :"services",
+                "old_value": [VALIDATOR],
+                "new_value": []
+                "constraint":{
+                      "constraint_id": "OR",
+                      "auth_constraints": [{"constraint_id": "ROLE", 
+                                            "role": "0",
+                                            "sig_count": 2, 
+                                            "need_to_be_owner": False, 
+                                            "metadata": {}}, 
                                            
-                                           {'constraint_id': 'ROLE', 
-                                            'role': '2',
-                                            'sig_count': 1, 
-                                            'need_to_be_owner': True, 
-                                            'metadata': {}}
+                                           {"constraint_id": "ROLE", 
+                                            "role": "2",
+                                            "sig_count": 1, 
+                                            "need_to_be_owner": True, 
+                                            "metadata": {}}
                                            ]
                 }, 
               }
          ],
 
-         'state_proof':{  
-            'proof_nodes':'+Pz4+pUgQURELS0xLS1yb2xlLS0qLS0xMDG44vjguN57ImF1dGhfY29uc3RyYWludHMiOlt7ImNvbnN0cmFpbnRfaWQiOiJST0xFIiwibWV0YWRhdGEiOnt9LCJuZWVkX3RvX2JlX293bmVyIjpmYWxzZSwicm9sZSI6IjAiLCJzaWdfY291bnQiOjF9LHsiY29uc3RyYWludF9pZCI6IlJPTEUiLCJtZXRhZGF0YSI6e30sIm5lZWRfdG9fYmVfb3duZXIiOmZhbHNlLCJyb2xlIjoiMiIsInNpZ19jb3VudCI6MX1dLCJjb25zdHJhaW50X2lkIjoiQU5EIn0=',
-            'root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
-            'multi_signature':{  
-               'signature':'RNsPhUuPwwtA7NEf4VySCg1Fb2NpwapXrY8d64TLsRHR9rQ5ecGhRd89NTHabh8qEQ8Fs1XWawHjbSZ95RUYsJwx8PEXQcFEDGN3jc5VY31Q5rGg3aeBdFFxgYo11cZjrk6H7Md7N8fjHrKRdxo6TzDKSszJTNM1EAPLzyC6kKCnF9',
-               'value':{  
-                  'state_root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
-                  'pool_state_root_hash':'9L5CbxzhsNrZeGSJGVVpsC56JpuS5DGdUqfsFsR1RsFQ',
-                  'timestamp':1552395470,
-                  'txn_root_hash':'4CowHvnk2Axy2HWcYmT8b88A1Sgk45x7yHAzNnxowN9h',
-                  'ledger_id':2
+         "state_proof":{  
+            "proof_nodes":"+Pz4+pUgQURELS0xLS1yb2xlLS0qLS0xMDG44vjguN57ImF1dGhfY29uc3RyYWludHMiOlt7ImNvbnN0cmFpbnRfaWQiOiJST0xFIiwibWV0YWRhdGEiOnt9LCJuZWVkX3RvX2JlX293bmVyIjpmYWxzZSwicm9sZSI6IjAiLCJzaWdfY291bnQiOjF9LHsiY29uc3RyYWludF9pZCI6IlJPTEUiLCJtZXRhZGF0YSI6e30sIm5lZWRfdG9fYmVfb3duZXIiOmZhbHNlLCJyb2xlIjoiMiIsInNpZ19jb3VudCI6MX1dLCJjb25zdHJhaW50X2lkIjoiQU5EIn0=",
+            "root_hash":"DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF",
+            "multi_signature":{  
+               "signature":"RNsPhUuPwwtA7NEf4VySCg1Fb2NpwapXrY8d64TLsRHR9rQ5ecGhRd89NTHabh8qEQ8Fs1XWawHjbSZ95RUYsJwx8PEXQcFEDGN3jc5VY31Q5rGg3aeBdFFxgYo11cZjrk6H7Md7N8fjHrKRdxo6TzDKSszJTNM1EAPLzyC6kKCnF9",
+               "value":{  
+                  "state_root_hash":"DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF",
+                  "pool_state_root_hash":"9L5CbxzhsNrZeGSJGVVpsC56JpuS5DGdUqfsFsR1RsFQ",
+                  "timestamp":1552395470,
+                  "txn_root_hash":"4CowHvnk2Axy2HWcYmT8b88A1Sgk45x7yHAzNnxowN9h",
+                  "ledger_id":2
                },
-               'participants':[  
-                  'Beta',
-                  'Gamma',
-                  'Delta'
+               "participants":[  
+                  "Beta",
+                  "Gamma",
+                  "Delta"
                ]
             }
          },
@@ -3087,60 +3087,60 @@ Each output list element is equal to the input of [AUTH_RULE](#auth_rule), so li
 *Request Example (for getting all rules)*:
 ```
   {  
-      'reqId':575407732,
-      'signature':'4AheMmtrfoHuAEtg5VsFPGe1j2w1UYxAvShRmfsCTSHnBDoA5EbmCa2xZzZVQjQGUFbYr65uznu1iUQhW22RNb1X',
-      'identifier':'M9BJDuS24bqbJNvBRsoGg3',
-      'operation':{  
-         'type':'121'
+      "reqId":575407732,
+      "signature":"4AheMmtrfoHuAEtg5VsFPGe1j2w1UYxAvShRmfsCTSHnBDoA5EbmCa2xZzZVQjQGUFbYr65uznu1iUQhW22RNb1X",
+      "identifier":"M9BJDuS24bqbJNvBRsoGg3",
+      "operation":{  
+         "type":"121"
       },
-      'protocolVersion':2
+      "protocolVersion":2
   }
 ```
 
 *Reply Example (for getting all rules)*:
 ```
 {  
-      'op':'REPLY',
-      'result':{
-         'type':'121',
+      "op":"REPLY",
+      "result":{
+         "type":"121",
            
-         'reqId':575407732,
-         'identifier':'M9BJDuS24bqbJNvBRsoGg3'
+         "reqId":575407732,
+         "identifier":"M9BJDuS24bqbJNvBRsoGg3"
 
-         'data':[  
+         "data":[  
               {
-                'auth_type': '0', 
-                'auth_action': 'EDIT',
-                'field' :'services',
-                'old_value': [VALIDATOR],
-                'new_value': []
-                'constraint':{
-                      'constraint_id': 'OR',
-                      'auth_constraints': [{'constraint_id': 'ROLE', 
-                                            'role': '0',
-                                            'sig_count': 2, 
-                                            'need_to_be_owner': False, 
-                                            'metadata': {}}, 
+                "auth_type": "0", 
+                "auth_action": "EDIT",
+                "field":"services",
+                "old_value": [VALIDATOR],
+                "new_value": []
+                "constraint":{
+                      "constraint_id": "OR",
+                      "auth_constraints": [{"constraint_id": "ROLE", 
+                                            "role": "0",
+                                            "sig_count": 2, 
+                                            "need_to_be_owner": False, 
+                                            "metadata": {}}, 
                                            
-                                           {'constraint_id': 'ROLE', 
-                                            'role': '2',
-                                            'sig_count': 1, 
-                                            'need_to_be_owner': True, 
-                                            'metadata': {}}
+                                           {"constraint_id": "ROLE", 
+                                            "role": "2",
+                                            "sig_count": 1, 
+                                            "need_to_be_owner": True, 
+                                            "metadata": {}}
                                            ]
                 }, 
               },
               {
-                'auth_type': '102', 
-                'auth_action': 'ADD',
-                'field' :'*',
-                'new_value': '*'
-                'constraint':{
-                    'constraint_id': 'ROLE', 
-                    'role': '2',
-                    'sig_count': 1, 
-                    'need_to_be_owner': False, 
-                    'metadata': {}
+                "auth_type": "102", 
+                "auth_action": "ADD",
+                "field":"*",
+                "new_value": "*"
+                "constraint":{
+                    "constraint_id": "ROLE", 
+                    "role": "2",
+                    "sig_count": 1, 
+                    "need_to_be_owner": False, 
+                    "metadata": {}
                 }, 
               },
               ........
@@ -3179,32 +3179,32 @@ All input parameters are optional and mutually exclusive.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '6'
-        'version': '1.0',
+    "operation": {
+        "type": "6"
+        "version": "1.0",
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '6',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "6",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'version': '1.0',
+        "version": "1.0",
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'data': {
+        "data": {
             "version": "1.0",
             "text": "Please read carefully before writing anything to the ledger",
             "digest": "ca11c39b44ce4ec8666a8f63efd5bacf98a8e26c4f8890c87f629f126a3b74f3"
@@ -3212,19 +3212,19 @@ All input parameters are optional and mutually exclusive.
             "retirement_ts": 1515415195838044
         },
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 2, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 2, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
@@ -3256,32 +3256,32 @@ All input parameters are optional and mutually exclusive.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '7'
-        'version': '1.0',
+    "operation": {
+        "type": "7"
+        "version": "1.0",
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '7',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "7",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'version': '1.0',
+        "version": "1.0",
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'data': {
+        "data": {
             "version": "1.0",
             "aml": {
                 "EULA": "Included in the EULA for the product being used",
@@ -3292,19 +3292,19 @@ All input parameters are optional and mutually exclusive.
             "amlContext": "http://aml-context-descr"
         },
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 2, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 2, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
@@ -3334,47 +3334,47 @@ Gets Context.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '300'
-        'dest': '2VkbBskPNNyWrLrZq7DBhk',
-        'meta': {
-            'name': 'SimpleContext',
-            'version': '1.0',
-            'type': 'ctx'
+    "operation": {
+        "type": "300"
+        "dest": "2VkbBskPNNyWrLrZq7DBhk",
+        "meta": {
+            "name": "SimpleContext",
+            "version": "1.0",
+            "type": "ctx"
         },
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '300',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "300",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
@@ -3398,7 +3398,7 @@ Gets Context.
             "type": "ctx"
         },
         
-        'dest': '2VkbBskPNNyWrLrZq7DBhk'
+        "dest": "2VkbBskPNNyWrLrZq7DBhk"
     }
 }
 ```
@@ -3539,15 +3539,15 @@ A generic request to get a transaction from Ledger by its sequence number.
 *Request Example (requests a NYM txn with seqNo=9)*:
 ```
 {
-    'operation': {
-        'type': '3',
-        'ledgerId': 1,
-        'data': 9
+    "operation": {
+        "type": "3",
+        "ledgerId": 1,
+        "data": 9
     },
     
-    'identifier': 'MSjKTWkPLtYoPEaTF1TUDb',
-    'reqId': 1514311281279625,
-    'protocolVersion': 2
+    "identifier": "MSjKTWkPLtYoPEaTF1TUDb",
+    "reqId": 1514311281279625,
+    "protocolVersion": 2
 }
 ```
 
@@ -3663,11 +3663,11 @@ Command provide info from all the connected nodes without need of consensus.
 *Request Example*:
 ```
 {
-    'protocolVersion': 2,
-    'reqId': 83193,
-    'identifier': 'M9BJDuS24bqbJNvBRsoGg3',
-    'operation': {
-                'type': '119'
+    "protocolVersion": 2,
+    "reqId": 83193,
+    "identifier": "M9BJDuS24bqbJNvBRsoGg3",
+    "operation": {
+                "type": "119"
     }
 }
 ```
@@ -3675,12 +3675,12 @@ Command provide info from all the connected nodes without need of consensus.
 *Reply Example*:
 ```
 {
-    'op': 'REPLY',
-    'result': {
-            'reqId': 83193,
-            'data': { <Json with node info> },
-            'type': '119',
-            'identifier': 'M9BJDuS24bqbJNvBRsoGg3'
+    "op": "REPLY",
+    "result": {
+            "reqId": 83193,
+            "data": { <Json with node info> },
+            "type": "119",
+            "identifier": "M9BJDuS24bqbJNvBRsoGg3"
     }
 }
 ```
