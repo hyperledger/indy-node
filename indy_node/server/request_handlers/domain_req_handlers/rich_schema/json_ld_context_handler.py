@@ -20,7 +20,7 @@ class JsonLdContextHandler(AbstractRichSchemaObjectHandler):
     def do_static_validation_content(self, content_as_dict, request: Request):
         if JSON_LD_CONTEXT_FIELD not in content_as_dict:
             raise InvalidClientRequest(request.identifier, request.reqId,
-                                       "'{}' must contain a '{}' field".format(RS_CONTENT, JSON_LD_CONTEXT_FIELD))
+                                       "'{}' must contain a {} field".format(RS_CONTENT, JSON_LD_CONTEXT_FIELD))
 
         self._validate_context(content_as_dict[JSON_LD_CONTEXT_FIELD], request.identifier, request.reqId)
 
