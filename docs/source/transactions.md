@@ -131,8 +131,12 @@ transaction specific data:
         - REVOC_REG_DEF = "114"
         - AUTH_RULE = "120"
         - AUTH_RULES = "122"
-        - SET_CONTEXT = "200"
-        - SET_RICH_SCHEMA = "201"
+        - JSON_LD_CONTEXT = "200"
+        - RICH_SCHEMA = "201"
+        - RICH_SCHEMA_ENCODING = "202"
+        - RICH_SCHEMA_MAPPING = "203"
+        - RICH_SCHEMA_CRED_DEF = "204"
+        - RICH_SCHEMA_PRES_DEF = "205"
 
     - `ver` (string)
     
