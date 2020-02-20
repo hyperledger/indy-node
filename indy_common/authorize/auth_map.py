@@ -6,8 +6,8 @@ from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstrain
     AuthConstraintForbidden
 from indy_common.constants import ENDORSER, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
     CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, \
-    REVOC_REG_DEF, ATTRIB, AUTH_RULES, SET_JSON_LD_CONTEXT, SET_RICH_SCHEMA, SET_RICH_SCHEMA_MAPPING, \
-    SET_RICH_SCHEMA_ENCODING, SET_RICH_SCHEMA_CRED_DEF, SET_RICH_SCHEMA_PRES_DEF
+    REVOC_REG_DEF, ATTRIB, AUTH_RULES, JSON_LD_CONTEXT, RICH_SCHEMA, RICH_SCHEMA_MAPPING, \
+    RICH_SCHEMA_ENCODING, RICH_SCHEMA_CRED_DEF, RICH_SCHEMA_PRES_DEF
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML, \
     TXN_AUTHOR_AGREEMENT_DISABLE
 
@@ -80,56 +80,56 @@ edit_schema = AuthActionEdit(txn_type=SCHEMA,
                              old_value='*',
                              new_value='*')
 
-add_json_ld_context = AuthActionAdd(txn_type=SET_JSON_LD_CONTEXT,
+add_json_ld_context = AuthActionAdd(txn_type=JSON_LD_CONTEXT,
                                     field='*',
                                     value='*')
 
-edit_json_ld_context = AuthActionEdit(txn_type=SET_JSON_LD_CONTEXT,
+edit_json_ld_context = AuthActionEdit(txn_type=JSON_LD_CONTEXT,
                                       field='*',
                                       old_value='*',
                                       new_value='*')
 
-add_rich_schema = AuthActionAdd(txn_type=SET_RICH_SCHEMA,
+add_rich_schema = AuthActionAdd(txn_type=RICH_SCHEMA,
                                 field='*',
                                 value='*')
 
-edit_rich_schema = AuthActionEdit(txn_type=SET_RICH_SCHEMA,
+edit_rich_schema = AuthActionEdit(txn_type=RICH_SCHEMA,
                                   field='*',
                                   old_value='*',
                                   new_value='*')
 
-add_rich_schema_encoding = AuthActionAdd(txn_type=SET_RICH_SCHEMA_ENCODING,
+add_rich_schema_encoding = AuthActionAdd(txn_type=RICH_SCHEMA_ENCODING,
                                          field='*',
                                          value='*')
 
-edit_rich_schema_encoding = AuthActionEdit(txn_type=SET_RICH_SCHEMA_ENCODING,
+edit_rich_schema_encoding = AuthActionEdit(txn_type=RICH_SCHEMA_ENCODING,
                                            field='*',
                                            old_value='*',
                                            new_value='*')
 
-add_rich_schema_mapping = AuthActionAdd(txn_type=SET_RICH_SCHEMA_MAPPING,
+add_rich_schema_mapping = AuthActionAdd(txn_type=RICH_SCHEMA_MAPPING,
                                         field='*',
                                         value='*')
 
-edit_rich_schema_mapping = AuthActionEdit(txn_type=SET_RICH_SCHEMA_MAPPING,
+edit_rich_schema_mapping = AuthActionEdit(txn_type=RICH_SCHEMA_MAPPING,
                                           field='*',
                                           old_value='*',
                                           new_value='*')
 
-add_rich_schema_cred_def = AuthActionAdd(txn_type=SET_RICH_SCHEMA_CRED_DEF,
+add_rich_schema_cred_def = AuthActionAdd(txn_type=RICH_SCHEMA_CRED_DEF,
                                          field='*',
                                          value='*')
 
-edit_rich_schema_cred_def = AuthActionEdit(txn_type=SET_RICH_SCHEMA_CRED_DEF,
+edit_rich_schema_cred_def = AuthActionEdit(txn_type=RICH_SCHEMA_CRED_DEF,
                                            field='*',
                                            old_value='*',
                                            new_value='*')
 
-add_rich_schema_pres_def = AuthActionAdd(txn_type=SET_RICH_SCHEMA_PRES_DEF,
+add_rich_schema_pres_def = AuthActionAdd(txn_type=RICH_SCHEMA_PRES_DEF,
                                          field='*',
                                          value='*')
 
-edit_rich_schema_pres_def = AuthActionEdit(txn_type=SET_RICH_SCHEMA_PRES_DEF,
+edit_rich_schema_pres_def = AuthActionEdit(txn_type=RICH_SCHEMA_PRES_DEF,
                                            field='*',
                                            old_value='*',
                                            new_value='*')

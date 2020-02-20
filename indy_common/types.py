@@ -40,11 +40,11 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
     FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, RS_TYPE, \
-    TAG_LIMIT_SIZE, SET_JSON_LD_CONTEXT, RS_VERSION, \
-    RS_NAME, RS_ID, RS_CONTENT, RS_CONTEXT_TYPE_VALUE, SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, \
-    SET_RICH_SCHEMA_ENCODING, RS_MAPPING_TYPE_VALUE, SET_RICH_SCHEMA_MAPPING, RS_CRED_DEF_TYPE_VALUE, \
-    SET_RICH_SCHEMA_CRED_DEF, GET_RICH_SCHEMA_OBJECT_BY_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
-    SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
+    TAG_LIMIT_SIZE, JSON_LD_CONTEXT, RS_VERSION, \
+    RS_NAME, RS_ID, RS_CONTENT, RS_CONTEXT_TYPE_VALUE, RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, \
+    RICH_SCHEMA_ENCODING, RS_MAPPING_TYPE_VALUE, RICH_SCHEMA_MAPPING, RS_CRED_DEF_TYPE_VALUE, \
+    RICH_SCHEMA_CRED_DEF, GET_RICH_SCHEMA_OBJECT_BY_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
+    RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
 from indy_common.version import SchemaVersion
 
 
@@ -425,27 +425,27 @@ def rich_schema_objects_schema(txn_type, rs_type):
 
 
 class ClientJsonLdContextOperation(MessageValidator):
-    schema = rich_schema_objects_schema(SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE)
+    schema = rich_schema_objects_schema(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE)
 
 
 class ClientRichSchemaOperation(MessageValidator):
-    schema = rich_schema_objects_schema(SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE)
+    schema = rich_schema_objects_schema(RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE)
 
 
 class ClientRichSchemaEncodingOperation(MessageValidator):
-    schema = rich_schema_objects_schema(SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE)
+    schema = rich_schema_objects_schema(RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE)
 
 
 class ClientRichSchemaMappingOperation(MessageValidator):
-    schema = rich_schema_objects_schema(SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE)
+    schema = rich_schema_objects_schema(RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE)
 
 
 class ClientRichSchemaCredDefOperation(MessageValidator):
-    schema = rich_schema_objects_schema(SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE)
+    schema = rich_schema_objects_schema(RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE)
 
 
 class ClientRichSchemaPresDefOperation(MessageValidator):
-    schema = rich_schema_objects_schema(SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE)
+    schema = rich_schema_objects_schema(RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE)
 
 
 class ClientGetRichSchemaObjectByIdOperation(MessageValidator):
@@ -486,12 +486,12 @@ class ClientOperationField(PClientOperationField):
         GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
         GET_REVOC_REG: ClientGetRevocRegField(),
         GET_REVOC_REG_DELTA: ClientGetRevocRegDeltaField(),
-        SET_JSON_LD_CONTEXT: ClientJsonLdContextOperation(),
-        SET_RICH_SCHEMA: ClientRichSchemaOperation(),
-        SET_RICH_SCHEMA_ENCODING: ClientRichSchemaEncodingOperation(),
-        SET_RICH_SCHEMA_MAPPING: ClientRichSchemaMappingOperation(),
-        SET_RICH_SCHEMA_CRED_DEF: ClientRichSchemaCredDefOperation(),
-        SET_RICH_SCHEMA_PRES_DEF: ClientRichSchemaPresDefOperation(),
+        JSON_LD_CONTEXT: ClientJsonLdContextOperation(),
+        RICH_SCHEMA: ClientRichSchemaOperation(),
+        RICH_SCHEMA_ENCODING: ClientRichSchemaEncodingOperation(),
+        RICH_SCHEMA_MAPPING: ClientRichSchemaMappingOperation(),
+        RICH_SCHEMA_CRED_DEF: ClientRichSchemaCredDefOperation(),
+        RICH_SCHEMA_PRES_DEF: ClientRichSchemaPresDefOperation(),
         GET_RICH_SCHEMA_OBJECT_BY_ID: ClientGetRichSchemaObjectByIdOperation(),
         GET_RICH_SCHEMA_OBJECT_BY_METADATA: ClientGetRichSchemaObjectByMetadataOperation(),
     }

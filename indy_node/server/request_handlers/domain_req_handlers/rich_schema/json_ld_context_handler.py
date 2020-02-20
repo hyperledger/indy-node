@@ -1,7 +1,7 @@
 from re import findall
 
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.constants import SET_JSON_LD_CONTEXT, RS_CONTENT, JSON_LD_CONTEXT
+from indy_common.constants import JSON_LD_CONTEXT, RS_CONTENT, JSON_LD_CONTEXT_FIELD
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.abstract_rich_schema_object_handler import \
     AbstractRichSchemaObjectHandler
 from plenum.common.exceptions import InvalidClientRequest
@@ -15,14 +15,14 @@ class JsonLdContextHandler(AbstractRichSchemaObjectHandler):
 
     def __init__(self, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator):
-        super().__init__(SET_JSON_LD_CONTEXT, database_manager, write_req_validator)
+        super().__init__(JSON_LD_CONTEXT, database_manager, write_req_validator)
 
     def do_static_validation_content(self, content_as_dict, request: Request):
-        if JSON_LD_CONTEXT not in content_as_dict:
+        if JSON_LD_CONTEXT_FIELD not in content_as_dict:
             raise InvalidClientRequest(request.identifier, request.reqId,
-                                       "'{}' must contain a '{}' field".format(RS_CONTENT, JSON_LD_CONTEXT))
+                                       "'{}' must contain a '{}' field".format(RS_CONTENT, JSON_LD_CONTEXT_FIELD))
 
-        self._validate_context(content_as_dict[JSON_LD_CONTEXT], request.identifier, request.reqId)
+        self._validate_context(content_as_dict[JSON_LD_CONTEXT_FIELD], request.identifier, request.reqId)
 
     def _validate_context(self, context, id, reqId):
         if isinstance(context, list):

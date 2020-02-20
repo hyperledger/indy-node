@@ -2,11 +2,11 @@ import json
 
 import pytest
 
-from indy_common.constants import SET_JSON_LD_CONTEXT, SET_RICH_SCHEMA, SET_RICH_SCHEMA_ENCODING, \
-    SET_RICH_SCHEMA_MAPPING, SET_RICH_SCHEMA_CRED_DEF, \
+from indy_common.constants import JSON_LD_CONTEXT, RICH_SCHEMA, RICH_SCHEMA_ENCODING, \
+    RICH_SCHEMA_MAPPING, RICH_SCHEMA_CRED_DEF, \
     RS_CONTEXT_TYPE_VALUE, RS_SCHEMA_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, RS_MAPPING_TYPE_VALUE, RS_CRED_DEF_TYPE_VALUE, \
     GET_RICH_SCHEMA_OBJECT_BY_ID, RS_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, RS_NAME, RS_VERSION, RS_TYPE, \
-    SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
+    RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
 from indy_node.test.api.helper import sdk_write_rich_schema_object_and_check
 from indy_node.test.rich_schema.templates import RICH_SCHEMA_EX1, W3C_BASE_CONTEXT
 from indy_node.test.state_proof.helper import check_valid_proof, sdk_submit_operation_and_get_result
@@ -16,12 +16,12 @@ from plenum.common.util import randomString, SortedDict
 
 
 @pytest.mark.parametrize('txn_type, rs_type, content',
-                         [(SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
-                          (SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
-                          (SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
+                         [(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
+                          (RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
+                          (RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
 def test_send_get_rich_schema_obj_by_id(looper, sdk_pool_handle, sdk_wallet_endorser,
                                         txn_type, rs_type, content):
     rs_id = randomString()
@@ -58,12 +58,12 @@ def test_send_get_rich_schema_obj_by_id(looper, sdk_pool_handle, sdk_wallet_endo
 
 
 @pytest.mark.parametrize('txn_type, rs_type, content',
-                         [(SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
-                          (SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
-                          (SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
+                         [(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
+                          (RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
+                          (RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
 def test_send_get_rich_schema_obj_by_metadata(looper, sdk_pool_handle, sdk_wallet_endorser, sdk_wallet_client,
                                               txn_type, rs_type, content):
     rs_id = randomString()
@@ -102,12 +102,12 @@ def test_send_get_rich_schema_obj_by_metadata(looper, sdk_pool_handle, sdk_walle
 
 
 @pytest.mark.parametrize('txn_type, rs_type, content',
-                         [(SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
-                          (SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
-                          (SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
+                         [(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
+                          (RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
+                          (RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
 def test_send_get_rich_schema_obj_by_invalid_id(looper, sdk_pool_handle, sdk_wallet_endorser,
                                                 txn_type, rs_type, content):
     rs_id = randomString()
@@ -134,12 +134,12 @@ def test_send_get_rich_schema_obj_by_invalid_id(looper, sdk_pool_handle, sdk_wal
 
 
 @pytest.mark.parametrize('txn_type, rs_type, content',
-                         [(SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
-                          (SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
-                          (SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
+                         [(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
+                          (RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
+                          (RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
 @pytest.mark.parametrize('invalid_meta_name, invalid_meta_value', [(RS_NAME, randomString()),
                                                                    (RS_VERSION, "100.3"),
                                                                    (RS_TYPE, randomString())])
@@ -172,12 +172,12 @@ def test_send_get_rich_schema_obj_by_invalid_metadata(looper, sdk_pool_handle, s
     check_valid_proof(result)
 
 @pytest.mark.parametrize('txn_type, rs_type, content',
-                         [(SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
-                          (SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
-                          (SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
+                         [(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
+                          (RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
+                          (RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
 def test_send_get_rich_schema_obj_by_no_id(looper, sdk_pool_handle, sdk_wallet_endorser,
                                            txn_type, rs_type, content):
     rs_id = randomString()
@@ -199,12 +199,12 @@ def test_send_get_rich_schema_obj_by_no_id(looper, sdk_pool_handle, sdk_wallet_e
 
 
 @pytest.mark.parametrize('txn_type, rs_type, content',
-                         [(SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
-                          (SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
-                          (SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
+                         [(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
+                          (RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
+                          (RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
 @pytest.mark.parametrize('absent_meta', [RS_NAME, RS_VERSION, RS_TYPE])
 def test_send_get_rich_schema_obj_by_no_metadata(looper, sdk_pool_handle, sdk_wallet_endorser,
                                            txn_type, rs_type, content,

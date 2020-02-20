@@ -9,11 +9,11 @@ from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_common.constants import GET_ATTR, GET_NYM, SCHEMA, GET_SCHEMA, \
     CLAIM_DEF, REVOCATION, GET_CLAIM_DEF, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_FROM, \
-    SCHEMA_ATTR_NAMES, SCHEMA_NAME, SCHEMA_VERSION, CLAIM_DEF_TAG, ENDORSER, SET_JSON_LD_CONTEXT, SET_RICH_SCHEMA, \
-    SET_RICH_SCHEMA_ENCODING, SET_RICH_SCHEMA_MAPPING, SET_RICH_SCHEMA_CRED_DEF, RS_CONTEXT_TYPE_VALUE, \
+    SCHEMA_ATTR_NAMES, SCHEMA_NAME, SCHEMA_VERSION, CLAIM_DEF_TAG, ENDORSER, JSON_LD_CONTEXT, RICH_SCHEMA, \
+    RICH_SCHEMA_ENCODING, RICH_SCHEMA_MAPPING, RICH_SCHEMA_CRED_DEF, RS_CONTEXT_TYPE_VALUE, \
     RS_SCHEMA_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, RS_MAPPING_TYPE_VALUE, RS_CRED_DEF_TYPE_VALUE, \
     GET_RICH_SCHEMA_OBJECT_BY_ID, RS_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, RS_NAME, RS_VERSION, RS_TYPE, \
-    SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
+    RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
 from indy_common.serialization import attrib_raw_data_serializer
 from indy_node.test.anon_creds.helper import get_revoc_reg_def_id
 from indy_node.test.api.helper import sdk_write_rich_schema_object_and_check
@@ -24,8 +24,14 @@ from indy_node.test.state_proof.helper import check_valid_proof, \
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, \
     ROLE, VERKEY, TXN_TIME, NYM, NAME, VERSION
 from plenum.common.types import f
+
 # Fixtures, do not remove
-from plenum.common.util import randomString, SortedDict
+from indy_node.test.attrib_txn.test_nym_attrib import sdk_added_raw_attribute, attributeName, attributeValue, \
+    attributeData
+from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
+from indy_node.test.anon_creds.conftest import send_revoc_reg_entry, send_revoc_reg_def, send_claim_def, claim_def
+from indy_node.test.schema.test_send_get_schema import send_schema_req
+
 from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_and_submit_req
 
 
@@ -149,12 +155,12 @@ def test_state_proof_returned_for_get_schema(looper,
 # TODO fix this test so it does not rely on Indy-SDK,
 # or, fix this test once GET_CONTEXT is part of Indy-SDK
 @pytest.mark.parametrize('txn_type, rs_type, content',
-                         [(SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
-                          (SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
-                          (SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
+                         [(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
+                          (RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
+                          (RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
 def test_state_proof_returned_for_get_rich_schema_obj_by_id(looper,
                                                             nodeSetWithOneNodeResponding,
                                                             sdk_wallet_endorser,
@@ -199,12 +205,12 @@ def test_state_proof_returned_for_get_rich_schema_obj_by_id(looper,
 # TODO fix this test so it does not rely on Indy-SDK,
 # or, fix this test once GET_CONTEXT is part of Indy-SDK
 @pytest.mark.parametrize('txn_type, rs_type, content',
-                         [(SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
-                          (SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
-                          (SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
+                         [(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
+                          (RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
+                          (RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
+                          (RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
 def test_state_proof_returned_for_get_rich_schema_obj_by_metadata(looper,
                                                                   nodeSetWithOneNodeResponding,
                                                                   sdk_wallet_endorser,

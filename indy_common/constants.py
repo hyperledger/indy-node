@@ -173,12 +173,12 @@ AUTH_RULES = IndyTransactions.AUTH_RULES.value
 GET_AUTH_RULE = IndyTransactions.GET_AUTH_RULE.value
 
 # client Rich Schema transaction types
-SET_JSON_LD_CONTEXT = IndyTransactions.SET_JSON_LD_CONTEXT.value
-SET_RICH_SCHEMA = IndyTransactions.SET_RICH_SCHEMA.value
-SET_RICH_SCHEMA_ENCODING = IndyTransactions.SET_RICH_SCHEMA_ENCODING.value
-SET_RICH_SCHEMA_MAPPING = IndyTransactions.SET_RICH_SCHEMA_MAPPING.value
-SET_RICH_SCHEMA_CRED_DEF = IndyTransactions.SET_RICH_SCHEMA_CRED_DEF.value
-SET_RICH_SCHEMA_PRES_DEF = IndyTransactions.SET_RICH_SCHEMA_PRES_DEF.value
+JSON_LD_CONTEXT = IndyTransactions.JSON_LD_CONTEXT.value
+RICH_SCHEMA = IndyTransactions.RICH_SCHEMA.value
+RICH_SCHEMA_ENCODING = IndyTransactions.RICH_SCHEMA_ENCODING.value
+RICH_SCHEMA_MAPPING = IndyTransactions.RICH_SCHEMA_MAPPING.value
+RICH_SCHEMA_CRED_DEF = IndyTransactions.RICH_SCHEMA_CRED_DEF.value
+RICH_SCHEMA_PRES_DEF = IndyTransactions.RICH_SCHEMA_PRES_DEF.value
 GET_RICH_SCHEMA_OBJECT_BY_ID = IndyTransactions.GET_RICH_SCHEMA_OBJECT_BY_ID.value
 GET_RICH_SCHEMA_OBJECT_BY_METADATA = IndyTransactions.GET_RICH_SCHEMA_OBJECT_BY_METADATA.value
 
@@ -201,9 +201,9 @@ RS_CONTENT = 'content'
 RS_FROM = 'from'
 RS_ENDORSER = 'endorser'
 
-JSON_LD_CONTEXT = "@context"
-JSON_LD_ID = "@id"
-JSON_LD_TYPE = "@type"
+JSON_LD_CONTEXT_FIELD = "@context"
+JSON_LD_ID_FIELD = "@id"
+JSON_LD_TYPE_FIELD = "@type"
 
 # RICH SCHEMA type names
 RS_CONTEXT_TYPE_VALUE = 'ctx'

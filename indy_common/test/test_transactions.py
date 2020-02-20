@@ -2,9 +2,9 @@ from indy_common.constants import NYM, NODE, ATTRIB, SCHEMA, CLAIM_DEF, DISCLO, 
     GET_SCHEMA, GET_CLAIM_DEF, POOL_UPGRADE, NODE_UPGRADE, \
     POOL_CONFIG, REVOC_REG_DEF, REVOC_REG_ENTRY, \
     GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA, POOL_RESTART, VALIDATOR_INFO, CHANGE_KEY, AUTH_RULE, \
-    GET_AUTH_RULE, AUTH_RULES, SET_RICH_SCHEMA, SET_RICH_SCHEMA_ENCODING, \
-    SET_RICH_SCHEMA_MAPPING, SET_RICH_SCHEMA_CRED_DEF, SET_JSON_LD_CONTEXT, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
-    GET_RICH_SCHEMA_OBJECT_BY_ID, SET_RICH_SCHEMA_PRES_DEF
+    GET_AUTH_RULE, AUTH_RULES, RICH_SCHEMA, RICH_SCHEMA_ENCODING, \
+    RICH_SCHEMA_MAPPING, RICH_SCHEMA_CRED_DEF, JSON_LD_CONTEXT, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
+    GET_RICH_SCHEMA_OBJECT_BY_ID, RICH_SCHEMA_PRES_DEF
 
 from indy_common.transactions import IndyTransactions
 
@@ -39,12 +39,12 @@ def test_transactions_are_encoded():
     assert GET_AUTH_RULE == "121"
     assert AUTH_RULES == "122"
 
-    assert SET_JSON_LD_CONTEXT == "200"
-    assert SET_RICH_SCHEMA == "201"
-    assert SET_RICH_SCHEMA_ENCODING == "202"
-    assert SET_RICH_SCHEMA_MAPPING == "203"
-    assert SET_RICH_SCHEMA_CRED_DEF == "204"
-    assert SET_RICH_SCHEMA_PRES_DEF == "205"
+    assert JSON_LD_CONTEXT == "200"
+    assert RICH_SCHEMA == "201"
+    assert RICH_SCHEMA_ENCODING == "202"
+    assert RICH_SCHEMA_MAPPING == "203"
+    assert RICH_SCHEMA_CRED_DEF == "204"
+    assert RICH_SCHEMA_PRES_DEF == "205"
     assert GET_RICH_SCHEMA_OBJECT_BY_ID == "300"
     assert GET_RICH_SCHEMA_OBJECT_BY_METADATA == "301"
 
@@ -79,12 +79,12 @@ def test_transaction_enum_decoded():
 
     assert IndyTransactions.VALIDATOR_INFO.name == "VALIDATOR_INFO"
 
-    assert IndyTransactions.SET_JSON_LD_CONTEXT.name == "SET_JSON_LD_CONTEXT"
-    assert IndyTransactions.SET_RICH_SCHEMA.name == "SET_RICH_SCHEMA"
-    assert IndyTransactions.SET_RICH_SCHEMA_ENCODING.name == "SET_RICH_SCHEMA_ENCODING"
-    assert IndyTransactions.SET_RICH_SCHEMA_MAPPING.name == "SET_RICH_SCHEMA_MAPPING"
-    assert IndyTransactions.SET_RICH_SCHEMA_CRED_DEF.name == "SET_RICH_SCHEMA_CRED_DEF"
-    assert IndyTransactions.SET_RICH_SCHEMA_PRES_DEF.name == "SET_RICH_SCHEMA_PRES_DEF"
+    assert IndyTransactions.JSON_LD_CONTEXT.name == "JSON_LD_CONTEXT"
+    assert IndyTransactions.RICH_SCHEMA.name == "RICH_SCHEMA"
+    assert IndyTransactions.RICH_SCHEMA_ENCODING.name == "RICH_SCHEMA_ENCODING"
+    assert IndyTransactions.RICH_SCHEMA_MAPPING.name == "RICH_SCHEMA_MAPPING"
+    assert IndyTransactions.RICH_SCHEMA_CRED_DEF.name == "RICH_SCHEMA_CRED_DEF"
+    assert IndyTransactions.RICH_SCHEMA_PRES_DEF.name == "RICH_SCHEMA_PRES_DEF"
     assert IndyTransactions.GET_RICH_SCHEMA_OBJECT_BY_ID.name == "GET_RICH_SCHEMA_OBJECT_BY_ID"
     assert IndyTransactions.GET_RICH_SCHEMA_OBJECT_BY_METADATA.name == "GET_RICH_SCHEMA_OBJECT_BY_METADATA"
 
@@ -115,12 +115,12 @@ def test_transaction_enum_encoded():
     assert IndyTransactions.POOL_RESTART.value == "118"
     assert IndyTransactions.VALIDATOR_INFO.value == "119"
 
-    assert IndyTransactions.SET_JSON_LD_CONTEXT.value == "200"
-    assert IndyTransactions.SET_RICH_SCHEMA.value == "201"
-    assert IndyTransactions.SET_RICH_SCHEMA_ENCODING.value == "202"
-    assert IndyTransactions.SET_RICH_SCHEMA_MAPPING.value == "203"
-    assert IndyTransactions.SET_RICH_SCHEMA_CRED_DEF.value == "204"
-    assert IndyTransactions.SET_RICH_SCHEMA_PRES_DEF.value == "205"
+    assert IndyTransactions.JSON_LD_CONTEXT.value == "200"
+    assert IndyTransactions.RICH_SCHEMA.value == "201"
+    assert IndyTransactions.RICH_SCHEMA_ENCODING.value == "202"
+    assert IndyTransactions.RICH_SCHEMA_MAPPING.value == "203"
+    assert IndyTransactions.RICH_SCHEMA_CRED_DEF.value == "204"
+    assert IndyTransactions.RICH_SCHEMA_PRES_DEF.value == "205"
     assert IndyTransactions.GET_RICH_SCHEMA_OBJECT_BY_ID.value == "300"
     assert IndyTransactions.GET_RICH_SCHEMA_OBJECT_BY_METADATA.value == "301"
 
@@ -152,16 +152,16 @@ def test_get_name_from_code():
     assert IndyTransactions.get_name_from_code(IndyTransactions.GET_REVOC_REG_DELTA.value) == "GET_REVOC_REG_DELTA"
     assert IndyTransactions.get_name_from_code(IndyTransactions.VALIDATOR_INFO.value) == "VALIDATOR_INFO"
 
-    assert IndyTransactions.get_name_from_code(IndyTransactions.SET_JSON_LD_CONTEXT.value) == "SET_JSON_LD_CONTEXT"
-    assert IndyTransactions.get_name_from_code(IndyTransactions.SET_RICH_SCHEMA.value) == "SET_RICH_SCHEMA"
+    assert IndyTransactions.get_name_from_code(IndyTransactions.JSON_LD_CONTEXT.value) == "JSON_LD_CONTEXT"
+    assert IndyTransactions.get_name_from_code(IndyTransactions.RICH_SCHEMA.value) == "RICH_SCHEMA"
     assert IndyTransactions.get_name_from_code(
-        IndyTransactions.SET_RICH_SCHEMA_ENCODING.value) == "SET_RICH_SCHEMA_ENCODING"
+        IndyTransactions.RICH_SCHEMA_ENCODING.value) == "RICH_SCHEMA_ENCODING"
     assert IndyTransactions.get_name_from_code(
-        IndyTransactions.SET_RICH_SCHEMA_MAPPING.value) == "SET_RICH_SCHEMA_MAPPING"
+        IndyTransactions.RICH_SCHEMA_MAPPING.value) == "RICH_SCHEMA_MAPPING"
     assert IndyTransactions.get_name_from_code(
-        IndyTransactions.SET_RICH_SCHEMA_CRED_DEF.value) == "SET_RICH_SCHEMA_CRED_DEF"
+        IndyTransactions.RICH_SCHEMA_CRED_DEF.value) == "RICH_SCHEMA_CRED_DEF"
     assert IndyTransactions.get_name_from_code(
-        IndyTransactions.SET_RICH_SCHEMA_PRES_DEF.value) == "SET_RICH_SCHEMA_PRES_DEF"
+        IndyTransactions.RICH_SCHEMA_PRES_DEF.value) == "RICH_SCHEMA_PRES_DEF"
     assert IndyTransactions.get_name_from_code(
         IndyTransactions.GET_RICH_SCHEMA_OBJECT_BY_ID.value) == "GET_RICH_SCHEMA_OBJECT_BY_ID"
     assert IndyTransactions.get_name_from_code(

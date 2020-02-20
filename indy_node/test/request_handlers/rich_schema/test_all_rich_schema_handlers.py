@@ -48,6 +48,13 @@ def test_update_state(handler_and_request):
     assert handler.state.get(secondary_key, isCommitted=False) == op[RS_ID].encode()
 
 
+def test_static_validation_content_is_json(handler_and_request):
+    handler, request = handler_and_request
+    request.operation[RS_CONTENT] = randomString()
+    with pytest.raises(InvalidClientRequest, match="must be a JSON serialized string"):
+        handler.static_validation(request)
+
+
 def test_dynamic_validation_for_existing(handler_and_request):
     handler, request = handler_and_request
     make_rich_schema_object_exist(handler, request)
