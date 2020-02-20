@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from indy_common.constants import SET_JSON_LD_CONTEXT, SET_RICH_SCHEMA, SET_RICH_SCHEMA_ENCODING, \
@@ -41,8 +43,10 @@ def test_send_get_rich_schema_obj_by_id(looper, sdk_pool_handle, sdk_wallet_endo
         'rsType': rs_type,
         'rsName': rs_name,
         'rsVersion': rs_version,
-        'content': content,
-        'from': sdk_wallet_endorser[1]
+        'content': json.dumps(content),
+        'from': sdk_wallet_endorser[1],
+        'endorser': None,
+        'ver': None
     })
     assert SortedDict(result['data']) == expected_data
     assert result['seqNo']
@@ -82,8 +86,10 @@ def test_send_get_rich_schema_obj_by_metadata(looper, sdk_pool_handle, sdk_walle
         'rsType': rs_type,
         'rsName': rs_name,
         'rsVersion': rs_version,
-        'content': content,
-        'from': sdk_wallet_endorser[1]
+        'content': json.dumps(content),
+        'from': sdk_wallet_endorser[1],
+        'endorser': None,
+        'ver': None
     })
     assert SortedDict(result['data']) == expected_data
     assert result['seqNo']
@@ -129,10 +135,12 @@ def test_send_get_rich_schema_obj_by_invalid_id(looper, sdk_pool_handle, sdk_wal
                           (SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
                           (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
                           (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString())])
-@pytest.mark.parametrize('invalid_meta', [RS_NAME, RS_VERSION, RS_TYPE])
+@pytest.mark.parametrize('invalid_meta_name, invalid_meta_value', [(RS_NAME, randomString()),
+                                                                   (RS_VERSION, "100.3"),
+                                                                   (RS_TYPE, randomString())])
 def test_send_get_rich_schema_obj_by_invalid_metadata(looper, sdk_pool_handle, sdk_wallet_endorser,
                                                       txn_type, rs_type, content,
-                                                      invalid_meta):
+                                                      invalid_meta_name, invalid_meta_value):
     rs_id = randomString()
     rs_name = randomString()
     rs_version = '1.0'
@@ -147,7 +155,7 @@ def test_send_get_rich_schema_obj_by_invalid_metadata(looper, sdk_pool_handle, s
         RS_VERSION: rs_version,
         RS_TYPE: rs_type
     }
-    get_rich_schema_by_metadata_operation[invalid_meta] = randomString()
+    get_rich_schema_by_metadata_operation[invalid_meta_name] = invalid_meta_value
 
     result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
                                                  sdk_wallet_endorser,
@@ -157,7 +165,6 @@ def test_send_get_rich_schema_obj_by_invalid_metadata(looper, sdk_pool_handle, s
     assert result['txnTime'] is None
     assert result['state_proof']
     check_valid_proof(result)
-
 
 @pytest.mark.parametrize('txn_type, rs_type, content',
                          [(SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
@@ -192,7 +199,7 @@ def test_send_get_rich_schema_obj_by_no_id(looper, sdk_pool_handle, sdk_wallet_e
                           (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
                           (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString())])
 @pytest.mark.parametrize('absent_meta', [RS_NAME, RS_VERSION, RS_TYPE])
-def test_send_get_rich_schema_obj_by_no_id(looper, sdk_pool_handle, sdk_wallet_endorser,
+def test_send_get_rich_schema_obj_by_no_metadata(looper, sdk_pool_handle, sdk_wallet_endorser,
                                            txn_type, rs_type, content,
                                            absent_meta):
     rs_id = randomString()

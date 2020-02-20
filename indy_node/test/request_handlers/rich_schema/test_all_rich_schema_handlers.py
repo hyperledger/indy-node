@@ -56,6 +56,17 @@ def test_dynamic_validation_for_existing(handler_and_request):
             handler.dynamic_validation(request, 0)
 
 
+def test_dynamic_validation_for_existing(handler_and_request):
+    handler, request = handler_and_request
+    make_rich_schema_object_exist(handler, request)
+    add_to_idr(handler.database_manager.idr_cache, request.identifier, TRUSTEE)
+    add_to_idr(handler.database_manager.idr_cache, request.endorser, ENDORSER)
+    if isinstance(handler, RichSchemaCredDefHandler):
+        handler.dynamic_validation(request, 0)
+    else:
+        with pytest.raises(UnauthorizedClientRequest, match=str(AuthConstraintForbidden())):
+            handler.dynamic_validation(request, 0)
+
 def test_dynamic_validation_failed_not_authorised(handler_and_request):
     handler, request = handler_and_request
     add_to_idr(handler.database_manager.idr_cache, request.identifier, None)
