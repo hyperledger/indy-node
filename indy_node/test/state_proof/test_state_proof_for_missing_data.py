@@ -11,6 +11,9 @@ from indy_node.test.state_proof.helper import check_valid_proof, \
     sdk_submit_operation_and_get_result
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA
 # fixtures, do not remove
+from indy_node.test.attrib_txn.test_nym_attrib import \
+    sdk_added_raw_attribute, attributeName, attributeValue, attributeData
+
 from plenum.common.util import randomString
 
 
