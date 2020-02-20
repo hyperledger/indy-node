@@ -1,3 +1,5 @@
+import random
+
 import pytest
 
 from indy_common.authorize.auth_constraints import AuthConstraintForbidden
@@ -7,9 +9,9 @@ from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_sche
 from indy_node.test.request_handlers.helper import add_to_idr
 from indy_node.test.request_handlers.rich_schema.helper import context_request, make_rich_schema_object_exist
 from plenum.common.constants import OP_VER, TRUSTEE
-from plenum.common.exceptions import UnauthorizedClientRequest
+from plenum.common.exceptions import UnauthorizedClientRequest, InvalidClientRequest
 from plenum.common.txn_util import reqToTxn, append_txn_metadata
-from plenum.common.util import SortedDict
+from plenum.common.util import SortedDict, randomString
 
 
 def test_update_state(handler_and_request):
@@ -49,6 +51,7 @@ def test_dynamic_validation_for_existing(handler_and_request):
     make_rich_schema_object_exist(handler, request)
     add_to_idr(handler.database_manager.idr_cache, request.identifier, TRUSTEE)
     add_to_idr(handler.database_manager.idr_cache, request.endorser, ENDORSER)
+
     if isinstance(handler, RichSchemaCredDefHandler):
         handler.dynamic_validation(request, 0)
     else:
@@ -56,16 +59,22 @@ def test_dynamic_validation_for_existing(handler_and_request):
             handler.dynamic_validation(request, 0)
 
 
-def test_dynamic_validation_for_existing(handler_and_request):
+def test_dynamic_validation_for_existing_metadata(handler_and_request):
     handler, request = handler_and_request
     make_rich_schema_object_exist(handler, request)
     add_to_idr(handler.database_manager.idr_cache, request.identifier, TRUSTEE)
     add_to_idr(handler.database_manager.idr_cache, request.endorser, ENDORSER)
-    if isinstance(handler, RichSchemaCredDefHandler):
+
+    request.operation[RS_ID] = randomString()
+    request.operation[RS_CONTENT] = randomString()
+    request.reqId = random.randint(10, 1000000000)
+
+    with pytest.raises(InvalidClientRequest,
+                       match='An object with rsName="{}", rsVersion="{}" and rsType="{}" already exists. '
+                             'Please choose different rsName, rsVersion or rsType'.format(
+                           request.operation[RS_NAME], request.operation[RS_VERSION], request.operation[RS_TYPE])):
         handler.dynamic_validation(request, 0)
-    else:
-        with pytest.raises(UnauthorizedClientRequest, match=str(AuthConstraintForbidden())):
-            handler.dynamic_validation(request, 0)
+
 
 def test_dynamic_validation_failed_not_authorised(handler_and_request):
     handler, request = handler_and_request

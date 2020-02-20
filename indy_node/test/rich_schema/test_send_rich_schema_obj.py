@@ -86,7 +86,7 @@ def test_write_same_object_with_different_reqid_fails(looper, sdk_pool_handle, s
                           (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
                           (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString())])
 @pytest.mark.parametrize('missing_field',
-                         ["type", "id", "rsName", "rsVersion", "content", "rsType"])
+                         ["id", "rsName", "rsVersion", "content", "rsType"])
 def test_validate_fail_missing_fields(looper, sdk_pool_handle, sdk_wallet_endorser,
                                       txn_type, rs_type, content, missing_field):
     request = sdk_build_rich_schema_request(looper, sdk_wallet_endorser,

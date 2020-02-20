@@ -35,8 +35,26 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler):
 
     def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
+
         rs_id = request.operation[RS_ID]
         rs_object, _, _ = self.get_from_state(rs_id)
+
+        # check that (rs_name, rs_type, rs_version) is unique within all rich schema objects
+        secondary_key = self.make_secondary_key(request.operation[RS_TYPE],
+                                                request.operation[RS_NAME],
+                                                request.operation[RS_VERSION])
+        if not rs_object and self.state.get(secondary_key, isCommitted=False) is not None:
+            raise InvalidClientRequest(request.identifier,
+                                       request.reqId,
+                                       'An object with {rs_name}="{rs_name_value}", {rs_version}="{rs_version_value}" '
+                                       'and {rs_type}="{rs_type_value}" already exists. '
+                                       'Please choose different {rs_name}, {rs_version} or {rs_type}'.format(
+                                           rs_name=RS_NAME, rs_version=RS_VERSION, rs_type=RS_TYPE,
+                                           rs_name_value=request.operation[RS_NAME],
+                                           rs_version_value=request.operation[RS_VERSION],
+                                           rs_type_value=request.operation[RS_TYPE]))
+
+        # do common auth-rule-based validation (which will check the default immutability of most of the objects)
         if rs_object:
             self.write_req_validator.validate(request,
                                               [AuthActionEdit(txn_type=self.txn_type,
