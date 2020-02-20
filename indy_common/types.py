@@ -443,8 +443,10 @@ class ClientRichSchemaMappingOperation(MessageValidator):
 class ClientRichSchemaCredDefOperation(MessageValidator):
     schema = rich_schema_objects_schema(SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE)
 
+
 class ClientRichSchemaPresDefOperation(MessageValidator):
     schema = rich_schema_objects_schema(SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE)
+
 
 class ClientGetRichSchemaObjectByIdOperation(MessageValidator):
     schema = (
