@@ -43,7 +43,8 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     TAG_LIMIT_SIZE, SET_JSON_LD_CONTEXT, RS_VERSION, \
     RS_NAME, RS_ID, RS_CONTENT, RS_CONTEXT_TYPE_VALUE, SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, \
     SET_RICH_SCHEMA_ENCODING, RS_MAPPING_TYPE_VALUE, SET_RICH_SCHEMA_MAPPING, RS_CRED_DEF_TYPE_VALUE, \
-    SET_RICH_SCHEMA_CRED_DEF, GET_RICH_SCHEMA_OBJECT_BY_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA
+    SET_RICH_SCHEMA_CRED_DEF, GET_RICH_SCHEMA_OBJECT_BY_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
+    SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
 from indy_common.version import SchemaVersion
 
 
@@ -442,6 +443,8 @@ class ClientRichSchemaMappingOperation(MessageValidator):
 class ClientRichSchemaCredDefOperation(MessageValidator):
     schema = rich_schema_objects_schema(SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE)
 
+class ClientRichSchemaPresDefOperation(MessageValidator):
+    schema = rich_schema_objects_schema(SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE)
 
 class ClientGetRichSchemaObjectByIdOperation(MessageValidator):
     schema = (
@@ -486,6 +489,7 @@ class ClientOperationField(PClientOperationField):
         SET_RICH_SCHEMA_ENCODING: ClientRichSchemaEncodingOperation(),
         SET_RICH_SCHEMA_MAPPING: ClientRichSchemaMappingOperation(),
         SET_RICH_SCHEMA_CRED_DEF: ClientRichSchemaCredDefOperation(),
+        SET_RICH_SCHEMA_PRES_DEF: ClientRichSchemaPresDefOperation(),
         GET_RICH_SCHEMA_OBJECT_BY_ID: ClientGetRichSchemaObjectByIdOperation(),
         GET_RICH_SCHEMA_OBJECT_BY_METADATA: ClientGetRichSchemaObjectByMetadataOperation(),
     }

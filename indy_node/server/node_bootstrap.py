@@ -37,6 +37,8 @@ from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_sche
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_handler import RichSchemaHandler
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_mapping_handler import \
     RichSchemaMappingHandler
+from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_pres_def_handler import \
+    RichSchemaPresDefHandler
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
 from indy_node.server.request_handlers.idr_cache_batch_handler import IdrCacheBatchHandler
 from indy_node.server.request_handlers.pool_req_handlers.node_handler import NodeHandler
@@ -132,6 +134,8 @@ class NodeBootstrap(PNodeBootstrap):
                                                                write_req_validator=self.node.write_req_validator)
         rich_schema_cred_def_handler = RichSchemaCredDefHandler(database_manager=self.node.db_manager,
                                                                 write_req_validator=self.node.write_req_validator)
+        rich_schema_pres_def_handler = RichSchemaPresDefHandler(database_manager=self.node.db_manager,
+                                                                write_req_validator=self.node.write_req_validator)
         get_rich_schema_obj_by_id_handler = GetRichSchemaObjectByIdHandler(database_manager=self.node.db_manager)
         get_rich_schema_obj_by_metadata_handler = GetRichSchemaObjectByMetadataHandler(
             database_manager=self.node.db_manager)
@@ -148,6 +152,7 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.write_manager.register_req_handler(rich_schema_encoding_handler)
         self.node.write_manager.register_req_handler(rich_schema_mapping_handler)
         self.node.write_manager.register_req_handler(rich_schema_cred_def_handler)
+        self.node.write_manager.register_req_handler(rich_schema_pres_def_handler)
         # Additional handler for idCache
         self.register_idr_cache_nym_handler()
         # Register read handlers

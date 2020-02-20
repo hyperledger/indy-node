@@ -7,7 +7,7 @@ from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstrain
 from indy_common.constants import ENDORSER, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
     CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, \
     REVOC_REG_DEF, ATTRIB, AUTH_RULES, SET_JSON_LD_CONTEXT, SET_RICH_SCHEMA, SET_RICH_SCHEMA_MAPPING, \
-    SET_RICH_SCHEMA_ENCODING, SET_RICH_SCHEMA_CRED_DEF
+    SET_RICH_SCHEMA_ENCODING, SET_RICH_SCHEMA_CRED_DEF, SET_RICH_SCHEMA_PRES_DEF
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML, \
     TXN_AUTHOR_AGREEMENT_DISABLE
 
@@ -121,6 +121,15 @@ add_rich_schema_cred_def = AuthActionAdd(txn_type=SET_RICH_SCHEMA_CRED_DEF,
                                          value='*')
 
 edit_rich_schema_cred_def = AuthActionEdit(txn_type=SET_RICH_SCHEMA_CRED_DEF,
+                                           field='*',
+                                           old_value='*',
+                                           new_value='*')
+
+add_rich_schema_pres_def = AuthActionAdd(txn_type=SET_RICH_SCHEMA_PRES_DEF,
+                                         field='*',
+                                         value='*')
+
+edit_rich_schema_pres_def = AuthActionEdit(txn_type=SET_RICH_SCHEMA_PRES_DEF,
                                            field='*',
                                            old_value='*',
                                            new_value='*')
@@ -288,6 +297,8 @@ auth_map = OrderedDict([
     (edit_rich_schema_mapping.get_action_id(), no_one_constraint),
     (add_rich_schema_cred_def.get_action_id(), endorser_or_steward_or_trustee_constraint),
     (edit_rich_schema_cred_def.get_action_id(), owner_constraint),
+    (add_rich_schema_pres_def.get_action_id(), endorser_or_steward_or_trustee_constraint),
+    (edit_rich_schema_pres_def.get_action_id(), owner_constraint),
 
     (add_claim_def.get_action_id(), endorser_or_steward_or_trustee_constraint),
     (edit_claim_def.get_action_id(), owner_constraint),

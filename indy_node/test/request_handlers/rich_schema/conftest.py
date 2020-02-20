@@ -1,7 +1,7 @@
 import pytest
 
 from indy_common.constants import RS_CONTEXT_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, RS_CRED_DEF_TYPE_VALUE, \
-    RS_SCHEMA_TYPE_VALUE, RS_MAPPING_TYPE_VALUE
+    RS_SCHEMA_TYPE_VALUE, RS_MAPPING_TYPE_VALUE, RS_PRES_DEF_TYPE_VALUE
 from indy_common.types import Request
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.abstract_rich_schema_object_handler import \
     AbstractRichSchemaObjectHandler
@@ -14,13 +14,16 @@ from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_sche
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_handler import RichSchemaHandler
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_mapping_handler import \
     RichSchemaMappingHandler
+from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_pres_def_handler import \
+    RichSchemaPresDefHandler
 from indy_node.test.request_handlers.rich_schema.helper import context_request, rich_schema_request, \
-    rich_schema_encoding_request, rich_schema_mapping_request, rich_schema_cred_def_request
+    rich_schema_encoding_request, rich_schema_mapping_request, rich_schema_cred_def_request, \
+    rich_schema_pres_def_request
 
 
 @pytest.fixture(params=[RS_CONTEXT_TYPE_VALUE, RS_SCHEMA_TYPE_VALUE,
                         RS_ENCODING_TYPE_VALUE, RS_MAPPING_TYPE_VALUE,
-                        RS_CRED_DEF_TYPE_VALUE])
+                        RS_CRED_DEF_TYPE_VALUE, RS_PRES_DEF_TYPE_VALUE])
 def handler_and_request(request, db_manager, write_auth_req_validator) -> (AbstractRichSchemaObjectHandler, Request):
     if request.param == RS_CONTEXT_TYPE_VALUE:
         return JsonLdContextHandler(db_manager, write_auth_req_validator), context_request()
@@ -32,3 +35,5 @@ def handler_and_request(request, db_manager, write_auth_req_validator) -> (Abstr
         return RichSchemaMappingHandler(db_manager, write_auth_req_validator), rich_schema_mapping_request()
     if request.param == RS_CRED_DEF_TYPE_VALUE:
         return RichSchemaCredDefHandler(db_manager, write_auth_req_validator), rich_schema_cred_def_request()
+    if request.param == RS_PRES_DEF_TYPE_VALUE:
+        return RichSchemaPresDefHandler(db_manager, write_auth_req_validator), rich_schema_pres_def_request()

@@ -4,7 +4,8 @@ from indy_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, 
     CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES, SET_JSON_LD_CONTEXT, SET_RICH_SCHEMA, \
     SET_RICH_SCHEMA_ENCODING, SET_RICH_SCHEMA_MAPPING, SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, \
     RS_ENCODING_TYPE_VALUE, RS_MAPPING_TYPE_VALUE, RS_SCHEMA_TYPE_VALUE, RS_CONTEXT_TYPE_VALUE, RS_ID, \
-    GET_RICH_SCHEMA_OBJECT_BY_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, RS_NAME, RS_VERSION, RS_TYPE
+    GET_RICH_SCHEMA_OBJECT_BY_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, RS_NAME, RS_VERSION, RS_TYPE, \
+    SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
 from indy_node.test.rich_schema.templates import W3C_BASE_CONTEXT, RICH_SCHEMA_EX1
 from indy_node.test.state_proof.helper import check_valid_proof, \
     sdk_submit_operation_and_get_result
@@ -111,7 +112,8 @@ def test_state_proof_returned_for_missing_claim_def(looper, nodeSetWithOneNodeRe
                           (SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
                           (SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
                           (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString())])
+                          (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
+                          (SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
 def test_state_proof_returned_for_missing_get_rich_schema_obj_by_id(looper,
                                                                     nodeSetWithOneNodeResponding,
                                                                     sdk_wallet_endorser,
@@ -142,7 +144,8 @@ def test_state_proof_returned_for_missing_get_rich_schema_obj_by_id(looper,
                           (SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
                           (SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
                           (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
-                          (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString())])
+                          (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
+                          (SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
 def test_state_proof_returned_for_missing_get_rich_schema_obj_by_metadata(looper,
                                                                           nodeSetWithOneNodeResponding,
                                                                           sdk_wallet_endorser,

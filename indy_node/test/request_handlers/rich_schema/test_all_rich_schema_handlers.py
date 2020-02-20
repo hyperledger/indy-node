@@ -6,6 +6,8 @@ from indy_common.authorize.auth_constraints import AuthConstraintForbidden
 from indy_common.constants import RS_ID, RS_TYPE, RS_NAME, RS_VERSION, RS_CONTENT, ENDORSER
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_cred_def_handler import \
     RichSchemaCredDefHandler
+from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_pres_def_handler import \
+    RichSchemaPresDefHandler
 from indy_node.test.request_handlers.helper import add_to_idr
 from indy_node.test.request_handlers.rich_schema.helper import context_request, make_rich_schema_object_exist
 from plenum.common.constants import OP_VER, TRUSTEE
@@ -52,7 +54,8 @@ def test_dynamic_validation_for_existing(handler_and_request):
     add_to_idr(handler.database_manager.idr_cache, request.identifier, TRUSTEE)
     add_to_idr(handler.database_manager.idr_cache, request.endorser, ENDORSER)
 
-    if isinstance(handler, RichSchemaCredDefHandler):
+    # default auth rules allow editing of CredDef and PresDef by the owner
+    if isinstance(handler, RichSchemaCredDefHandler) or isinstance(handler, RichSchemaPresDefHandler):
         handler.dynamic_validation(request, 0)
     else:
         with pytest.raises(UnauthorizedClientRequest, match=str(AuthConstraintForbidden())):

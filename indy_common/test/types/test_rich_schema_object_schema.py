@@ -3,7 +3,8 @@ from collections import OrderedDict
 import pytest
 
 from indy_common.types import ClientJsonLdContextOperation, ClientRichSchemaOperation, \
-    ClientRichSchemaEncodingOperation, ClientRichSchemaMappingOperation, ClientRichSchemaCredDefOperation
+    ClientRichSchemaEncodingOperation, ClientRichSchemaMappingOperation, ClientRichSchemaCredDefOperation, \
+    ClientRichSchemaPresDefOperation
 from plenum.common.messages.fields import ConstantField, LimitedLengthStringField, NonEmptyStringField, VersionField
 
 EXPECTED_ORDERED_FIELDS = OrderedDict([
@@ -20,7 +21,8 @@ EXPECTED_ORDERED_FIELDS = OrderedDict([
 @pytest.mark.parametrize('operation_class',
                          [ClientJsonLdContextOperation, ClientRichSchemaOperation, ClientRichSchemaEncodingOperation,
                           ClientRichSchemaMappingOperation,
-                          ClientRichSchemaCredDefOperation])
+                          ClientRichSchemaCredDefOperation,
+                          ClientRichSchemaPresDefOperation])
 def test_has_expected_fields(operation_class):
     actual_field_names = OrderedDict(operation_class.schema).keys()
     assert actual_field_names == EXPECTED_ORDERED_FIELDS.keys()
@@ -31,7 +33,8 @@ def test_has_expected_fields(operation_class):
                           (ClientRichSchemaOperation, "201", 'sch'),
                           (ClientRichSchemaEncodingOperation, "202", 'enc'),
                           (ClientRichSchemaMappingOperation, "203", 'map'),
-                          (ClientRichSchemaCredDefOperation, "204", 'cdf')])
+                          (ClientRichSchemaCredDefOperation, "204", 'cdf'),
+                          (ClientRichSchemaPresDefOperation, "205", 'pdf')])
 def test_has_expected_validators(operation_class, txn_type, rs_type):
     schema = dict(operation_class.schema)
     for field, validator in EXPECTED_ORDERED_FIELDS.items():

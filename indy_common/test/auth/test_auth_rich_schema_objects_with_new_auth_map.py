@@ -2,12 +2,12 @@ import pytest
 
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.constants import SET_JSON_LD_CONTEXT, SET_RICH_SCHEMA, SET_RICH_SCHEMA_ENCODING, \
-    SET_RICH_SCHEMA_MAPPING, SET_RICH_SCHEMA_CRED_DEF
+    SET_RICH_SCHEMA_MAPPING, SET_RICH_SCHEMA_CRED_DEF, SET_RICH_SCHEMA_PRES_DEF
 
 
 @pytest.mark.parametrize('txn_type',
                          [SET_JSON_LD_CONTEXT, SET_RICH_SCHEMA, SET_RICH_SCHEMA_ENCODING, SET_RICH_SCHEMA_MAPPING,
-                          SET_RICH_SCHEMA_CRED_DEF])
+                          SET_RICH_SCHEMA_CRED_DEF, SET_RICH_SCHEMA_PRES_DEF])
 def test_rich_schema_object_adding(write_request_validation, req, is_owner, txn_type):
     authorized = req.identifier in ("trustee_identifier", "steward_identifier", "endorser_identifier")
     assert authorized == write_request_validation(req,
@@ -19,9 +19,9 @@ def test_rich_schema_object_adding(write_request_validation, req, is_owner, txn_
 
 @pytest.mark.parametrize('txn_type',
                          [SET_JSON_LD_CONTEXT, SET_RICH_SCHEMA, SET_RICH_SCHEMA_ENCODING, SET_RICH_SCHEMA_MAPPING,
-                          SET_RICH_SCHEMA_CRED_DEF])
+                          SET_RICH_SCHEMA_CRED_DEF, SET_RICH_SCHEMA_PRES_DEF])
 def test_rich_schema_object_editing(write_request_validation, req, is_owner, txn_type):
-    authorized = is_owner and txn_type == SET_RICH_SCHEMA_CRED_DEF
+    authorized = is_owner and txn_type in {SET_RICH_SCHEMA_CRED_DEF, SET_RICH_SCHEMA_PRES_DEF}
     assert authorized == write_request_validation(req,
                                                   [AuthActionEdit(txn_type=txn_type,
                                                                   field='some_field',

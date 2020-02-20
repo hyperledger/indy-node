@@ -2,7 +2,8 @@ import json
 
 from indy_common.constants import SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, SET_RICH_SCHEMA_MAPPING, \
     RS_MAPPING_TYPE_VALUE, RS_CRED_DEF_TYPE_VALUE, SET_RICH_SCHEMA_CRED_DEF, SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, \
-    SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, RS_ID, RS_NAME, RS_TYPE, RS_VERSION, RS_CONTENT
+    SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, RS_ID, RS_NAME, RS_TYPE, RS_VERSION, RS_CONTENT, RS_PRES_DEF_TYPE_VALUE, \
+    SET_RICH_SCHEMA_PRES_DEF
 from indy_common.types import Request
 from indy_node.test.rich_schema.templates import RICH_SCHEMA_EX1, W3C_BASE_CONTEXT
 from plenum.common.constants import TXN_TYPE, OP_VER, CURRENT_PROTOCOL_VERSION
@@ -51,6 +52,11 @@ def rich_schema_mapping_request():
 
 def rich_schema_cred_def_request():
     return rs_req(SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE,
+                  content={"test1": "test2"})
+
+
+def rich_schema_pres_def_request():
+    return rs_req(SET_RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE,
                   content={"test1": "test2"})
 
 
