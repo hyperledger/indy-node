@@ -31,6 +31,7 @@ from indy_node.test.attrib_txn.test_nym_attrib import sdk_added_raw_attribute, a
 from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
 from indy_node.test.anon_creds.conftest import send_revoc_reg_entry, send_revoc_reg_def, send_claim_def, claim_def
 from indy_node.test.schema.test_send_get_schema import send_schema_req
+from plenum.common.util import randomString, SortedDict
 
 from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_and_submit_req
 
