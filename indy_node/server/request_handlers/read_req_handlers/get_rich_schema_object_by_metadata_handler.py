@@ -20,7 +20,7 @@ class GetRichSchemaObjectByMetadataHandler(ReadRequestHandler):
                                                                            request.operation[RS_VERSION])
         value, seq_no, last_update_time, proof = None, None, None, None
         try:
-            id, proof = self._get_value_from_state(secondary_key, with_proof=False)
+            id, proof = self._get_value_from_state(secondary_key, with_proof=True)
             if id is not None:
                 value, seq_no, last_update_time, proof = self.lookup(id, is_committed=True, with_proof=True)
         except KeyError:

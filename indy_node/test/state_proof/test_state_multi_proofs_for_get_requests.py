@@ -1,37 +1,25 @@
 import base64
 import copy
 import random
-
 import time
 
 import base58
-import pytest
-from common.serializers import serialization
+
 from common.serializers.serialization import state_roots_serializer, domain_state_serializer
 from crypto.bls.bls_multi_signature import MultiSignature, MultiSignatureValue
-from indy_common.authorize.auth_constraints import ConstraintsSerializer
-from indy_common.authorize.auth_map import auth_map
-from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from plenum.bls.bls_store import BlsStore
-from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, \
-    IDENTIFIER, NAME, VERSION, ROLE, VERKEY, KeyValueStorageType, \
-    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME, CURRENT_PROTOCOL_VERSION, DOMAIN_LEDGER_ID, NYM
-from plenum.common.txn_util import reqToTxn, append_txn_metadata, append_payload_metadata, set_type
-from plenum.common.types import f
 from indy_common.constants import \
     ATTRIB, CLAIM_DEF, SCHEMA, CLAIM_DEF_FROM, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_SIGNATURE_TYPE, \
-    CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES, LOCAL_AUTH_POLICY, \
-    CONFIG_LEDGER_AUTH_POLICY, GET_NYM, GET_ATTR, GET_CLAIM_DEF, GET_SCHEMA
-from indy_common.types import Request
-from indy_node.persistence.attribute_store import AttributeStore
-from indy_node.persistence.idr_cache import IdrCache
-from plenum.common.util import get_utc_epoch, friendlyToRaw, rawToFriendly, \
-    friendlyToHex, hexToFriendly
-from plenum.server.request_handlers.utils import nym_to_state_key
-from plenum.test.testing_utils import FakeSomething
-from state.pruning_state import PruningState
-from storage.kv_in_memory import KeyValueStorageInMemory
+    CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES, GET_NYM, GET_ATTR, \
+    GET_CLAIM_DEF, GET_SCHEMA
 from indy_common.state import domain
+from indy_common.types import Request
+from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, \
+    IDENTIFIER, NAME, VERSION, ROLE, VERKEY, STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME, \
+    CURRENT_PROTOCOL_VERSION, DOMAIN_LEDGER_ID, NYM
+from plenum.common.txn_util import reqToTxn, append_txn_metadata, append_payload_metadata, set_type
+from plenum.common.types import f
+from plenum.common.util import get_utc_epoch, friendlyToHex, hexToFriendly
+from plenum.server.request_handlers.utils import nym_to_state_key
 
 
 def extract_proof(result, expected_multi_sig):
@@ -72,6 +60,8 @@ def is_proof_verified(db_manager,
     )
     return verified
 
+
+# Similar tests for Rich Schema objects are in indy_node/test/request_handlers/rich_schema
 
 def test_state_proofs_for_get_attr(write_manager,
                                    read_manager,
@@ -175,63 +165,6 @@ def test_state_proofs_for_get_claim_def(write_manager,
     assert is_proof_verified(db_manager,
                              proof, path,
                              key_components, seq_no, txn_time)
-
-
-def test_state_proofs_for_get_context(write_manager,
-                                      read_manager,
-                                      db_manager):
-    # Adding context
-    nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
-
-    seq_no = 0
-    txn_time = int(time.time())
-    identifier = "6ouriXMZkLeHsuXrN1X1fd"
-
-    context_name = "context_a"
-    context_version = "1.0"
-    meta = {CONTEXT_NAME: context_name,
-            CONTEXT_VERSION: context_version,
-            RS_TYPE: CONTEXT_TYPE}
-    data = {CONTEXT_CONTEXT: {"ex": "https://example.org/examples#"}}
-    txn = {
-        TXN_TYPE: SET_CONTEXT,
-        DATA: data,
-        META: meta
-    }
-    txn = append_txn_metadata(reqToTxn(Request(operation=txn,
-                                               protocolVersion=CURRENT_PROTOCOL_VERSION,
-                                               identifier=identifier)),
-                              seq_no=seq_no, txn_time=txn_time)
-    txn = append_payload_metadata(txn, frm=nym)
-
-    write_manager.update_state(txn)
-    db_manager.get_state(DOMAIN_LEDGER_ID).commit()
-    multi_sig = save_multi_sig(db_manager)
-
-    # Getting context
-    request = Request(
-        operation={
-            TARGET_NYM: nym,
-            META: meta,
-            TXN_TYPE: GET_CONTEXT
-        },
-        signatures={},
-        protocolVersion=CURRENT_PROTOCOL_VERSION
-    )
-
-    result = read_manager.get_result(request)
-    proof = extract_proof(result, multi_sig)
-    assert result[DATA][DATA] == data
-
-    # Verifying signed state proof
-    path = domain.make_state_path_for_context(nym, context_name, context_version)
-    value = {
-        META: meta,
-        DATA: data
-    }
-    assert is_proof_verified(db_manager,
-                             proof, path,
-                             value, seq_no, txn_time)
 
 
 def test_state_proofs_for_get_schema(write_manager,

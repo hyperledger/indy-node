@@ -1,39 +1,31 @@
-import copy
-import json
+import time
 
 import time
 
 import pytest
 from indy.ledger import build_get_revoc_reg_def_request, build_get_revoc_reg_request, build_get_revoc_reg_delta_request
 
-from indy_common.authorize.auth_actions import ADD_PREFIX
-from indy_node.test.anon_creds.helper import get_revoc_reg_def_id
-
 from common.serializers.serialization import domain_state_serializer
-from indy_node.test.api.helper import sdk_write_context
-from indy_node.test.auth_rule.helper import sdk_send_and_check_get_auth_rule_request, generate_key, \
-    sdk_send_and_check_auth_rule_request
-from indy_node.test.context.helper import SIMPLE_CONTEXT
-from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, \
-    ROLE, VERKEY, TXN_TIME, NYM, NAME, VERSION, STEWARD
-from plenum.common.types import f
-
-from indy_node.test.state_proof.helper import check_valid_proof, \
-    sdk_submit_operation_and_get_result
+from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_common.constants import GET_ATTR, GET_NYM, SCHEMA, GET_SCHEMA, \
     CLAIM_DEF, REVOCATION, GET_CLAIM_DEF, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_FROM, \
-    SCHEMA_ATTR_NAMES, SCHEMA_NAME, SCHEMA_VERSION, CLAIM_DEF_TAG, ENDORSER, CONTEXT_NAME, CONTEXT_VERSION, SET_CONTEXT, \
-    META, GET_CONTEXT, CONTEXT_CONTEXT, RS_TYPE, CONTEXT_TYPE
+    SCHEMA_ATTR_NAMES, SCHEMA_NAME, SCHEMA_VERSION, CLAIM_DEF_TAG, ENDORSER, SET_JSON_LD_CONTEXT, SET_RICH_SCHEMA, \
+    SET_RICH_SCHEMA_ENCODING, SET_RICH_SCHEMA_MAPPING, SET_RICH_SCHEMA_CRED_DEF, RS_CONTEXT_TYPE_VALUE, \
+    RS_SCHEMA_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, RS_MAPPING_TYPE_VALUE, RS_CRED_DEF_TYPE_VALUE, \
+    GET_RICH_SCHEMA_OBJECT_BY_ID, RS_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, RS_NAME, RS_VERSION, RS_TYPE
 from indy_common.serialization import attrib_raw_data_serializer
-
+from indy_node.test.anon_creds.helper import get_revoc_reg_def_id
+from indy_node.test.api.helper import sdk_write_rich_schema_object_and_check
+from indy_node.test.auth_rule.helper import sdk_send_and_check_get_auth_rule_request, generate_key
+from indy_node.test.rich_schema.templates import W3C_BASE_CONTEXT, RICH_SCHEMA_EX1
+from indy_node.test.state_proof.helper import check_valid_proof, \
+    sdk_submit_operation_and_get_result
+from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, \
+    ROLE, VERKEY, TXN_TIME, NYM, NAME, VERSION
+from plenum.common.types import f
 # Fixtures, do not remove
-from indy_node.test.attrib_txn.test_nym_attrib import \
-    sdk_added_raw_attribute, attributeName, attributeValue, attributeData
-from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
+from plenum.common.util import randomString, SortedDict
 from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_and_submit_req
-
-from indy_node.test.anon_creds.conftest import send_revoc_reg_entry, send_revoc_reg_def, send_claim_def, claim_def
-from indy_node.test.schema.test_send_get_schema import send_schema_req
 
 
 def test_state_proof_returned_for_get_attr(looper,
@@ -155,118 +147,101 @@ def test_state_proof_returned_for_get_schema(looper,
 @pytest.mark.skip
 # TODO fix this test so it does not rely on Indy-SDK,
 # or, fix this test once GET_CONTEXT is part of Indy-SDK
-def test_state_proof_returned_for_get_context(looper,
-                                              nodeSetWithOneNodeResponding,
-                                              sdk_wallet_endorser,
-                                              sdk_pool_handle,
-                                              sdk_wallet_client):
+@pytest.mark.parametrize('txn_type, rs_type, content',
+                         [(SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
+                          (SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
+                          (SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
+                          (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
+                          (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString())])
+def test_state_proof_returned_for_get_rich_schema_obj_by_id(looper,
+                                                            nodeSetWithOneNodeResponding,
+                                                            sdk_wallet_endorser,
+                                                            sdk_pool_handle,
+                                                            sdk_wallet_client,
+                                                            txn_type, rs_type, content):
     """
-    Tests that state proof is returned in the reply for GET_CONTEXT transactions.
+    Tests that state proof is returned in the reply for GET_RICH_SCHEMA_OBJECT_BY_ID.
     Use different submitter and reader!
     """
+    rs_id = randomString()
+    rs_name = randomString()
+    rs_version = '1.0'
+    sdk_write_rich_schema_object_and_check(looper, sdk_wallet_endorser, sdk_pool_handle,
+                                           txn_type=txn_type, rs_id=rs_id, rs_name=rs_name,
+                                           rs_version=rs_version, rs_type=rs_type, rs_content=content)
 
-    _, dest = sdk_wallet_endorser
-    context_name = "test_context"
-    context_version = "1.0"
-    meta = {
-        CONTEXT_NAME: context_name,
-        CONTEXT_VERSION: context_version,
-        RS_TYPE: CONTEXT_TYPE,
+    get_rich_schema_by_id_operation = {
+        TXN_TYPE: GET_RICH_SCHEMA_OBJECT_BY_ID,
+        RS_ID: rs_id,
     }
-    data = SIMPLE_CONTEXT
-    context_operation = {
-        TXN_TYPE: SET_CONTEXT,
-        DATA: data,
-        META: meta
-    }
-    sdk_submit_operation_and_get_result(looper,
-                                        sdk_pool_handle,
-                                        sdk_wallet_endorser,
-                                        context_operation)
 
-    get_context_operation = {
-        TARGET_NYM: dest,
-        TXN_TYPE: GET_CONTEXT,
-        META: {
-            CONTEXT_NAME: context_name,
-            CONTEXT_VERSION: context_version,
-            RS_TYPE: CONTEXT_TYPE
-        }
-    }
     result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
                                                  sdk_wallet_client,
-                                                 get_context_operation)
-    assert DATA in result
-    rdata = result.get(DATA)
-    assert rdata
-    assert DATA in rdata
-    data = rdata[DATA]
-    assert CONTEXT_CONTEXT in data
-    assert data == SIMPLE_CONTEXT
-    assert META in rdata
-    meta = rdata[META]
-    assert NAME in meta
-    assert VERSION in meta
-    assert result[TXN_TIME]
+                                                 get_rich_schema_by_id_operation)
+    expected_data = SortedDict({
+        'id': rs_id,
+        'rsType': rs_type,
+        'rsName': rs_name,
+        'rsVersion': rs_version,
+        'content': content,
+        'from': sdk_wallet_endorser[1]
+    })
+    assert SortedDict(result['data']) == expected_data
+    assert result['seqNo']
+    assert result['txnTime']
+    assert result['state_proof']
     check_valid_proof(result)
 
 
-'''
-def test_state_proof_returned_for_get_context(looper,
-                                              nodeSetWithOneNodeResponding,
-                                              sdk_wallet_endorser,
-                                              sdk_pool_handle,
-                                              sdk_wallet_client):
+@pytest.mark.skip
+# TODO fix this test so it does not rely on Indy-SDK,
+# or, fix this test once GET_CONTEXT is part of Indy-SDK
+@pytest.mark.parametrize('txn_type, rs_type, content',
+                         [(SET_JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
+                          (SET_RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
+                          (SET_RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
+                          (SET_RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
+                          (SET_RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString())])
+def test_state_proof_returned_for_get_rich_schema_obj_by_metadata(looper,
+                                                                  nodeSetWithOneNodeResponding,
+                                                                  sdk_wallet_endorser,
+                                                                  sdk_pool_handle,
+                                                                  sdk_wallet_client,
+                                                                  txn_type, rs_type, content):
     """
-    Tests that state proof is returned in the reply for GET_CONTEXT transactions.
+    Tests that state proof is returned in the reply for GET_RICH_SCHEMA_OBJECT_BY_METADATA.
     Use different submitter and reader!
     """
+    rs_id = randomString()
+    rs_name = randomString()
+    rs_version = '1.0'
+    sdk_write_rich_schema_object_and_check(looper, sdk_wallet_endorser, sdk_pool_handle,
+                                           txn_type=txn_type, rs_id=rs_id, rs_name=rs_name,
+                                           rs_version=rs_version, rs_type=rs_type, rs_content=content)
 
-    _, dest = sdk_wallet_endorser
-    context_name = "test_context"
-    context_version = "1.0"
-    meta = {
-        CONTEXT_NAME: context_name,
-        CONTEXT_VERSION: context_version,
-        RS_TYPE: CONTEXT_TYPE,
+    get_rich_schema_by_metadata_operation = {
+        TXN_TYPE: GET_RICH_SCHEMA_OBJECT_BY_METADATA,
+        RS_NAME: rs_name,
+        RS_VERSION: rs_version,
+        RS_TYPE: rs_type
     }
-    data = SIMPLE_CONTEXT
-    context_operation = {
-        TXN_TYPE: SET_CONTEXT,
-        DATA: data,
-        META: meta
-    }
-    sdk_submit_operation_and_get_result(looper,
-                                        sdk_pool_handle,
-                                        sdk_wallet_endorser,
-                                        context_operation)
 
-    get_context_operation = {
-        TARGET_NYM: dest,
-        TXN_TYPE: GET_CONTEXT,
-        META: {
-            CONTEXT_NAME: context_name,
-            CONTEXT_VERSION: context_version,
-            RS_TYPE: CONTEXT_TYPE
-        }
-    }
     result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
                                                  sdk_wallet_client,
-                                                 get_context_operation)
-    assert DATA in result
-    rdata = result.get(DATA)
-    assert rdata
-    assert DATA in rdata
-    data = rdata[DATA]
-    assert CONTEXT_CONTEXT in data
-    assert data == SIMPLE_CONTEXT
-    assert META in rdata
-    meta = rdata[META]
-    assert NAME in meta
-    assert VERSION in meta
-    assert result[TXN_TIME]
+                                                 get_rich_schema_by_metadata_operation)
+    expected_data = SortedDict({
+        'id': rs_id,
+        'rsType': rs_type,
+        'rsName': rs_name,
+        'rsVersion': rs_version,
+        'content': content,
+        'from': sdk_wallet_endorser[1]
+    })
+    assert SortedDict(result['data']) == expected_data
+    assert result['seqNo']
+    assert result['txnTime']
+    assert result['state_proof']
     check_valid_proof(result)
-'''
 
 
 def test_state_proof_returned_for_get_claim_def(looper,
