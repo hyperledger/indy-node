@@ -26,7 +26,7 @@ def test_static_validation_context_no_context_field(context_handler, context_req
     with pytest.raises(InvalidClientRequest) as e:
         context_handler.static_validation(context_req)
 
-    assert "must contain @context field" in str(e.value)
+    assert "must contain a @context field" in str(e.value)
 
 
 
