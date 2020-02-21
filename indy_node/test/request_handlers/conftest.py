@@ -1,15 +1,12 @@
 import random
 
 import pytest
-from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG, CONTEXT_TYPE
+from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG
 
 from indy_node.persistence.idr_cache import IdrCache
-from indy_node.server.request_handlers.domain_req_handlers.context_handler import ContextHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
-from indy_node.server.request_handlers.domain_req_handlers.rs_schema_handler import RsSchemaHandler
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation
-from indy_node.test.context.helper import W3C_BASE_CONTEXT
 from indy_node.test.request_handlers.helper import add_to_idr
 from plenum.common.constants import KeyValueStorageType, TXN_TYPE, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_TEXT, \
     TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_RATIFICATION_TS
@@ -50,9 +47,7 @@ def schema_request():
                               }})
 
 
-@pytest.fixture(scope="module")
-def rs_schema_handler(db_manager, write_auth_req_validator):
-    return RsSchemaHandler(db_manager, write_auth_req_validator)
+
 
 
 @pytest.fixture(scope="function")
@@ -127,25 +122,7 @@ def rs_schema_broken_request():
                    )
 
 
-@pytest.fixture(scope="module")
-def context_handler(db_manager, write_auth_req_validator):
-    return ContextHandler(db_manager, write_auth_req_validator)
 
-
-@pytest.fixture(scope="function")
-def context_request():
-    return Request(identifier=randomString(),
-                   reqId=1234,
-                   signature="sig",
-                   operation={
-                       "meta": {
-                           "type": CONTEXT_TYPE,
-                           "name": "TestContext",
-                           "version": 1
-                       },
-                       "data": W3C_BASE_CONTEXT,
-                       "type": "200"
-                   })
 
 
 @pytest.fixture(scope="module")

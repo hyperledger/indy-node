@@ -1,15 +1,13 @@
-import random
 import json
+import random
+
 import base58
-
 from indy.anoncreds import issuer_create_schema
-from indy.ledger import build_schema_request, sign_request, submit_request
+from indy.ledger import build_schema_request
 
-from indy_common.state.state_constants import MARKER_CONTEXT
-from plenum.common.constants import TXN_TYPE, DATA, CURRENT_PROTOCOL_VERSION
-
-from indy_common.constants import SET_CONTEXT, CONTEXT_TYPE, META, RS_TYPE, CONTEXT_NAME, CONTEXT_VERSION
-from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req, sdk_get_and_check_replies
+from indy_common.constants import RS_ID, RS_TYPE, RS_NAME, RS_VERSION, RS_CONTENT
+from plenum.common.constants import TXN_TYPE
+from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req, sdk_get_and_check_replies, sdk_gen_request
 
 
 def req_id():
@@ -20,6 +18,8 @@ def req_id():
 
 
 _reqId = req_id()
+
+
 # Utility predicates
 
 
@@ -190,6 +190,17 @@ def validate_claim_def_txn(txn):
     optional(data, 'tag', is_str)
 
 
+def validate_rich_schema_txn(txn, txn_type):
+    require(txn, 'type', is_one_of(txn_type))
+
+    data = txn['data']
+    require(data, 'id', is_str)
+    require(data, 'rsName', is_str)
+    require(data, 'rsType', is_str)
+    require(data, 'rsVersion', is_str)
+    require(data, 'content', is_str)
+
+
 # Misc utility
 
 
@@ -208,9 +219,9 @@ def sdk_build_schema_request(looper, sdk_wallet_client,
     )
 
 
-def build_get_rs_schema_request( did, txnId):
+def build_get_rs_schema_request(did, txnId):
     identifier, type, name, version = txnId.split(':')
-    #_id = identifier + ':' + type + ':' + name + ':' + version
+    # _id = identifier + ':' + type + ':' + name + ':' + version
     txn_dict = {
         'operation': {
             'type': "301",
@@ -218,7 +229,7 @@ def build_get_rs_schema_request( did, txnId):
             'meta': {
                 'name': name,
                 'version': version,
-                'type': 'sch' #type
+                'type': 'sch'  # type
             }
         },
         "identifier": did,
@@ -229,7 +240,7 @@ def build_get_rs_schema_request( did, txnId):
     return schema_json
 
 
-def build_rs_schema_request( identifier, schema={}, name="", version=""):
+def build_rs_schema_request(identifier, schema={}, name="", version=""):
     txn_dict = {
         'operation': {
             'type': "201",
@@ -260,7 +271,7 @@ def sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_client, multi_attribute
             issuer_create_schema(identifier, "name", "1.0", json.dumps(["first", "last"])))
     request = looper.loop.run_until_complete(build_schema_request(identifier, schema_json))
     return schema_json, \
-        sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, request))[1]
+           sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, request))[1]
 
 
 def sdk_write_schema_and_check(looper, sdk_pool_handle, sdk_wallet_client,
@@ -272,59 +283,42 @@ def sdk_write_schema_and_check(looper, sdk_pool_handle, sdk_wallet_client,
     return rep
 
 
-def sdk_write_rs_schema(looper, sdk_pool_handle, sdk_wallet, request):
-    return sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, request))[1]
+# Rich Schema
 
 
-def sdk_write_rs_schema_and_check(looper, sdk_pool_handle, sdk_wallet, request):
-    req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, request)
+def sdk_build_rich_schema_request(looper, sdk_wallet_client,
+                                  txn_type, rs_id, rs_name, rs_version, rs_type, rs_content):
+    # TODO: replace by real SDK call
+    _, identifier = sdk_wallet_client
+    op = {
+        TXN_TYPE: txn_type,
+        RS_ID: rs_id,
+        RS_NAME: rs_name,
+        RS_TYPE: rs_type,
+        RS_VERSION: rs_version,
+        RS_CONTENT: rs_content
+    }
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet_client[1])
+    return json.dumps(req_obj.as_dict)
+
+
+def sdk_write_rich_schema_object_and_check(looper, sdk_wallet_client, sdk_pool_handle,
+                                           txn_type, rs_id, rs_name, rs_version, rs_type, rs_content):
+    request = sdk_build_rich_schema_request(looper, sdk_wallet_client,
+                                            txn_type, rs_id=rs_id, rs_name=rs_name,
+                                            rs_version=rs_version, rs_type=rs_type,
+                                            rs_content=json.dumps(rs_content))
+    req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, request)
     rep = sdk_get_and_check_replies(looper, [req])
     return rep
 
 
-def sdk_write_context(looper, sdk_pool_handle, sdk_wallet_steward, context=[], name="", version=""):
-    _wh, did = sdk_wallet_steward
-    # create json
-    raw_json = {
-        'operation': {
-            TXN_TYPE: SET_CONTEXT,
-            META: {
-                CONTEXT_NAME: name,
-                CONTEXT_VERSION: version,
-                RS_TYPE: CONTEXT_TYPE
-            },
-            DATA: context
-        },
-        "identifier": did,
-        "reqId": 12345678,
-        "protocolVersion": CURRENT_PROTOCOL_VERSION,
-    }
-    set_context_txn_json = json.dumps(raw_json)
+def sdk_write_rich_schema_object(looper, sdk_wallet_client, sdk_pool_handle,
+                                 txn_type, rs_id, rs_name, rs_version, rs_type, rs_content):
+    request = sdk_build_rich_schema_request(looper, sdk_wallet_client,
+                                            txn_type, rs_id=rs_id, rs_name=rs_name,
+                                            rs_version=rs_version, rs_type=rs_type,
+                                            rs_content=json.dumps(rs_content))
 
-    return json.dumps({'id': did + ':' + MARKER_CONTEXT + ':' + name + ':' + version}), \
-        sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, set_context_txn_json))[1]
-
-
-def sdk_write_context_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
-                                context=[], name="", version="", reqId=12345678):
-    _wh, did = sdk_wallet_steward
-
-    # create json
-    raw_json = {
-        'operation': {
-            TXN_TYPE: SET_CONTEXT,
-            META: {
-                CONTEXT_NAME: name,
-                CONTEXT_VERSION: version,
-                RS_TYPE: CONTEXT_TYPE
-            },
-            DATA: context
-        },
-        "identifier": did,
-        "reqId": reqId,
-        "protocolVersion": CURRENT_PROTOCOL_VERSION,
-    }
-    set_context_txn_json = json.dumps(raw_json)
-    req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, set_context_txn_json)
-    rep = sdk_get_and_check_replies(looper, [req])
-    return rep
+    return sdk_get_reply(looper,
+                         sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, req))[1]
