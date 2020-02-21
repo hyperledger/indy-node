@@ -10,6 +10,12 @@
     * [CLAIM_DEF](#claim_def)
     * [REVOC_REG_DEF](#revoc_reg_def)
     * [REVOC_REG_ENTRY](#revoc_reg_entry)
+    * [JSON_LD_CONTEXT](#json_ld_context)
+    * [RICH_SCHEMA](#rich_schema)
+    * [RICH_SCHEMA_ENCODING](#rich_schema_encoding)
+    * [RICH_SCHEMA_MAPPING](#rich_schema_mapping)
+    * [RICH_SCHEMA_CRED_DEF](#rich_schema_cred_def)
+    * [RICH_SCHEMA_PRES_DEF](#rich_schema_pres_def)
     * [NODE](#node)
     * [POOL_UPGRADE](#pool_upgrade)
     * [POOL_CONFIG](#pool_config)
@@ -18,8 +24,7 @@
     * [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)
     * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)    
     * [TRANSACTION_AUTHOR_AGREEMENT_DISABLE](#transaction_author_agreement_disable)
-    * [SET_CONTEXT](#set_context)
-    * [SET_RICH_SCHEMA](#set_rich_schema)
+
 
 * [Read Requests](#read-requests)
 
@@ -29,7 +34,9 @@
     * [GET_CLAIM_DEF](#get_claim_def)
     * [GET_REVOC_REG_DEF](#get_revoc_reg_def)
     * [GET_REVOC_REG](#get_revoc_reg)
-    * [GET_REVOC_REG_DELTA](#get_revoc_reg_delta)    
+    * [GET_REVOC_REG_DELTA](#get_revoc_reg_delta)   
+    * [GET_RICH_SCHEMA_OBJECT_BY_ID](#get_rich_schema_object_by_id) 
+    * [GET_RICH_SCHEMA_OBJECT_BY_METADATA](#get_rich_schema_object_by_metadata)     
     * [GET_AUTH_RULE](#get_auth_rule)
     * [GET_TRANSACTION_AUTHOR_AGREEMENT](#get_transaction_author_agreement)
     * [GET_TRANSACTION_AUTHOR_AGREEMENT_AML](#get_transaction_author_agreement_aml)
@@ -58,6 +65,7 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
 {
     'operation': {
         'type': <request type>,
+        'ver': <operation version>,
         <request-specific fields>
     },
     
@@ -96,8 +104,12 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
             - REVOC_REG_ENTRY = "114"
             - AUTH_RULE = "120"
             - AUTH_RULES = "122"
-            - SET_CONTEXT = "200"
-            - SET_RICH_SCHEMA = "201"
+            - JSON_LD_CONTEXT = "200"
+            - RICH_SCHEMA = "201"
+            - RICH_SCHEMA_ENCODING = "202"
+            - RICH_SCHEMA_MAPPING = "203"
+            - RICH_SCHEMA_CRED_DEF = "204"
+            - RICH_SCHEMA_PRES_DEF = "205"
             
         - read requests:
         
@@ -112,8 +124,15 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
             - GET_REVOC_REG = "116"
             - GET_REVOC_REG_DELTA = "117"  
             - GET_AUTH_RULE = "121"
-            - GET_CONTEXT = "300"      
-            - GET_RICH_SCHEMA = "301"
+            - GET_RICH_SCHEMA_OBJECT_BY_ID = "300"
+            - GET_RICH_SCHEMA_OBJECT_BY_METADATA = "301"
+
+    - `ver` (string; optional)
+    
+        Operation request version which will be used as a transaction's payload version.
+        If the input request doesn't have the version specified, then default one will be used.
+        Some transactions (for example TRANSACTION_AUTHOR_AGREEMENT) have non-default transaction payload version
+        defined in source code as a result of evolution of business logic and features. 
             
     - request-specific data
 
@@ -165,6 +184,7 @@ Write requests to Domain and added-by-plugins ledgers may have additional Transa
 {
     'operation': {
         'type': <request type>,
+        'ver': <operation version>,
         <request-specific fields>
     },
     
@@ -214,10 +234,11 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         "ver": <...>,
         "txn": {
             "type": <...>,
+            "ver": <...>,
             "protocolVersion": <...>,
             
             "data": {
-                "ver": <...>,
+
                 <txn-specific fields>
             },
             
@@ -286,6 +307,13 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         The version of client-to-node or node-to-node protocol. Each new version may introduce a new feature in Requests/Replies/Data.
         Since clients and different Nodes may be at different versions, we need this field to support backward compatibility
         between clients and nodes.     
+     
+    - `ver` (string; optional)
+    
+        Transaction's payload version as defined in the input request.
+        If the input request doesn't have the version specified, then default one will be used.
+        Some transactions (for example TRANSACTION_AUTHOR_AGREEMENT) have non-default transaction payload version
+        defined in source code as a result of evolution of business logic and features.      
      
     - `data` (dict):
 
@@ -556,9 +584,9 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
         "txn": {
             "type":"1",
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver": 1,
                 "dest":"GEzcdDLhCpGCYRHW82kjHd",
                 "verkey":"~HmUWn928bnFT6Ephf65YXv",
                 "role":101,
@@ -642,9 +670,9 @@ Adds or updates an attribute to a NYM record.
         "txn": {
             "type":"100",
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 "dest":"N22KY2Dyvmuu2PyyqSFKue",
                 'raw': '{"name":"Alice"}'
             },
@@ -719,9 +747,9 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
         "txn": {
             "type":"101",
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 "data": {
                     "name": "Degree",
                     "version": "1.0",
@@ -816,9 +844,9 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
         "txn": {
             "type":"102",
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 "signature_type":"CL",
                 'ref': 10,    
                 'tag': 'some_tag',
@@ -912,9 +940,9 @@ It contains public keys, maximum number of credentials the registry may contain,
         "txn": {
             "type":"113",
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
                 'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
                 'revocDefType': 'CL_ACCUM',
@@ -1003,9 +1031,9 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
         "txn": {
             "type":"114",
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
                 'revocDefType': 'CL_ACCUM',
                 'value': {
@@ -1044,6 +1072,724 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
 }
 ```
 
+### JSON_LD_CONTEXT
+Adds a JSON LD Context as part of Rich Schema feature.
+
+It's not possible to update an existing Context.
+If the Context needs to be evolved, a new Context with a new id and name-version needs to be created.
+
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Context object as JSON serialized in canonical form. It must have `@context` as a top level key.
+    The `@context` value must be either:
+    1) a URI (it should dereference to a Context object)
+    2) a Context object (a dict)
+    3) an array of Context objects and/or Context URIs
+
+- `rsType` (string):
+
+    Context's type. Currently expected to be `ctx`.
+    
+- `rsName` (string):
+
+    Context's name
+    
+- `rsVersion` (string):
+
+    Context's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '200',
+        "id": "did:sov:GGAD5g65TDQr1PPHHRoiGf",
+        "content":"{
+            "@context": [
+                {
+                    "@version": 1.1
+                },
+                "https://www.w3.org/ns/odrl.jsonld",
+                {
+                    "ex": "https://example.org/examples#",
+                    "schema": "http://schema.org/",
+                    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                }
+            ]
+        }",
+        "rsName":"SimpleContext",
+        "rsVersion":"1.0",
+        "rsType": "ctx"
+    },
+    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
+    'reqId': 1514280215504647,
+    'protocolVersion': 2,
+    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        "ver": 1,
+        "txn": {
+            "type":"200",
+            "ver": 1,
+            "protocolVersion":2,
+            
+            "data": {
+            "id": "did:sov:GGAD5g65TDQr1PPHHRoiGf",
+            "content":"{
+                "@context": [
+                    {
+                        "@version": 1.1
+                    },
+                    "https://www.w3.org/ns/odrl.jsonld",
+                    {
+                        "ex": "https://example.org/examples#",
+                        "schema": "http://schema.org/",
+                        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                    }
+                ]
+            }",
+            "rsName":"SimpleContext",
+            "rsVersion":"1.0",
+            "rsType": "ctx"
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
+        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+		
+    }
+}
+```
+
+### RICH_SCHEMA
+Adds a Rich Schema object as part of Rich Schema feature.
+
+It's not possible to update an existing Rich Schema.
+If the Rich Schema needs to be evolved, a new Rich Schema with a new id and name-version needs to be created.
+
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Rich Schema object as JSON serialized in canonical form.
+    This value must be a json-ld, rich schema object. json-ld supports many parameters that are optional for a rich schema txn.
+    However, the following parameters must be there:
+    
+    - `@id`:  The value of this property must be (or map to, via a context object) a URI.
+    - `@type`: The value of this property must be (or map to, via a context object) a URI.
+    - `@context`(optional): If present, the value of this property must be a context object or a URI which can be dereferenced to obtain a context object. 
+
+
+- `rsType` (string):
+
+    Rich Schema's type. Currently expected to be `sch`.
+    
+- `rsName` (string):
+
+    Rich Schema's name
+    
+- `rsVersion` (string):
+
+    Rich Schema's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "201",
+        "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+        "content":"{
+            '@id': "test_unique_id",
+            '@context': "ctx:sov:2f9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+            '@type': "rdfs:Class",
+            "rdfs:comment": "ISO18013 International Driver License",
+            "rdfs:label": "Driver License",
+            "rdfs:subClassOf": {
+                "@id": "sch:Thing"
+            },
+            "driver": "Driver",
+            "dateOfIssue": "Date",
+            "dateOfExpiry": "Date",
+            "issuingAuthority": "Text",
+            "licenseNumber": "Text",
+            "categoriesOfVehicles": {
+                "vehicleType": "Text",
+                "vehicleType-input": {
+                    "@type": "sch:PropertyValueSpecification",
+                    "valuePattern": "^(A|B|C|D|BE|CE|DE|AM|A1|A2|B1|C1|D1|C1E|D1E)$"
+                },
+                "dateOfIssue": "Date",
+                "dateOfExpiry": "Date",
+                "restrictions": "Text",
+                "restrictions-input": {
+                    "@type": "sch:PropertyValueSpecification",
+                    "valuePattern": "^([A-Z]|[1-9])$"
+                }
+            },
+            "administrativeNumber": "Text"
+        }",
+        "rsName":"SimpleRichSchema",
+        "rsVersion":"1.0",
+        "rsType": "sch"
+    },
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+}
+```
+*Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "ver": 1,
+        "txn": {
+            "type":"201",
+            "protocolVersion":2,
+            "ver":1,
+                                   
+            "data": {
+                "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+                "content":"{
+                    '@id': "test_unique_id",
+                    '@context': "ctx:sov:2f9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                    '@type': "rdfs:Class",
+                    "rdfs:comment": "ISO18013 International Driver License",
+                    "rdfs:label": "Driver License",
+                    "rdfs:subClassOf": {
+                        "@id": "sch:Thing"
+                    },
+                    "driver": "Driver",
+                    "dateOfIssue": "Date",
+                    "dateOfExpiry": "Date",
+                    "issuingAuthority": "Text",
+                    "licenseNumber": "Text",
+                    "categoriesOfVehicles": {
+                        "vehicleType": "Text",
+                        "vehicleType-input": {
+                            "@type": "sch:PropertyValueSpecification",
+                            "valuePattern": "^(A|B|C|D|BE|CE|DE|AM|A1|A2|B1|C1|D1|C1E|D1E)$"
+                        },
+                        "dateOfIssue": "Date",
+                        "dateOfExpiry": "Date",
+                        "restrictions": "Text",
+                        "restrictions-input": {
+                            "@type": "sch:PropertyValueSpecification",
+                            "valuePattern": "^([A-Z]|[1-9])$"
+                        }
+                    },
+                    "administrativeNumber": "Text"
+                }",
+                "rsName":"SimpleRichSchema",
+                "rsVersion":"1.0",
+                "rsType": "sch"
+                },
+                "meta": {
+                    "name":"recipeIngredient",
+                    "version":"1.0",
+                    "type": "sch",
+                    "tag": "sometag"
+                },
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1:recipeIngredient:1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
+		
+    }
+}
+```
+
+### RICH_SCHEMA_ENCODING
+Adds an Encoding object as part of Rich Schema feature.
+
+It's not possible to update an existing Encoding.
+If the Encoding needs to be evolved, a new Encoding with a new id and name-version needs to be created.
+
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Encoding object as JSON serialized in canonical form.
+
+- `rsType` (string):
+
+    Encoding's type. Currently expected to be `enc`.
+    
+- `rsName` (string):
+
+    Encoding's name
+    
+- `rsVersion` (string):
+
+    Encoding's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "202",
+        "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+        "content":"{
+            "input": {
+                "id": "DateRFC3339",
+                "type": "string"
+            },
+            "output": {
+                "id": "UnixTime",
+                "type": "256-bit integer"
+            },
+            "algorithm": {
+                "description": "This encoding transforms an
+                    RFC3339-formatted datetime object into the number
+                    of seconds since January 1, 1970 (the Unix epoch).",
+                "documentation": URL to specific github commit,
+                "implementation": URL to implementation
+            },
+            "test_vectors": URL to specific github commit
+        }",
+        "rsName":"SimpleEncoding",
+        "rsVersion":"1.0",
+        "rsType": "enc"
+    },
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+}
+```
+*Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "ver": 1,
+        "txn": {
+            "type":"202",
+            "protocolVersion":2,
+            "ver":1,
+                                   
+            "data": {
+                "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+                "content":"{
+                    "input": {
+                        "id": "DateRFC3339",
+                        "type": "string"
+                    },
+                    "output": {
+                        "id": "UnixTime",
+                        "type": "256-bit integer"
+                    },
+                    "algorithm": {
+                        "description": "This encoding transforms an
+                            RFC3339-formatted datetime object into the number
+                            of seconds since January 1, 1970 (the Unix epoch).",
+                        "documentation": URL to specific github commit,
+                        "implementation": URL to implementation
+                    },
+                    "test_vectors": URL to specific github commit
+                }",
+                "rsName":"SimpleEncoding",
+                "rsVersion":"1.0",
+                "rsType": "enc"
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1:recipeIngredient:1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
+		
+    }
+}
+```
+
+### RICH_SCHEMA_MAPPING
+Adds a Mapping  object as part of Rich Schema feature.
+
+It's not possible to update an existing Mapping.
+If the Mapping needs to be evolved, a new Mapping with a new id and name-version needs to be created.
+
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Mapping object as JSON serialized in canonical form.
+
+- `rsType` (string):
+
+    Mapping's type. Currently expected to be `map`.
+    
+- `rsName` (string):
+
+    Mapping's name
+    
+- `rsVersion` (string):
+
+    Mapping's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "203",
+        "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+        "content":"{
+            "attr1": "UnixTime",
+        }",
+        "rsName":"SimpleMapping",
+        "rsVersion":"1.0",
+        "rsType": "map"
+    },
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+}
+```
+*Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "ver": 1,
+        "txn": {
+            "type":"203",
+            "protocolVersion":2,
+            "ver":1,
+                                   
+            "data": {
+                "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+                "content":"{
+                    "attr1": "UnixTime",
+                }",
+                "rsName":"SimpleMapping",
+                "rsVersion":"1.0",
+                "rsType": "map"
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1:recipeIngredient:1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
+		
+    }
+}
+```
+
+### RICH_SCHEMA_CRED_DEF
+Adds a Credential Definition object as part of Rich Schema feature.
+
+Credential Definition is considered as a mutable object as the Issuer may rotate keys present there.
+However, rotation of Issuer's keys should be done carefully as it will invalidate all 
+credentials issued for this key.
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Credential Definition object as JSON serialized in canonical form.
+
+- `rsType` (string):
+
+    Credential Definition's type. Currently expected to be `cdf`.
+    
+- `rsName` (string):
+
+    Credential Definition's name
+    
+- `rsVersion` (string):
+
+    Credential Definition's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "204",
+        "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+        "content":"{
+            "publicKey": "aaaaaa",
+            "mapping": did:sov:RGAD5g65TDQr1PPHHRoiGf"
+        }",
+        "rsName":"SimpleCredDef",
+        "rsVersion":"1.0",
+        "rsType": "cdf"
+    },
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+}
+```
+*Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "ver": 1,
+        "txn": {
+            "type":"204",
+            "protocolVersion":2,
+            "ver":1,
+                                   
+            "data": {
+                "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+                "content":"{
+                    "publicKey": "aaaaaa",
+                    "mapping": did:sov:RGAD5g65TDQr1PPHHRoiGf"
+                }",
+                "rsName":"SimpleCredDef",
+                "rsVersion":"1.0",
+                "rsType": "cdf"
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1:recipeIngredient:1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
+		
+    }
+}
+```
+
+### RICH_SCHEMA_PRES_DEF
+Adds a Presentation Definition object as part of Rich Schema feature.
+
+Presentation Definition is considered as a mutable object since restrictions to Issuers, Schemas and Credential Definitions 
+to be used in proof may evolve.
+ For example, Issuer's key for a given Credential Definition may be compromised, 
+ so Presentation Definition can be updated to exclude this Credential Definition from the list of recommended ones.
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Presentation Definition object as JSON serialized in canonical form.
+
+- `rsType` (string):
+
+    Presentation Definition's type. Currently expected to be `pdf`.
+    
+- `rsName` (string):
+
+    Presentation Definition's name
+    
+- `rsVersion` (string):
+
+    Presentation Definition's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "205",
+        "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+        "content":"{
+            TBD
+        }",
+        "rsName":"SimplePresDef",
+        "rsVersion":"1.0",
+        "rsType": "pdf"
+    },
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+}
+```
+*Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "ver": 1,
+        "txn": {
+            "type":"205",
+            "protocolVersion":2,
+            "ver":1,
+                                   
+            "data": {
+                "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+                "content":"{
+                    TBD
+                }",
+                "rsName":"SimplePresDef",
+                "rsVersion":"1.0",
+                "rsType": "pdf"
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1:recipeIngredient:1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
+		
+    }
+}
+```
 ### NODE
 Adds a new node to the pool, or updates existing node in the pool.
 
@@ -1106,9 +1852,9 @@ There is no need to specify all other fields in `data`, and they will remain the
         "txn": {
             "type":0,
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 'data': {
                     'alias': 'Node1',
                     'client_ip': '127.0.0.1',
@@ -1226,9 +1972,9 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
         "txn": {
             "type":109,
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 "name":"upgrade-13",
                 "action":"start",
                 "version":"1.3",
@@ -1309,9 +2055,9 @@ Command to change Pool's configuration
         "txn": {
             "type":111,
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 "writes":false,
                 "force":true,
             },
@@ -1809,9 +2555,9 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
         "txn": {
             "type":4,
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 'version': '1.0',
                 'text': 'Please read carefully before writing anything to the ledger',
                 'ratification_ts': 1514304094738044
@@ -1868,9 +2614,9 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
         "txn": {
             "type":4,
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 'version': '1.0',
                 'retirement_ts': 1515415195838044
             },
@@ -1953,9 +2699,9 @@ Each acceptance mechanisms list has a unique version.
         "txn": {
             "type":5,
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 "version": "1.0",
                 "aml": {
                     "EULA": "Included in the EULA for the product being used",
@@ -2019,6 +2765,7 @@ A new Agreement needs to be sent instead.
         "txn": {
             "type":8,
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {},
             
@@ -2047,306 +2794,7 @@ A new Agreement needs to be sent instead.
 }
 ```
 
-### SET_CONTEXT
-Adds Context.
 
-It's not possible to update existing Context.
-So, if the Context needs to be evolved, a new Context with a new version or name needs to be created.
-
-- `data` (dict):
-
-     Dictionary with Context's data:
-     
-    - `@context`: This value must be either:
-        1) a URI (it should dereference to a Context object)
-        2) a Context object (a dict)
-        3) an array of Context objects and/or Context URIs
-
-- `meta` (dict)
-
-    Dictionary with Context's metadata
-    
-    - `name`: Context's name string
-    - `version`: Context's version string
-    - `type`: 'ctx'
-
-*Request Example*:
-```
-{
-    'operation': {
-        'type': '200',
-        "data":{
-            "@context": [
-                {
-                    "@version": 1.1
-                },
-                "https://www.w3.org/ns/odrl.jsonld",
-                {
-                    "ex": "https://example.org/examples#",
-                    "schema": "http://schema.org/",
-                    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-                }
-            ]
-        },
-        "meta": {
-            "name":"SimpleContext",
-            "version":"1.0",
-            "type": "ctx"
-        },
-    },
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
-    'reqId': 1514280215504647,
-    'protocolVersion': 2,
-    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
-}
-```
-
-*Reply Example*:
-```
-{
-    'op': 'REPLY', 
-    'result': {
-        "ver": 1,
-        "txn": {
-            "type":"200",
-            "protocolVersion":2,
-            
-            "data": {
-                "ver":1,
-                "data":{
-                    "@context": [
-                        {
-                            "@version": 1.1
-                        },
-                        "https://www.w3.org/ns/odrl.jsonld",
-                        {
-                            "ex": "https://example.org/examples#",
-                            "schema": "http://schema.org/",
-                            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-                        }
-                    ]
-                },
-                "meta": {
-                    "name":"SimpleContext",
-                    "version":"1.0",
-                    "type": "ctx"
-                },
-            },
-            
-            "metadata": {
-                "reqId":1514280215504647,
-                "from":"L5AD5g65TDQr1PPHHRoiGf",
-                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
-                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
-                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
-            },
-        },
-        "txnMetadata": {
-            "txnTime":1513945121,
-            "seqNo": 10,  
-            "txnId":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
-        },
-        "reqSignature": {
-            "type": "ED25519",
-            "values": [{
-                "from": "L5AD5g65TDQr1PPHHRoiGf",
-                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
-            }]
-        }
- 		
-        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
-		
-    }
-}
-```
-
-### SET_RICH_SCHEMA
-Adds Rich Schema.
-
-It's not possible to update existing Rich Schema.
-So, if the Rich Schema needs to be evolved, a new Rich Schema with a new version or name needs to be created.
-
-- `data` (dict):
-
-     Dictionary with Rich Schema's data:
-     
-    - `schema`: This value must be a json-ld, rich schema object. json-ld supports many parameters that are optional for a rich schema txn:
-        - `@id`:  The value of this property must be (or map to, via a context object) a URI.
-        - `@type`: The value of this property must be (or map to, via a context object) a URI.
-        - `@context`(optional): If present, the value of this property must be a context object or a URI which can be dereferenced to obtain a context object.
-        
-- `meta` (dict)
-
-    Dictionary with Rich Schema's metadata
-
-    - `name` (string): schema's name
-    - `version` (string): schema's version
-    - `type` (string): "sch"
-
-*Request Example*:
-```
-{
-    "operation": {
-        "type": "201",
-        "data":{
-            "schema": {      
-                "@id":"<rich schema id>"    
-                "@context": {
-                    "schema": "http://schema.org/",
-                    "bibo": "http://purl.org/ontology/bibo/",
-                    "dc": "http://purl.org/dc/elements/1.1/",
-                    "dcat": "http://www.w3.org/ns/dcat#",
-                    "dct": "http://purl.org/dc/terms/",
-                    "dcterms": "http://purl.org/dc/terms/",
-                    "dctype": "http://purl.org/dc/dcmitype/",
-                    "eli": "http://data.europa.eu/eli/ontology#",
-                    "foaf": "http://xmlns.com/foaf/0.1/",
-                    "owl": "http://www.w3.org/2002/07/owl#",
-                    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-                    "rdfa": "http://www.w3.org/ns/rdfa#",
-                    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-                    "schema": "http://schema.org/",
-                    "skos": "http://www.w3.org/2004/02/skos/core#",
-                    "snomed": "http://purl.bioontology.org/ontology/SNOMEDCT/",
-                    "void": "http://rdfs.org/ns/void#",
-                    "xsd": "http://www.w3.org/2001/XMLSchema#",
-                    "xsd1": "hhttp://www.w3.org/2001/XMLSchema#"
-                },
-                "@graph": [
-                    {
-                        "@id": "schema:recipeIngredient",
-                        "@type": "rdf:Property",
-                        "rdfs:comment": "A single ingredient used in the recipe, e.g. sugar, flour or garlic.",
-                        "rdfs:label": "recipeIngredient",
-                        "rdfs:subPropertyOf": {
-                            "@id": "schema:supply"
-                        },
-                        "schema:domainIncludes": {
-                            "@id": "schema:Recipe"
-                        },
-                        "schema:rangeIncludes": {
-                            "@id": "schema:Text"
-                        }
-                    },
-                    {
-                        "@id": "schema:ingredients",
-                        "schema:supersededBy": {
-                            "@id": "schema:recipeIngredient"
-                        }
-                    }
-                ]
-            }
-        },
-        "meta": {
-            "name":"recipeIngredient",
-            "version":"1.0",
-            "type": "sch"
-        },
-    },
-    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
-    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
-    "reqId": 1514280215504647,
-    "protocolVersion": 2,
-    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
-}
-```
-*Reply Example*:
-```
-{
-    "op": "REPLY", 
-    "result": {
-        "ver": 1,
-        "txn": {
-            "type":"201",
-            "protocolVersion":2,       
-            "data": {
-                "ver":1,
-                "data":{
-                    "schema": {    
-                        "@id": "<rich schema id>"      
-                        "@context": {
-                            "schema": "http://schema.org/",
-                            "bibo": "http://purl.org/ontology/bibo/",
-                            "dc": "http://purl.org/dc/elements/1.1/",
-                            "dcat": "http://www.w3.org/ns/dcat#",
-                            "dct": "http://purl.org/dc/terms/",
-                            "dcterms": "http://purl.org/dc/terms/",
-                            "dctype": "http://purl.org/dc/dcmitype/",
-                            "eli": "http://data.europa.eu/eli/ontology#",
-                            "foaf": "http://xmlns.com/foaf/0.1/",
-                            "owl": "http://www.w3.org/2002/07/owl#",
-                            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-                            "rdfa": "http://www.w3.org/ns/rdfa#",
-                            "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-                            "schema": "http://schema.org/",
-                            "skos": "http://www.w3.org/2004/02/skos/core#",
-                            "snomed": "http://purl.bioontology.org/ontology/SNOMEDCT/",
-                            "void": "http://rdfs.org/ns/void#",
-                            "xsd": "http://www.w3.org/2001/XMLSchema#",
-                            "xsd1": "hhttp://www.w3.org/2001/XMLSchema#"
-                        },
-                        "@graph": [
-                            {
-                                "@id": "schema:recipeIngredient",
-                                "@type": "rdf:Property",
-                                "rdfs:comment": "A single ingredient used in the recipe, e.g. sugar, flour or garlic.",
-                                "rdfs:label": "recipeIngredient",
-                                "rdfs:subPropertyOf": {
-                                    "@id": "schema:supply"
-                                },
-                                "schema:domainIncludes": {
-                                    "@id": "schema:Recipe"
-                                },
-                                "schema:rangeIncludes": {
-                                    "@id": "schema:Text"
-                                }
-                            },
-                            {
-                                "@id": "schema:ingredients",
-                                "schema:supersededBy": {
-                                    "@id": "schema:recipeIngredient"
-                                }
-                            }
-                        ]
-                    }
-                },
-                "meta": {
-                    "name":"recipeIngredient",
-                    "version":"1.0",
-                    "type": "sch",
-                    "tag": "sometag"
-                },
-            },
-            
-            "metadata": {
-                "reqId":1514280215504647,
-                "from":"L5AD5g65TDQr1PPHHRoiGf",
-                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
-                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
-                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
-            },
-        },
-        "txnMetadata": {
-            "txnTime":1513945121,
-            "seqNo": 10,  
-            "txnId":"L5AD5g65TDQr1PPHHRoiGf1:recipeIngredient:1.0",
-        },
-        "reqSignature": {
-            "type": "ED25519",
-            "values": [{
-                "from": "L5AD5g65TDQr1PPHHRoiGf",
-                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
-            }]
-        }
- 		
-        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
-        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
-		
-    }
-}
-```
 
 ## Read Requests
 
@@ -2969,6 +3417,181 @@ If `from` is not set, then there is just one state proof (as usual) for both `ac
 }
 ```
 
+### GET_RICH_SCHEMA_OBJECT_BY_ID
+
+Gets a Rich Schema object (of any type) by its unique `id`.
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+    
+
+ 
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '300'
+        'id': 'did:sov:GGAD5g65TDQr1PPHHRoiGf',
+    },
+    
+    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example (for an Encoding object)*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '300',
+        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'seqNo': 10,
+        'txnTime': 1514214795,
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 1, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+        "data": {
+            "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+            "content":"{
+                "input": {
+                    "id": "DateRFC3339",
+                    "type": "string"
+                },
+                "output": {
+                    "id": "UnixTime",
+                    "type": "256-bit integer"
+                },
+                "algorithm": {
+                    "description": "This encoding transforms an
+                        RFC3339-formatted datetime object into the number
+                        of seconds since January 1, 1970 (the Unix epoch).",
+                    "documentation": URL to specific github commit,
+                    "implementation": URL to implementation
+                },
+                "test_vectors": URL to specific github commit
+            }",
+            "rsName":"SimpleEncoding",
+            "rsVersion":"1.0",
+            "rsType": "enc",
+            "from": "89kbBskPNNyWrLrZq7DBhk",
+            "endorser": "45kbBskPNNyWrLrZq7DBhk",
+            "ver": "1"
+        },
+        
+        'dest': '2VkbBskPNNyWrLrZq7DBhk'
+    }
+}
+```
+
+### GET_RICH_SCHEMA_OBJECT_BY_METADATA
+
+Gets a Rich Schema object (of any type) by its unique `rsName`, `rsVersion` and `rsType`.
+
+- `rsType` (string):
+
+    Requested rich schema object's type. 
+    
+- `rsName` (string):
+
+    Requested rich schema object's  name
+    
+- `rsVersion` (string):
+
+    Requested rich schema object's  version
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "301"
+        "rsName":"SimpleEncoding",
+        "rsVersion":"1.0",
+        "rsType": "enc"
+    },
+    
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
+}
+```
+*Reply Example (for an Encoding object)*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "type": "301",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
+        "seqNo": 10,
+        "txnTime": 1514214795,
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
+                },
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
+            }
+        }, 
+        "data": {
+            "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+            "content":"{
+                "input": {
+                    "id": "DateRFC3339",
+                    "type": "string"
+                },
+                "output": {
+                    "id": "UnixTime",
+                    "type": "256-bit integer"
+                },
+                "algorithm": {
+                    "description": "This encoding transforms an
+                        RFC3339-formatted datetime object into the number
+                        of seconds since January 1, 1970 (the Unix epoch).",
+                    "documentation": URL to specific github commit,
+                    "implementation": URL to implementation
+                },
+                "test_vectors": URL to specific github commit
+            }",
+            "rsName":"SimpleEncoding",
+            "rsVersion":"1.0",
+            "rsType": "enc",
+            "from": "89kbBskPNNyWrLrZq7DBhk",
+            "endorser": "45kbBskPNNyWrLrZq7DBhk",
+            "ver": "1"
+        },
+        "dest": "2VkbBskPNNyWrLrZq7DBhk"
+    }
+}
+```
+
+
 ### GET_AUTH_RULE
 
 A request to get an auth constraint for an authentication rule or a full list of rules from Ledger. The constraint format is described in [AUTH_RULE transaction](#auth_rule).
@@ -3313,216 +3936,6 @@ All input parameters are optional and mutually exclusive.
 }
 ```
 
-### GET_CONTEXT
-
-Gets Context.
-
-- `dest` (base58-encoded string):
-
-    Context DID as base58-encoded string for 16 or 32 byte DID value.
-    It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
-    
-    *Example*: `identifier` is a DID of the read request sender, and `dest` is the DID of the Context.
-
-- `meta` (dict):
-
-    - `name` (string):  Context's name string
-    - `version` (string): Context's version string
-    
-
- 
-*Request Example*:
-```
-{
-    'operation': {
-        'type': '300'
-        'dest': '2VkbBskPNNyWrLrZq7DBhk',
-        'meta': {
-            'name': 'SimpleContext',
-            'version': '1.0',
-            'type': 'ctx'
-        },
-    },
-    
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
-}
-```
-
-*Reply Example*:
-```
-{
-    'op': 'REPLY', 
-    'result': {
-        'type': '300',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
-        
-        'seqNo': 10,
-        'txnTime': 1514214795,
-
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
-                },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
-            }
-        },
-        
-        "data":{
-            "@context": [
-                {
-                    "@version": 1.1
-                },
-                "https://www.w3.org/ns/odrl.jsonld",
-                {
-                    "ex": "https://example.org/examples#",
-                    "schema": "http://schema.org/",
-                    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-                }
-            ]
-        },
-
-        "meta": {
-            "name":"SimpleContext",
-            "version":"1.0",
-            "type": "ctx"
-        },
-        
-        'dest': '2VkbBskPNNyWrLrZq7DBhk'
-    }
-}
-```
-
-### GET_RICH_SCHEMA
-
-Gets a schema from the ledger.
-
-- `dest` (base58-encoded string):
-
-    Schema DID as base58-encoded string for 16 or 32 byte DID value. It 
-    differs from `identifier` metadata field, where `identifier` is the DID
-    of the submitter.
-
-    *Example*: `identifier` is a DID of the read request sender, and `dest`
-    is the DID of the schema.
-
-- `meta` (dict):
-
-  - `name` (string): schema's name string
-  - `version` (string): schema's version string
-
-*Request Example*:
-```
-{
-    "operation": {
-        "type": "301"
-        "dest": "2VkbBskPNNyWrLrZq7DBhk",
-        "meta": {
-            "name": "recipeIngredient",
-            "version": "1.0",
-            "type": "sch"
-        },
-    },
-    
-    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
-    "reqId": 1514308188474704,
-    "protocolVersion": 2
-}
-```
-*Reply Example*:
-```
-{
-    "op": "REPLY", 
-    "result": {
-        "type": "301",
-        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
-        "reqId": 1514308188474704,
-        "seqNo": 10,
-        "txnTime": 1514214795,
-        "state_proof": {
-            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
-            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
-            "multi_signature": {
-                "value": {
-                    "timestamp": 1514308168,
-                    "ledger_id": 1, 
-                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
-                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
-                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
-                },
-                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
-                "participants": ["Delta", "Gamma", "Alpha"]
-            }
-        }, 
-        "data":{
-            "schema": {          
-                "@id": <rich schema id>
-                "@context": {
-                    "schema": "http://schema.org/",
-                    "bibo": "http://purl.org/ontology/bibo/",
-                    "dc": "http://purl.org/dc/elements/1.1/",
-                    "dcat": "http://www.w3.org/ns/dcat#",
-                    "dct": "http://purl.org/dc/terms/",
-                    "dcterms": "http://purl.org/dc/terms/",
-                    "dctype": "http://purl.org/dc/dcmitype/",
-                    "eli": "http://data.europa.eu/eli/ontology#",
-                    "foaf": "http://xmlns.com/foaf/0.1/",
-                    "owl": "http://www.w3.org/2002/07/owl#",
-                    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-                    "rdfa": "http://www.w3.org/ns/rdfa#",
-                    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-                    "schema": "http://schema.org/",
-                    "skos": "http://www.w3.org/2004/02/skos/core#",
-                    "snomed": "http://purl.bioontology.org/ontology/SNOMEDCT/",
-                    "void": "http://rdfs.org/ns/void#",
-                    "xsd": "http://www.w3.org/2001/XMLSchema#",
-                    "xsd1": "hhttp://www.w3.org/2001/XMLSchema#"
-                },
-                "@graph": [
-                    {
-                        "@id": "schema:recipeIngredient",
-                        "@type": "rdf:Property",
-                        "rdfs:comment": "A single ingredient used in the recipe, e.g. sugar, flour or garlic.",
-                        "rdfs:label": "recipeIngredient",
-                        "rdfs:subPropertyOf": {
-                            "@id": "schema:supply"
-                        },
-                        "schema:domainIncludes": {
-                            "@id": "schema:Recipe"
-                        },
-                        "schema:rangeIncludes": {
-                            "@id": "schema:Text"
-                        }
-                    },
-                    {
-                        "@id": "schema:ingredients",
-                        "schema:supersededBy": {
-                            "@id": "schema:recipeIngredient"
-                        }
-                    }
-                ]
-            }
-        },
-        "meta": {
-            "name":"recipeIngredient",
-            "version":"1.0",
-            "type": "sch",
-            "tag": "someTag"
-        },
-        "dest": "2VkbBskPNNyWrLrZq7DBhk"
-    }
-}
-```
 
 ### GET_TXN
 

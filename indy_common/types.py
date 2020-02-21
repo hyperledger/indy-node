@@ -1,12 +1,9 @@
 import json
-import sys
 from copy import deepcopy
 from hashlib import sha256
 
-from common.exceptions import PlenumTypeError, PlenumValueError
-
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
-    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT
+    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, OP_VER
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.fields import ConstantField, IdentifierField, \
@@ -27,7 +24,7 @@ from common.version import GenericVersion
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ConstraintsEnum, CONSTRAINT_ID, AUTH_CONSTRAINTS, METADATA, \
     NEED_TO_BE_OWNER, SIG_COUNT, ROLE, OFF_LEDGER_SIGNATURE
-from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT, CONTEXT_SIZE_LIMIT, JSON_LD_LIMIT
+from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
 from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     POOL_UPGRADE, POOL_CONFIG, \
@@ -38,15 +35,17 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
     GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
     GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, \
-    SET_CONTEXT, GET_CONTEXT, CONTEXT_NAME, CONTEXT_VERSION, CONTEXT_CONTEXT, CONTEXT_FROM, \
-    RS_JSON_LD_TYPE, RS_JSON_LD_ID, SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
+    SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
-    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, RS_TYPE, CONTEXT_TYPE, \
-    SET_RS_SCHEMA, RS_META_VERSION, RS_META_NAME, RS_META_TYPE, RS_SCHEMA, RS_META, \
-    RS_SCHEMA_META_TYPE, RS_SCHEMA_FROM, GET_RS_SCHEMA, META, TAG_LIMIT_SIZE
-from indy_common.version import SchemaVersion, ContextVersion, RsMetaVersion
+    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, RS_TYPE, \
+    TAG_LIMIT_SIZE, JSON_LD_CONTEXT, RS_VERSION, \
+    RS_NAME, RS_ID, RS_CONTENT, RS_CONTEXT_TYPE_VALUE, RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, \
+    RICH_SCHEMA_ENCODING, RS_MAPPING_TYPE_VALUE, RICH_SCHEMA_MAPPING, RS_CRED_DEF_TYPE_VALUE, \
+    RICH_SCHEMA_CRED_DEF, GET_RICH_SCHEMA_OBJECT_BY_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
+    RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
+from indy_common.version import SchemaVersion
 
 
 class Request(PRequest):
@@ -97,95 +96,6 @@ class SchemaField(MessageValidator):
             LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
             min_length=1,
             max_length=SCHEMA_ATTRIBUTES_LIMIT)),
-    )
-
-
-# Rich Schema
-class SetContextMetaField(MessageValidator):
-    schema = (
-        (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
-        (RS_TYPE, ConstantField(CONTEXT_TYPE)),
-    )
-
-
-class ContextField(FieldBase):
-    _base_types = None
-
-    def __init__(self, max_size=None, **kwargs):
-        if max_size is not None:
-            if not isinstance(max_size, int):
-                raise PlenumTypeError('max_size', max_size, int)
-            if not max_size > 0:
-                raise PlenumValueError('max_size', max_size, '> 0')
-        self.max_size = max_size
-        super().__init__(**kwargs)
-
-    def _specific_validation(self, val):
-        if self.max_size is not None:
-            arr = json.dumps(val)
-            size = sys.getsizeof(arr)
-            if size > self.max_size:
-                return 'size should be at most {}, context has size {}'.format(self.max_size, size)
-
-
-class SetContextDataField(MessageValidator):
-    schema = (
-        (CONTEXT_CONTEXT, ContextField(
-            max_size=CONTEXT_SIZE_LIMIT)),
-    )
-
-
-class GetContextField(MessageValidator):
-    schema = (
-        (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (CONTEXT_VERSION, VersionField(version_cls=ContextVersion))
-    )
-
-
-class RsSchemaMetaField(MessageValidator):
-    schema = (
-        (RS_META_TYPE, ConstantField(RS_SCHEMA_META_TYPE)),
-        (RS_META_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (RS_META_VERSION, VersionField(version_cls=RsMetaVersion)),
-    )
-
-
-class RsSchemaField(MessageValidator):
-    SCHEMA_IS_STRICT = False
-    schema = (
-        (RS_JSON_LD_TYPE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (RS_JSON_LD_ID, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-    )
-    _base_types = None
-    max_size = JSON_LD_LIMIT
-
-    def validate(self, json_ld):
-        size = len(json_ld)
-        if size > self.max_size:
-            raise ValueError('length of rs_schema is ' + str(size) + '; should be <= ' + str(self.max_size))
-        super().validate(json_ld)
-
-
-class SetRsSchemaDataField(MessageValidator):
-    schema = (
-        (RS_SCHEMA, RsSchemaField()),
-    )
-
-
-class ClientSetRsSchemaOperation(MessageValidator):
-    schema = (
-        (TXN_TYPE, ConstantField(SET_RS_SCHEMA)),
-        (RS_META, RsSchemaMetaField()),
-        (DATA, SetRsSchemaDataField()),
-    )
-
-
-class ClientGetRsSchemaOperation(MessageValidator):
-    schema = (
-        (TXN_TYPE, ConstantField(GET_RS_SCHEMA)),
-        (RS_SCHEMA_FROM, IdentifierField()),
-        (META, RsSchemaMetaField()),
     )
 
 
@@ -248,24 +158,6 @@ class ClientGetSchemaOperation(MessageValidator):
         (TXN_TYPE, ConstantField(GET_SCHEMA)),
         (SCHEMA_FROM, IdentifierField()),
         (DATA, GetSchemaField()),
-    )
-
-
-# Rich Schema
-# this class is not actually used for static validation at this time
-class ClientSetContextOperation(MessageValidator):
-    schema = (
-        (TXN_TYPE, ConstantField(SET_CONTEXT)),
-        (META, SetContextMetaField()),
-        (DATA, SetContextDataField()),
-    )
-
-
-class ClientGetContextOperation(MessageValidator):
-    schema = (
-        (TXN_TYPE, ConstantField(GET_CONTEXT)),
-        (CONTEXT_FROM, IdentifierField()),
-        (META, GetContextField()),
     )
 
 
@@ -520,6 +412,58 @@ class ClientGetAuthRuleOperation(MessageValidator):
     )
 
 
+def rich_schema_objects_schema(txn_type, rs_type):
+    return (
+        (TXN_TYPE, ConstantField(txn_type)),
+        (RS_ID, NonEmptyStringField()),
+        (RS_TYPE, ConstantField(rs_type)),
+        (RS_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_VERSION, VersionField(version_cls=SchemaVersion)),
+        (RS_CONTENT, NonEmptyStringField()),
+        (OP_VER, LimitedLengthStringField(optional=True))
+    )
+
+
+class ClientJsonLdContextOperation(MessageValidator):
+    schema = rich_schema_objects_schema(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE)
+
+
+class ClientRichSchemaOperation(MessageValidator):
+    schema = rich_schema_objects_schema(RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE)
+
+
+class ClientRichSchemaEncodingOperation(MessageValidator):
+    schema = rich_schema_objects_schema(RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE)
+
+
+class ClientRichSchemaMappingOperation(MessageValidator):
+    schema = rich_schema_objects_schema(RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE)
+
+
+class ClientRichSchemaCredDefOperation(MessageValidator):
+    schema = rich_schema_objects_schema(RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE)
+
+
+class ClientRichSchemaPresDefOperation(MessageValidator):
+    schema = rich_schema_objects_schema(RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE)
+
+
+class ClientGetRichSchemaObjectByIdOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(GET_RICH_SCHEMA_OBJECT_BY_ID)),
+        (RS_ID, NonEmptyStringField()),
+    )
+
+
+class ClientGetRichSchemaObjectByMetadataOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(GET_RICH_SCHEMA_OBJECT_BY_METADATA)),
+        (RS_TYPE, NonEmptyStringField()),
+        (RS_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_VERSION, VersionField(version_cls=SchemaVersion)),
+    )
+
+
 class ClientOperationField(PClientOperationField):
     _specific_operations = {
         SCHEMA: ClientSchemaOperation(),
@@ -542,10 +486,14 @@ class ClientOperationField(PClientOperationField):
         GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
         GET_REVOC_REG: ClientGetRevocRegField(),
         GET_REVOC_REG_DELTA: ClientGetRevocRegDeltaField(),
-        SET_CONTEXT: ClientSetContextOperation(),  # Rich Schema
-        GET_CONTEXT: ClientGetContextOperation(),
-        SET_RS_SCHEMA: ClientSetRsSchemaOperation(),
-        GET_RS_SCHEMA: ClientGetRsSchemaOperation()
+        JSON_LD_CONTEXT: ClientJsonLdContextOperation(),
+        RICH_SCHEMA: ClientRichSchemaOperation(),
+        RICH_SCHEMA_ENCODING: ClientRichSchemaEncodingOperation(),
+        RICH_SCHEMA_MAPPING: ClientRichSchemaMappingOperation(),
+        RICH_SCHEMA_CRED_DEF: ClientRichSchemaCredDefOperation(),
+        RICH_SCHEMA_PRES_DEF: ClientRichSchemaPresDefOperation(),
+        GET_RICH_SCHEMA_OBJECT_BY_ID: ClientGetRichSchemaObjectByIdOperation(),
+        GET_RICH_SCHEMA_OBJECT_BY_METADATA: ClientGetRichSchemaObjectByMetadataOperation(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class
