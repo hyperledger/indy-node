@@ -58,7 +58,7 @@ def test_claim_def_dynamic_validation_without_schema(claim_def_request,
     with pytest.raises(InvalidClientRequest) as e:
         claim_def_handler.dynamic_validation(claim_def_request, 0)
     assert "Mentioned seqNo ({}) doesn't exist.".format(claim_def_request.operation[REF]) \
-           in e._excinfo[1].args[0]
+           in e._excinfo[1].reason
 
 
 def test_claim_def_dynamic_validation_for_new_claim_def(claim_def_request, schema,
@@ -104,7 +104,7 @@ def test_claim_def_dynamic_validation_without_ref_to_not_schema(claim_def_reques
     with pytest.raises(InvalidClientRequest) as e:
         claim_def_handler.dynamic_validation(claim_def_request, 0)
     assert "Mentioned seqNo ({}) isn't seqNo of the schema.".format(claim_def_request.operation[REF]) \
-           in e._excinfo[1].args[0]
+           in e._excinfo[1].reason
 
 
 def test_update_state(claim_def_request, claim_def_handler: ClaimDefHandler, schema_handler, schema_request):
