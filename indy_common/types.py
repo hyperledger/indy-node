@@ -202,6 +202,9 @@ class ClientAttribOperation(MessageValidator):
     def __validate_endpoint_ha_field(self, endpoint):
         if endpoint is None:
             return  # remove the attribute, valid case
+        if not isinstance(endpoint, dict):
+            self._raise_invalid_fields(ENDPOINT, endpoint,
+                                       'should be a dict')
         HA_NAME = 'ha'
         ha = endpoint.get(HA_NAME)
         if ha is None:

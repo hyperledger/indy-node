@@ -62,7 +62,7 @@ def test_reject_with_unacceptable_role_in_constraint(looper,
                                              sdk_pool_handle,
                                              sdk_wallet_trustee,
                                              constraint=constraint)
-    e.match('InvalidClientRequest')
+    e.match('client request invalid')
     e.match('Role {} is not acceptable'.format(unacceptable_role))
 
 
@@ -84,7 +84,7 @@ def test_reqnack_auth_rule_transaction_with_wrong_key(looper,
                                              sdk_pool_handle,
                                              sdk_wallet_trustee,
                                              auth_type="*")
-    e.match("InvalidClientRequest")
+    e.match("client request invalid")
     e.match("is not found in authorization map")
 
 
@@ -100,7 +100,7 @@ def test_reqnack_auth_rule_edit_transaction_with_wrong_format(looper,
         sdk_send_and_check_req_json(
             looper, sdk_pool_handle, sdk_wallet_trustee, req_json,
         )
-    e.match("InvalidClientRequest")
+    e.match("client request invalid")
     e.match("Transaction for change authentication "
             "rule for {}={} must contain field {}".
             format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
@@ -116,7 +116,7 @@ def test_reqnack_auth_rule_add_transaction_with_wrong_format(looper,
             sdk_wallet_trustee,
             **generate_key(old_value="*")
         )
-    e.match("InvalidClientRequest")
+    e.match("client request invalid")
     e.match("Transaction for change authentication "
             "rule for {}={} must not contain field {}".
             format(AUTH_ACTION, ADD_PREFIX, OLD_VALUE))

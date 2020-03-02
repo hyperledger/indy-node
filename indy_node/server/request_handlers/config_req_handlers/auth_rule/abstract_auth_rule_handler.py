@@ -27,7 +27,7 @@ class AbstractAuthRuleHandler(WriteRequestHandler, metaclass=ABCMeta):
         except (ValueError, KeyError) as exp:
             raise InvalidClientRequest(identifier,
                                        req_id,
-                                       exp)
+                                       str(exp))
         StaticAuthRuleHelper.check_auth_key(operation, identifier, req_id, self.write_req_validator.auth_map)
 
     def _update_auth_constraint(self, auth_key: str, constraint):
