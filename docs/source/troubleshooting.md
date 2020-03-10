@@ -61,6 +61,23 @@ Most useful places get info are the following:
   Tools for processing these metrics are scripts `process_logs` and `build_graph_from_csv` bundled with Indy Node.
   Debug metrics can be used to find some insidios problems like memory leaks and some other hard to detect problems.
 
+### Node data structure
+
+Node stores all data (except local configuration and logs) in `/var/lib/indy/<network name>`.
+Among other things it contains following data:
+- `keys` subdirectory contains node keys, including private ones.
+  **Never ever share this folder with 3rd party!**
+- `data` contains various databases, including ledgers, states and various caches.
+  Since all data inside this directory is effectively public it should be safe to share its contents, for example for debugging purposes.
+
+Directory `/var/lib/indy/<network name>/data/<node_name>` contains directories with RocksDB databases, most interesting ones are:
+- `*_transactions` contains transaction data of ledgers (`*` here can be `audit`, `domain`, `config`, `pool` and possibly some plugin ledgers)
+- `*_merkleNodes` and `*_merkeLeaves` contain merkle trees for transaction data of ledgers.
+  This data can be rebuilt from transactions data if needed.
+- `*_state` contains state in a form of merkle patricia tree (note that there is no state for `audit` ledger, only for `domain`, `config`, `pool` and possibly some plugin ledgers).
+  This data can be rebuilt from transactions data if needed, however if after such rebuild root hashes change clients won't be able to get state proofs in order to trust replies from any single node and will fallback to asking `f+1` nodes for such hashes.
+  This shouldn't be a problem with queries on current data since it gets updated with every new batch ordered (including empty freshness batches), but it can degrade performance of accessing some historical data.
+
 ## Troubleshooting checklist
 
 ### Emergency checklist
