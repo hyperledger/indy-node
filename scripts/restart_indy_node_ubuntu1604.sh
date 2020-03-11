@@ -21,8 +21,8 @@ elif [ "$INDY_CONTROL" = "supervisorctl" ]; then
   echo "Starting indy-node"
   supervisorctl start indy-node
 
-  echo "Restarting agent"
-  supervisorctl restart indy-node-control
+  echo "Killing indy-node-control so that it restarts"
+  kill -9 `supervisorctl pid indy-node-control`
 
 else
 
