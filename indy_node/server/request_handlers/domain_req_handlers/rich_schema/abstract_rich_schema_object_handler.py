@@ -31,7 +31,7 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler, metaclass=ABCMeta):
         self._validate_request_type(request)
         try:
             content_as_dict = JsonSerializer.loads(request.operation[RS_CONTENT])
-        except ValueError as ex:
+        except ValueError:
             raise InvalidClientRequest(request.identifier, request.reqId,
                                        "'{}' must be a JSON serialized string".format(RS_CONTENT))
 
@@ -46,7 +46,12 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler, metaclass=ABCMeta):
                                        "`content` must be a valid JSON-LD and have '{}' field".format(JSON_LD_ID_FIELD))
         if JSON_LD_TYPE_FIELD not in content_as_dict:
             raise InvalidClientRequest(request.identifier, request.reqId,
-                                       "`content` must be a valid JSON-LD and have '{}' field".format(JSON_LD_TYPE_FIELD))
+                                       "`content` must be a valid JSON-LD and have '{}' field".format(
+                                           JSON_LD_TYPE_FIELD))
+
+        if content_as_dict[JSON_LD_ID_FIELD] != request.operation[RS_ID]:
+            raise InvalidClientRequest(request.identifier, request.reqId,
+                                       "content's @id must be equal to id={}".format(request.operation[RS_ID]))
 
     def do_static_validation_content(self, content_as_dict, request):
         pass

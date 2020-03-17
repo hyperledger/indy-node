@@ -107,8 +107,23 @@ def test_static_validation_atid_equals_to_id(handler_and_request):
         handler.static_validation(request)
         return
 
-    with pytest.raises(InvalidClientRequest, match="content's @id must be equal to id"):
+    with pytest.raises(InvalidClientRequest,
+                       match="content's @id must be equal to id={}".format(request.operation[RS_ID])):
         handler.static_validation(request)
+
+
+def test_schema_dynamic_validation_passes(handler_and_request):
+    handler, request = handler_and_request
+    add_to_idr(handler.database_manager.idr_cache, request.identifier, TRUSTEE)
+    add_to_idr(handler.database_manager.idr_cache, request.endorser, ENDORSER)
+    handler.dynamic_validation(request, 0)
+
+
+def test_dynamic_validation_failed_not_authorised(handler_and_request):
+    handler, request = handler_and_request
+    add_to_idr(handler.database_manager.idr_cache, request.identifier, None)
+    with pytest.raises(UnauthorizedClientRequest):
+        handler.dynamic_validation(request, 0)
 
 
 def test_dynamic_validation_for_existing(handler_and_request):
@@ -140,17 +155,3 @@ def test_dynamic_validation_for_existing_metadata(handler_and_request):
                              'Please choose different rsName, rsVersion or rsType'.format(
                            request.operation[RS_NAME], request.operation[RS_VERSION], request.operation[RS_TYPE])):
         handler.dynamic_validation(request, 0)
-
-
-def test_dynamic_validation_failed_not_authorised(handler_and_request):
-    handler, request = handler_and_request
-    add_to_idr(handler.database_manager.idr_cache, request.identifier, None)
-    with pytest.raises(UnauthorizedClientRequest):
-        handler.dynamic_validation(request, 0)
-
-
-def test_schema_dynamic_validation_passes(handler_and_request):
-    handler, request = handler_and_request
-    add_to_idr(handler.database_manager.idr_cache, request.identifier, TRUSTEE)
-    add_to_idr(handler.database_manager.idr_cache, request.endorser, ENDORSER)
-    handler.dynamic_validation(request, 0)

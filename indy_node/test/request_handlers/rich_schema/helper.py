@@ -1,3 +1,4 @@
+import copy
 import json
 
 from indy_common.constants import RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, RICH_SCHEMA_MAPPING, \
@@ -37,8 +38,11 @@ def context_request():
 
 
 def rich_schema_request():
+    id = randomString()
+    content = copy.deepcopy(RICH_SCHEMA_EX1)
+    content['@id'] = id
     return rs_req(RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE,
-                  content=RICH_SCHEMA_EX1, id=RICH_SCHEMA_EX1['@id'])
+                  content=content, id=id)
 
 
 def rich_schema_encoding_request():
@@ -47,8 +51,11 @@ def rich_schema_encoding_request():
 
 
 def rich_schema_mapping_request():
+    id = randomString()
+    content = copy.deepcopy(RICH_SCHEMA_MAPPING_EX1)
+    content['@id'] = id
     return rs_req(RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE,
-                  content=RICH_SCHEMA_MAPPING_EX1, id=RICH_SCHEMA_MAPPING_EX1['@id'])
+                  content=content, id=id)
 
 
 def rich_schema_cred_def_request():
@@ -57,8 +64,11 @@ def rich_schema_cred_def_request():
 
 
 def rich_schema_pres_def_request():
+    id = randomString()
+    content = copy.deepcopy(RICH_SCHEMA_PRES_DEF_EX1)
+    content['@id'] = id
     return rs_req(RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE,
-                  content=RICH_SCHEMA_PRES_DEF_EX1, id=RICH_SCHEMA_PRES_DEF_EX1['@id'])
+                  content=content, id=id)
 
 
 def make_rich_schema_object_exist(handler, request, commit=False):
