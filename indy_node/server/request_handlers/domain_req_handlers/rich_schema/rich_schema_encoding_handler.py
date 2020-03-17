@@ -16,3 +16,6 @@ class RichSchemaEncodingHandler(AbstractRichSchemaObjectHandler):
     def __init__(self, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator):
         super().__init__(RICH_SCHEMA_ENCODING, database_manager, write_req_validator)
+
+    def is_json_ld_content(self):
+        return False

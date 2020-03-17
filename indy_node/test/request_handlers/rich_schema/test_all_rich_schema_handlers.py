@@ -1,11 +1,17 @@
+import copy
+import json
 import random
 
 import pytest
 
 from indy_common.authorize.auth_constraints import AuthConstraintForbidden
-from indy_common.constants import RS_ID, RS_TYPE, RS_NAME, RS_VERSION, RS_CONTENT, ENDORSER
+from indy_common.constants import RS_ID, RS_TYPE, RS_NAME, RS_VERSION, RS_CONTENT, ENDORSER, JSON_LD_ID_FIELD, \
+    JSON_LD_TYPE_FIELD
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_cred_def_handler import \
     RichSchemaCredDefHandler
+from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_handler import RichSchemaHandler
+from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_mapping_handler import \
+    RichSchemaMappingHandler
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_pres_def_handler import \
     RichSchemaPresDefHandler
 from indy_node.test.request_handlers.helper import add_to_idr
@@ -48,10 +54,60 @@ def test_update_state(handler_and_request):
     assert handler.state.get(secondary_key, isCommitted=False) == op[RS_ID].encode()
 
 
+def test_static_validation_pass(handler_and_request):
+    handler, request = handler_and_request
+    handler.static_validation(request)
+
+
 def test_static_validation_content_is_json(handler_and_request):
     handler, request = handler_and_request
+
     request.operation[RS_CONTENT] = randomString()
     with pytest.raises(InvalidClientRequest, match="must be a JSON serialized string"):
+        handler.static_validation(request)
+
+
+def test_static_validation_content_is_json_ld_with_atid(handler_and_request):
+    handler, request = handler_and_request
+
+    content = copy.deepcopy(json.loads(request.operation[RS_CONTENT]))
+    content.pop(JSON_LD_ID_FIELD, None)
+    request.operation[RS_CONTENT] = json.dumps(content)
+
+    if not isinstance(handler, (RichSchemaMappingHandler, RichSchemaHandler, RichSchemaPresDefHandler)):
+        handler.static_validation(request)
+        return
+
+    with pytest.raises(InvalidClientRequest, match="`content` must be a valid JSON-LD and have '@id' field"):
+        handler.static_validation(request)
+
+
+def test_static_validation_content_is_json_ld_with_attype(handler_and_request):
+    handler, request = handler_and_request
+
+    content = copy.deepcopy(json.loads(request.operation[RS_CONTENT]))
+    content.pop(JSON_LD_TYPE_FIELD, None)
+    request.operation[RS_CONTENT] = json.dumps(content)
+
+    if not isinstance(handler, (RichSchemaMappingHandler, RichSchemaHandler, RichSchemaPresDefHandler)):
+        handler.static_validation(request)
+        return
+
+    with pytest.raises(InvalidClientRequest, match="`content` must be a valid JSON-LD and have '@type' field"):
+        handler.static_validation(request)
+
+
+def test_static_validation_atid_equals_to_id(handler_and_request):
+    handler, request = handler_and_request
+
+    content = copy.deepcopy(json.loads(request.operation[RS_CONTENT]))
+    content["@id"] = request.operation[RS_ID] + "a"
+    request.operation[RS_CONTENT] = json.dumps(content)
+    if not isinstance(handler, (RichSchemaMappingHandler, RichSchemaHandler, RichSchemaPresDefHandler)):
+        handler.static_validation(request)
+        return
+
+    with pytest.raises(InvalidClientRequest, match="content's @id must be equal to id"):
         handler.static_validation(request)
 
 

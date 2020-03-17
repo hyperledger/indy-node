@@ -18,6 +18,9 @@ class RichSchemaHandler(AbstractRichSchemaObjectHandler):
                  write_req_validator: WriteRequestValidator):
         super().__init__(RICH_SCHEMA, database_manager, write_req_validator)
 
+    def is_json_ld_content(self):
+        return True
+
     def do_static_validation_content(self, content_as_dict, request):
         if JSON_LD_ID_FIELD not in content_as_dict:
             raise InvalidClientRequest(request.identifier, request.reqId,
