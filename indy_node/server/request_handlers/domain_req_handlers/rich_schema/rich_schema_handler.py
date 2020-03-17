@@ -30,3 +30,6 @@ class RichSchemaHandler(AbstractRichSchemaObjectHandler):
             raise InvalidClientRequest(request.identifier, request.reqId,
                                        "Rich Schema must be a JSON-LD object and contain '{}' field in '{}'".format(
                                            JSON_LD_TYPE_FIELD, RS_CONTENT))
+
+    def do_dynamic_validation_content(self, request):
+        pass

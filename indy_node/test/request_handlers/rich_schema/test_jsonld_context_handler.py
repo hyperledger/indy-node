@@ -3,12 +3,13 @@ import json
 import pytest
 
 from common.exceptions import LogicError
-from indy_common.constants import RS_CONTENT, JSON_LD_CONTEXT_FIELD
+from indy_common.constants import RS_CONTENT, JSON_LD_CONTEXT_FIELD, ENDORSER
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.json_ld_context_handler import \
     JsonLdContextHandler
+from indy_node.test.request_handlers.helper import add_to_idr
 from indy_node.test.request_handlers.rich_schema.helper import context_request
 from indy_node.test.rich_schema.templates import W3C_BASE_CONTEXT, W3C_EXAMPLE_V1_CONTEXT
-from plenum.common.constants import TXN_TYPE
+from plenum.common.constants import TXN_TYPE, TRUSTEE
 from plenum.common.exceptions import InvalidClientRequest
 
 
@@ -21,13 +22,13 @@ def context_req():
 def context_handler(db_manager, write_auth_req_validator):
     return JsonLdContextHandler(db_manager, write_auth_req_validator)
 
+
 def test_static_validation_context_no_context_field(context_handler, context_req):
     context_req.operation[RS_CONTENT] = json.dumps({"aaa": "2http:/..@#$"})
     with pytest.raises(InvalidClientRequest) as e:
         context_handler.static_validation(context_req)
 
     assert "must contain a @context field" in str(e.value)
-
 
 
 def test_static_validation_context_fail_bad_uri(context_handler, context_req):
@@ -107,3 +108,9 @@ def test_static_validation_fail_invalid_type(context_handler, context_req):
     context_req.operation[TXN_TYPE] = "201"
     with pytest.raises(LogicError):
         context_handler.static_validation(context_req)
+
+
+def test_schema_dynamic_validation_passes(context_handler, context_req):
+    add_to_idr(context_handler.database_manager.idr_cache, context_req.identifier, TRUSTEE)
+    add_to_idr(context_handler.database_manager.idr_cache, context_req.endorser, ENDORSER)
+    context_handler.dynamic_validation(context_req, 0)

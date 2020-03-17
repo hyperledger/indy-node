@@ -19,3 +19,10 @@ class RichSchemaPresDefHandler(AbstractRichSchemaObjectHandler):
 
     def is_json_ld_content(self):
         return True
+
+    # TODO: implement specific validation
+    def do_static_validation_content(self, content_as_dict, request):
+        pass
+
+    def do_dynamic_validation_content(self, request):
+        pass

@@ -27,6 +27,14 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler, metaclass=ABCMeta):
     def is_json_ld_content(self):
         pass
 
+    @abstractmethod
+    def do_static_validation_content(self, content_as_dict, request):
+        pass
+
+    @abstractmethod
+    def do_dynamic_validation_content(self, request):
+        pass
+
     def static_validation(self, request: Request):
         self._validate_request_type(request)
         try:
@@ -52,9 +60,6 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler, metaclass=ABCMeta):
         if content_as_dict[JSON_LD_ID_FIELD] != request.operation[RS_ID]:
             raise InvalidClientRequest(request.identifier, request.reqId,
                                        "content's @id must be equal to id={}".format(request.operation[RS_ID]))
-
-    def do_static_validation_content(self, content_as_dict, request):
-        pass
 
     def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
@@ -89,6 +94,8 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler, metaclass=ABCMeta):
                                               [AuthActionAdd(txn_type=self.txn_type,
                                                              field='*',
                                                              value='*')])
+
+        self.do_dynamic_validation_content(request)
 
     def update_state(self, txn, prev_result, request, is_committed=False) -> None:
         self._validate_txn_type(txn)

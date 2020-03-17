@@ -2,9 +2,11 @@ import json
 
 import pytest
 
-from indy_common.constants import RS_CONTENT
+from indy_common.constants import RS_CONTENT, ENDORSER
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_handler import RichSchemaHandler
+from indy_node.test.request_handlers.helper import add_to_idr
 from indy_node.test.request_handlers.rich_schema.helper import rich_schema_request
+from plenum.common.constants import TRUSTEE
 from plenum.common.exceptions import InvalidClientRequest
 
 
@@ -49,3 +51,9 @@ def test_static_validation_fail_no_type(rich_schema_handler, rich_schema_req):
     with pytest.raises(InvalidClientRequest) as e:
         rich_schema_handler.static_validation(rich_schema_req)
     assert "Rich Schema must be a JSON-LD object and contain '@type' field in 'content'" in str(e.value)
+
+
+def test_schema_dynamic_validation_passes(rich_schema_handler, rich_schema_req):
+    add_to_idr(rich_schema_handler.database_manager.idr_cache, rich_schema_req.identifier, TRUSTEE)
+    add_to_idr(rich_schema_handler.database_manager.idr_cache, rich_schema_req.endorser, ENDORSER)
+    rich_schema_handler.dynamic_validation(rich_schema_req, 0)

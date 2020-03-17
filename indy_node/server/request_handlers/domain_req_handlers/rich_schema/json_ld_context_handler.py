@@ -27,6 +27,9 @@ class JsonLdContextHandler(AbstractRichSchemaObjectHandler):
 
         self._validate_context(content_as_dict[JSON_LD_CONTEXT_FIELD], request.identifier, request.reqId)
 
+    def do_dynamic_validation_content(self, request):
+        pass
+
     def _validate_context(self, context, id, reqId):
         if isinstance(context, list):
             for ctx in context:

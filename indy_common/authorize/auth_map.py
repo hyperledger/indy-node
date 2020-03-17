@@ -296,9 +296,9 @@ auth_map = OrderedDict([
     (add_rich_schema_mapping.get_action_id(), endorser_or_steward_or_trustee_constraint),
     (edit_rich_schema_mapping.get_action_id(), no_one_constraint),
     (add_rich_schema_cred_def.get_action_id(), endorser_or_steward_or_trustee_constraint),
-    (edit_rich_schema_cred_def.get_action_id(), owner_constraint),
+    (edit_rich_schema_cred_def.get_action_id(), no_one_constraint),
     (add_rich_schema_pres_def.get_action_id(), endorser_or_steward_or_trustee_constraint),
-    (edit_rich_schema_pres_def.get_action_id(), owner_constraint),
+    (edit_rich_schema_pres_def.get_action_id(), no_one_constraint),
 
     (add_claim_def.get_action_id(), endorser_or_steward_or_trustee_constraint),
     (edit_claim_def.get_action_id(), owner_constraint),

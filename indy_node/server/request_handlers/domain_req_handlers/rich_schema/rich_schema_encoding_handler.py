@@ -19,3 +19,9 @@ class RichSchemaEncodingHandler(AbstractRichSchemaObjectHandler):
 
     def is_json_ld_content(self):
         return False
+
+    def do_static_validation_content(self, content_as_dict, request):
+        pass
+
+    def do_dynamic_validation_content(self, request):
+        pass

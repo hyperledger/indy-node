@@ -37,10 +37,8 @@ class RichSchemaCredDefHandler(AbstractRichSchemaObjectHandler):
             raise InvalidClientRequest(request.identifier, request.reqId,
                                        "{} must be set".format(missing_fields_str))
 
-    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
-        super().dynamic_validation(request, req_pp_time)
-
-        # iat has been checked on static validation step that the content is a valid JSON.
+    def do_dynamic_validation_content(self, request):
+        # it has been checked on static validation step that the content is a valid JSON.
         # and it has schema and mapping fields
         content_as_dict = JsonSerializer.loads(request.operation[RS_CONTENT])
         schema_id = content_as_dict[RS_CRED_DEF_SCHEMA]
