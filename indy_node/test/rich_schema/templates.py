@@ -72,9 +72,10 @@ RICH_SCHEMA_ENCODING_EX1 = {
     },
     "algorithm": {
         "description": "This encoding transforms an RFC3339 - formatted datetime object into the number of seconds since January 1, 1970(the Unix epoch).",
-        "documentation": "https://github.com/hyperledger/indy-hipe/commit/3a39665fd384254f08316eef6230c2f411b8f765"
+        "documentation": "https://github.com/hyperledger/indy-hipe/commit/3a39665fd384254f08316eef6230c2f411b8f765",
+        "implementation": "https://github.com/hyperledger/indy-hipe/commit/3a39665fd384254f08316eef6230c2f411b8f869",
     },
-    "test_vectors": "https://github.com/hyperledger/indy-hipe/commit/3a39665fd384254f08316eef6230c2f411b8f766"
+    "testVectors": "https://github.com/hyperledger/indy-hipe/commit/3a39665fd384254f08316eef6230c2f411b8f766"
 }
 
 RICH_SCHEMA_EX1 = {
