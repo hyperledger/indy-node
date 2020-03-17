@@ -14,6 +14,7 @@ from indy_node.test.request_handlers.rich_schema.helper import rich_schema_reque
     rich_schema_mapping_request, make_rich_schema_object_exist
 from plenum.common.constants import TRUSTEE
 from plenum.common.exceptions import InvalidClientRequest
+from plenum.common.util import randomString
 
 
 @pytest.fixture()
@@ -67,9 +68,9 @@ def test_static_validation_no_field(cred_def_handler, cred_def_req, missing_fiel
         cred_def_handler.static_validation(cred_def_req)
 
 
-def testdynamic_validation_passes(cred_def_handler, cred_def_req,
-                                  rich_schema_handler, rich_schema_req,
-                                  mapping_handler, mapping_req):
+def test_dynamic_validation_passes(cred_def_handler, cred_def_req,
+                                   rich_schema_handler, rich_schema_req,
+                                   mapping_handler, mapping_req):
     add_to_idr(cred_def_handler.database_manager.idr_cache, cred_def_req.identifier, TRUSTEE)
     add_to_idr(cred_def_handler.database_manager.idr_cache, cred_def_req.endorser, ENDORSER)
 
@@ -79,9 +80,78 @@ def testdynamic_validation_passes(cred_def_handler, cred_def_req,
     content = copy.deepcopy(json.loads(cred_def_req.operation[RS_CONTENT]))
     content[RS_CRED_DEF_SCHEMA] = rich_schema_req.operation[RS_ID]
     content[RS_CRED_DEF_MAPPING] = mapping_req.operation[RS_ID]
+    cred_def_req.operation[RS_CONTENT] = json.dumps(content)
 
     cred_def_handler.dynamic_validation(cred_def_req, 0)
 
 
-def test_dynamic_validation_not_existent_schema(cred_def_handler, cred_def_req):
-    pass
+def test_dynamic_validation_not_existent_schema(cred_def_handler, cred_def_req,
+                                                mapping_handler, mapping_req):
+    add_to_idr(cred_def_handler.database_manager.idr_cache, cred_def_req.identifier, TRUSTEE)
+    add_to_idr(cred_def_handler.database_manager.idr_cache, cred_def_req.endorser, ENDORSER)
+
+    make_rich_schema_object_exist(mapping_handler, mapping_req)
+
+    content = copy.deepcopy(json.loads(cred_def_req.operation[RS_CONTENT]))
+    schema_id = randomString()
+    content[RS_CRED_DEF_SCHEMA] = schema_id
+    content[RS_CRED_DEF_MAPPING] = mapping_req.operation[RS_ID]
+    cred_def_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match='Can not find a schema with id={}; please make sure that it has been added to the ledger'.format(
+                           schema_id)):
+        cred_def_handler.dynamic_validation(cred_def_req, 0)
+
+
+def test_dynamic_validation_not_existent_mapping(cred_def_handler, cred_def_req,
+                                                 rich_schema_handler, rich_schema_req):
+    add_to_idr(cred_def_handler.database_manager.idr_cache, cred_def_req.identifier, TRUSTEE)
+    add_to_idr(cred_def_handler.database_manager.idr_cache, cred_def_req.endorser, ENDORSER)
+
+    make_rich_schema_object_exist(rich_schema_handler, rich_schema_req)
+
+    content = copy.deepcopy(json.loads(cred_def_req.operation[RS_CONTENT]))
+    mapping_id = randomString()
+    content[RS_CRED_DEF_MAPPING] = mapping_id
+    content[RS_CRED_DEF_SCHEMA] = rich_schema_req.operation[RS_ID]
+    cred_def_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match='Can not find a mapping with id={}; please make sure that it has been added to the ledger'.format(
+                           mapping_id)):
+        cred_def_handler.dynamic_validation(cred_def_req, 0)
+
+
+def test_dynamic_validation_not_schema_in_schema_field(cred_def_handler, cred_def_req,
+                                                       mapping_handler, mapping_req):
+    add_to_idr(cred_def_handler.database_manager.idr_cache, cred_def_req.identifier, TRUSTEE)
+    add_to_idr(cred_def_handler.database_manager.idr_cache, cred_def_req.endorser, ENDORSER)
+
+    make_rich_schema_object_exist(mapping_handler, mapping_req)
+
+    content = copy.deepcopy(json.loads(cred_def_req.operation[RS_CONTENT]))
+    content[RS_CRED_DEF_SCHEMA] = mapping_req.operation[RS_ID]
+    content[RS_CRED_DEF_MAPPING] = mapping_req.operation[RS_ID]
+    cred_def_req.operation[RS_CONTENT] = json.dumps(content)
+    with pytest.raises(InvalidClientRequest,
+                       match="'schema' field must reference a schema with rsType=sch".format(
+                           RS_CRED_DEF_SCHEMA)):
+        cred_def_handler.dynamic_validation(cred_def_req, 0)
+
+def test_dynamic_validation_not_mapping_in_mapping_field(cred_def_handler, cred_def_req,
+                                                         rich_schema_handler, rich_schema_req):
+    add_to_idr(cred_def_handler.database_manager.idr_cache, cred_def_req.identifier, TRUSTEE)
+    add_to_idr(cred_def_handler.database_manager.idr_cache, cred_def_req.endorser, ENDORSER)
+
+    make_rich_schema_object_exist(rich_schema_handler, rich_schema_req)
+
+    content = copy.deepcopy(json.loads(cred_def_req.operation[RS_CONTENT]))
+    content[RS_CRED_DEF_SCHEMA] = rich_schema_req.operation[RS_ID]
+    content[RS_CRED_DEF_MAPPING] = rich_schema_req.operation[RS_ID]
+    cred_def_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match="'mapping' field must reference a mapping with rsType=map".format(
+                           RS_CRED_DEF_MAPPING)):
+        cred_def_handler.dynamic_validation(cred_def_req, 0)
