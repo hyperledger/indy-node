@@ -49,12 +49,12 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler, metaclass=ABCMeta):
         self.do_static_validation_content(content_as_dict, request)
 
     def do_static_validation_json_ld(self, content_as_dict, request):
-        if JSON_LD_ID_FIELD not in content_as_dict:
+        if not content_as_dict.get(JSON_LD_ID_FIELD):
             raise InvalidClientRequest(request.identifier, request.reqId,
-                                       "`content` must be a valid JSON-LD and have '{}' field".format(JSON_LD_ID_FIELD))
-        if JSON_LD_TYPE_FIELD not in content_as_dict:
+                                       "'content' must be a valid JSON-LD and have non-empty '{}' field".format(JSON_LD_ID_FIELD))
+        if not content_as_dict.get(JSON_LD_TYPE_FIELD):
             raise InvalidClientRequest(request.identifier, request.reqId,
-                                       "`content` must be a valid JSON-LD and have '{}' field".format(
+                                       "'content' must be a valid JSON-LD and have non-empty '{}' field".format(
                                            JSON_LD_TYPE_FIELD))
 
         if content_as_dict[JSON_LD_ID_FIELD] != request.operation[RS_ID]:
