@@ -63,16 +63,18 @@ class RichSchemaMappingHandler(AbstractRichSchemaObjectHandler):
             if not isinstance(desc_dict, dict):
                 raise InvalidClientRequest(request.identifier,
                                            request.reqId,
-                                           "'{}' and '{}' must be set for attribute '{}'".format(RS_MAPPING_ENC,
-                                                                                                 RS_MAPPING_RANK, attr))
-            if not desc_dict.get(RS_MAPPING_ENC):
-                raise InvalidClientRequest(request.identifier,
-                                           request.reqId,
-                                           "'{}' must be set for attribute '{}'".format(RS_MAPPING_ENC, attr))
-            if not desc_dict.get(RS_MAPPING_RANK):
-                raise InvalidClientRequest(request.identifier,
-                                           request.reqId,
-                                           "'{}' must be set for attribute '{}'".format(RS_MAPPING_RANK, attr))
+                                           "{} and {} must be set for the attribute '{}'".format(RS_MAPPING_ENC,
+                                                                                          RS_MAPPING_RANK, attr))
+
+            missing_fields = []
+            for field in [RS_MAPPING_ENC, RS_MAPPING_RANK]:
+                if not desc_dict.get(field):
+                    missing_fields.append(field)
+
+            if missing_fields:
+                missing_fields_str = " and ".join(missing_fields)
+                raise InvalidClientRequest(request.identifier, request.reqId,
+                                           "{} must be set for the attribute '{}'".format(missing_fields_str, attr))
 
         # 5. check that all the enc fields point to an existing object on the ledger of the type Encoding
         for desc_dict, attr in enc_desc_dicts:
@@ -81,12 +83,12 @@ class RichSchemaMappingHandler(AbstractRichSchemaObjectHandler):
             if not encoding:
                 raise InvalidClientRequest(request.identifier,
                                            request.reqId,
-                                           "Can not find a referenced '{}' with id={} in '{}' attribute; please make sure that it has been added to the ledger".format(
+                                           "Can not find a referenced '{}' with id={} in the '{}' attribute; please make sure that it has been added to the ledger".format(
                                                RS_MAPPING_ENC, encoding_id, attr))
             if encoding.get(RS_TYPE) != RS_ENCODING_TYPE_VALUE:
                 raise InvalidClientRequest(request.identifier,
                                            request.reqId,
-                                           "'{}' field in '{}' attribute must reference an encoding with {}={}".format(
+                                           "'{}' field in the '{}' attribute must reference an encoding with {}={}".format(
                                                RS_MAPPING_ENC, attr, RS_TYPE, RS_ENCODING_TYPE_VALUE))
 
         # 6. check that all ranks are unique and form a sequence without gaps

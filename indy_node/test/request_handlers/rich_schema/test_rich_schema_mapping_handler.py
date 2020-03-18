@@ -56,7 +56,7 @@ TEST_MAPPING = {
                     "attr6": [
                         {
                             "enc": "did:sov:3x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
-                            "rank": 4
+                            "rank": 5
                         }
                     ]
                 },
@@ -211,7 +211,7 @@ def test_dynamic_validation_empty_field_in_encoding_desc(mapping_handler, mappin
     mapping_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="'{}' must be set for attribute '{}'".format(missing_field, enc_path[-1])):
+                       match="{} must be set for the attribute '{}'".format(missing_field, enc_path[-1])):
         mapping_handler.dynamic_validation(mapping_req, 0)
 
 
@@ -223,11 +223,12 @@ def test_dynamic_validation_empty_field_in_encoding_desc(mapping_handler, mappin
     (['attr3', 'attr4', 0, 'attr5'], 0),
     (['attr3', 'attr4', 1, 'attr6'], 0)
 ])
-@pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
+@pytest.mark.parametrize('status', ['missing', 'empty', 'none', 'not_a_dict'])
 def test_dynamic_validation_empty_encoding_desc(mapping_handler, mapping_req,
                                                 enc_path, index, status):
     content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
-    enc_dict = get_mapping_attr_value(enc_path, content[RS_MAPPING_ATTRIBUTES])[index]
+    enc_list = get_mapping_attr_value(enc_path, content[RS_MAPPING_ATTRIBUTES])
+    enc_dict = enc_list[index]
     if status == 'missing':
         enc_dict.pop(RS_MAPPING_ENC, None)
         enc_dict.pop(RS_MAPPING_RANK, None)
@@ -237,10 +238,12 @@ def test_dynamic_validation_empty_encoding_desc(mapping_handler, mapping_req,
     elif status == 'none':
         enc_dict[RS_MAPPING_ENC] = None
         enc_dict[RS_MAPPING_RANK] = None
+    elif status == 'not_a_dict':
+        enc_list[index] = "aaaa"
     mapping_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="'enc' and 'rank' must be set for attribute '{}'".format(enc_path[-1])):
+                       match="enc and rank must be set for the attribute '{}'".format(enc_path[-1])):
         mapping_handler.dynamic_validation(mapping_req, 0)
 
 
@@ -261,7 +264,7 @@ def test_dynamic_validation_not_existent_encoding(mapping_handler, mapping_req,
     mapping_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="Can not find a referenced 'enc' with id={} in '{}' attribute; please make sure that it has been added to the ledger".format(
+                       match="Can not find a referenced 'enc' with id={} in the '{}' attribute; please make sure that it has been added to the ledger".format(
                            wrong_id, enc_path[-1])):
         mapping_handler.dynamic_validation(mapping_req, 0)
 
@@ -283,6 +286,28 @@ def test_dynamic_validation_not_encoding_in_enc_field(mapping_handler, mapping_r
     mapping_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="'enc' field in '{}' attribute must reference an encoding with rsType=enc".format(
+                       match="'enc' field in the '{}' attribute must reference an encoding with rsType=enc".format(
+                           enc_path[-1])):
+        mapping_handler.dynamic_validation(mapping_req, 0)
+
+# a test against TEST_MAPPING
+@pytest.mark.parametrize('enc_path, index', [
+    (['attr1'], 0),
+    (['attr2'], 0),
+    (['attr2'], 1),
+    (['attr3', 'attr4', 0, 'attr5'], 0),
+    (['attr3', 'attr4', 1, 'attr6'], 0)
+])
+@pytest.mark.parametrize('rank_value', [1, 6, 7, 0, 10])
+def test_dynamic_validation_rank_sequence(mapping_handler, mapping_req,
+                                                      rich_schema_req,
+                                                      enc_path, index, rank_value):
+    content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
+    enc_dict = get_mapping_attr_value(enc_path, content[RS_MAPPING_ATTRIBUTES])[index]
+    enc_dict[RS_MAPPING_RANK] = rank_value
+    mapping_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match="'enc' field in the '{}' attribute must reference an encoding with rsType=enc".format(
                            enc_path[-1])):
         mapping_handler.dynamic_validation(mapping_req, 0)
