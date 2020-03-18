@@ -47,3 +47,5 @@ class RichSchemaMappingHandler(AbstractRichSchemaObjectHandler):
                                        request.reqId,
                                        "'{}' field must reference a schema with {}={}".format(
                                            RS_MAPPING_SCHEMA, RS_TYPE, RS_SCHEMA_TYPE_VALUE))
+
+        # 3. check that all the enc fields point to an existing object on the ledger of the type Encoding

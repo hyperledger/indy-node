@@ -12,13 +12,16 @@ from plenum.common.exceptions import InvalidClientRequest
 
 
 @pytest.fixture()
-def rich_schema_req():
-    return rich_schema_request()
+def rich_schema_handler(db_manager, write_auth_req_validator):
+    return RichSchemaHandler(db_manager, write_auth_req_validator)
 
 
 @pytest.fixture()
-def rich_schema_handler(db_manager, write_auth_req_validator):
-    return RichSchemaHandler(db_manager, write_auth_req_validator)
+def rich_schema_req(rich_schema_handler):
+    req = rich_schema_request()
+    add_to_idr(rich_schema_handler.database_manager.idr_cache, req.identifier, TRUSTEE)
+    add_to_idr(rich_schema_handler.database_manager.idr_cache, req.endorser, ENDORSER)
+    return req
 
 
 def test_static_validation_pass(rich_schema_handler, rich_schema_req):
@@ -58,6 +61,4 @@ def test_static_validation_fail_no_type(rich_schema_handler, rich_schema_req, st
 
 
 def test_schema_dynamic_validation_passes(rich_schema_handler, rich_schema_req):
-    add_to_idr(rich_schema_handler.database_manager.idr_cache, rich_schema_req.identifier, TRUSTEE)
-    add_to_idr(rich_schema_handler.database_manager.idr_cache, rich_schema_req.endorser, ENDORSER)
     rich_schema_handler.dynamic_validation(rich_schema_req, 0)

@@ -14,13 +14,16 @@ from plenum.common.exceptions import InvalidClientRequest
 
 
 @pytest.fixture()
-def context_req():
-    return context_request()
+def context_handler(db_manager, write_auth_req_validator):
+    return JsonLdContextHandler(db_manager, write_auth_req_validator)
 
 
 @pytest.fixture()
-def context_handler(db_manager, write_auth_req_validator):
-    return JsonLdContextHandler(db_manager, write_auth_req_validator)
+def context_req(context_handler):
+    req = context_request(context_handler)
+    add_to_idr(context_handler.database_manager.idr_cache, req.identifier, TRUSTEE)
+    add_to_idr(context_handler.database_manager.idr_cache, req.endorser, ENDORSER)
+    return req
 
 
 def test_static_validation_context_no_context_field(context_handler, context_req):
@@ -111,6 +114,4 @@ def test_static_validation_fail_invalid_type(context_handler, context_req):
 
 
 def test_schema_dynamic_validation_passes(context_handler, context_req):
-    add_to_idr(context_handler.database_manager.idr_cache, context_req.identifier, TRUSTEE)
-    add_to_idr(context_handler.database_manager.idr_cache, context_req.endorser, ENDORSER)
     context_handler.dynamic_validation(context_req, 0)

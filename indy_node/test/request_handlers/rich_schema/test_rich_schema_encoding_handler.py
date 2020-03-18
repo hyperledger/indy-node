@@ -13,13 +13,16 @@ from plenum.common.exceptions import InvalidClientRequest
 
 
 @pytest.fixture()
-def encoding_req():
-    return rich_schema_encoding_request()
+def encoding_handler(db_manager, write_auth_req_validator):
+    return RichSchemaEncodingHandler(db_manager, write_auth_req_validator)
 
 
 @pytest.fixture()
-def encoding_handler(db_manager, write_auth_req_validator):
-    return RichSchemaEncodingHandler(db_manager, write_auth_req_validator)
+def encoding_req(encoding_handler):
+    req = rich_schema_encoding_request()
+    add_to_idr(encoding_handler.database_manager.idr_cache, req.identifier, TRUSTEE)
+    add_to_idr(encoding_handler.database_manager.idr_cache, req.endorser, ENDORSER)
+    return req
 
 
 def test_static_validation_pass(encoding_handler, encoding_req):
@@ -79,7 +82,4 @@ def test_static_validation_algorithm(encoding_handler, encoding_req, missing_fie
 
 
 def test_dynamic_validation_passes(encoding_handler, encoding_req):
-    add_to_idr(encoding_handler.database_manager.idr_cache, encoding_req.identifier, TRUSTEE)
-    add_to_idr(encoding_handler.database_manager.idr_cache, encoding_req.endorser, ENDORSER)
-
     encoding_handler.dynamic_validation(encoding_req, 0)
