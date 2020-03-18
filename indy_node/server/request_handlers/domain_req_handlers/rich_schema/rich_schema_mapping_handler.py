@@ -1,9 +1,10 @@
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 
-from indy_common.constants import RICH_SCHEMA_MAPPING
+from indy_common.constants import RICH_SCHEMA_MAPPING, RS_MAPPING_SCHEMA, RS_CONTENT
 
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.abstract_rich_schema_object_handler import \
     AbstractRichSchemaObjectHandler
+from plenum.common.exceptions import InvalidClientRequest
 
 from plenum.server.database_manager import DatabaseManager
 from stp_core.common.log import getlogger
@@ -21,7 +22,9 @@ class RichSchemaMappingHandler(AbstractRichSchemaObjectHandler):
         return True
 
     def do_static_validation_content(self, content_as_dict, request):
-        pass
+        if not content_as_dict.get(RS_MAPPING_SCHEMA):
+            raise InvalidClientRequest(request.identifier, request.reqId,
+                                       "{} must be set in {}".format(RS_MAPPING_SCHEMA, RS_CONTENT))
 
     def do_dynamic_validation_content(self, request):
         pass

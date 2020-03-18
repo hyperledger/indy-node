@@ -1,7 +1,7 @@
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 
 from indy_common.constants import RICH_SCHEMA_ENCODING, RS_ENC_INPUT, RS_ENC_OUTPUT, RS_ENC_ALGORITHM, RS_ENC_TEST_VECS, \
-    RS_ENC_ID, RS_ENC_TYPE, RS_ENC_ALG_DESC, RS_ENC_ALG_DOC, RS_ENC_ALG_IMPL
+    RS_ENC_ID, RS_ENC_TYPE, RS_ENC_ALG_DESC, RS_ENC_ALG_DOC, RS_ENC_ALG_IMPL, RS_CONTENT
 
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.abstract_rich_schema_object_handler import \
     AbstractRichSchemaObjectHandler
@@ -31,7 +31,7 @@ class RichSchemaEncodingHandler(AbstractRichSchemaObjectHandler):
         if missing_fields:
             missing_fields_str = ", ".join(missing_fields)
             raise InvalidClientRequest(request.identifier, request.reqId,
-                                       "{} must be set".format(missing_fields_str))
+                                       "{} must be set in {}".format(missing_fields_str, RS_CONTENT))
 
         # 2. check for input-output fields
         for io_field in [RS_ENC_INPUT, RS_ENC_OUTPUT]:

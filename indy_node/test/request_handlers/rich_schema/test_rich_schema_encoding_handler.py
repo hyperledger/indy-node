@@ -39,7 +39,7 @@ def test_static_validation_no_field(encoding_handler, encoding_req, missing_fiel
     encoding_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="{} must be set".format(missing_field)):
+                       match="{} must be set in content".format(missing_field)):
         encoding_handler.static_validation(encoding_req)
 
 

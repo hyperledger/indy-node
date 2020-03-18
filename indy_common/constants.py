@@ -228,3 +228,5 @@ RS_ENC_TYPE = "type"
 RS_ENC_ALG_DESC = "description"
 RS_ENC_ALG_DOC = "documentation"
 RS_ENC_ALG_IMPL = "implementation"
+
+RS_MAPPING_SCHEMA = "schema"

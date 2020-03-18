@@ -64,7 +64,7 @@ def test_static_validation_no_field(cred_def_handler, cred_def_req, missing_fiel
     cred_def_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="{} must be set".format(missing_field)):
+                       match="{} must be set in content".format(missing_field)):
         cred_def_handler.static_validation(cred_def_req)
 
 

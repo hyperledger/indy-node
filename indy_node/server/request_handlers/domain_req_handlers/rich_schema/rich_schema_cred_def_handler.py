@@ -35,7 +35,7 @@ class RichSchemaCredDefHandler(AbstractRichSchemaObjectHandler):
         if missing_fields:
             missing_fields_str = ", ".join(missing_fields)
             raise InvalidClientRequest(request.identifier, request.reqId,
-                                       "{} must be set".format(missing_fields_str))
+                                       "{} must be set in {}".format(missing_fields_str, RS_CONTENT))
 
     def do_dynamic_validation_content(self, request):
         # it has been checked on static validation step that the content is a valid JSON.
