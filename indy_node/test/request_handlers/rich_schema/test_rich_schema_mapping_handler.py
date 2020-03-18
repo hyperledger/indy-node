@@ -290,6 +290,7 @@ def test_dynamic_validation_not_encoding_in_enc_field(mapping_handler, mapping_r
                            enc_path[-1])):
         mapping_handler.dynamic_validation(mapping_req, 0)
 
+
 # a test against TEST_MAPPING
 @pytest.mark.parametrize('enc_path, index', [
     (['attr1'], 0),
@@ -298,16 +299,15 @@ def test_dynamic_validation_not_encoding_in_enc_field(mapping_handler, mapping_r
     (['attr3', 'attr4', 0, 'attr5'], 0),
     (['attr3', 'attr4', 1, 'attr6'], 0)
 ])
-@pytest.mark.parametrize('rank_value', [1, 6, 7, 0, 10])
+@pytest.mark.parametrize('rank_value', [6, 7, 0, 10, -1])
 def test_dynamic_validation_rank_sequence(mapping_handler, mapping_req,
-                                                      rich_schema_req,
-                                                      enc_path, index, rank_value):
+                                          rich_schema_req,
+                                          enc_path, index, rank_value):
     content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
     enc_dict = get_mapping_attr_value(enc_path, content[RS_MAPPING_ATTRIBUTES])[index]
     enc_dict[RS_MAPPING_RANK] = rank_value
     mapping_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="'enc' field in the '{}' attribute must reference an encoding with rsType=enc".format(
-                           enc_path[-1])):
+                       match="the attribute's ranks are not sequential: expected ranks are all values from 1 to 5"):
         mapping_handler.dynamic_validation(mapping_req, 0)

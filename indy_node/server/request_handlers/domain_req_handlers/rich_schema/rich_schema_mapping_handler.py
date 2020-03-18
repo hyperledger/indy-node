@@ -59,12 +59,13 @@ class RichSchemaMappingHandler(AbstractRichSchemaObjectHandler):
         enc_desc_dicts = list(find_encoding_desc_dicts(content_as_dict[RS_MAPPING_ATTRIBUTES]))
 
         # 4. check that every dict has encoding and rank fields
+        # Note: this check can be done in static validation, but then we will have to traverse the leaf dicts twice
         for desc_dict, attr in enc_desc_dicts:
             if not isinstance(desc_dict, dict):
                 raise InvalidClientRequest(request.identifier,
                                            request.reqId,
                                            "{} and {} must be set for the attribute '{}'".format(RS_MAPPING_ENC,
-                                                                                          RS_MAPPING_RANK, attr))
+                                                                                                 RS_MAPPING_RANK, attr))
 
             missing_fields = []
             for field in [RS_MAPPING_ENC, RS_MAPPING_RANK]:
@@ -76,7 +77,16 @@ class RichSchemaMappingHandler(AbstractRichSchemaObjectHandler):
                 raise InvalidClientRequest(request.identifier, request.reqId,
                                            "{} must be set for the attribute '{}'".format(missing_fields_str, attr))
 
-        # 5. check that all the enc fields point to an existing object on the ledger of the type Encoding
+        # 5. check that all ranks are unique and form a sequence without gaps
+        # Note: this check can be done in static validation, but then we will have to traverse the leaf dicts twice
+        expected_ranks = list(range(1, len(enc_desc_dicts) + 1))
+        ranks = sorted([desc_dict[RS_MAPPING_RANK] for desc_dict, attr in enc_desc_dicts])
+        if ranks != expected_ranks:
+            raise InvalidClientRequest(request.identifier, request.reqId,
+                                       "the attribute's ranks are not sequential: expected ranks are all values from 1 to {}".format(
+                                           len(enc_desc_dicts)))
+
+        # 6. check that all the enc fields point to an existing object on the ledger of the type Encoding
         for desc_dict, attr in enc_desc_dicts:
             encoding_id = desc_dict[RS_MAPPING_ENC]
             encoding, _, _ = self.get_from_state(encoding_id)
@@ -90,8 +100,6 @@ class RichSchemaMappingHandler(AbstractRichSchemaObjectHandler):
                                            request.reqId,
                                            "'{}' field in the '{}' attribute must reference an encoding with {}={}".format(
                                                RS_MAPPING_ENC, attr, RS_TYPE, RS_ENCODING_TYPE_VALUE))
-
-        # 6. check that all ranks are unique and form a sequence without gaps
 
 
 def find_encoding_desc_dicts(content, last_attr=None):
