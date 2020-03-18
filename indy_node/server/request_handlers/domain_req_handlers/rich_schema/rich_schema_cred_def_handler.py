@@ -44,6 +44,7 @@ class RichSchemaCredDefHandler(AbstractRichSchemaObjectHandler):
         schema_id = content_as_dict[RS_CRED_DEF_SCHEMA]
         mapping_id = content_as_dict[RS_CRED_DEF_MAPPING]
 
+        # 1. check that the schema field points to an existing object on the ledger
         schema, _, _ = self.get_from_state(schema_id)
         if not schema:
             raise InvalidClientRequest(request.identifier,
@@ -51,6 +52,7 @@ class RichSchemaCredDefHandler(AbstractRichSchemaObjectHandler):
                                        'Can not find a schema with id={}; please make sure that it has been added to the ledger'.format(
                                            schema_id))
 
+        # 2. check that the mapping field points to an existing object on the ledger
         mapping, _, _ = self.get_from_state(mapping_id)
         if not mapping:
             raise InvalidClientRequest(request.identifier,
@@ -58,12 +60,14 @@ class RichSchemaCredDefHandler(AbstractRichSchemaObjectHandler):
                                        'Can not find a mapping with id={}; please make sure that it has been added to the ledger'.format(
                                            mapping_id))
 
+        # 3. check that the schema field points to an object of the Schema type
         if schema.get(RS_TYPE) != RS_SCHEMA_TYPE_VALUE:
             raise InvalidClientRequest(request.identifier,
                                        request.reqId,
                                        "'{}' field must reference a schema with {}={}".format(
                                            RS_CRED_DEF_SCHEMA, RS_TYPE, RS_SCHEMA_TYPE_VALUE))
 
+        # 4. check that the mapping fields points to an object of the Mapping type
         if mapping.get(RS_TYPE) != RS_MAPPING_TYPE_VALUE:
             raise InvalidClientRequest(request.identifier,
                                        request.reqId,

@@ -123,7 +123,7 @@ def test_schema_dynamic_validation_passes(mapping_handler, mapping_req,
 
     make_rich_schema_object_exist(rich_schema_handler, rich_schema_req)
 
-    content = copy.deepcopy(json.loads(mapping_handler.operation[RS_CONTENT]))
+    content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
     content[RS_MAPPING_SCHEMA] = rich_schema_req.operation[RS_ID]
     mapping_req.operation[RS_CONTENT] = json.dumps(content)
 
@@ -139,11 +139,29 @@ def test_dynamic_validation_not_existent_schema(mapping_handler, mapping_req,
     make_rich_schema_object_exist(rich_schema_handler, rich_schema_req)
 
     schema_id = randomString()
-    content = copy.deepcopy(json.loads(mapping_handler.operation[RS_CONTENT]))
+    content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
     content[RS_MAPPING_SCHEMA] = schema_id
     mapping_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
                        match='Can not find a schema with id={}; please make sure that it has been added to the ledger'.format(
                            schema_id)):
+        mapping_handler.dynamic_validation(mapping_req, 0)
+
+
+def test_dynamic_validation_not_schema_in_schema_field(mapping_handler, mapping_req,
+                                                       encoding_handler, encoding_req,
+                                                       rich_schema_handler, rich_schema_req):
+    add_to_idr(mapping_handler.database_manager.idr_cache, mapping_req.identifier, TRUSTEE)
+    add_to_idr(mapping_handler.database_manager.idr_cache, mapping_req.endorser, ENDORSER)
+
+    make_rich_schema_object_exist(rich_schema_handler, rich_schema_req)
+    make_rich_schema_object_exist(encoding_handler, encoding_req)
+
+    content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
+    content[RS_MAPPING_SCHEMA] = encoding_req.operation[RS_ID]
+    mapping_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match="'schema' field must reference a schema with rsType=sch"):
         mapping_handler.dynamic_validation(mapping_req, 0)

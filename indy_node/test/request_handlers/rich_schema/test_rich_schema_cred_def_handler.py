@@ -135,8 +135,7 @@ def test_dynamic_validation_not_schema_in_schema_field(cred_def_handler, cred_de
     content[RS_CRED_DEF_MAPPING] = mapping_req.operation[RS_ID]
     cred_def_req.operation[RS_CONTENT] = json.dumps(content)
     with pytest.raises(InvalidClientRequest,
-                       match="'schema' field must reference a schema with rsType=sch".format(
-                           RS_CRED_DEF_SCHEMA)):
+                       match="'schema' field must reference a schema with rsType=sch"):
         cred_def_handler.dynamic_validation(cred_def_req, 0)
 
 def test_dynamic_validation_not_mapping_in_mapping_field(cred_def_handler, cred_def_req,
@@ -152,6 +151,5 @@ def test_dynamic_validation_not_mapping_in_mapping_field(cred_def_handler, cred_
     cred_def_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="'mapping' field must reference a mapping with rsType=map".format(
-                           RS_CRED_DEF_MAPPING)):
+                       match="'mapping' field must reference a mapping with rsType=map"):
         cred_def_handler.dynamic_validation(cred_def_req, 0)
