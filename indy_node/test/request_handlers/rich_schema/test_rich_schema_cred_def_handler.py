@@ -77,7 +77,7 @@ def test_static_validation_no_field(cred_def_handler, cred_def_req, missing_fiel
     cred_def_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="{} must be set in content".format(missing_field)):
+                       match="{} must be set in 'content'".format(missing_field)):
         cred_def_handler.static_validation(cred_def_req)
 
 
@@ -85,27 +85,17 @@ def test_dynamic_validation_passes(cred_def_handler, cred_def_req):
     cred_def_handler.dynamic_validation(cred_def_req, 0)
 
 
-def test_dynamic_validation_not_existent_schema(cred_def_handler, cred_def_req):
+@pytest.mark.parametrize('field', [RS_CRED_DEF_SCHEMA, RS_CRED_DEF_MAPPING])
+def test_dynamic_validation_not_existent_ref(cred_def_handler, cred_def_req,
+                                             field):
     content = copy.deepcopy(json.loads(cred_def_req.operation[RS_CONTENT]))
-    schema_id = randomString()
-    content[RS_CRED_DEF_SCHEMA] = schema_id
+    wrong_id = randomString()
+    content[field] = wrong_id
     cred_def_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match='Can not find a referenced schema with id={}; please make sure that it has been added to the ledger'.format(
-                           schema_id)):
-        cred_def_handler.dynamic_validation(cred_def_req, 0)
-
-
-def test_dynamic_validation_not_existent_mapping(cred_def_handler, cred_def_req):
-    content = copy.deepcopy(json.loads(cred_def_req.operation[RS_CONTENT]))
-    mapping_id = randomString()
-    content[RS_CRED_DEF_MAPPING] = mapping_id
-    cred_def_req.operation[RS_CONTENT] = json.dumps(content)
-
-    with pytest.raises(InvalidClientRequest,
-                       match='Can not find a referenced mapping with id={}; please make sure that it has been added to the ledger'.format(
-                           mapping_id)):
+                       match="Can not find a referenced '{}' with id={}; please make sure that it has been added to the ledger".format(
+                           field, wrong_id)):
         cred_def_handler.dynamic_validation(cred_def_req, 0)
 
 

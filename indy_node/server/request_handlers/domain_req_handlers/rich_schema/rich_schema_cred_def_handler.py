@@ -35,7 +35,7 @@ class RichSchemaCredDefHandler(AbstractRichSchemaObjectHandler):
         if missing_fields:
             missing_fields_str = ", ".join(missing_fields)
             raise InvalidClientRequest(request.identifier, request.reqId,
-                                       "{} must be set in {}".format(missing_fields_str, RS_CONTENT))
+                                       "{} must be set in '{}'".format(missing_fields_str, RS_CONTENT))
 
     def do_dynamic_validation_content(self, request):
         # it has been checked on static validation step that the content is a valid JSON.
@@ -49,16 +49,16 @@ class RichSchemaCredDefHandler(AbstractRichSchemaObjectHandler):
         if not schema:
             raise InvalidClientRequest(request.identifier,
                                        request.reqId,
-                                       'Can not find a referenced schema with id={}; please make sure that it has been added to the ledger'.format(
-                                           schema_id))
+                                       "Can not find a referenced '{}' with id={}; please make sure that it has been added to the ledger".format(
+                                           RS_CRED_DEF_SCHEMA, schema_id))
 
         # 2. check that the mapping field points to an existing object on the ledger
         mapping, _, _ = self.get_from_state(mapping_id)
         if not mapping:
             raise InvalidClientRequest(request.identifier,
                                        request.reqId,
-                                       'Can not find a referenced mapping with id={}; please make sure that it has been added to the ledger'.format(
-                                           mapping_id))
+                                       "Can not find a referenced '{}' with id={}; please make sure that it has been added to the ledger".format(
+                                           RS_CRED_DEF_MAPPING, mapping_id))
 
         # 3. check that the schema field points to an object of the Schema type
         if schema.get(RS_TYPE) != RS_SCHEMA_TYPE_VALUE:

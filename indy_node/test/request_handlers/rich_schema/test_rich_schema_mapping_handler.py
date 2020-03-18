@@ -7,7 +7,7 @@ import pytest
 
 from indy_common.constants import RS_CONTENT, ENDORSER, RS_MAPPING_SCHEMA, RS_ID, \
     RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, RICH_SCHEMA, \
-    RS_SCHEMA_TYPE_VALUE
+    RS_SCHEMA_TYPE_VALUE, RS_MAPPING_ENC, RS_MAPPING_RANK, RS_MAPPING_ATTRIBUTES
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_encoding_handler import \
     RichSchemaEncodingHandler
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_handler import RichSchemaHandler
@@ -25,29 +25,41 @@ TEST_MAPPING = {
     '@context': "did:sov:2f9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
     '@type': "rdfs:Class",
     "schema": "did:sov:4e9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
-    "attr1": [
-        {
-            "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
-            "rank": 3
-        }
-    ],
-    "attr2": [
-        {
-            "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
-            "rank": 2
-        },
-        {
-            "enc": "did:sov:2x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
-            "rank": 1
-        },
-    ],
-    "attr3": {
-        "attr4": {
-            "attr5": [
+    "attributes": {
+        "attr1": [
+            {
+                "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                "rank": 3
+            }
+        ],
+        "attr2": [
+            {
+                "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                "rank": 2
+            },
+            {
+                "enc": "did:sov:2x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                "rank": 1
+            },
+        ],
+        "attr3": {
+            "attr4": [
                 {
-                    "enc": "did:sov:3x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
-                    "rank": 4
-                }
+                    "attr5": [
+                        {
+                            "enc": "did:sov:3x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 4
+                        }
+                    ]
+                },
+                {
+                    "attr6": [
+                        {
+                            "enc": "did:sov:3x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 4
+                        }
+                    ]
+                },
             ]
         }
     }
@@ -122,7 +134,23 @@ def test_static_validation_fail_no_schema(mapping_handler, mapping_req, status):
     mapping_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="schema must be set in content"):
+                       match="schema must be set in 'content'"):
+        mapping_handler.static_validation(mapping_req)
+
+
+@pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
+def test_static_validation_fail_no_attributes(mapping_handler, mapping_req, status):
+    content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
+    if status == 'missing':
+        content.pop(RS_MAPPING_ATTRIBUTES, None)
+    elif status == 'empty':
+        content[RS_MAPPING_ATTRIBUTES] = {}
+    elif status == 'none':
+        content[RS_MAPPING_ATTRIBUTES] = None
+    mapping_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match="attributes must be set in 'content'"):
         mapping_handler.static_validation(mapping_req)
 
 
@@ -152,42 +180,109 @@ def test_dynamic_validation_not_schema_in_schema_field(mapping_handler, mapping_
         mapping_handler.dynamic_validation(mapping_req, 0)
 
 
+# def get_next_mapping_attr(item, key):
+#     if isinstance(item, dict):
+#         return
+
 def get_mapping_attr_value(keys, mapping_content):
     return reduce(getitem, keys, mapping_content)
 
 
+# a test against TEST_MAPPING
 @pytest.mark.parametrize('enc_path, index', [
     (['attr1'], 0),
     (['attr2'], 0),
     (['attr2'], 1),
-    (['attr3', 'attr4', 'attr5'], 0)
+    (['attr3', 'attr4', 0, 'attr5'], 0),
+    (['attr3', 'attr4', 1, 'attr6'], 0)
 ])
-def test_dynamic_validation_not_existent_encoding(mapping_handler, mapping_req,
-                                                  enc_path, index):
-    enc_id = randomString()
+@pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
+@pytest.mark.parametrize('missing_field', [RS_MAPPING_ENC, RS_MAPPING_RANK])
+def test_dynamic_validation_empty_field_in_encoding_desc(mapping_handler, mapping_req,
+                                                         enc_path, index, status, missing_field):
     content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
-    get_mapping_attr_value(enc_path, content)[index][RS_ENCODING_TYPE_VALUE] = enc_id
+    enc_dict = get_mapping_attr_value(enc_path, content[RS_MAPPING_ATTRIBUTES])[index]
+    if status == 'missing':
+        enc_dict.pop(missing_field, None)
+    elif status == 'empty':
+        enc_dict[missing_field] = ""
+    elif status == 'none':
+        enc_dict[missing_field] = None
     mapping_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="Can not find a referenced encoding with id={} in '{}' attribute; please make sure that it has been added to the ledger".format(
-                           enc_id, enc_path[-1])):
+                       match="'{}' must be set for attribute '{}'".format(missing_field, enc_path[-1])):
         mapping_handler.dynamic_validation(mapping_req, 0)
 
 
+# a test against TEST_MAPPING
 @pytest.mark.parametrize('enc_path, index', [
     (['attr1'], 0),
     (['attr2'], 0),
     (['attr2'], 1),
-    (['attr3', 'attr4', 'attr5'], 0)
+    (['attr3', 'attr4', 0, 'attr5'], 0),
+    (['attr3', 'attr4', 1, 'attr6'], 0)
+])
+@pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
+def test_dynamic_validation_empty_encoding_desc(mapping_handler, mapping_req,
+                                                enc_path, index, status):
+    content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
+    enc_dict = get_mapping_attr_value(enc_path, content[RS_MAPPING_ATTRIBUTES])[index]
+    if status == 'missing':
+        enc_dict.pop(RS_MAPPING_ENC, None)
+        enc_dict.pop(RS_MAPPING_RANK, None)
+    elif status == 'empty':
+        enc_dict[RS_MAPPING_ENC] = ""
+        enc_dict[RS_MAPPING_RANK] = ""
+    elif status == 'none':
+        enc_dict[RS_MAPPING_ENC] = None
+        enc_dict[RS_MAPPING_RANK] = None
+    mapping_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match="'enc' and 'rank' must be set for attribute '{}'".format(enc_path[-1])):
+        mapping_handler.dynamic_validation(mapping_req, 0)
+
+
+# a test against TEST_MAPPING
+@pytest.mark.parametrize('enc_path, index', [
+    (['attr1'], 0),
+    (['attr2'], 0),
+    (['attr2'], 1),
+    (['attr3', 'attr4', 0, 'attr5'], 0),
+    (['attr3', 'attr4', 1, 'attr6'], 0)
+])
+def test_dynamic_validation_not_existent_encoding(mapping_handler, mapping_req,
+                                                  enc_path, index):
+    wrong_id = randomString()
+    content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
+    enc_dict = get_mapping_attr_value(enc_path, content[RS_MAPPING_ATTRIBUTES])[index]
+    enc_dict[RS_MAPPING_ENC] = wrong_id
+    mapping_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match="Can not find a referenced 'enc' with id={} in '{}' attribute; please make sure that it has been added to the ledger".format(
+                           wrong_id, enc_path[-1])):
+        mapping_handler.dynamic_validation(mapping_req, 0)
+
+
+# a test against TEST_MAPPING
+@pytest.mark.parametrize('enc_path, index', [
+    (['attr1'], 0),
+    (['attr2'], 0),
+    (['attr2'], 1),
+    (['attr3', 'attr4', 0, 'attr5'], 0),
+    (['attr3', 'attr4', 1, 'attr6'], 0)
 ])
 def test_dynamic_validation_not_encoding_in_enc_field(mapping_handler, mapping_req,
                                                       rich_schema_req,
                                                       enc_path, index):
     content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
-    get_mapping_attr_value(enc_path, content)[RS_ENCODING_TYPE_VALUE] = rich_schema_req.operation[RS_ID]
+    enc_dict = get_mapping_attr_value(enc_path, content[RS_MAPPING_ATTRIBUTES])[index]
+    enc_dict[RS_MAPPING_ENC] = rich_schema_req.operation[RS_ID]
     mapping_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="'enc' field in '{}' attribute must reference an encoding with rsType=enc"):
+                       match="'enc' field in '{}' attribute must reference an encoding with rsType=enc".format(
+                           enc_path[-1])):
         mapping_handler.dynamic_validation(mapping_req, 0)

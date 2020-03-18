@@ -1,7 +1,8 @@
 from common.serializers.json_serializer import JsonSerializer
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 
-from indy_common.constants import RICH_SCHEMA_MAPPING, RS_MAPPING_SCHEMA, RS_CONTENT, RS_TYPE, RS_SCHEMA_TYPE_VALUE
+from indy_common.constants import RICH_SCHEMA_MAPPING, RS_MAPPING_SCHEMA, RS_CONTENT, RS_TYPE, RS_SCHEMA_TYPE_VALUE, \
+    RS_MAPPING_ENC, RS_MAPPING_RANK, RS_ENCODING_TYPE_VALUE, JSON_LD_CONTEXT_FIELD, RS_MAPPING_ATTRIBUTES
 
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.abstract_rich_schema_object_handler import \
     AbstractRichSchemaObjectHandler
@@ -23,13 +24,19 @@ class RichSchemaMappingHandler(AbstractRichSchemaObjectHandler):
         return True
 
     def do_static_validation_content(self, content_as_dict, request):
-        if not content_as_dict.get(RS_MAPPING_SCHEMA):
+        missing_fields = []
+        for field in [RS_MAPPING_SCHEMA, RS_MAPPING_ATTRIBUTES]:
+            if not content_as_dict.get(field):
+                missing_fields.append(field)
+
+        if missing_fields:
+            missing_fields_str = ", ".join(missing_fields)
             raise InvalidClientRequest(request.identifier, request.reqId,
-                                       "{} must be set in {}".format(RS_MAPPING_SCHEMA, RS_CONTENT))
+                                       "{} must be set in '{}'".format(missing_fields_str, RS_CONTENT))
 
     def do_dynamic_validation_content(self, request):
         # it has been checked on static validation step that the content is a valid JSON.
-        # and it has a schema fields
+        # and it has schema and attributes fields
         content_as_dict = JsonSerializer.loads(request.operation[RS_CONTENT])
 
         # 1. check that the schema field points to an existing object on the ledger
@@ -48,4 +55,65 @@ class RichSchemaMappingHandler(AbstractRichSchemaObjectHandler):
                                        "'{}' field must reference a schema with {}={}".format(
                                            RS_MAPPING_SCHEMA, RS_TYPE, RS_SCHEMA_TYPE_VALUE))
 
-        # 3. check that all the enc fields point to an existing object on the ledger of the type Encoding
+        # 3. find all attribute leaf dicts with encoding-rank pairs
+        enc_desc_dicts = list(find_encoding_desc_dicts(content_as_dict[RS_MAPPING_ATTRIBUTES]))
+
+        # 4. check that every dict has encoding and rank fields
+        for desc_dict, attr in enc_desc_dicts:
+            if not isinstance(desc_dict, dict):
+                raise InvalidClientRequest(request.identifier,
+                                           request.reqId,
+                                           "'{}' and '{}' must be set for attribute '{}'".format(RS_MAPPING_ENC,
+                                                                                                 RS_MAPPING_RANK, attr))
+            if not desc_dict.get(RS_MAPPING_ENC):
+                raise InvalidClientRequest(request.identifier,
+                                           request.reqId,
+                                           "'{}' must be set for attribute '{}'".format(RS_MAPPING_ENC, attr))
+            if not desc_dict.get(RS_MAPPING_RANK):
+                raise InvalidClientRequest(request.identifier,
+                                           request.reqId,
+                                           "'{}' must be set for attribute '{}'".format(RS_MAPPING_RANK, attr))
+
+        # 5. check that all the enc fields point to an existing object on the ledger of the type Encoding
+        for desc_dict, attr in enc_desc_dicts:
+            encoding_id = desc_dict[RS_MAPPING_ENC]
+            encoding, _, _ = self.get_from_state(encoding_id)
+            if not encoding:
+                raise InvalidClientRequest(request.identifier,
+                                           request.reqId,
+                                           "Can not find a referenced '{}' with id={} in '{}' attribute; please make sure that it has been added to the ledger".format(
+                                               RS_MAPPING_ENC, encoding_id, attr))
+            if encoding.get(RS_TYPE) != RS_ENCODING_TYPE_VALUE:
+                raise InvalidClientRequest(request.identifier,
+                                           request.reqId,
+                                           "'{}' field in '{}' attribute must reference an encoding with {}={}".format(
+                                               RS_MAPPING_ENC, attr, RS_TYPE, RS_ENCODING_TYPE_VALUE))
+
+        # 6. check that all ranks are unique and form a sequence without gaps
+
+
+def find_encoding_desc_dicts(content, last_attr=None):
+    if is_leaf_dict(content):
+        yield content, last_attr
+        return
+
+    for k, v in content.items():
+        if k in []:
+            continue
+        if isinstance(v, list):
+            for item in v:
+                for desc_dict, last_attr in find_encoding_desc_dicts(item, k):
+                    yield desc_dict, last_attr
+        else:
+            for desc_dict, last_attr in find_encoding_desc_dicts(v, k):
+                yield desc_dict, last_attr
+
+
+def is_leaf_dict(node):
+    if isinstance(node, dict):
+        for k, v in node.items():
+            if isinstance(v, dict):
+                return False
+            if isinstance(v, list):
+                return False
+    return True
