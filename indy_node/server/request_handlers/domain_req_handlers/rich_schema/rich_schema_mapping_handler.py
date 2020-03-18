@@ -69,7 +69,8 @@ class RichSchemaMappingHandler(AbstractRichSchemaObjectHandler):
 
             missing_fields = []
             for field in [RS_MAPPING_ENC, RS_MAPPING_RANK]:
-                if not desc_dict.get(field):
+                v = desc_dict.get(field)
+                if not v and v != 0:
                     missing_fields.append(field)
 
             if missing_fields:
