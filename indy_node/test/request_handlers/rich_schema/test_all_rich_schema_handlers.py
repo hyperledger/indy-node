@@ -65,33 +65,46 @@ def test_static_validation_content_is_json(handler_and_request):
         handler.static_validation(request)
 
 
-def test_static_validation_content_is_json_ld_with_atid(handler_and_request):
+@pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
+def test_static_validation_content_is_json_ld_with_atid(handler_and_request, status):
     handler, request = handler_and_request
 
     content = copy.deepcopy(json.loads(request.operation[RS_CONTENT]))
-    content.pop(JSON_LD_ID_FIELD, None)
+    if status == 'missing':
+        content.pop(JSON_LD_ID_FIELD, None)
+    elif status == 'empty':
+        content[JSON_LD_ID_FIELD] = ""
+    elif status == 'none':
+        content[JSON_LD_ID_FIELD] = None
     request.operation[RS_CONTENT] = json.dumps(content)
 
     if not isinstance(handler, (RichSchemaMappingHandler, RichSchemaHandler, RichSchemaPresDefHandler)):
         handler.static_validation(request)
         return
 
-    with pytest.raises(InvalidClientRequest, match="`content` must be a valid JSON-LD and have '@id' field"):
+    with pytest.raises(InvalidClientRequest, match="'content' must be a valid JSON-LD and have non-empty '@id' field"):
         handler.static_validation(request)
 
 
-def test_static_validation_content_is_json_ld_with_attype(handler_and_request):
+@pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
+def test_static_validation_content_is_json_ld_with_attype(handler_and_request, status):
     handler, request = handler_and_request
 
     content = copy.deepcopy(json.loads(request.operation[RS_CONTENT]))
-    content.pop(JSON_LD_TYPE_FIELD, None)
+    if status == 'missing':
+        content.pop(JSON_LD_TYPE_FIELD, None)
+    elif status == 'empty':
+        content[JSON_LD_TYPE_FIELD] = ""
+    elif status == 'none':
+        content[JSON_LD_TYPE_FIELD] = None
     request.operation[RS_CONTENT] = json.dumps(content)
 
     if not isinstance(handler, (RichSchemaMappingHandler, RichSchemaHandler, RichSchemaPresDefHandler)):
         handler.static_validation(request)
         return
 
-    with pytest.raises(InvalidClientRequest, match="`content` must be a valid JSON-LD and have '@type' field"):
+    with pytest.raises(InvalidClientRequest,
+                       match="'content' must be a valid JSON-LD and have non-empty '@type' field"):
         handler.static_validation(request)
 
 

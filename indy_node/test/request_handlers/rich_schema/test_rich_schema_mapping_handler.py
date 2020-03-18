@@ -5,7 +5,7 @@ from operator import getitem
 
 import pytest
 
-from indy_common.constants import RS_CONTENT, ENDORSER, JSON_LD_TYPE_FIELD, JSON_LD_ID_FIELD, RS_MAPPING_SCHEMA, RS_ID, \
+from indy_common.constants import RS_CONTENT, ENDORSER, RS_MAPPING_SCHEMA, RS_ID, \
     RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, RICH_SCHEMA, \
     RS_SCHEMA_TYPE_VALUE
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_encoding_handler import \
@@ -108,38 +108,6 @@ def mapping_req(rich_schema_handler, encoding_handler, rich_schema_req):
 
 def test_static_validation_pass(mapping_handler, mapping_req):
     mapping_handler.static_validation(mapping_req)
-
-
-@pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
-def test_static_validation_fail_no_id(mapping_handler, mapping_req, status):
-    content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
-    if status == 'missing':
-        content.pop(JSON_LD_ID_FIELD, None)
-    elif status == 'empty':
-        content[JSON_LD_ID_FIELD] = ""
-    elif status == 'none':
-        content[JSON_LD_ID_FIELD] = None
-    mapping_req.operation[RS_CONTENT] = json.dumps(content)
-
-    with pytest.raises(InvalidClientRequest,
-                       match="'content' must be a valid JSON-LD and have non-empty '@id' field"):
-        mapping_handler.static_validation(mapping_req)
-
-
-@pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
-def test_static_validation_fail_no_type(mapping_handler, mapping_req, status):
-    content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
-    if status == 'missing':
-        content.pop(JSON_LD_TYPE_FIELD, None)
-    elif status == 'empty':
-        content[JSON_LD_TYPE_FIELD] = ""
-    elif status == 'none':
-        content[JSON_LD_TYPE_FIELD] = None
-    mapping_req.operation[RS_CONTENT] = json.dumps(content)
-
-    with pytest.raises(InvalidClientRequest,
-                       match="'content' must be a valid JSON-LD and have non-empty '@type' field"):
-        mapping_handler.static_validation(mapping_req)
 
 
 @pytest.mark.parametrize('status', ['missing', 'empty', 'none'])

@@ -25,10 +25,6 @@ def encoding_req(encoding_handler):
     return req
 
 
-def test_static_validation_pass(encoding_handler, encoding_req):
-    encoding_handler.static_validation(encoding_req)
-
-
 @pytest.mark.parametrize('missing_field', ['input', 'output', 'algorithm', 'testVectors'])
 @pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
 def test_static_validation_no_field(encoding_handler, encoding_req, missing_field, status):

@@ -20,7 +20,7 @@ def context_handler(db_manager, write_auth_req_validator):
 
 @pytest.fixture()
 def context_req(context_handler):
-    req = context_request(context_handler)
+    req = context_request()
     add_to_idr(context_handler.database_manager.idr_cache, req.identifier, TRUSTEE)
     add_to_idr(context_handler.database_manager.idr_cache, req.endorser, ENDORSER)
     return req

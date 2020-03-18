@@ -54,8 +54,8 @@ def cred_def_req(rich_schema_handler, mapping_handler, rich_schema_req, mapping_
     content[RS_CRED_DEF_MAPPING] = mapping_req.operation[RS_ID]
     req.operation[RS_CONTENT] = json.dumps(content)
 
-    add_to_idr(rich_schema_handler.database_manager.idr_cache, cred_def_req.identifier, TRUSTEE)
-    add_to_idr(rich_schema_handler.database_manager.idr_cache, cred_def_req.endorser, ENDORSER)
+    add_to_idr(rich_schema_handler.database_manager.idr_cache, req.identifier, TRUSTEE)
+    add_to_idr(rich_schema_handler.database_manager.idr_cache, req.endorser, ENDORSER)
 
     return req
 
