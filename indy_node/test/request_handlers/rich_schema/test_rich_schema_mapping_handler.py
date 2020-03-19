@@ -180,10 +180,6 @@ def test_dynamic_validation_not_schema_in_schema_field(mapping_handler, mapping_
         mapping_handler.dynamic_validation(mapping_req, 0)
 
 
-# def get_next_mapping_attr(item, key):
-#     if isinstance(item, dict):
-#         return
-
 def get_mapping_attr_value(keys, mapping_content):
     return reduce(getitem, keys, mapping_content)
 
