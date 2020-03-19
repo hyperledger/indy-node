@@ -212,3 +212,24 @@ RS_ENCODING_TYPE_VALUE = 'enc'
 RS_MAPPING_TYPE_VALUE = 'map'
 RS_CRED_DEF_TYPE_VALUE = 'cdf'
 RS_PRES_DEF_TYPE_VALUE = 'pdf'
+
+# Specific Rich Schema Object's content fields:
+RS_CRED_DEF_SIG_TYPE = "signatureType"
+RS_CRED_DEF_MAPPING = "mapping"
+RS_CRED_DEF_SCHEMA = "schema"
+RS_CRED_DEF_PUB_KEY = "publicKey"
+
+RS_ENC_INPUT = "input"
+RS_ENC_OUTPUT = "output"
+RS_ENC_ALGORITHM = "algorithm"
+RS_ENC_TEST_VECS = "testVectors"
+RS_ENC_ID = "id"
+RS_ENC_TYPE = "type"
+RS_ENC_ALG_DESC = "description"
+RS_ENC_ALG_DOC = "documentation"
+RS_ENC_ALG_IMPL = "implementation"
+
+RS_MAPPING_ATTRIBUTES = "attributes"
+RS_MAPPING_SCHEMA = "schema"
+RS_MAPPING_ENC = "enc"
+RS_MAPPING_RANK = "rank"

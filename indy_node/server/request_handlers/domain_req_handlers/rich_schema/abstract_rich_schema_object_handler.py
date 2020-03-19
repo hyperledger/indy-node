@@ -1,9 +1,11 @@
+from abc import ABCMeta, abstractmethod
 from typing import Optional
 
 from common.serializers.json_serializer import JsonSerializer
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.constants import DOMAIN_LEDGER_ID, RS_ID, RS_TYPE, RS_VERSION, RS_NAME, RS_CONTENT
+from indy_common.constants import DOMAIN_LEDGER_ID, RS_ID, RS_TYPE, RS_VERSION, RS_NAME, RS_CONTENT, JSON_LD_ID_FIELD, \
+    JSON_LD_TYPE_FIELD
 from indy_common.state.domain import encode_state_value
 from indy_common.types import Request
 from plenum.common.constants import TXN_PAYLOAD_METADATA_ENDORSER, TXN_PAYLOAD_METADATA_FROM, TXN_PAYLOAD_VERSION
@@ -14,24 +16,50 @@ from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 
 
-class AbstractRichSchemaObjectHandler(WriteRequestHandler):
+class AbstractRichSchemaObjectHandler(WriteRequestHandler, metaclass=ABCMeta):
 
     def __init__(self, txn_type, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator):
         super().__init__(database_manager, txn_type, DOMAIN_LEDGER_ID)
         self.write_req_validator = write_req_validator
 
+    @abstractmethod
+    def is_json_ld_content(self):
+        pass
+
+    @abstractmethod
+    def do_static_validation_content(self, content_as_dict, request):
+        pass
+
+    @abstractmethod
+    def do_dynamic_validation_content(self, request):
+        pass
+
     def static_validation(self, request: Request):
         self._validate_request_type(request)
         try:
             content_as_dict = JsonSerializer.loads(request.operation[RS_CONTENT])
-        except ValueError as ex:
+        except ValueError:
             raise InvalidClientRequest(request.identifier, request.reqId,
                                        "'{}' must be a JSON serialized string".format(RS_CONTENT))
+
+        if self.is_json_ld_content():
+            self.do_static_validation_json_ld(content_as_dict, request)
+
         self.do_static_validation_content(content_as_dict, request)
 
-    def do_static_validation_content(self, content_as_dict, request):
-        pass
+    def do_static_validation_json_ld(self, content_as_dict, request):
+        if not content_as_dict.get(JSON_LD_ID_FIELD):
+            raise InvalidClientRequest(request.identifier, request.reqId,
+                                       "'content' must be a valid JSON-LD and have non-empty '{}' field".format(JSON_LD_ID_FIELD))
+        if not content_as_dict.get(JSON_LD_TYPE_FIELD):
+            raise InvalidClientRequest(request.identifier, request.reqId,
+                                       "'content' must be a valid JSON-LD and have non-empty '{}' field".format(
+                                           JSON_LD_TYPE_FIELD))
+
+        if content_as_dict[JSON_LD_ID_FIELD] != request.operation[RS_ID]:
+            raise InvalidClientRequest(request.identifier, request.reqId,
+                                       "content's @id must be equal to id={}".format(request.operation[RS_ID]))
 
     def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
@@ -66,6 +94,8 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler):
                                               [AuthActionAdd(txn_type=self.txn_type,
                                                              field='*',
                                                              value='*')])
+
+        self.do_dynamic_validation_content(request)
 
     def update_state(self, txn, prev_result, request, is_committed=False) -> None:
         self._validate_txn_type(txn)

@@ -109,20 +109,12 @@ def test_state_proof_returned_for_missing_claim_def(looper, nodeSetWithOneNodeRe
 
 @pytest.mark.skip
 # TODO fix this test so it does not rely on Indy-SDK,
-# or, fix this test once GET_CONTEXT is part of Indy-SDK
-@pytest.mark.parametrize('txn_type, rs_type, content',
-                         [(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
-                          (RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
-                          (RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
-                          (RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
-                          (RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
-                          (RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
+# or, fix this test once Rich Schema objects are part of Indy-SDK
 def test_state_proof_returned_for_missing_get_rich_schema_obj_by_id(looper,
                                                                     nodeSetWithOneNodeResponding,
                                                                     sdk_wallet_endorser,
                                                                     sdk_pool_handle,
-                                                                    sdk_wallet_client,
-                                                                    txn_type, rs_type, content):
+                                                                    sdk_wallet_client):
     """
     Tests that state proof is returned in the reply for GET_RICH_SCHEMA_OBJECT_BY_ID.
     Use different submitter and reader!
@@ -141,20 +133,16 @@ def test_state_proof_returned_for_missing_get_rich_schema_obj_by_id(looper,
 
 @pytest.mark.skip
 # TODO fix this test so it does not rely on Indy-SDK,
-# or, fix this test once GET_CONTEXT is part of Indy-SDK
-@pytest.mark.parametrize('txn_type, rs_type, content',
-                         [(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
-                          (RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
-                          (RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
-                          (RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
-                          (RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
-                          (RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
+# or, fix this test once Rich Schewma objects are part of Indy-SDK
+@pytest.mark.parametrize('rs_type',
+                         [RS_CONTEXT_TYPE_VALUE, RS_SCHEMA_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, RS_MAPPING_TYPE_VALUE,
+                          RS_CRED_DEF_TYPE_VALUE, RS_PRES_DEF_TYPE_VALUE])
 def test_state_proof_returned_for_missing_get_rich_schema_obj_by_metadata(looper,
                                                                           nodeSetWithOneNodeResponding,
                                                                           sdk_wallet_endorser,
                                                                           sdk_pool_handle,
                                                                           sdk_wallet_client,
-                                                                          txn_type, rs_type, content):
+                                                                          rs_type):
     """
     Tests that state proof is returned in the reply for GET_RICH_SCHEMA_OBJECT_BY_ID.
     Use different submitter and reader!
