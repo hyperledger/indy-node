@@ -141,14 +141,6 @@ def test_send_get_rich_schema_obj_by_invalid_metadata(looper, sdk_pool_handle, s
                                                       write_rich_schema,
                                                       txn_type, rs_type, content, rs_id, rs_name, rs_version,
                                                       invalid_meta_name, invalid_meta_value):
-    rs_id = randomString()
-    rs_name = randomString()
-    rs_version = '1.0'
-
-    sdk_write_rich_schema_object_and_check(looper, sdk_wallet_endorser, sdk_pool_handle,
-                                           txn_type=txn_type, rs_id=rs_id, rs_name=rs_name,
-                                           rs_version=rs_version, rs_type=rs_type, rs_content=content)
-
     get_rich_schema_by_metadata_operation = {
         TXN_TYPE: GET_RICH_SCHEMA_OBJECT_BY_METADATA,
         RS_NAME: rs_name,
@@ -171,14 +163,6 @@ def test_send_get_rich_schema_obj_by_invalid_metadata(looper, sdk_pool_handle, s
 def test_send_get_rich_schema_obj_by_no_id(looper, sdk_pool_handle, sdk_wallet_endorser,
                                            write_rich_schema,
                                            txn_type, rs_type, content, rs_id, rs_name, rs_version):
-    rs_id = randomString()
-    rs_name = randomString()
-    rs_version = '1.0'
-
-    sdk_write_rich_schema_object_and_check(looper, sdk_wallet_endorser, sdk_pool_handle,
-                                           txn_type=txn_type, rs_id=rs_id, rs_name=rs_name,
-                                           rs_version=rs_version, rs_type=rs_type, rs_content=content)
-
     get_rich_schema_by_id_operation = {
         TXN_TYPE: GET_RICH_SCHEMA_OBJECT_BY_ID,
     }
@@ -195,14 +179,6 @@ def test_send_get_rich_schema_obj_by_no_metadata(looper, sdk_pool_handle, sdk_wa
                                                  write_rich_schema,
                                                  txn_type, rs_type, content, rs_id, rs_name, rs_version,
                                                  absent_meta):
-    rs_id = randomString()
-    rs_name = randomString()
-    rs_version = '1.0'
-
-    sdk_write_rich_schema_object_and_check(looper, sdk_wallet_endorser, sdk_pool_handle,
-                                           txn_type=txn_type, rs_id=rs_id, rs_name=rs_name,
-                                           rs_version=rs_version, rs_type=rs_type, rs_content=content)
-
     get_rich_schema_by_metadata_operation = {
         TXN_TYPE: GET_RICH_SCHEMA_OBJECT_BY_METADATA,
         RS_NAME: rs_name,
