@@ -2,7 +2,7 @@ from common.serializers.json_serializer import JsonSerializer
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 
 from indy_common.constants import RICH_SCHEMA_MAPPING, RS_MAPPING_SCHEMA, RS_CONTENT, RS_TYPE, RS_SCHEMA_TYPE_VALUE, \
-    RS_MAPPING_ENC, RS_MAPPING_RANK, RS_ENCODING_TYPE_VALUE, JSON_LD_CONTEXT_FIELD, RS_MAPPING_ATTRIBUTES
+    RS_MAPPING_ENC, RS_MAPPING_RANK, RS_ENCODING_TYPE_VALUE, RS_MAPPING_ATTRIBUTES
 
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.abstract_rich_schema_object_handler import \
     AbstractRichSchemaObjectHandler

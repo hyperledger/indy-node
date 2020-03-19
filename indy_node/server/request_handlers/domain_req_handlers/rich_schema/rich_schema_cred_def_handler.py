@@ -1,11 +1,8 @@
-from typing import Optional
-
 from common.serializers.json_serializer import JsonSerializer
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 
 from indy_common.constants import RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_SIG_TYPE, RS_CRED_DEF_MAPPING, \
     RS_CRED_DEF_SCHEMA, RS_CRED_DEF_PUB_KEY, RS_CONTENT, RS_TYPE, RS_SCHEMA_TYPE_VALUE, RS_MAPPING_TYPE_VALUE
-from indy_common.types import Request
 
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.abstract_rich_schema_object_handler import \
     AbstractRichSchemaObjectHandler
