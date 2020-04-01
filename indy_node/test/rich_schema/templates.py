@@ -70,7 +70,7 @@ RICH_SCHEMA_MAPPING_EX1 = {
         },
         "administrativeNumber": [{
             "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
-            "rank": 8
+            "rank": 10
         }]
     }
 }
