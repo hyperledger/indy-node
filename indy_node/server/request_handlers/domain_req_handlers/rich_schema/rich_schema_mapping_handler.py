@@ -45,8 +45,8 @@ class RichSchemaMappingHandler(AbstractRichSchemaObjectHandler):
         if missing_fields:
             missing_fields_str = " and ".join(missing_fields)
             raise InvalidClientRequest(request.identifier, request.reqId,
-                                       "{} must be in {}'s '{}'".format(missing_fields_str, RS_CONTENT, RS_MAPPING_ATTRIBUTES))
-
+                                       "{} must be in {}'s '{}'".format(missing_fields_str, RS_CONTENT,
+                                                                        RS_MAPPING_ATTRIBUTES))
 
     def do_dynamic_validation_content(self, request):
         # it has been checked on static validation step that the content is a valid JSON.
