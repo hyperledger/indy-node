@@ -38,7 +38,32 @@ def test_static_validation_no_field(encoding_handler, encoding_req, missing_fiel
     encoding_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="{} must be set in content".format(missing_field)):
+                       match="'{}' must be set in 'content'".format(missing_field)):
+        encoding_handler.static_validation(encoding_req)
+
+
+@pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
+def test_static_validation_no_all_fields(encoding_handler, encoding_req, status):
+    content = copy.deepcopy(json.loads(encoding_req.operation[RS_CONTENT]))
+    if status == 'missing':
+        content.pop('input', None)
+        content.pop('output', None)
+        content.pop('algorithm', None)
+        content.pop('testVectors', None)
+    elif status == 'empty':
+        content['input'] = {}
+        content['output'] = {}
+        content['algorithm'] = {}
+        content['testVectors'] = {}
+    elif status == 'none':
+        content['input'] = None
+        content['output'] = None
+        content['algorithm'] = None
+        content['testVectors'] = None
+    encoding_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match="'input', 'output', 'algorithm', 'testVectors' must be set in 'content'"):
         encoding_handler.static_validation(encoding_req)
 
 
@@ -56,7 +81,25 @@ def test_static_validation_input_output(encoding_handler, encoding_req, missing_
     encoding_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="{} must be set in {}".format(missing_field, input_output)):
+                       match="'{}' must be set in '{}'".format(missing_field, input_output)):
+        encoding_handler.static_validation(encoding_req)
+
+
+@pytest.mark.parametrize('input_output', ['input', 'output'])
+@pytest.mark.parametrize('status', ['empty', 'none'])
+def test_static_validation_input_output_all_missing(encoding_handler, encoding_req, input_output,
+                                                    status):
+    content = copy.deepcopy(json.loads(encoding_req.operation[RS_CONTENT]))
+    if status == 'empty':
+        content[input_output]['id'] = {}
+        content[input_output]['type'] = {}
+    elif status == 'none':
+        content[input_output]['id'] = None
+        content[input_output]['type'] = None
+    encoding_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match="'id' and 'type' must be set in '{}'".format(input_output)):
         encoding_handler.static_validation(encoding_req)
 
 
@@ -73,7 +116,26 @@ def test_static_validation_algorithm(encoding_handler, encoding_req, missing_fie
     encoding_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="{} must be set in {}".format(missing_field, RS_ENC_ALGORITHM)):
+                       match="'{}' must be set in '{}'".format(missing_field, RS_ENC_ALGORITHM)):
+        encoding_handler.static_validation(encoding_req)
+
+
+@pytest.mark.parametrize('status', ['empty', 'none'])
+def test_static_validation_algorithm_all_missing(encoding_handler, encoding_req, status):
+    content = copy.deepcopy(json.loads(encoding_req.operation[RS_CONTENT]))
+    if status == 'empty':
+        content[RS_ENC_ALGORITHM]['description'] = {}
+        content[RS_ENC_ALGORITHM]['documentation'] = {}
+        content[RS_ENC_ALGORITHM]['implementation'] = {}
+    elif status == 'none':
+        content[RS_ENC_ALGORITHM]['description'] = None
+        content[RS_ENC_ALGORITHM]['documentation'] = None
+        content[RS_ENC_ALGORITHM]['implementation'] = None
+    encoding_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match="'description', 'documentation', 'implementation' must be set in '{}'".format(
+                           RS_ENC_ALGORITHM)):
         encoding_handler.static_validation(encoding_req)
 
 

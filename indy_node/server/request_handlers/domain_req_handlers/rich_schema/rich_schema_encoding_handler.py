@@ -27,32 +27,32 @@ class RichSchemaEncodingHandler(AbstractRichSchemaObjectHandler):
         missing_fields = []
         for field in [RS_ENC_INPUT, RS_ENC_OUTPUT, RS_ENC_ALGORITHM, RS_ENC_TEST_VECS]:
             if not content_as_dict.get(field):
-                missing_fields.append(field)
+                missing_fields.append("'{}'".format(field))
         if missing_fields:
             missing_fields_str = ", ".join(missing_fields)
             raise InvalidClientRequest(request.identifier, request.reqId,
-                                       "{} must be set in {}".format(missing_fields_str, RS_CONTENT))
+                                       "{} must be set in '{}'".format(missing_fields_str, RS_CONTENT))
 
         # 2. check for input-output fields
         for io_field in [RS_ENC_INPUT, RS_ENC_OUTPUT]:
             missing_io_fields = []
             for field in [RS_ENC_ID, RS_ENC_TYPE]:
                 if not content_as_dict[io_field].get(field):
-                    missing_io_fields.append(field)
+                    missing_io_fields.append("'{}'".format(field))
             if missing_io_fields:
-                missing_io_fields_str = ", ".join(missing_io_fields)
+                missing_io_fields_str = " and ".join(missing_io_fields)
                 raise InvalidClientRequest(request.identifier, request.reqId,
-                                           "{} must be set in {}".format(missing_io_fields_str, io_field))
+                                           "{} must be set in '{}'".format(missing_io_fields_str, io_field))
 
         # 3. check for algorithm fields
         missing_alg_fields = []
         for field in [RS_ENC_ALG_DESC, RS_ENC_ALG_DOC, RS_ENC_ALG_IMPL]:
             if not content_as_dict[RS_ENC_ALGORITHM].get(field):
-                missing_alg_fields.append(field)
+                missing_alg_fields.append("'{}'".format(field))
         if missing_alg_fields:
             missing_alg_fields_str = ", ".join(missing_alg_fields)
             raise InvalidClientRequest(request.identifier, request.reqId,
-                                       "{} must be set in {}".format(missing_alg_fields_str, RS_ENC_ALGORITHM))
+                                       "{} must be set in '{}'".format(missing_alg_fields_str, RS_ENC_ALGORITHM))
 
     def do_dynamic_validation_content(self, request):
         pass

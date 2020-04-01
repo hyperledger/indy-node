@@ -230,6 +230,8 @@ RS_ENC_ALG_DOC = "documentation"
 RS_ENC_ALG_IMPL = "implementation"
 
 RS_MAPPING_ATTRIBUTES = "attributes"
+RS_MAPPING_ISSUER = "issuer"
+RS_MAPPING_ISSUANCE_DATE = "issuanceDate"
 RS_MAPPING_SCHEMA = "schema"
 RS_MAPPING_ENC = "enc"
 RS_MAPPING_RANK = "rank"

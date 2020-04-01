@@ -24,6 +24,18 @@ RICH_SCHEMA_MAPPING_EX1 = {
     '@type': "rdfs:Class",
     "schema": "did:sov:3e9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
     "attributes": {
+        "issuer": [
+            {
+                "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                "rank": 1
+            }
+        ],
+        "issuanceDate": [
+            {
+                "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                "rank": 2
+            }
+        ],
         "driver": [{
             "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
             "rank": 5
@@ -39,11 +51,11 @@ RICH_SCHEMA_MAPPING_EX1 = {
         "licenseNumber": [
             {
                 "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
-                "rank": 1
+                "rank": 8
             },
             {
                 "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
-                "rank": 2
+                "rank": 9
             },
         ],
         "categoriesOfVehicles": {
@@ -58,7 +70,7 @@ RICH_SCHEMA_MAPPING_EX1 = {
         },
         "administrativeNumber": [{
             "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
-            "rank": 8
+            "rank": 10
         }]
     }
 }

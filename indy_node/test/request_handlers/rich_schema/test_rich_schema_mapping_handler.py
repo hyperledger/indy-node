@@ -61,7 +61,19 @@ TEST_MAPPING = {
                     ]
                 },
             ]
-        }
+        },
+        "issuer": [
+            {
+                "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                "rank": 7
+            }
+        ],
+        "issuanceDate": [
+            {
+                "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                "rank": 6
+            }
+        ],
     }
 }
 
@@ -123,34 +135,74 @@ def test_static_validation_pass(mapping_handler, mapping_req):
 
 
 @pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
-def test_static_validation_fail_no_schema(mapping_handler, mapping_req, status):
+@pytest.mark.parametrize('missing_field', ['schema', 'attributes'])
+def test_static_validation_fail_no_schema_or_attribute(mapping_handler, mapping_req, status, missing_field):
     content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
     if status == 'missing':
-        content.pop(RS_MAPPING_SCHEMA, None)
+        content.pop(missing_field, None)
     elif status == 'empty':
-        content[RS_MAPPING_SCHEMA] = ""
+        content[missing_field] = ""
     elif status == 'none':
-        content[RS_MAPPING_SCHEMA] = None
+        content[missing_field] = None
     mapping_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="schema must be set in 'content'"):
+                       match="'{}' must be set in 'content'".format(missing_field)):
         mapping_handler.static_validation(mapping_req)
 
 
 @pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
-def test_static_validation_fail_no_attributes(mapping_handler, mapping_req, status):
+def test_static_validation_fail_no_schema_and_attributes(mapping_handler, mapping_req, status):
     content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
     if status == 'missing':
-        content.pop(RS_MAPPING_ATTRIBUTES, None)
+        content.pop('attributes', None)
+        content.pop('schema', None)
     elif status == 'empty':
-        content[RS_MAPPING_ATTRIBUTES] = {}
+        content['attributes'] = {}
+        content['schema'] = {}
     elif status == 'none':
-        content[RS_MAPPING_ATTRIBUTES] = None
+        content['attributes'] = None
+        content['schema'] = None
     mapping_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="attributes must be set in 'content'"):
+                       match="'schema' and 'attributes' must be set in 'content'"):
+        mapping_handler.static_validation(mapping_req)
+
+
+@pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
+@pytest.mark.parametrize('missing_field', ['issuer', 'issuanceDate'])
+def test_static_validation_fail_no_issuer_or_issuance_date(mapping_handler, mapping_req, status, missing_field):
+    content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
+    if status == 'missing':
+        content[RS_MAPPING_ATTRIBUTES].pop(missing_field, None)
+    elif status == 'empty':
+        content[RS_MAPPING_ATTRIBUTES][missing_field] = {}
+    elif status == 'none':
+        content[RS_MAPPING_ATTRIBUTES][missing_field] = None
+    mapping_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match="'{}' must be in content's 'attributes'".format(missing_field)):
+        mapping_handler.static_validation(mapping_req)
+
+
+@pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
+def test_static_validation_fail_no_issuance_date_and_issuer(mapping_handler, mapping_req, status):
+    content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
+    if status == 'missing':
+        content[RS_MAPPING_ATTRIBUTES].pop('issuanceDate', None)
+        content[RS_MAPPING_ATTRIBUTES].pop('issuer', None)
+    elif status == 'empty':
+        content[RS_MAPPING_ATTRIBUTES]['issuanceDate'] = {}
+        content[RS_MAPPING_ATTRIBUTES]['issuer'] = {}
+    elif status == 'none':
+        content[RS_MAPPING_ATTRIBUTES]['issuanceDate'] = None
+        content[RS_MAPPING_ATTRIBUTES]['issuer'] = None
+    mapping_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match="'issuer' and 'issuanceDate' must be in content's 'attributes'"):
         mapping_handler.static_validation(mapping_req)
 
 
@@ -293,9 +345,11 @@ def test_dynamic_validation_not_encoding_in_enc_field(mapping_handler, mapping_r
     (['attr2'], 0),
     (['attr2'], 1),
     (['attr3', 'attr4', 0, 'attr5'], 0),
-    (['attr3', 'attr4', 1, 'attr6'], 0)
+    (['attr3', 'attr4', 1, 'attr6'], 0),
+    (['issuer'], 0),
+    (['issuanceDate'], 0)
 ])
-@pytest.mark.parametrize('rank_value', [6, 7, 0, 10, -1])
+@pytest.mark.parametrize('rank_value', [0, 8, 9, 12, -1])
 def test_dynamic_validation_rank_sequence(mapping_handler, mapping_req,
                                           rich_schema_req,
                                           enc_path, index, rank_value):
@@ -305,5 +359,24 @@ def test_dynamic_validation_rank_sequence(mapping_handler, mapping_req,
     mapping_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="the attribute's ranks are not sequential: expected ranks are all values from 1 to 5"):
+                       match="the attribute's ranks are not sequential: expected ranks are all values from 1 to 7"):
+        mapping_handler.dynamic_validation(mapping_req, 0)
+
+
+@pytest.mark.parametrize('enc_path, index', [
+    (['attr1'], 0),
+    (['attr2'], 0),
+    (['attr2'], 1),
+])
+@pytest.mark.parametrize('rank_value', [4, 5, 6, 7])
+def test_dynamic_validation_rank_same_rank(mapping_handler, mapping_req,
+                                           rich_schema_req,
+                                           enc_path, index, rank_value):
+    content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
+    enc_dict = get_mapping_attr_value(enc_path, content[RS_MAPPING_ATTRIBUTES])[index]
+    enc_dict[RS_MAPPING_RANK] = rank_value
+    mapping_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match="the attribute's ranks are not sequential: expected ranks are all values from 1 to 7"):
         mapping_handler.dynamic_validation(mapping_req, 0)

@@ -2,7 +2,8 @@ from common.serializers.json_serializer import JsonSerializer
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 
 from indy_common.constants import RICH_SCHEMA_MAPPING, RS_MAPPING_SCHEMA, RS_CONTENT, RS_TYPE, RS_SCHEMA_TYPE_VALUE, \
-    RS_MAPPING_ENC, RS_MAPPING_RANK, RS_ENCODING_TYPE_VALUE, RS_MAPPING_ATTRIBUTES
+    RS_MAPPING_ENC, RS_MAPPING_RANK, RS_ENCODING_TYPE_VALUE, RS_MAPPING_ATTRIBUTES, RS_MAPPING_ISSUER, \
+    RS_MAPPING_ISSUANCE_DATE
 
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.abstract_rich_schema_object_handler import \
     AbstractRichSchemaObjectHandler
@@ -24,15 +25,28 @@ class RichSchemaMappingHandler(AbstractRichSchemaObjectHandler):
         return True
 
     def do_static_validation_content(self, content_as_dict, request):
+        # 1. check for missing `schema` or `attributes` fields
         missing_fields = []
         for field in [RS_MAPPING_SCHEMA, RS_MAPPING_ATTRIBUTES]:
             if not content_as_dict.get(field):
-                missing_fields.append(field)
+                missing_fields.append("'{}'".format(field))
 
         if missing_fields:
-            missing_fields_str = ", ".join(missing_fields)
+            missing_fields_str = " and ".join(missing_fields)
             raise InvalidClientRequest(request.identifier, request.reqId,
                                        "{} must be set in '{}'".format(missing_fields_str, RS_CONTENT))
+
+        # 2. check for missing defaukt attributes in `attributes` (`issuer` and `issuanceDate`)
+        missing_fields = []
+        for field in [RS_MAPPING_ISSUER, RS_MAPPING_ISSUANCE_DATE]:
+            if not content_as_dict[RS_MAPPING_ATTRIBUTES].get(field):
+                missing_fields.append("'{}'".format(field))
+
+        if missing_fields:
+            missing_fields_str = " and ".join(missing_fields)
+            raise InvalidClientRequest(request.identifier, request.reqId,
+                                       "{} must be in {}'s '{}'".format(missing_fields_str, RS_CONTENT,
+                                                                        RS_MAPPING_ATTRIBUTES))
 
     def do_dynamic_validation_content(self, request):
         # it has been checked on static validation step that the content is a valid JSON.
