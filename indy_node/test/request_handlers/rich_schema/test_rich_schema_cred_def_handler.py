@@ -77,9 +77,33 @@ def test_static_validation_no_field(cred_def_handler, cred_def_req, missing_fiel
     cred_def_req.operation[RS_CONTENT] = json.dumps(content)
 
     with pytest.raises(InvalidClientRequest,
-                       match="{} must be set in 'content'".format(missing_field)):
+                       match="'{}' must be set in 'content'".format(missing_field)):
         cred_def_handler.static_validation(cred_def_req)
 
+
+@pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
+def test_static_validation_no_all_fields(cred_def_handler, cred_def_req, status):
+    content = copy.deepcopy(json.loads(cred_def_req.operation[RS_CONTENT]))
+    if status == 'missing':
+        content.pop('signatureType', None)
+        content.pop('mapping', None)
+        content.pop('schema', None)
+        content.pop('publicKey', None)
+    elif status == 'empty':
+        content['signatureType'] = ""
+        content['mapping'] = ""
+        content['schema'] = ""
+        content['publicKey'] = ""
+    elif status == 'none':
+        content['signatureType'] = None
+        content['mapping'] = None
+        content['schema'] = None
+        content['publicKey'] = None
+    cred_def_req.operation[RS_CONTENT] = json.dumps(content)
+
+    with pytest.raises(InvalidClientRequest,
+                       match="'signatureType', 'mapping', 'schema', 'publicKey' must be set in 'content'"):
+        cred_def_handler.static_validation(cred_def_req)
 
 def test_dynamic_validation_passes(cred_def_handler, cred_def_req):
     cred_def_handler.dynamic_validation(cred_def_req, 0)

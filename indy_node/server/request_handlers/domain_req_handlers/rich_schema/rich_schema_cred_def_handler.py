@@ -27,7 +27,7 @@ class RichSchemaCredDefHandler(AbstractRichSchemaObjectHandler):
         missing_fields = []
         for field in [RS_CRED_DEF_SIG_TYPE, RS_CRED_DEF_MAPPING, RS_CRED_DEF_SCHEMA, RS_CRED_DEF_PUB_KEY]:
             if not content_as_dict.get(field):
-                missing_fields.append(field)
+                missing_fields.append("'{}'".format(field))
 
         if missing_fields:
             missing_fields_str = ", ".join(missing_fields)
