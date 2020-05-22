@@ -11,7 +11,7 @@ from common.version import (
     InvalidVersionError, SourceVersion, PackageVersion, GenericVersion
 )
 
-from indy_common.version import NodeVersion, src_version_cls
+from indy_common.version import src_version_cls
 from indy_common.util import compose_cmd
 
 
@@ -30,7 +30,7 @@ codecs.register_error('decode_errors', decode_err_handler)
 
 
 logger = getlogger()
-TIMEOUT = 300
+TIMEOUT = 600
 MAX_DEPS_DEPTH = 6
 
 
@@ -205,7 +205,7 @@ class NodeControlUtil:
     @classmethod
     def _parse_deps(cls, deps: str):
         ret = []
-        deps = deps.replace("|", ",")
+        deps = deps.replace("|", ",").replace("(", "").replace(")", "")
         pkgs = deps.split(",")
         for pkg in pkgs:
             if not pkg:
@@ -357,18 +357,25 @@ class NodeControlUtil:
         return ret
 
     @classmethod
-    def get_deps_tree_filtered(cls, *package, filter_list=[], depth=0):
+    def get_deps_tree_filtered(cls, *package, hold_list=[], depth=0, deps_map={}):
         ret = list(set(package))
-        filter_list = [f for f in filter_list if not list(filter(lambda x: f in x, ret))]
-        if depth < MAX_DEPS_DEPTH and filter_list:
+        if depth < MAX_DEPS_DEPTH:
             package_info = cls._get_info_from_package_manager(*ret)
             _, deps = cls._parse_version_deps_from_pkg_mgr_output(package_info)
-            deps_deps = []
-            deps = list(set(deps) - set(ret))
-            deps_deps.append(cls.get_deps_tree_filtered(*deps, filter_list=filter_list, depth=depth + 1))
+            # Make deps list unique
+            deps = list(set(deps + ret))
+            for d in deps:
+                if "=" in d:
+                    p, v = d.split("=")
+                else:
+                    p = d
+                    v = ''
+                if p in hold_list and \
+                        (p not in deps_map or deps_map[p] == ''):
+                    deps_map[p] = v
+            cls.get_deps_tree_filtered(*deps, hold_list=hold_list, depth=depth + 1, deps_map=deps_map)
 
-            ret.append(deps_deps)
-        return ret
+        return ["{}={}".format(p, v) if v != '' else p for p, v in deps_map.items()]
 
     @classmethod
     def dep_tree_traverse(cls, dep_tree, deps_so_far):

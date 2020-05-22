@@ -1,3 +1,5 @@
+from typing import Optional
+
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.req_utils import get_txn_claim_def_schema_ref, get_txn_claim_def_tag, get_txn_claim_def_signature_type, \
@@ -27,7 +29,7 @@ class ClaimDefHandler(WriteRequestHandler):
     def static_validation(self, request: Request):
         pass
 
-    def dynamic_validation(self, request: Request):
+    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         # we can not add a Claim Def with existent ISSUER_DID
         # sine a Claim Def needs to be identified by seqNo
         self._validate_request_type(request)

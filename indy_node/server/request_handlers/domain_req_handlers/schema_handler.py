@@ -1,3 +1,5 @@
+from typing import Optional
+
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 
@@ -7,7 +9,6 @@ from indy_common.req_utils import get_write_schema_name, get_write_schema_versio
     get_txn_schema_version, get_txn_schema_attr_names
 from indy_common.state.state_constants import MARKER_SCHEMA
 from plenum.common.constants import DOMAIN_LEDGER_ID
-from plenum.common.exceptions import InvalidClientRequest
 
 from plenum.common.request import Request
 from plenum.common.txn_util import get_request_data, get_from, get_seq_no, get_txn_time
@@ -26,7 +27,7 @@ class SchemaHandler(WriteRequestHandler):
     def static_validation(self, request: Request):
         pass
 
-    def dynamic_validation(self, request: Request):
+    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         # we can not add a Schema with already existent NAME and VERSION
         # sine a Schema needs to be identified by seqNo
         self._validate_request_type(request)

@@ -1,6 +1,7 @@
 import multiprocessing
 import os
 
+import pytest
 
 from stp_core.loop.eventually import eventually
 from indy_common.constants import APP_NAME
@@ -19,6 +20,12 @@ from indy_node.test.upgrade.helper import (
 m = multiprocessing.Manager()
 # TODO why do we expect that
 whitelist = ['Unexpected error in _upgrade test']
+
+
+@pytest.fixture(scope='module')
+def tconf(tconf, tdir):
+    tconf.LOG_DIR = tdir
+    yield tconf
 
 
 def testNodeControlPerformsMigrations(monkeypatch, tdir, looper, tconf):
@@ -60,7 +67,7 @@ def testNodeControlPerformsMigrations(monkeypatch, tdir, looper, tconf):
             version, upstream_cls=src_version_cls())
     )
 
-    nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
+    nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform, config=tconf)
     try:
         sendUpgradeMessage(version)
         looper.run(eventually(checkMigration))

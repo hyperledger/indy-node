@@ -100,7 +100,7 @@ class InvBase(object):
         self.path = os.path.join(os.path.join(inv_dir, *rel_dirs), name)
 
     def _dump(self, stream):
-        raise NotImplemented
+        raise NotImplementedError
 
     def dump(self):
         with open(self.path, "w") as _f:
@@ -338,4 +338,5 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
+    sys.exit(0)

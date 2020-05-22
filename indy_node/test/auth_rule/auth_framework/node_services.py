@@ -1,14 +1,18 @@
 import pytest
 from abc import abstractmethod
 
+from plenum.test.test_node import ensureElectionsDone
+
 from indy_common.authorize.auth_actions import split_action_id
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
 from plenum.common.constants import STEWARD_STRING, TRUSTEE, TRUSTEE_STRING, VALIDATOR
 from plenum.common.exceptions import RequestRejectedException
+from plenum.test.helper import waitForViewChange
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 from indy_node.test.helper import build_auth_rule_request_json
+from stp_core.loop.eventually import eventually
 
 
 class NodeAuthTest(AuthTest):
@@ -78,6 +82,7 @@ class NodeAuthTest(AuthTest):
         return req, node_data, node_name, wallet
 
     def _demote_new_nodes(self):
+        view_no = self.txnPoolNodeSet[0].viewNo
         for wallet, (node_data, node_name) in self.new_nodes.items():
             print("demote {}".format(node_name))
             req1, node_data1, node_name1 = self._build_node(wallet,
@@ -87,6 +92,21 @@ class NodeAuthTest(AuthTest):
                                                             node_name=node_name,
                                                             node_data=node_data)
             self.send_and_check(req1, wallet)
+            view_no = self._wait_view_change_finish(view_no)
+
+    def _wait_view_change_finish(self, view_no):
+        view_no += 1
+        waitForViewChange(looper=self.looper, txnPoolNodeSet=self.txnPoolNodeSet,
+                          expectedViewNo=view_no)
+
+        def check_not_in_view_change():
+            assert all([not n.master_replica._consensus_data.waiting_for_new_view
+                        for n in self.txnPoolNodeSet])
+
+        # we may have multiple view changes since we can select the same Primary as in previous view,
+        # or select a demoted node as a Primary
+        self.looper.run(eventually(check_not_in_view_change, timeout=100))
+        return view_no
 
     @abstractmethod
     def _generate_auth_rule_params(self, constraint):
@@ -157,6 +177,31 @@ class EditNodeServicesTest(EditNodeTest):
         self.default_auth_rule = self.get_default_auth_rule()
         self.changed_auth_rule = self.get_changed_auth_rule()
 
+    def run(self):
+        # Step 1. Change auth rule
+        self.send_and_check(self.changed_auth_rule, self.trustee_wallet)
+
+        # Step 2. Check, that we cannot send NODE txn by old way
+        with pytest.raises(RequestRejectedException):
+            self.send_and_check(*self.node_req_1)
+
+        view_no = self.txnPoolNodeSet[0].viewNo
+
+        # Step 3. Check, that a new way works
+        self.send_and_check(*self.node_req_for_new_rule)
+
+        view_no = self._wait_view_change_finish(view_no)
+
+        # Step 4. Return default auth rule
+        self.send_and_check(self.default_auth_rule, self.trustee_wallet)
+
+        # Step 5. Check, that default auth rule works
+        self.send_and_check(*self.node_req_2)
+
+        view_no = self._wait_view_change_finish(view_no)
+
+        self._demote_new_nodes()
+
     def _edit_node(self, wallet=None, services=[VALIDATOR], node_name=None, node_data=None):
         if not (node_name and node_data and wallet):
             req, node_data, node_name, wallet = self._add_node()
@@ -174,6 +219,32 @@ class AddNewNodeTest(AddNodeTest):
     def __init__(self, env, action_id):
         super().__init__(env,
                          action_id)
+
+    def run(self):
+        # Step 1. Change auth rule
+        self.send_and_check(self.changed_auth_rule, self.trustee_wallet)
+
+        # Step 2. Check, that we cannot send NODE txn by old way
+        with pytest.raises(RequestRejectedException):
+            self.send_and_check(*self.node_req_1)
+
+        prev_view_no = self.txnPoolNodeSet[0].viewNo
+        new_node_count = len(self.new_nodes)
+
+        # Step 3. Check, that a new way works
+        self.send_and_check(*self.node_req_for_new_rule)
+
+        prev_view_no = self._wait_view_change_finish(prev_view_no)
+
+        # Step 4. Return default auth rule
+        self.send_and_check(self.default_auth_rule, self.trustee_wallet)
+
+        # Step 5. Check, that default auth rule works
+        self.send_and_check(*self.node_req_2)
+
+        prev_view_no = self._wait_view_change_finish(prev_view_no)
+
+        self._demote_new_nodes()
 
 
 class AddNewNodeEmptyServiceTest(AddNodeTest):

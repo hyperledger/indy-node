@@ -1,6 +1,5 @@
 from indy_common.authorize.auth_actions import AuthActionAdd
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from plenum.common.request import Request
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.txn_author_agreement_aml_handler import TxnAuthorAgreementAmlHandler \
     as PTxnAuthorAgreementAmlHandler

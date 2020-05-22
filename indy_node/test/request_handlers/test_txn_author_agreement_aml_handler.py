@@ -33,11 +33,11 @@ def test_dynamic_validation_without_permission(aml_request,
                                                creator):
     add_to_idr(txn_author_agreement_aml_handler.database_manager.idr_cache, creator, STEWARD)
     with pytest.raises(UnauthorizedClientRequest, match="Not enough TRUSTEE signatures"):
-        txn_author_agreement_aml_handler.dynamic_validation(aml_request)
+        txn_author_agreement_aml_handler.dynamic_validation(aml_request, 0)
 
 
 def test_dynamic_validation(aml_request,
                             txn_author_agreement_aml_handler: TxnAuthorAgreementAmlHandler,
                             creator):
     add_to_idr(txn_author_agreement_aml_handler.database_manager.idr_cache, creator, TRUSTEE)
-    txn_author_agreement_aml_handler.dynamic_validation(aml_request)
+    txn_author_agreement_aml_handler.dynamic_validation(aml_request, 0)

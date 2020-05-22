@@ -16,7 +16,7 @@ strict_types.defaultShouldCheck = True
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import GENERAL_CONFIG_DIR, \
-    txnPoolNodesLooper, overriddenConfigValues  # noqa
+    overriddenConfigValues  # noqa
 
 logger = getlogger()
 
@@ -78,6 +78,9 @@ def _tconf(general_config):
     for k, v in overriddenConfigValues.items():
         setattr(config, k, v)
     config.MinSepBetweenNodeUpgrades = 5
+    config.RETRY_TIMEOUT_RESTRICTED = 15
+    config.RETRY_TIMEOUT_NOT_RESTRICTED = 15
+    config.MAX_RECONNECT_RETRY_ON_SAME_SOCKET = 1
     return config
 
 

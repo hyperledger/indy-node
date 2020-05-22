@@ -3,7 +3,7 @@ perf_load package metadata
 """
 
 __title__ = 'indy-perf-load'
-__version_info__ = (1, 1, 5)
+__version_info__ = (1, 2, 0)
 __version__ = '.'.join(map(str, __version_info__))
 __description__ = 'Indy node performance load'
 __long_description__ = __description__

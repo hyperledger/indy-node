@@ -11,6 +11,12 @@
     * [CLAIM_DEF](#claim_def)
     * [REVOC_REG_DEF](#revoc_reg_def)
     * [REVOC_REG_ENTRY](#revoc_reg_entry)
+    * [JSON_LD_CONTEXT](#json_ld_context)
+    * [RICH_SCHEMA](#rich_schema)
+    * [RICH_SCHEMA_ENCODING](#rich_schema_encoding)
+    * [RICH_SCHEMA_MAPPING](#rich_schema_mapping)
+    * [RICH_SCHEMA_CRED_DEF](#rich_schema_cred_def)
+    * [RICH_SCHEMA_PRES_DEF](#rich_schema_pres_def)
 
 * [Pool Ledger](#pool-ledger)
     * [NODE](#node)
@@ -22,10 +28,9 @@
     * [AUTH_RULE](#auth_rule)
     * [AUTH_RULES](#auth_rules)
     * [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)
-    * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)    
+    * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)
+    * [TRANSACTION_AUTHOR_AGREEMENT_DISABLE](#transaction_author_agreement_disable)
     
-* [Actions](#actions)
-    * [POOL_RESTART](#pool_restart)    
 
 ## General Information
 
@@ -65,10 +70,10 @@ transaction specific data:
     "ver": <...>,
     "txn": {
         "type": <...>,
+        "ver": <...>,
         "protocolVersion": <...>,
 
         "data": {
-            "ver": <...>,
             <txn-specific fields>
         },
 
@@ -126,7 +131,20 @@ transaction specific data:
         - REVOC_REG_DEF = "114"
         - AUTH_RULE = "120"
         - AUTH_RULES = "122"
+        - JSON_LD_CONTEXT = "200"
+        - RICH_SCHEMA = "201"
+        - RICH_SCHEMA_ENCODING = "202"
+        - RICH_SCHEMA_MAPPING = "203"
+        - RICH_SCHEMA_CRED_DEF = "204"
+        - RICH_SCHEMA_PRES_DEF = "205"
 
+    - `ver` (string)
+    
+        Transaction's payload version as defined in the input request.
+        If the input request doesn't have the version specified, then default one will be used.
+        Some transactions (for example TRANSACTION_AUTHOR_AGREEMENT) have non-default transaction payload version
+        defined in source code as a result of evolution of business logic and features. 
+    
     - `protocolVersion` (integer; optional):
 
         The version of client-to-node or node-to-node protocol. Each new version may introduce a new feature in requests/replies/data.
@@ -175,7 +193,7 @@ transaction specific data:
             
             - `mechanism` (string): a mechanism used to accept the signature; must be present in the latest list of transaction author agreement acceptane mechanisms on the ledger  
             
-            - `time` (integer as POSIX timestamp): transaction author agreement acceptance time
+            - `time` (integer as POSIX timestamp): transaction author agreement acceptance time. The time needs to be rounded to date to prevent correlation of different transactions which is possible when acceptance time is too precise.
                 
     - `txnMetadata` (dict):
 
@@ -271,10 +289,10 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
     "ver": 1,
     "txn": {
         "type":"1",
+        "ver": 1,        
         "protocolVersion":2,
 
         "data": {
-            "ver": 1,
             "dest":"GEzcdDLhCpGCYRHW82kjHd",
             "verkey":"~HmUWn928bnFT6Ephf65YXv",
             "role":101,
@@ -343,10 +361,10 @@ Adds an attribute to a NYM record
     "ver": 1,
     "txn": {
         "type":"100",
+        "ver": 1,   
         "protocolVersion":2,
 
         "data": {
-            "ver":1,
             "dest":"GEzcdDLhCpGCYRHW82kjHd",
             "raw":"3cba1e3cf23c8ce24b7e08171d823fbd9a4929aafd9f27516e30699d3a42026a",
         },
@@ -400,10 +418,10 @@ So, if the Schema needs to be evolved, a new Schema with a new version or new na
     "ver": 1,
     "txn": {
         "type":101,
+        "ver": 1,   
         "protocolVersion":2,
 
         "data": {
-            "ver":1,
             "data": {
                 "attr_names": ["undergrad","last_name","first_name","birth_date","postgrad","expiry_date"],
                 "name":"Degree",
@@ -469,10 +487,10 @@ Adds a claim definition (in particular, public key), that Issuer creates and pub
     "ver": 1,
     "txn": {
         "type":102,
+        "ver": 1,   
         "protocolVersion":2,
 
         "data": {
-            "ver":1,
             "data": {
                 "primary": {
                     ...
@@ -483,7 +501,7 @@ Adds a claim definition (in particular, public key), that Issuer creates and pub
             },
             "ref":12,
             "signature_type":"CL",
-            'tag': 'some_tag'
+            "tag": "some_tag"
         },
 
         "metadata": {
@@ -541,20 +559,20 @@ It contains public keys, maximum number of credentials the registry may contain,
     "ver": 1,
     "txn": {
         "type":113,
+        "ver": 1,   
         "protocolVersion":2,
 
         "data": {
-            "ver":1,
-            'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-            'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
-            'revocDefType': 'CL_ACCUM',
-            'tag': 'tag1',
-            'value': {
-                'maxCredNum': 1000000,
-                'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
-                'tailsLocation': 'http://tails.location.com',
-                'issuanceType': 'ISSUANCE_BY_DEFAULT',
-                'publicKeys': {},
+            "id": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+            "credDefId": "FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag"
+            "revocDefType": "CL_ACCUM",
+            "tag": "tag1",
+            "value": {
+                "maxCredNum": 1000000,
+                "tailsHash": "6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297",
+                "tailsLocation": "http://tails.location.com",
+                "issuanceType": "ISSUANCE_BY_DEFAULT",
+                "publicKeys": {},
             },
         },
 
@@ -562,8 +580,8 @@ It contains public keys, maximum number of credentials the registry may contain,
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
             "endorser": "D6HG5g65TDQr1PPHHRoiGf",
-            'digest': '4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453',
-            'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
             "taaAcceptance": {
                 "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
                 "mechanism": "EULA",
@@ -608,17 +626,17 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
     "ver": 1,
     "txn": {
         "type":114,
+        "ver": 1,   
         "protocolVersion":2,
 
         "data": {
-            "ver":1,
-            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
-            'revocDefType': 'CL_ACCUM',
-            'value': {
-                'accum': 'accum_value',
-                'prevAccum': 'prev_acuum_value',
-                'issued': [],
-                'revoked': [10, 36, 3478],
+            "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1"
+            "revocDefType": "CL_ACCUM",
+            "value": {
+                "accum": "accum_value",
+                "prevAccum": "prev_acuum_value",
+                "issued": [],
+                "revoked": [10, 36, 3478],
             },
         },
 
@@ -626,8 +644,8 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
             "endorser": "D6HG5g65TDQr1PPHHRoiGf",
-            'digest': '4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453',
-            'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
             "taaAcceptance": {
                 "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
                 "mechanism": "EULA",
@@ -650,6 +668,639 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
 }
 ```
 
+
+#### JSON_LD_CONTEXT
+Adds a JSON LD Context as part of Rich Schema feature.
+
+It's not possible to update an existing Context.
+If the Context needs to be evolved, a new Context with a new id and name-version needs to be created.
+
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Context object as JSON serialized in canonical form. It must have `@context` as a top level key.
+    The `@context` value must be either:
+    1) a URI (it should dereference to a Context object)
+    2) a Context object (a dict)
+    3) an array of Context objects and/or Context URIs
+
+- `rsType` (string):
+
+    Context's type. Currently expected to be `ctx`.
+    
+- `rsName` (string):
+
+    Context's name
+    
+- `rsVersion` (string):
+
+    Context's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+**Example**:
+```
+{
+    "ver": 1,
+    "txn": {
+        "type":200,
+        "ver":1,
+        "protocolVersion":2,
+
+        "data": {
+            "id": "did:sov:GGAD5g65TDQr1PPHHRoiGf",
+            "content":"{
+                "@context": [
+                    {
+                        "@version": 1.1
+                    },
+                    "https://www.w3.org/ns/odrl.jsonld",
+                    {
+                        "ex": "https://example.org/examples#",
+                        "schema": "http://schema.org/",
+                        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                    }
+                ]
+            }",
+            "rsName":"SimpleContext",
+            "rsVersion":"1.0",
+            "rsType": "ctx"
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }            
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+        "txnId":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
+
+#### RICH_SCHEMA
+Adds a Rich Schema object as part of Rich Schema feature.
+
+It's not possible to update an existing Rich Schema.
+If the Rich Schema needs to be evolved, a new Rich Schema with a new id and name-version needs to be created.
+
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Rich Schema object as JSON serialized in canonical form.
+    This value must be a json-ld, rich schema object. json-ld supports many parameters that are optional for a rich schema txn.
+    However, the following parameters must be there:
+    
+    - `@id`:  The value of this property must be (or map to, via a context object) a URI.
+    - `@type`: The value of this property must be (or map to, via a context object) a URI.
+    - `@context`(optional): If present, the value of this property must be a context object or a URI which can be dereferenced to obtain a context object. 
+
+
+- `rsType` (string):
+
+    Rich Schema's type. Currently expected to be `sch`.
+    
+- `rsName` (string):
+
+    Rich Schema's name
+    
+- `rsVersion` (string):
+
+    Rich Schema's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+
+**Example**:
+```
+{
+    "ver": 1,
+    "txn": {
+        "type":201,
+        "ver":1,
+        "protocolVersion":2,
+
+        "data": {
+            "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+            "content":"{
+                "@id": "test_unique_id",
+                "@context": "ctx:sov:2f9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                "@type": "rdfs:Class",
+                "rdfs:comment": "ISO18013 International Driver License",
+                "rdfs:label": "Driver License",
+                "rdfs:subClassOf": {
+                    "@id": "sch:Thing"
+                },
+                "driver": "Driver",
+                "dateOfIssue": "Date",
+                "dateOfExpiry": "Date",
+                "issuingAuthority": "Text",
+                "licenseNumber": "Text",
+                "categoriesOfVehicles": {
+                    "vehicleType": "Text",
+                    "vehicleType-input": {
+                        "@type": "sch:PropertyValueSpecification",
+                        "valuePattern": "^(A|B|C|D|BE|CE|DE|AM|A1|A2|B1|C1|D1|C1E|D1E)$"
+                    },
+                    "dateOfIssue": "Date",
+                    "dateOfExpiry": "Date",
+                    "restrictions": "Text",
+                    "restrictions-input": {
+                        "@type": "sch:PropertyValueSpecification",
+                        "valuePattern": "^([A-Z]|[1-9])$"
+                    }
+                },
+                "administrativeNumber": "Text"
+            }",
+            "rsName":"SimpleRichSchema",
+            "rsVersion":"1.0",
+            "rsType": "sch"
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }            
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+        "txnId":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
+#### RICH_SCHEMA_ENCODING
+Adds an Encoding object as part of Rich Schema feature.
+
+It's not possible to update an existing Encoding.
+If the Encoding needs to be evolved, a new Encoding with a new id and name-version needs to be created.
+
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Encoding object as JSON serialized in canonical form.
+    
+    - `input`: a description of the input value
+    - `output`: a description of the output value
+    - `algorithm`:
+      - `documentation`: a URL which references a specific github commit of
+        the documentation that fully describes the transformation algorithm.
+      - `implementation`: a URL that links to a reference implementation of the
+         transformation algorithm. It is not necessary to use the implementation
+         linked to here, as long as the implementation used implements the same
+         transformation algorithm.
+      - `description`: a brief description of the transformation algorithm.
+    - `testVectors`: a URL which references a specific github commit of a
+selection of test vectors that may be used to provide assurance that a
+transformation algorithm implementation is correct. 
+
+- `rsType` (string):
+
+    Encoding's type. Currently expected to be `enc`.
+    
+- `rsName` (string):
+
+    Encoding's name
+    
+- `rsVersion` (string):
+
+    Encoding's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+
+**Example**:
+```
+{
+    "ver": 1,
+    "txn": {
+        "type":202,
+        "ver":1,
+        "protocolVersion":2,
+
+        "data": {
+            "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+            "content":"{
+                "input": {
+                    "id": "DateRFC3339",
+                    "type": "string"
+                },
+                "output": {
+                    "id": "UnixTime",
+                    "type": "256-bit integer"
+                },
+                "algorithm": {
+                    "description": "This encoding transforms an
+                        RFC3339-formatted datetime object into the number
+                        of seconds since January 1, 1970 (the Unix epoch).",
+                    "documentation": URL to specific github commit,
+                    "implementation": URL to implementation
+                },
+                "test_vectors": URL to specific github commit
+            }",
+            "rsName":"SimpleEncoding",
+            "rsVersion":"1.0",
+            "rsType": "enc"
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }            
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+        "txnId":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
+#### RICH_SCHEMA_MAPPING
+Adds a Mapping  object as part of Rich Schema feature.
+
+It's not possible to update an existing Mapping.
+If the Mapping needs to be evolved, a new Mapping with a new id and name-version needs to be created.
+
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Mapping object as JSON serialized in canonical form.
+    This value must be a json-ld object. json-ld supports many parameters that are optional for a rich schema txn.
+    However, the following parameters must be there:
+    
+    - `@id`:  The value of this property must be (or map to, via a context object) a URI.
+    - `@type`: The value of this property must be (or map to, via a context object) a URI.
+    - `@context`(optional): If present, the value of this property must be a context object or a URI which can be dereferenced to obtain a context object.
+    - `schema`:  An `id` of the corresponding Rich Schema
+    - `attributes` (dict): A dict of all the schema attributes the Mapping object is going to map to encodings and use in credentials.
+                    An attribute may have nested attributes matching the schema structure. 
+                    It must also contain the following default attributes required by any W3C compatible
+                    verifiable credential (plus any additional attributes that may have been included from the
+                    W3C verifiable credentials data model):
+                    
+        - `issuer`
+        - `issuanceDate`
+        - any additional attributes
+                        
+         Every leaf attribute's value is an array of the following pairs:
+
+        - `enc` (string): Encoding object (referenced by its `id`) to be used for representation of the attribute as an integer. 
+        - `rank` (int): Rank of the attribute to define the order in which the attribute is signed by the Issuer. It is important that no two `rank` values may be identical.
+    
+
+- `rsType` (string):
+
+    Mapping's type. Currently expected to be `map`.
+    
+- `rsName` (string):
+
+    Mapping's name
+    
+- `rsVersion` (string):
+
+    Mapping's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+
+**Example**:
+```
+{
+    "ver": 1,
+    "txn": {
+        "type":203,
+        "ver":1,
+        "protocolVersion":2,
+
+        "data": {
+            "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+            "content":"{
+                '@id': "did:sov:5e9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                '@context': "did:sov:2f9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                '@type': "rdfs:Class",
+                "schema": "did:sov:4e9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                "attribuites" : {
+                    "issuer": [{
+                        "enc": "did:sov:9x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 1
+                    }],
+                    "issuanceDate": [{
+                        "enc": "did:sov:119F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 2
+                    }],    
+                    "expirationDate": [{
+                        "enc": "did:sov:119F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 11
+                    }],           
+                    "driver": [{
+                        "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 5
+                    }],
+                    "dateOfIssue": [{
+                        "enc": "did:sov:2x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 4
+                    }],
+                    "issuingAuthority": [{
+                        "enc": "did:sov:3x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 3
+                    }],
+                    "licenseNumber": [
+                        {
+                            "enc": "did:sov:4x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 9
+                        },
+                        {
+                            "enc": "did:sov:5x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 10
+                        },
+                    ],
+                    "categoriesOfVehicles": {
+                        "vehicleType": [{
+                            "enc": "did:sov:6x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 6
+                        }],
+                        "dateOfIssue": [{
+                         "enc": "did:sov:7x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 7
+                        }],
+                    },
+                    "administrativeNumber": [{
+                        "enc": "did:sov:8x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 8
+                    }]
+                 }
+            }",
+            "rsName":"SimpleMapping",
+            "rsVersion":"1.0",
+            "rsType": "map"
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }            
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+        "txnId":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
+#### RICH_SCHEMA_CRED_DEF
+Adds a Credential Definition object as part of Rich Schema feature.
+
+Credential Definition is considered as a mutable object as the Issuer may rotate keys present there.
+However, rotation of Issuer's keys should be done carefully as it will invalidate all 
+credentials issued for this key.
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Credential Definition object as JSON serialized in canonical form.
+   
+    - `signatureType` (string):  Type of the ZKP signature. `CL` (Camenisch-Lysyanskaya) is the only supported type now.
+    - `mapping` (string):  An `id` of the corresponding Mapping
+    - `schema` (string): An `id` of the corresponding Rich Schema. The `mapping` must reference the same Schema.
+    - `publicKey` (dict): Issuer's public keys. Consists ot primary and revocation keys.
+        - `primary` (dict): primary key
+        - `revocation` (dict, optional): revocation key
+
+- `rsType` (string):
+
+    Credential Definition's type. Currently expected to be `cdf`.
+    
+- `rsName` (string):
+
+    Credential Definition's name
+    
+- `rsVersion` (string):
+
+    Credential Definition's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+
+**Example**:
+```
+{
+    "ver": 1,
+    "txn": {
+        "type":204,
+        "ver":1,
+        "protocolVersion":2,
+
+        "data": {
+            "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+            "content":"{
+                "signatureType": "CL",
+                "mapping": "did:sov:UVj5w8DRzcmPVDpUMr4AZhJ",
+                "schema": "did:sov:U5x5w8DRzcmPVDpUMr4AZhJ",
+                "publicKey": {
+                    "primary": "...",
+                    "revocation": "..."
+                }
+            }",
+            "rsName":"SimpleCredDef",
+            "rsVersion":"1.0",
+            "rsType": "cdf"
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }            
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+        "txnId":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
+#### RICH_SCHEMA_PRES_DEF
+Adds a Presentation Definition object as part of Rich Schema feature.
+
+Presentation Definition is considered as a mutable object since restrictions to Issuers, Schemas and Credential Definitions 
+to be used in proof may evolve.
+ For example, Issuer's key for a given Credential Definition may be compromised, 
+ so Presentation Definition can be updated to exclude this Credential Definition from the list of recommended ones.
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Presentation Definition object as JSON serialized in canonical form.
+
+- `rsType` (string):
+
+    Presentation Definition's type. Currently expected to be `pdf`.
+    
+- `rsName` (string):
+
+    Presentation Definition's name
+    
+- `rsVersion` (string):
+
+    Presentation Definition's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+
+**Example**:
+```
+{
+    "ver": 1,
+    "txn": {
+        "type":205,
+        "ver":1,
+        "protocolVersion":2,
+
+        "data": {
+            "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+            "content":"{
+                TBD
+            }",
+            "rsName":"SimplePresDef",
+            "rsVersion":"1.0",
+            "rsType": "pdf"
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+            "digest": "4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            "taaAcceptance": {
+                "taaDigest": "6sh15d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453",
+                "mechanism": "EULA",
+                "time": 1513942017
+             }            
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+        "txnId":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
 
 ## Pool Ledger
 
@@ -784,10 +1435,10 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     "ver": 1,
     "txn": {
         "type":109,
+        "ver":1,
         "protocolVersion":2,
 
         "data": {
-            "ver":1,
             "name":"upgrade-13",
             "action":"start",
             "version":"1.3",
@@ -838,10 +1489,10 @@ Status of each Node's upgrade (sent by each upgraded Node)
     "ver":1,
     "txn": {
         "type":110,
+        "ver":1,
         "protocolVersion":2,
 
         "data": {
-            "ver":1,
             "action":"complete",
             "version":"1.2"
         },
@@ -892,10 +1543,10 @@ Command to change Pool's configuration
     "ver":1,
     "txn": {
         "type":111,
+        "ver":1,
         "protocolVersion":2,
 
         "data": {
-            "ver":1,
             "writes":false,
             "force":true,
         },
@@ -965,17 +1616,17 @@ The `constraint_id` fields is where one can define the desired auth constraint f
     
         Constraint Type. As of now, the following constraint types are supported:
             
-            - 'ROLE': a constraint defining how many siganatures of a given role are required
-            - 'OR': logical disjunction for all constraints from `auth_constraints` 
-            - 'AND': logical conjunction for all constraints from `auth_constraints`
+            - "ROLE": a constraint defining how many siganatures of a given role are required
+            - "OR": logical disjunction for all constraints from `auth_constraints` 
+            - "AND": logical conjunction for all constraints from `auth_constraints`
             
-    - fields if `'constraint_id': 'OR'` or `'constraint_id': 'AND'`
+    - fields if `"constraint_id": "OR"` or `"constraint_id": "AND"`
     
         - `auth_constraints` (list)
         
             A list of constraints. Any number of nested constraints is supported recursively
         
-    - fields if `'constraint_id': 'ROLE'`:
+    - fields if `"constraint_id": "ROLE"`:
                 
         - `role` (string enum)    
             
@@ -1002,7 +1653,7 @@ The `constraint_id` fields is where one can define the desired auth constraint f
         
             Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
         
-    - fields if `'constraint_id': 'FORBIDDEN'`:
+    - fields if `"constraint_id": "FORBIDDEN"`:
     
         no fields
 
@@ -1014,52 +1665,52 @@ Let's consider an example of changing a value of a NODE transaction's `service` 
 
 ```
 {  
-   'txn':{  
-      'type':'120',
-      'protocolVersion':2,
-      'data':{  
-        'auth_type': '0', 
-        'auth_action': 'EDIT',
-        'field' :'services',
-        'old_value': [VALIDATOR],
-        'new_value': []
-        'constraint':{
-              'constraint_id': 'OR',
-              'auth_constraints': [{'constraint_id': 'ROLE', 
-                                    'role': '0',
-                                    'sig_count': 2, 
-                                    'need_to_be_owner': False, 
-                                    'metadata': {}}, 
+   "txn":{  
+      "type":"120",
+      "protocolVersion":2,
+      "data":{  
+        "auth_type": "0", 
+        "auth_action": "EDIT",
+        "field" :"services",
+        "old_value": [VALIDATOR],
+        "new_value": []
+        "constraint":{
+              "constraint_id": "OR",
+              "auth_constraints": [{"constraint_id": "ROLE", 
+                                    "role": "0",
+                                    "sig_count": 2, 
+                                    "need_to_be_owner": False, 
+                                    "metadata": {}}, 
                                    
-                                   {'constraint_id': 'ROLE', 
-                                    'role': '2',
-                                    'sig_count': 1, 
-                                    'need_to_be_owner': True, 
-                                    'metadata': {}}
+                                   {"constraint_id": "ROLE", 
+                                    "role": "2",
+                                    "sig_count": 1, 
+                                    "need_to_be_owner": True, 
+                                    "metadata": {}}
                                    ]
         }, 
       },
-      'metadata':{  
-         'reqId':252174114,
-         'from':'M9BJDuS24bqbJNvBRsoGg3',
-         'digest':'6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c',
-         'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
+      "metadata":{  
+         "reqId":252174114,
+         "from":"M9BJDuS24bqbJNvBRsoGg3",
+         "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+         "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
       }
    },
-   'txnMetadata':{  
-      'txnTime':1551785798,
-      'seqNo':1
+   "txnMetadata":{  
+      "txnTime":1551785798,
+      "seqNo":1
    },   
-   'reqSignature':{  
-      'type':'ED25519',
-      'values':[  
+   "reqSignature":{  
+      "type":"ED25519",
+      "values":[  
          {  
-            'value':'4wpLLAtkT6SeiKEXPVsMcCirx9KvkeKKd11Q4VsMXmSv2tnJrRw1TQKFyov4m2BuPP4C5oCiZ6RUwS9w3EPdywnz',
-            'from':'M9BJDuS24bqbJNvBRsoGg3'
+            "value":"4wpLLAtkT6SeiKEXPVsMcCirx9KvkeKKd11Q4VsMXmSv2tnJrRw1TQKFyov4m2BuPP4C5oCiZ6RUwS9w3EPdywnz",
+            "from":"M9BJDuS24bqbJNvBRsoGg3"
          }
       ]
    },
-   'ver':'1'
+   "ver":"1"
 }
 ```
 
@@ -1109,18 +1760,18 @@ Please note, that list elements of `GET_AUTH_RULE` output can be used as an inpu
     
         Constraint Type. As of now, the following constraint types are supported:
             
-            - 'ROLE': a constraint defining how many siganatures of a given role are required
-            - 'OR': logical disjunction for all constraints from `auth_constraints` 
-            - 'AND': logical conjunction for all constraints from `auth_constraints`
-            - 'FORBIDDEN': a constraint for not allowed actions
+            - "ROLE": a constraint defining how many siganatures of a given role are required
+            - "OR": logical disjunction for all constraints from `auth_constraints` 
+            - "AND": logical conjunction for all constraints from `auth_constraints`
+            - "FORBIDDEN": a constraint for not allowed actions
             
-    - fields if `'constraint_id': 'OR'` or `'constraint_id': 'AND'`
+    - fields if `"constraint_id": "OR"` or `"constraint_id": "AND"`
     
         - `auth_constraints` (list)
         
             A list of constraints. Any number of nested constraints is supported recursively
         
-    - fields if `'constraint_id': 'ROLE'`:
+    - fields if `"constraint_id": "ROLE"`:
                 
         - `role` (string enum)    
             
@@ -1147,7 +1798,7 @@ Please note, that list elements of `GET_AUTH_RULE` output can be used as an inpu
         
             Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
     
-    - fields if `'constraint_id': 'FORBIDDEN'`:
+    - fields if `"constraint_id": "FORBIDDEN"`:
     
         no fields
 
@@ -1155,68 +1806,91 @@ Please note, that list elements of `GET_AUTH_RULE` output can be used as an inpu
 
 ```
 {  
-   'txn':{  
-      'type':'120',
-      'protocolVersion':2,
-      'data':{
+   "txn":{  
+      "type":"120",
+      "protocolVersion":2,
+      "data":{
         rules: [
-           {'auth_type': '0', 
-            'auth_action': 'EDIT',
-            'field' :'services',
-            'old_value': [VALIDATOR],
-            'new_value': []
-            'constraint':{
-                  'constraint_id': 'OR',
-                  'auth_constraints': [{'constraint_id': 'ROLE', 
-                                        'role': '0',
-                                        'sig_count': 2, 
-                                        'need_to_be_owner': False, 
-                                        'metadata': {}}, 
+           {"auth_type": "0", 
+            "auth_action": "EDIT",
+            "field" :"services",
+            "old_value": [VALIDATOR],
+            "new_value": []
+            "constraint":{
+                  "constraint_id": "OR",
+                  "auth_constraints": [{"constraint_id": "ROLE", 
+                                        "role": "0",
+                                        "sig_count": 2, 
+                                        "need_to_be_owner": False, 
+                                        "metadata": {}}, 
                                        
-                                       {'constraint_id': 'ROLE', 
-                                        'role': '2',
-                                        'sig_count': 1, 
-                                        'need_to_be_owner': True, 
-                                        'metadata': {}}
+                                       {"constraint_id": "ROLE", 
+                                        "role": "2",
+                                        "sig_count": 1, 
+                                        "need_to_be_owner": True, 
+                                        "metadata": {}}
                                        ]
             }, 
           },
           ...
         ]
-      'metadata':{  
-         'reqId':252174114,
-         'from':'M9BJDuS24bqbJNvBRsoGg3',
-         'digest':'6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c',
-         'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
+      "metadata":{  
+         "reqId":252174114,
+         "from":"M9BJDuS24bqbJNvBRsoGg3",
+         "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+         "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
       }
    },
-   'txnMetadata':{  
-      'txnTime':1551785798,
-      'seqNo':1
+   "txnMetadata":{  
+      "txnTime":1551785798,
+      "seqNo":1
    },   
-   'reqSignature':{  
-      'type':'ED25519',
-      'values':[  
+   "reqSignature":{  
+      "type":"ED25519",
+      "values":[  
          {  
-            'value':'4wpLLAtkT6SeiKEXPVsMcCirx9KvkeKKd11Q4VsMXmSv2tnJrRw1TQKFyov4m2BuPP4C5oCiZ6RUwS9w3EPdywnz',
-            'from':'M9BJDuS24bqbJNvBRsoGg3'
+            "value":"4wpLLAtkT6SeiKEXPVsMcCirx9KvkeKKd11Q4VsMXmSv2tnJrRw1TQKFyov4m2BuPP4C5oCiZ6RUwS9w3EPdywnz",
+            "from":"M9BJDuS24bqbJNvBRsoGg3"
          }
       ]
    },
-   'ver':'1'
+   "ver":"1"
 }
 ```
 
 #### TRANSACTION_AUTHOR_AGREEMENT
 
 Setting (enabling/disabling) a transaction author agreement for the pool.
+
 If transaction author agreement is set, then all write requests to Domain ledger (transactions) must include additional metadata pointing to the latest transaction author agreement's digest which is signed by the transaction author.
-
-If no transaction author agreement is set, or it's disabled, then no additional metadata is required.
-
-Transaction author agreement can be disabled by setting an agreement with an empty text.
+If no transaction author agreement is set, or there are no active transaction author agreements, then no additional metadata is required.
 
 Each transaction author agreement has a unique version.
+If TRANSACTION_AUTHOR_AGREEMENT transaction is sent for already existing version it is considered an update 
+(for example of retirement timestamp), in this case text and ratification timestamp should be either absent or equal to original values.
+
+For any given version of transaction author agreement text and ratification timestamp cannot be changed once set. Ratification timestamp cannot be in future.
+In order to update Transaction Author Agreement `TRANSACTION_AUTHOR_AGREEMENT` transaction should be sent, 
+containing new version and new text of agreement. This makes it possible to use new Transaction Author Agreement, but doesn't disable previous one automatically.
+
+Individual transaction author agreements can be disabled by setting retirement timestamp using same transaction.
+Retirement timestamp can be in future, in this case deactivation of agreement won't happen immediately, it will be automatically deactivated at required time instead.
+
+It is possible to change existing retirement timestamp of agreement by sending a `TRANSACTION_AUTHOR_AGREEMENT` transaction with a new retirement timestamp.
+This may potentially re-enable already retired Agreement.
+Re-enabling retired Agreement needs to be considered as an exceptional case used mostly for fixing disabling by mistake or with incorrect retirement timestamp specified.
+ 
+It is possible to delete retirement timestamp of agreement by sending a `TRANSACTION_AUTHOR_AGREEMENT` transaction without a retirement timestamp or retirement timestamp set to `None`.
+This will either cancel retirement (if it hasn't occurred yet), or disable retirement of already retired transaction (re-enable the Agreement).
+Re-enabling retired Agreement needs to be considered as an exceptional case used mostly for fixing disabling by mistake or with incorrect retirement timestamp specified.
+
+Latest transaction author agreement cannot be disabled using this transaction.
+ 
+It is possible to disable all currently active transaction author agreements (including latest) using separate transaction [TRANSACTION_AUTHOR_AGREEMENT_DISABLE](#transaction_author_agreement_disable).
+This will immediately set current timestamp as retirement one for all not yet retired Transaction Author Agreements.
+
+It's not possible to re-enable an Agreement right after disabling all agreements because there is no active latest Agreement at this point.
+A new Agreement needs to be sent instead.
 
 At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_aml) must be set on the ledger before submitting TRANSACTION_AUTHOR_AGREEMENT txn.
 
@@ -1224,23 +1898,38 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
 
     Unique version of the transaction author agreement
 
+- `text` (string; optional):
 
-- `text` (string):
+    Transaction author agreement's text. Must be specified when creating a new Agreement.
+    Should be either omitted or equal to existing value in case of updating an existing Agreement (setting `retirement_ts`) .
 
-    Transaction author agreement's text
+- `ratification_ts` (integer as POSIX timestamp; optional):
 
-**Example:**
+    Transaction Author Agreement ratification timestamp as POSIX timestamp. May have any precision up to seconds.
+    Must be specified when creating a new Agreement.
+    Should be either omitted or equal to existing value in case of updating an existing Agreement (setting `retirement_ts`).
+
+- `retirement_ts` (integer as POSIX timestamp; optional):
+
+    Transaction Author Agreement retirement timestamp as POSIX timestamp. May have any precision up to seconds.
+    Can be any timestamp either in future or in the past (the Agreement will be retired immediately in the latter case).
+    Must be omitted when creating a new (latest) Agreement.
+    Should be used for updating (deactivating) non-latest Agreement on the ledger.
+
+
+**New Agreement Example:**
 ```
 {
-    "ver":1,
+    "ver": 1,
     "txn": {
         "type":4,
+        "ver": 2,
         "protocolVersion":2,
 
         "data": {
-            "ver":1,
             "version": "1.0",
             "text": "Please read carefully before writing anything to the ledger",
+            "ratification_ts": 1514304094738044
         },
 
         "metadata": {
@@ -1251,7 +1940,43 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
         },
     },
     "txnMetadata": {
-        "txnTime":1513945121,
+        "txnTime":1577836799,
+        "seqNo": 10,
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
+
+**Retire Agreement Example:**
+```
+{
+    "ver": 2,
+    "txn": {
+        "type":4,
+        "protocolVersion":2,
+
+        "data": {
+            "ver": 2,
+            "version": "1.0",
+            "retirement_ts": 1515415195838044
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1577836799,
         "seqNo": 10,
     },
     "reqSignature": {
@@ -1287,7 +2012,6 @@ Each acceptance mechanisms list has a unique version.
     A context information about Acceptance mechanisms list (may be URL to external resource).   
     
     
-
 **Example:**
 ```
 {
@@ -1329,31 +2053,43 @@ Each acceptance mechanisms list has a unique version.
 }
 ```
 
-## Actions
+#### TRANSACTION_AUTHOR_AGREEMENT_DISABLE
 
-The actions are not written to the Ledger, so this is not a transaction, just a command.
+Immediately retires all active Transaction Author Agreements at once by setting current timestamp as a retirement one.
 
-#### POOL_RESTART
-POOL_RESTART is the command to restart all nodes at the time specified in field "datetime"(sent by Trustee).
-
-- `datetime` (string):
-
-    Restart time in datetime frmat/
-    To restart as early as possible, send message without the "datetime" field or put in it value "0" or ""(empty string) or the past date on this place.
-    The restart is performed immediately and there is no guarantee of receiving an answer with Reply.
-
-
-- `action` (enum: `start` or `cancel`):
-
-    Starts or cancels the Restart.
+It's not possible to re-enable an Agreement right after disabling all agreements because there is no active latest Agreement at this point.
+A new Agreement needs to be sent instead.
 
 **Example:**
 ```
 {
-     "reqId": 98262,
-     "type": "118",
-     "identifier": "M9BJDuS24bqbJNvBRsoGg3",
-     "datetime": "2018-03-29T15:38:34.464106+00:00",
-     "action": "start"
+    "ver": 1,
+    "txn": {
+        "type":8,
+        "protocolVersion":2,
+
+        "data": {
+            "ver": 1,
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1577836799,
+        "seqNo": 10,
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
 }
 ```
+

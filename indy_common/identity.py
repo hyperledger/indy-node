@@ -12,7 +12,7 @@ from indy_common.types import Request
 class Identity(GeneratesRequest):
     def __init__(self,
                  identifier: Identifier,
-                 endorser: Identifier=None,
+                 endorser: Identifier = None,
                  verkey=None,
                  role=None,
                  last_synced=None,

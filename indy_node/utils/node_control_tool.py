@@ -7,7 +7,7 @@ from typing import List
 from common.version import InvalidVersionError
 
 from indy_common.constants import UPGRADE_MESSAGE, RESTART_MESSAGE, MESSAGE_TYPE
-from stp_core.common.log import getlogger
+from stp_core.common.log import getlogger, Logger
 
 from indy_common.version import (
     PackageVersion, SourceVersion, src_version_cls
@@ -18,12 +18,15 @@ from indy_common.util import compose_cmd
 from indy_node.utils.migration_tool import migrate
 from indy_node.utils.node_control_utils import NodeControlUtil
 
-logger = getlogger()
 
-TIMEOUT = 300
+TIMEOUT = 600
 BACKUP_FORMAT = 'zip'
 BACKUP_NUM = 10
 TMP_DIR = '/tmp/.indy_tmp'
+LOG_FILE_NAME = 'node_control.log'
+
+
+logger = getlogger()
 
 
 class NodeControlTool:
@@ -65,8 +68,13 @@ class NodeControlTool:
         _backup_name_prefix = '{}_backup_'.format(self.config.NETWORK_NAME)
 
         self.backup_name_prefix = backup_name_prefix or _backup_name_prefix
+        self._enable_file_logging()
 
         self._listen()
+
+    def _enable_file_logging(self):
+        path_to_log_file = os.path.join(self.config.LOG_DIR, LOG_FILE_NAME)
+        Logger().enableFileLogging(path_to_log_file)
 
     def _listen(self):
         # Create a TCP/IP socket
@@ -84,26 +92,21 @@ class NodeControlTool:
         self.server.listen(1)
 
     def _get_deps_list(self, package):
+        # We assume, that package looks like 'package_name=1.2.3'
         logger.info('Getting dependencies for {}'.format(package))
         NodeControlUtil.update_package_cache()
-        app_holded = self.config.PACKAGES_TO_HOLD + self.hold_ext
-        dep_tree = NodeControlUtil.get_deps_tree_filtered(package, filter_list=app_holded)
-        ret = []
-        NodeControlUtil.dep_tree_traverse(dep_tree, ret)
-        # Filter deps according to system hold list
-        # in case of hold empty return only package
         holded = NodeControlUtil.get_sys_holds()
         if not holded:
             return package
-        else:
-            ret_list = []
-            for rl in ret:
-                name = rl.split("=", maxsplit=1)[0]
-                if name in holded:
-                    ret_list.append(rl)
-            if package not in ret_list:
-                ret_list.append(package)
-            return " ".join(ret_list)
+
+        app_holded = list(set(self.config.PACKAGES_TO_HOLD + self.hold_ext + holded))
+        deps_list = NodeControlUtil.get_deps_tree_filtered(package, hold_list=app_holded, deps_map={})
+        # we need to make sure, that all hold package should be presented
+        # in result list
+        if package not in deps_list:
+            deps_list.append(package)
+
+        return " ".join(deps_list)
 
     def _call_upgrade_script(self, pkg_name: str, pkg_ver: PackageVersion):
         logger.info(

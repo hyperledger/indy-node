@@ -1,5 +1,17 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.12.2](#1122)
+
+* [1.12.1](#1121)
+
+* [1.12.0](#1120)
+
+* [1.11.0](#1110)
+
+* [1.10.0](#1100)
+
+* [1.9.2](#192)
+
 * [1.9.1](#191)
 
 * [1.9.0](#190)
@@ -45,6 +57,296 @@
 #### Disclosure
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
+
+## 1.12.2
+### Release date: Dec 30th, 2020
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.12.2 |
+| indy-node | 1.12.2 |
+| sovrin | 1.1.71 |
+
+### Additional Information:
+
+**Stop indy-node service on demoted nodes to avoid a minor issue with client's requests processing (see Known Issues for details).**
+
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
+### Major Changes
+- Stability fixes
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| WARNING messages incorrectly logged if tokens are not used | | [INDY-2221](https://jira.hyperledger.org/browse/INDY-2221) |
+| REV_REG_DEF `tag` field is not validated | | [INDY-2314](https://jira.hyperledger.org/browse/INDY-2314) |
+| A node may re-send messages in a loop in case of connection issues | | [INDY-2318](https://jira.hyperledger.org/browse/INDY-2318) |
+| Up to F Nodes may not be able to finish View Change if there are uncommitted NODE txns | | [INDY-2319](https://jira.hyperledger.org/browse/INDY-2319) |
+| A node lagging behind may not be able to finish view change if nodes have been added/demoted | | [INDY-2308](https://jira.hyperledger.org/browse/INDY-2308) |
+| A lagging node may use wrong N and F quorum values and never finish view change if there are NODE txns being processed | | [INDY-2320](https://jira.hyperledger.org/browse/INDY-2320) |
+| A lagging node may be the only one who started view change in case of F Nodes added/promoted in 1 batch | | [INDY-2322](https://jira.hyperledger.org/browse/INDY-2322) |
+| Debug View Change when nodes added/demoted/promoted | | [INDY-2326](https://jira.hyperledger.org/browse/INDY-2326) |
+
+#### Known Issues
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Demoted Node should not process client's requests | | [INDY-2334](https://jira.hyperledger.org/browse/INDY-2334) |
+
+## 1.12.1
+### Release date: Dec 28th, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.12.1 |
+| indy-node | 1.12.1 |
+| sovrin | 1.1.67 |
+
+### Additional Information:
+
+**Use forced simultaneous pool upgrade.**
+
+**Please be careful with demoting/promoting/adding nodes (see Known Issues for details).**
+
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
+### Major Changes
+- Multiple active TAAs implementation
+- Stability fixes
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Sovrin upgrade fails due to incorrect package dependencies | | [INDY-2303](https://jira.hyperledger.org/browse/INDY-2303) |
+| GET_CRED_DEF for a Schema with a lot of attributes may fail with Timeout | | [INDY-2306](https://jira.hyperledger.org/browse/INDY-2306) |
+| Only Trustee or Node owner can be the author of NODE demotion txn regardless of endorsement or auth constraint rules set | | [INDY-2024](https://jira.hyperledger.org/browse/INDY-2024) |
+
+#### Changes and Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Allow multiple active TAAs | | [INDY-2302](https://jira.hyperledger.org/browse/INDY-2302) |
+| Allow multiple active TAAs: Debug | | [INDY-2316](https://jira.hyperledger.org/browse/INDY-2316) |
+| Improve TAA acceptance date validation | | [INDY-2313](https://jira.hyperledger.org/browse/INDY-2313) |
+| Get TAA should return the hash | | [INDY-2297](https://jira.hyperledger.org/browse/INDY-2297) |
+| Auth_Rules documentation should explain how endorsers work | | [INDY-2304](https://jira.hyperledger.org/browse/INDY-2304) |
+| Document PBFT view change protocol | | [INDY-2138](https://jira.hyperledger.org/browse/INDY-2138) |
+| Backups should start ordering in new view only after master instance ordered till prepared cert from NewView | | [INDY-2299](https://jira.hyperledger.org/browse/INDY-2299) |
+| Get rid of transport batches | | [INDY-2294](https://jira.hyperledger.org/browse/INDY-2294) |
+| Enable zeroMQ auto-reconnection | | [INDY-2289](https://jira.hyperledger.org/browse/INDY-2289) |
+| Improve simulation tests to include NODE txns | | [INDY-2286](https://jira.hyperledger.org/browse/INDY-2286) |
+| Improve BLS signature performance | | [INDY-2280](https://jira.hyperledger.org/browse/INDY-2280) |
+| Improve simulation tests to include processing of InstanceChanges | | [INDY-2263](https://jira.hyperledger.org/browse/INDY-2263) |
+
+#### Known Issues
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| A node lagging behind may not be able to finish view change if nodes have been added/demoted | | [INDY-2308](https://jira.hyperledger.org/browse/INDY-2308) |
+| Up to F Nodes may not be able to finish View Change if there are uncommitted NODE txns | | [INDY-2319](https://jira.hyperledger.org/browse/INDY-2319) |
+| A node may start re-sending messages in a loop in case of connection issues | | [INDY-2318](https://jira.hyperledger.org/browse/INDY-2318) |
+| A lagging node may use wrong N and F quorum values and never finish view change if there are NODE txns being processed | | [INDY-2320](https://jira.hyperledger.org/browse/INDY-2320) |
+
+## 1.12.0
+### Release date: Nov 29th, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.12.0 |
+| indy-node | 1.12.0 |
+| sovrin | 1.1.63 |
+
+### Additional Information:
+
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
+### Major Changes
+- Improve primary selection algorithm
+- Take into account transaction history when recovering state for new nodes
+- Fix new nodes adding when there are old AUTH_RULE or plugin transactions
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| The problem with a config state | | [INDY-2283](https://jira.hyperledger.org/browse/INDY-2283) |
+| Node loses consensus and unreachable by clients | | [INDY-2287](https://jira.hyperledger.org/browse/INDY-2287) |
+| A new added node failed to reach consensus | | [INDY-2254](https://jira.hyperledger.org/browse/INDY-2254) |
+
+#### Changes and Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| All nodes need to select the same primary during view change | | [INDY-2262](https://jira.hyperledger.org/browse/INDY-2262) |
+| Take into account txn history when recovering state from the ledger for new nodes | | [INDY-2292](https://jira.hyperledger.org/browse/INDY-2292) |
+| Do not restore Primaries from the audit ledger | | [INDY-2298](https://jira.hyperledger.org/browse/INDY-2298) |
+| Start View change on receiving a quorum of ViewChange messages | | [INDY-2236](https://jira.hyperledger.org/browse/INDY-2236) |
+| PBFT View change: cleanup and debug Part 3 | | [INDY-2267](https://jira.hyperledger.org/browse/INDY-2267) |
+| A Node missing a View Change may not be able to finish it if NODE txns have been sent | | [INDY-2275](https://jira.hyperledger.org/browse/INDY-2275) |
+| PrePrepare's Digest need to take into account all PrePrepare's fields | | [INDY-2285](https://jira.hyperledger.org/browse/INDY-2285) |
+| Investigate reasons of hundreds VCs during 15 txns per sec production load | | [INDY-2295](https://jira.hyperledger.org/browse/INDY-2295) |
+| Support historical req handlers for non-config ledgers | | [INDY-2307](https://jira.hyperledger.org/browse/INDY-2307) |
+
+#### Known Issues
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| A node lagging behind may not be able to finish view change if nodes have been added/demoted | | [INDY-2308](https://jira.hyperledger.org/browse/INDY-2308) |
+| GET_CRED_DEF for a Schema with a lot of attributes may fail with Timeout | | [INDY-2306](https://jira.hyperledger.org/browse/INDY-2306) |
+| Only Trustee or Node owner can be the author of NODE demotion txn regardless of endorsement or auth constraint rules set | | [INDY-2024](https://jira.hyperledger.org/browse/INDY-2024) |
+
+## 1.11.0
+### Release date: Nov 1st, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.11.0 |
+| indy-node | 1.11.0 |
+| sovrin | 1.1.60 |
+
+### Additional Information:
+
+**Please be careful with demoting/promoting/adding nodes (see Known Issues for details).**
+
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
+### Major Changes
+- Switch to PBFT View Change protocol
+- Stability fixes
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| One node doesn't catch up after promotion | | [INDY-2222](https://jira.hyperledger.org/browse/INDY-2222) |
+| A Replica may process messages from other Replicas | | [INDY-2248](https://jira.hyperledger.org/browse/INDY-2248) |
+| Up to F nodes are out of consensus after >3 hours of load | | [INDY-2268](https://jira.hyperledger.org/browse/INDY-2268) |
+| A Node may not connect to another Node after restart | | [INDY-2274](https://jira.hyperledger.org/browse/INDY-2274) |
+| Two View Changes happen during master or backup primary demotion | | [INDY-2247](https://jira.hyperledger.org/browse/INDY-2247) |
+
+#### Changes and Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Debug: Integrate PBFT viewchanger service into current codebase | | [INDY-2140](https://jira.hyperledger.org/browse/INDY-2140) |
+| Request missing ViewChange messages when receiving NewView | | [INDY-2178](https://jira.hyperledger.org/browse/INDY-2178) |
+| Basic integration tests with a new View Change protocol need to pass | | [INDY-2223](https://jira.hyperledger.org/browse/INDY-2223) |
+| Recover from a situation when View Change is finished on >= N-F of other nodes | | [INDY-2224](https://jira.hyperledger.org/browse/INDY-2224) |
+| A Primary lagging behind a stable chedkpoints should not send NewView | | [INDY-2230](https://jira.hyperledger.org/browse/INDY-2230) |
+| Do not stabilize checkpoint after the view change if a Replica doesn't have this checkpoint | | [INDY-2231](https://jira.hyperledger.org/browse/INDY-2231) |
+| Save PrePrepare's BatchID in audit ledger and restore list of preprepares and prepares on node startup | | [INDY-2235](https://jira.hyperledger.org/browse/INDY-2235) |
+| PBFT View Change Debug: Part 2 | | [INDY-2244](https://jira.hyperledger.org/browse/INDY-2244) |
+| Optimize Propagate logic | | [INDY-2257](https://jira.hyperledger.org/browse/INDY-2257) |
+
+#### Known Issues
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| All nodes need to select the same primary during view change | | [INDY-2262](https://jira.hyperledger.org/browse/INDY-2262) |
+| A Node missing a View Change may not be able to finish it if NODE txns have been sent | | [INDY-2275](https://jira.hyperledger.org/browse/INDY-2275) |
+| A new node joining the pool during the view change may not be able to start ordering immediately | | [INDY-2276](https://jira.hyperledger.org/browse/INDY-2276) |
+Summary: If there are NODE txns for adding/removing nodes interleaved with View Changes (not any view changes, but a specific subset), then either up to F or all Nodes may not be able to finish view change. Please see the details and conditions when it may happen in INDY-2262.
+
+## 1.10.0
+### Release date: Oct 4th, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.10.0 |
+| indy-node | 1.10.0 |
+| sovrin | 1.1.58 |
+
+### Additional Information:
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+**PBFT View Change was implemented but not enabled so old View Change is active now.**
+
+### Major Changes
+- PBFT View Change implementation (not enabled yet) and corresponding code improvements 
+- BLS multi-signature fixes and improvements
+- The latest version of ZMQ library support
+- Stability fixes
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| GET_TXN doesn't work with old libindy | | [INDY-2233](https://jira.hyperledger.org/browse/INDY-2233) |
+| Need to improve error message with invalid signature | | [INDY-2103](https://jira.hyperledger.org/browse/INDY-2103) |
+| A node may not be able to connect to another node if another node was able to connect | | [INDY-2183](https://jira.hyperledger.org/browse/INDY-2183) |
+| ZMQError: Address already in use when restarting client stack | | [INDY-2212](https://jira.hyperledger.org/browse/INDY-2212) |
+
+#### Changes and Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| All ledgers in a batch need to be BLS multi-signed | | [INDY-2228](https://jira.hyperledger.org/browse/INDY-2228) |
+| Drop ppSeqNo on Backups after View Change | | [INDY-2226](https://jira.hyperledger.org/browse/INDY-2226) |
+| Move 3PC Message Request logic into a separate service | | [INDY-2220](https://jira.hyperledger.org/browse/INDY-2220) |
+| Bump pyzmq to the latest version | | [INDY-2213](https://jira.hyperledger.org/browse/INDY-2213) |
+| Integration of Services: Cleanup | | [INDY-2208](https://jira.hyperledger.org/browse/INDY-2208) |
+| Integrate Checkpointer Service into Replica | | [INDY-2179](https://jira.hyperledger.org/browse/INDY-2179) |
+| Use audit ledger in Checkpoints | | [INDY-2177](https://jira.hyperledger.org/browse/INDY-2177) |
+| Integrate OrderingService into Replica | | [INDY-2169](https://jira.hyperledger.org/browse/INDY-2169) |
+| Integrate PrimarySelector into View Change Service | | [INDY-2167](https://jira.hyperledger.org/browse/INDY-2167) |
+| Integrate view change property-based tests into CI | | [INDY-2150](https://jira.hyperledger.org/browse/INDY-2150) |
+| Integrate and run PBFT View Changer simulation tests with a real implementation | | [INDY-2149](https://jira.hyperledger.org/browse/INDY-2149) |
+| Implement PBFT viewchanger service with most basic functionality | | [INDY-2147](https://jira.hyperledger.org/browse/INDY-2147) |
+| Extract and integrate ConsensusDataProvider from Replica | | [INDY-2139](https://jira.hyperledger.org/browse/INDY-2139) |
+| Extract Checkpointer service from Replica | | [INDY-2137](https://jira.hyperledger.org/browse/INDY-2137) |
+| Extract Orderer service from Replica | | [INDY-2136](https://jira.hyperledger.org/browse/INDY-2136) |
+| Simulation tests for View Changer (no integration) | | [INDY-2135](https://jira.hyperledger.org/browse/INDY-2135) |
+| Implementation: Make PBFT view change working | | [INDY-1340](https://jira.hyperledger.org/browse/INDY-1340) |
+| Implement network, executor, orderer and checkpointer as adaptors for existing codebase | | [INDY-1339](https://jira.hyperledger.org/browse/INDY-1339) |
+| Define Interfaces needed for View Change Service | | [INDY-1338](https://jira.hyperledger.org/browse/INDY-1338) |
+| Modify WriteReqManager to meet Executor interface needs | | [INDY-1337](https://jira.hyperledger.org/browse/INDY-1337) |
+| Stop resetting ppSeqNo (and relying on this) in new view | | [INDY-1336](https://jira.hyperledger.org/browse/INDY-1336) |
+| Enable full ordering of batches from last view that have been already ordered, make execution on replicas that executed them no-op | | [INDY-1335](https://jira.hyperledger.org/browse/INDY-1335) |
+
+#### Known Issues
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| One node doesn't catch up after promotion | | [INDY-2222](https://jira.hyperledger.org/browse/INDY-2222) |
+
+## 1.9.2
+### Release date: Aug 30th, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.9.2 |
+| indy-node | 1.9.2 |
+| sovrin | 1.1.56 |
+
+### Additional Information:
+**Migration script will be applied for buildernet only and will return error message in python shell for any other pools (if manual migration will be performed).**
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
+### Major Changes
+- Stability fixes
+- Endorser support fixes and improvements
+- Improving GET_TXN to be able to query just one node the same way as for other GET requests
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| New nodes added after last upgrade (1.9.1) are not in consensus | | [INDY-2211](https://jira.hyperledger.org/browse/INDY-2211) |
+| indy-node broken by indy-plenum and python-dateutil | | [INDY-2176](https://jira.hyperledger.org/browse/INDY-2176) |
+| Issue with non utf-8 decoding | | [INDY-2218](https://jira.hyperledger.org/browse/INDY-2218) |
+| Endorsers must be specified within the transaction | | [INDY-2199](https://jira.hyperledger.org/browse/INDY-2199) |
+| One node doesn't catch up | | [INDY-2215](https://jira.hyperledger.org/browse/INDY-2215) |
+
+#### Changes and Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| As a user, I need to be able to know what was the last update time of the ledger when querying a txn via GET_TXN request | | [INDY-1954](https://jira.hyperledger.org/browse/INDY-1954) |
+| Endorser field can contian a DID with a known role only | | [INDY-2198](https://jira.hyperledger.org/browse/INDY-2198) |
 
 ## 1.9.1
 ### Release date: Aug 02nd, 2019

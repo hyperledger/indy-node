@@ -9,9 +9,10 @@ RESTART_TIMEOUT = 10
 
 
 @pytest.fixture(scope="module")
-def tconf(tconf):
+def tconf(tconf, tdir):
     old_restart_timeout = tconf.INCONSISTENCY_WATCHER_NETWORK_TIMEOUT
     tconf.INCONSISTENCY_WATCHER_NETWORK_TIMEOUT = RESTART_TIMEOUT
+    tconf.LOG_DIR = tdir
     yield tconf
     tconf.INCONSISTENCY_WATCHER_NETWORK_TIMEOUT = old_restart_timeout
 
@@ -31,7 +32,7 @@ def test_restart_on_inconsistency(looper, txnPoolNodeSet, tconf, tdir, monkeypat
         with restarted.get_lock():
             assert restarted.value == value
 
-    nct = NodeControlToolExecutor(backup_dir=tdir, backup_target=tdir, transform=transform)
+    nct = NodeControlToolExecutor(backup_dir=tdir, backup_target=tdir, transform=transform, config=tconf)
     try:
         # Trigger inconsistent 3PC state event
         txnPoolNodeSet[0].on_inconsistent_3pc_state()

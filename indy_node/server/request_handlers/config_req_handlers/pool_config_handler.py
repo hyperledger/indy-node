@@ -1,3 +1,5 @@
+from typing import Optional
+
 from indy_node.server.pool_config import PoolConfig
 
 from indy_common.authorize.auth_actions import AuthActionEdit
@@ -20,7 +22,7 @@ class PoolConfigHandler(WriteRequestHandler):
     def static_validation(self, request: Request):
         self._validate_request_type(request)
 
-    def dynamic_validation(self, request: Request):
+    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
         action = '*'
         status = '*'

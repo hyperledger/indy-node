@@ -2,7 +2,7 @@ import os
 import asyncio
 from datetime import datetime
 from functools import partial
-from typing import Union, Optional, Callable, Dict
+from typing import Optional, Callable, Dict
 
 import dateutil.parser
 import dateutil.tz
@@ -17,7 +17,7 @@ from common.version import (
 )
 
 from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
-    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, \
+    CANCEL, JUSTIFICATION, TIMEOUT, NODE_UPGRADE, \
     UPGRADE_MESSAGE, PACKAGE, APP_NAME
 from indy_common.version import src_version_cls
 from indy_node.server.upgrade_log import UpgradeLogData, UpgradeLog
@@ -170,8 +170,8 @@ class Upgrader(NodeMaintainer):
             # searching for CANCEL for this upgrade submitted after START txn
             last_pool_upgrade_txn_cancel = self.get_upgrade_txn(
                 lambda txn:
-                get_type(txn) == POOL_UPGRADE and get_payload_data(txn)[ACTION] == CANCEL and
-                get_payload_data(txn)[VERSION] == get_payload_data(last_pool_upgrade_txn_start)[VERSION],
+                get_type(txn) == POOL_UPGRADE and get_payload_data(txn)[ACTION] == CANCEL and get_payload_data(txn)
+                [VERSION] == get_payload_data(last_pool_upgrade_txn_start)[VERSION],
                 start_no=last_pool_upgrade_txn_seq_no + 1)
             if last_pool_upgrade_txn_cancel:
                 logger.info('{} found upgrade CANCEL txn {}'.format(
@@ -214,10 +214,10 @@ class Upgrader(NodeMaintainer):
 
         try:
             target_ver = version_cls(target_ver)
-        except InvalidVersionError as exc:
+        except InvalidVersionError:
             return (
                 "invalid target version {} for version class {}: "
-                .format(target_ver, version_cls, exc)
+                .format(target_ver, version_cls)
             )
 
         # get current installed package version of pkg_name
@@ -227,8 +227,7 @@ class Upgrader(NodeMaintainer):
                     .format(pkg_name))
 
         # TODO weak check
-        if (APP_NAME not in pkg_name and
-                all([APP_NAME not in d for d in cur_deps])):
+        if APP_NAME not in pkg_name and all([APP_NAME not in d for d in cur_deps]):
             return "Package {} doesn't belong to pool".format(pkg_name)
 
         # compare whether it makes sense to try (target >= current, = for reinstall)
@@ -288,8 +287,7 @@ class Upgrader(NodeMaintainer):
 
             last_event = self.lastActionEventInfo
             if last_event:
-                if (last_event.data.upgrade_id == upgrade_id and
-                        last_event.ev_type in FINALIZING_EVENT_TYPES):
+                if last_event.data.upgrade_id == upgrade_id and last_event.ev_type in FINALIZING_EVENT_TYPES:
                     logger.info(
                         "Node '{}' has already performed an upgrade with upgrade_id {}. "
                         "Last recorded event is {}"
@@ -322,8 +320,7 @@ class Upgrader(NodeMaintainer):
             return
 
         if action == CANCEL:
-            if (self.scheduledAction and
-                    self.scheduledAction.version == version):
+            if self.scheduledAction and self.scheduledAction.version == version:
                 self._cancelScheduledUpgrade(justification)
                 logger.info("Node '{}' cancels upgrade to {}".format(
                     self.nodeName, version))
@@ -448,8 +445,7 @@ class Upgrader(NodeMaintainer):
                     .format(ev_data.when, ev_data.version))
         last = self._actionLog.last_event
         # TODO test this
-        if (last and last.ev_type == UpgradeLog.Events.failed and
-                last.data == ev_data):
+        if last and last.ev_type == UpgradeLog.Events.failed and last.data == ev_data:
             return None
 
         self._action_failed(ev_data, reason="exceeded upgrade timeout")

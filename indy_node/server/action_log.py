@@ -114,10 +114,8 @@ class ActionLogEvent(CsvSerializer):
 
         self._data_items_prefix = '_data_'
         self._items = (
-            ['ts', 'ev_type'] +
-            [(self._data_items_prefix + i) for i in self.data._items]
+            ['ts', 'ev_type'] + [(self._data_items_prefix + i) for i in self.data._items]
         )
-        pass
 
     def __getattr__(self, name):
         try:
@@ -138,7 +136,7 @@ class ActionLog:
             file_path: str,
             data_class: Type[CsvSerializer] = ActionLogData,
             event_types: Type[Enum] = ActionLogEvents,
-            delimiter: str ='\t'
+            delimiter: str = '\t'
     ):
         self._delimiter = delimiter
         self._file_path = file_path
