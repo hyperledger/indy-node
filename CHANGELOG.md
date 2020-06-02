@@ -1,5 +1,7 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.12.3](#1123)
+
 * [1.12.2](#1122)
 
 * [1.12.1](#1121)
@@ -58,8 +60,32 @@
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
 
+## 1.12.3
+### Release date: Jun 1st, 2020
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.12.3 |
+| indy-node | 1.12.3 |
+| sovrin | 1.1.81 |
+
+### Additional Information:
+
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
+### Major Changes
+- Bug fix
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| TAA signature's validation fix (milliseconds sending broke the primary) | | |
+
 ## 1.12.2
-### Release date: Dec 30th, 2020
+### Release date: Jan 30th, 2020
 
 ### Component Version Information
 | Components | Version Numbers |
