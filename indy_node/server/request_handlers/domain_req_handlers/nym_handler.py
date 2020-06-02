@@ -109,8 +109,10 @@ class NymHandler(PNymHandler):
         is_owner = origin == owner
 
         updateKeys = [ROLE, VERKEY]
+        updateKeysInOperation = is_owner
         for key in updateKeys:
             if key in operation:
+                updateKeysInOperation = True
                 newVal = operation[key]
                 oldVal = nym_data.get(key)
                 self.write_req_validator.validate(request,
@@ -119,6 +121,8 @@ class NymHandler(PNymHandler):
                                                                   old_value=oldVal,
                                                                   new_value=newVal,
                                                                   is_owner=is_owner)])
+        if not updateKeysInOperation:
+            raise InvalidClientRequest(request.identifier, request.reqId)
 
     def _decode_state_value(self, encoded):
         if encoded:
