@@ -26,6 +26,7 @@ sudo apt-get install -y libbz2-dev \
     zlib1g-dev \
     liblz4-dev \
     libsnappy-dev \
+    ursa=0.3.2-2  \
     rocksdb=5.8.8
 echo 'Installed RocksDB'
 
