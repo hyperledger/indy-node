@@ -334,7 +334,7 @@ def test_nym_edit(
     if editor.verkey is None:  # skip that as well since it doesn't make sense
         return
 
-    if not ROLE in edit_op:  # skip if the update operation doesn't changes neither role nor verkey
+    if not ROLE in edit_op:  # skip if the update operation changes neither role nor verkey
         if not VERKEY in edit_op:
             return
 
