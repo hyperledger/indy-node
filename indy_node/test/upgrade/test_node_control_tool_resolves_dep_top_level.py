@@ -40,7 +40,7 @@ def test_node_as_depend(monkeypatch, tconf):
         node_package_with_version: '{}\nVersion:{}\nDepends:{} (= {})\n'.format(
             randomText(100), node_package[1], *plenum_package),
         plenum_package_with_version: '{}\nVersion:{}\nDepends:{} (= {})\n'.format(
-            randomText(100), plenum_package[1],  randomText(100)),
+            randomText(100), plenum_package[1], *plenum_package),
         top_level_package_dep1_with_version: '{}\nVersion:{}\nDepends:{} (= {})\n'.format(
             randomText(100), EXT_TOP_PKT_DEPS[0][1], *plenum_package),
         top_level_package_dep2_with_version: '{}\nVersion:{}\nDepends:{} (= {})\n'.format(
