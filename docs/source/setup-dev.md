@@ -136,19 +136,21 @@ sudo apt-get install libbz2-dev \
 See [RocksDB](https://github.com/facebook/rocksdb) on how it can be installed on other platforms.
 
 
-### Setup Libindy
+### Setup Libindy and Ursa
 
 Indy needs [Libindy](https://github.com/hyperledger/indy-sdk) as a test dependency.
+It also relies on [ursa](https://github.com/hyperledger/ursa), a library that supplies cryptographic signatures.
 
-There is a deb package of libindy that can be used on Ubuntu:
+There are deb packages of libindy and ursa that can be used on Ubuntu:
 ```
 sudo add-apt-repository "deb https://repo.sovrin.org/sdk/deb xenial stable"
 sudo apt-get update
-sudo apt-get install -y libindy
+sudo apt-get install -y libindy ursa
 ```
 
-See [Libindy](https://github.com/hyperledger/indy-sdk) on how it can be installed on other platforms.
-
+See [Libindy](https://github.com/hyperledger/indy-sdk) on how libindy can be installed on other platforms.
+See [Ursa build environment](https://github.com/hyperledger/ursa/blob/master/docs/build-environment.md)
+on how Ursa can be installed and built for other platforms.
 
 ### Using a virtual environment (recommended)
 
