@@ -18,7 +18,7 @@ You can also have a look at the scripts mentioned below to follow them and perfo
 1. Get scripts from [dev-setup-ubuntu](https://github.com/hyperledger/indy-node/tree/master/dev-setup/ubuntu)
 1. Run `setup-dev-python.sh` to setup Python3.5, pip and virtualenv
 1. Run `source ~/.bashrc` to apply virtual environment wrapper installation
-1. Run `setup-dev-depend-ubuntu16.sh` to setup dependencies (libindy, libsodium)
+1. Run `setup-dev-depend-ubuntu16.sh` to setup dependencies (libindy, ursa, libsodium)
 1. Fork [indy-plenum](https://github.com/hyperledger/indy-plenum) and [indy-node](https://github.com/hyperledger/indy-node)
 1. Go to the destination folder for the project
 1. Run `init-dev-project.sh <github-name> <new-virtualenv-name>` to clone indy-plenum and indy-node projects and
