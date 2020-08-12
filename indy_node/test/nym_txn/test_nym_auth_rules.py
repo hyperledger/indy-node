@@ -334,4 +334,8 @@ def test_nym_edit(
     if editor.verkey is None:  # skip that as well since it doesn't make sense
         return
 
+    if not ROLE in edit_op:  # skip if the update operation changes neither role nor verkey
+        if not VERKEY in edit_op:
+            return
+
     sign_and_validate(looper, txnPoolNodeSet[0], ActionIds.edit, editor, edit_op, did_ledger=edited)
