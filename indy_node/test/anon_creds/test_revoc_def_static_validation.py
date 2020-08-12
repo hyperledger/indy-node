@@ -24,7 +24,7 @@ def _res_field_size(request, _lt_eq_gt):
     _valid_size = TAG_LIMIT_SIZE if _field == TAG else GENERAL_LIMIT_SIZE
 
     if _lt_eq_gt == 'lt':
-        return _expected, _field, random.randint(0, _valid_size - 1)
+        return _expected, _field, random.randint(1, _valid_size - 1)
     if _lt_eq_gt == 'eq':
         return _expected, _field, _valid_size
     return _expected, _field, random.randint(_valid_size + 1, 2 * _valid_size)
