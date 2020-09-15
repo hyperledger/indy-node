@@ -1,3 +1,4 @@
+import pytest
 import json
 import copy
 
@@ -9,6 +10,7 @@ from plenum.common.constants import TXN_TIME
 from plenum.common.types import f
 
 
+@pytest.mark.anon_creds
 def test_send_get_revoc_reg_later_then_first_entry(looper,
                             txnPoolNodeSet,
                             sdk_pool_handle,
@@ -24,6 +26,7 @@ def test_send_get_revoc_reg_later_then_first_entry(looper,
     assert rev_entry_req['operation'][VALUE][ACCUM] == reply['result']['data'][VALUE][ACCUM]
 
 
+@pytest.mark.anon_creds
 def test_send_get_revoc_reg_earlier_then_first_entry(
         looper,
         txnPoolNodeSet,

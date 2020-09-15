@@ -44,6 +44,7 @@ def pkg_version(pool_upgrade_request):
     )
 
 
+@pytest.mark.request_handlers
 def test_pool_upgrade_static_validation_fails_action(pool_upgrade_handler,
                                                      pool_upgrade_request):
     pool_upgrade_request.operation[ACTION] = 'smth'
@@ -52,6 +53,7 @@ def test_pool_upgrade_static_validation_fails_action(pool_upgrade_handler,
     e.match('not a valid action')
 
 
+@pytest.mark.request_handlers
 def test_pool_upgrade_static_validation_fails_schedule(pool_upgrade_handler,
                                                        pool_upgrade_request):
     pool_upgrade_handler.pool_manager.getNodesServices = lambda: 1
@@ -61,6 +63,7 @@ def test_pool_upgrade_static_validation_fails_schedule(pool_upgrade_handler,
     e.match('not a valid schedule since')
 
 
+@pytest.mark.request_handlers
 def test_pool_upgrade_static_validation_passes(pool_upgrade_handler,
                                                pool_upgrade_request):
     pool_upgrade_handler.pool_manager.getNodesServices = lambda: 1
@@ -68,6 +71,7 @@ def test_pool_upgrade_static_validation_passes(pool_upgrade_handler,
     pool_upgrade_handler.static_validation(pool_upgrade_request)
 
 
+@pytest.mark.request_handlers
 def test_pool_upgrade_dynamic_validation_fails_pckg(pool_upgrade_handler,
                                                     pool_upgrade_request,
                                                     tconf):
@@ -77,6 +81,7 @@ def test_pool_upgrade_dynamic_validation_fails_pckg(pool_upgrade_handler,
     e.match('Upgrade package name is empty')
 
 
+@pytest.mark.request_handlers
 def test_pool_upgrade_dynamic_validation_fails_not_installed(
         monkeypatch,
         pool_upgrade_handler,
@@ -89,6 +94,7 @@ def test_pool_upgrade_dynamic_validation_fails_not_installed(
     e.match('is not installed and cannot be upgraded')
 
 
+@pytest.mark.request_handlers
 def test_pool_upgrade_dynamic_validation_fails_belong(
         monkeypatch,
         pool_upgrade_handler,
@@ -101,6 +107,7 @@ def test_pool_upgrade_dynamic_validation_fails_belong(
     e.match('doesn\'t belong to pool')
 
 
+@pytest.mark.request_handlers
 def test_pool_upgrade_dynamic_validation_fails_upgradable(
         monkeypatch,
         pool_upgrade_handler,
@@ -118,6 +125,7 @@ def test_pool_upgrade_dynamic_validation_fails_upgradable(
     e.match('Version {} is not upgradable'.format(pkg_version.upstream.full))
 
 
+@pytest.mark.request_handlers
 def test_pool_upgrade_dynamic_validation_fails_scheduled(
         monkeypatch,
         pool_upgrade_handler,
@@ -143,6 +151,7 @@ def test_pool_upgrade_dynamic_validation_fails_scheduled(
     e.match('is already scheduled')
 
 
+@pytest.mark.request_handlers
 def test_pool_upgrade_dynamic_validation_passes(
         monkeypatch,
         pool_upgrade_handler,

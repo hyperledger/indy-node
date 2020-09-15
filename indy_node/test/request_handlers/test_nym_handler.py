@@ -37,46 +37,54 @@ def creator(db_manager):
     return identifier
 
 
+@pytest.mark.request_handlers
 def test_nym_static_validation_passes(nym_request, nym_handler: NymHandler):
     nym_handler.static_validation(nym_request)
 
 
+@pytest.mark.request_handlers
 def test_nym_static_validation_failed_without_dest(nym_request, nym_handler: NymHandler):
     del nym_request.operation['dest']
     with pytest.raises(InvalidClientRequest):
         nym_handler.static_validation(nym_request)
 
 
+@pytest.mark.request_handlers
 def test_nym_static_validation_failed_with_none_dest(nym_request, nym_handler: NymHandler):
     nym_request.operation['dest'] = None
     with pytest.raises(InvalidClientRequest):
         nym_handler.static_validation(nym_request)
 
 
+@pytest.mark.request_handlers
 def test_nym_static_validation_failed_with_empty_dest(nym_request, nym_handler: NymHandler):
     nym_request.operation['dest'] = ''
     with pytest.raises(InvalidClientRequest):
         nym_handler.static_validation(nym_request)
 
 
+@pytest.mark.request_handlers
 def test_nym_static_validation_failed_with_spaced_dest(nym_request, nym_handler: NymHandler):
     nym_request.operation['dest'] = ' ' * 5
     with pytest.raises(InvalidClientRequest):
         nym_handler.static_validation(nym_request)
 
 
+@pytest.mark.request_handlers
 def test_nym_static_validation_authorized(nym_request, nym_handler: NymHandler):
     for role in Authoriser.ValidRoles:
         nym_request.operation['role'] = role
         nym_handler.static_validation(nym_request)
 
 
+@pytest.mark.request_handlers
 def test_nym_static_validation_not_authorized_random(nym_request, nym_handler: NymHandler):
     nym_request.operation['role'] = randomString()
     with pytest.raises(InvalidClientRequest):
         nym_handler.static_validation(nym_request)
 
 
+@pytest.mark.request_handlers
 def test_nym_dynamic_validation_for_new_nym(nym_request, nym_handler: NymHandler, creator):
     nym_handler.write_req_validator.validate = get_exception(False)
     add_to_idr(nym_handler.database_manager.idr_cache, creator, STEWARD)
@@ -87,6 +95,7 @@ def test_nym_dynamic_validation_for_new_nym(nym_request, nym_handler: NymHandler
         nym_handler.dynamic_validation(nym_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_nym_dynamic_validation_for_existing_nym(nym_request: Request, nym_handler: NymHandler, creator):
     add_to_idr(nym_handler.database_manager.idr_cache, nym_request.operation['dest'], None)
     nym_handler.write_req_validator.validate = get_exception(False)
@@ -98,6 +107,7 @@ def test_nym_dynamic_validation_for_existing_nym(nym_request: Request, nym_handl
         nym_handler.dynamic_validation(nym_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_nym_dynamic_validation_for_existing_nym_fails_with_no_changes(nym_handler: NymHandler,
                                                                        creator):
     nym_request = Request(identifier=creator,
@@ -112,6 +122,7 @@ def test_nym_dynamic_validation_for_existing_nym_fails_with_no_changes(nym_handl
         nym_handler.dynamic_validation(nym_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_update_state(nym_request: Request, nym_handler: NymHandler):
     seq_no = 1
     txn_time = 1560241033

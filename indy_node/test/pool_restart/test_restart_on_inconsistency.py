@@ -17,6 +17,7 @@ def tconf(tconf, tdir):
     tconf.INCONSISTENCY_WATCHER_NETWORK_TIMEOUT = old_restart_timeout
 
 
+@pytest.mark.pool_restart
 def test_restart_on_inconsistency(looper, txnPoolNodeSet, tconf, tdir, monkeypatch):
     restarted = multiprocessing.Value('i', 0)
 

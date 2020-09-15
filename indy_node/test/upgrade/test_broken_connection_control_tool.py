@@ -40,6 +40,7 @@ def skip_functions():
     Upgrader._action_failed = old_action_failed
 
 
+@pytest.mark.upgrade
 def test_node_doesnt_retry_upgrade(looper, nodeSet, validUpgrade, nodeIds,
                                    sdk_pool_handle, sdk_wallet_trustee, tconf,
                                    skip_functions):

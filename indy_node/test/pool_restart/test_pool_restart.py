@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime, timedelta
 
 import dateutil
+import pytest
 from jsonpickle import json
 
 from indy_node.server.restart_log import RestartLog, RestartLogData
@@ -14,6 +15,7 @@ from plenum.common.types import f
 from plenum.test.testing_utils import FakeSomething
 
 
+@pytest.mark.pool_restart
 def test_pool_restart(
         sdk_pool_handle, sdk_wallet_trustee, looper, tconf, txnPoolNodeSet):
 
@@ -38,6 +40,7 @@ def test_pool_restart(
     _comparison_reply(responses, req_obj)
 
 
+@pytest.mark.pool_restart
 def test_restarter_can_initialize_after_pool_restart(txnPoolNodeSet):
     '''
     1. Add restart schedule message to ActionLog
@@ -56,6 +59,7 @@ def test_restarter_can_initialize_after_pool_restart(txnPoolNodeSet):
               actionLog=restarted_node.restarter._actionLog)
 
 
+@pytest.mark.pool_restart
 def test_pool_restart_cancel(
         sdk_pool_handle, sdk_wallet_trustee, looper, tconf, txnPoolNodeSet):
     loop = asyncio.get_event_loop()
@@ -88,12 +92,14 @@ def test_pool_restart_cancel(
     _comparison_reply(responses, req_obj)
 
 
+@pytest.mark.pool_restart
 def test_pool_restart_now_without_datetime(
         sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf):
     pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper,
                      tdir, tconf, START)
 
 
+@pytest.mark.pool_restart
 def test_pool_restart_in_view_change(sdk_pool_handle, sdk_wallet_trustee, looper,
                                      tdir, tconf, txnPoolNodeSet):
 

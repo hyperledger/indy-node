@@ -9,6 +9,7 @@ from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstrain
 from plenum.common.constants import TRUSTEE, STEWARD
 
 
+@pytest.mark.auth
 def test_str_any_7_off_ledger_sig():
     constraint = AuthConstraint(role='*',
                                 sig_count=7,
@@ -16,6 +17,7 @@ def test_str_any_7_off_ledger_sig():
     assert str(constraint) == '7 signatures of any role (off-ledger included) are required'
 
 
+@pytest.mark.auth
 def test_str_any_1_off_ledger_sig():
     constraint = AuthConstraint(role='*',
                                 sig_count=1,
@@ -23,6 +25,7 @@ def test_str_any_1_off_ledger_sig():
     assert str(constraint) == '1 signature of any role (off-ledger included) is required'
 
 
+@pytest.mark.auth
 def test_str_not_any_7_sig_owner():
     constraint = AuthConstraint(role=TRUSTEE,
                                 sig_count=7,
@@ -30,6 +33,7 @@ def test_str_not_any_7_sig_owner():
     assert str(constraint) == '7 TRUSTEE signatures are required and needs to be owner'
 
 
+@pytest.mark.auth
 def test_str_not_any_7_sig_not_owner():
     constraint = AuthConstraint(role=TRUSTEE,
                                 sig_count=7,
@@ -37,6 +41,7 @@ def test_str_not_any_7_sig_not_owner():
     assert str(constraint) == '7 TRUSTEE signatures are required'
 
 
+@pytest.mark.auth
 def test_str_not_any_1_sig_not_owner():
     constraint = AuthConstraint(role=TRUSTEE,
                                 sig_count=1,
@@ -44,6 +49,7 @@ def test_str_not_any_1_sig_not_owner():
     assert str(constraint) == '1 TRUSTEE signature is required'
 
 
+@pytest.mark.auth
 def test_str_not_any_1_sig_owner():
     constraint = AuthConstraint(role=TRUSTEE,
                                 sig_count=1,
@@ -51,6 +57,7 @@ def test_str_not_any_1_sig_owner():
     assert str(constraint) == '1 TRUSTEE signature is required and needs to be owner'
 
 
+@pytest.mark.auth
 def test_str_any_1_sig_owner():
     constraint = AuthConstraint(role="*",
                                 sig_count=1,
@@ -58,6 +65,7 @@ def test_str_any_1_sig_owner():
     assert str(constraint) == '1 signature of any role is required and needs to be owner'
 
 
+@pytest.mark.auth
 def test_str_any_1_sig_not_owner():
     constraint = AuthConstraint(role='*',
                                 sig_count=1,
@@ -65,6 +73,7 @@ def test_str_any_1_sig_not_owner():
     assert str(constraint) == '1 signature of any role is required'
 
 
+@pytest.mark.auth
 def test_str_any_several_sig_not_owner():
     constraint = AuthConstraint(role='*',
                                 sig_count=7,
@@ -72,6 +81,7 @@ def test_str_any_several_sig_not_owner():
     assert str(constraint) == '7 signatures of any role are required'
 
 
+@pytest.mark.auth
 def test_str_any_several_sig_owner():
     constraint = AuthConstraint(role='*',
                                 sig_count=7,
@@ -79,6 +89,7 @@ def test_str_any_several_sig_owner():
     assert str(constraint) == '7 signatures of any role are required and needs to be owner'
 
 
+@pytest.mark.auth
 def test_str_for_auth_constraint_or():
     constraint = AuthConstraintOr([AuthConstraint(role=TRUSTEE,
                                                   sig_count=1,
@@ -91,6 +102,7 @@ def test_str_for_auth_constraint_or():
                               '1 STEWARD signature is required and needs to be owner'
 
 
+@pytest.mark.auth
 def test_str_for_auth_constraint_and():
     constraint = AuthConstraintAnd([AuthConstraint(role=TRUSTEE,
                                                    sig_count=1,
@@ -103,6 +115,7 @@ def test_str_for_auth_constraint_and():
                               '1 STEWARD signature is required and needs to be owner'
 
 
+@pytest.mark.auth
 def test_str_for_auth_constraint_forbidden():
     constraint = AuthConstraintForbidden()
     assert str(constraint) == 'The action is forbidden'
@@ -122,6 +135,7 @@ def constraints():
     return role_constraints[0], and_constraint, or_constraint, forbidden_constraint
 
 
+@pytest.mark.auth
 def test_check_equal(constraints):
     same_role, same_and, same_or, same_forbidden = constraints
     """
@@ -147,6 +161,7 @@ def test_check_equal(constraints):
     assert same_forbidden == forbidden_constraint
 
 
+@pytest.mark.auth
 def test_constraint_serialization(constraints):
     constraint_serializer = ConstraintsSerializer(domain_state_serializer)
     for constraint in constraints:
@@ -198,6 +213,7 @@ def constraints_as_dict():
 #     constraint_serializer.deserialize(b"some_string")
 
 
+@pytest.mark.auth
 def test_constraint_creator(constraints_as_dict,
                             constraints):
     from_creator = [ConstraintCreator.create_constraint(c) for c in constraints_as_dict]

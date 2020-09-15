@@ -48,14 +48,17 @@ def creator(db_manager):
     return identifier
 
 
+@pytest.mark.request_handlers
 def test_auth_rule_static_validation(get_auth_rule_request, get_auth_rule_handler: GetAuthRuleHandler):
     get_auth_rule_handler.static_validation(get_auth_rule_request)
 
 
+@pytest.mark.request_handlers
 def test_all_auth_rules_static_validation(get_all_auth_rules_request, get_auth_rule_handler: GetAuthRuleHandler):
     get_auth_rule_handler.static_validation(get_all_auth_rules_request)
 
 
+@pytest.mark.request_handlers
 def test_auth_rule_static_validation_failed_without_old_value(get_auth_rule_request,
                                                               get_auth_rule_handler: GetAuthRuleHandler):
     if OLD_VALUE in get_auth_rule_request.operation:
@@ -65,6 +68,7 @@ def test_auth_rule_static_validation_failed_without_old_value(get_auth_rule_requ
         get_auth_rule_handler.static_validation(get_auth_rule_request)
 
 
+@pytest.mark.request_handlers
 def test_auth_rule_static_validation_failed_with_excess_field(get_auth_rule_request,
                                                               get_auth_rule_handler: GetAuthRuleHandler):
     get_auth_rule_request.operation[OLD_VALUE] = "old_value"
@@ -73,6 +77,7 @@ def test_auth_rule_static_validation_failed_with_excess_field(get_auth_rule_requ
         get_auth_rule_handler.static_validation(get_auth_rule_request)
 
 
+@pytest.mark.request_handlers
 def test_auth_rule_static_validation_failed_with_incorrect_key(get_auth_rule_request,
                                                                get_auth_rule_handler: GetAuthRuleHandler):
     get_auth_rule_request.operation.update(generate_key(auth_action=EDIT_PREFIX,

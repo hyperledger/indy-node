@@ -21,6 +21,7 @@ def sdk_send_claim_def(looper, sdk_pool_handle, sdk_wallet, tag, schema_json):
     return reply
 
 
+@pytest.mark.claim_def
 def test_send_claim_def_succeeds(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, schema_json):
     wallet_handle, identifier = sdk_wallet_trustee
@@ -31,6 +32,7 @@ def test_send_claim_def_succeeds(
     sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
 
 
+@pytest.mark.claim_def
 def test_send_claim_def_succeeds_for_large_schema(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, large_schema_json):
     wallet_handle, identifier = sdk_wallet_trustee
@@ -41,6 +43,7 @@ def test_send_claim_def_succeeds_for_large_schema(
     sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
 
 
+@pytest.mark.claim_def
 def test_send_claim_def_schema_and_claim_def_in_one_batch(
         looper, tconf, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
     with max_3pc_batch_limits(tconf, size=2) as tconf:
@@ -66,6 +69,7 @@ def test_send_claim_def_schema_and_claim_def_in_one_batch(
         sdk_get_and_check_replies(looper, [schema_req, claim_def_req])
 
 
+@pytest.mark.claim_def
 def test_send_claim_def_fails_if_ref_is_seqno_of_non_schema_txn(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, schema_json):
     wallet_handle, identifier = sdk_wallet_trustee
@@ -79,6 +83,7 @@ def test_send_claim_def_fails_if_ref_is_seqno_of_non_schema_txn(
     e.match('isn\'t seqNo of the schema.')
 
 
+@pytest.mark.claim_def
 def test_send_claim_def_fails_if_ref_is_not_existing_seqno(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, schema_json):
     wallet_handle, identifier = sdk_wallet_trustee
@@ -92,6 +97,7 @@ def test_send_claim_def_fails_if_ref_is_not_existing_seqno(
     e.match('doesn\'t exist')
 
 
+@pytest.mark.claim_def
 def test_update_claim_def_for_same_schema_and_signature_type(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, schema_json):
     wallet_handle, identifier = sdk_wallet_trustee
@@ -106,6 +112,7 @@ def test_update_claim_def_for_same_schema_and_signature_type(
     sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
 
 
+@pytest.mark.claim_def
 def test_can_send_same_claim_def_by_different_issuers(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, sdk_wallet_steward, schema_json):
     wallet_handle, identifier = sdk_wallet_trustee

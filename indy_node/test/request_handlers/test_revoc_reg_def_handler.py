@@ -10,6 +10,7 @@ from plenum.common.txn_util import reqToTxn, append_txn_metadata, get_payload_da
 from plenum.server.request_handlers.utils import encode_state_value
 
 
+@pytest.mark.request_handlers
 def test_revoc_reg_def_dynamic_validation_fails_wrong_id(revoc_reg_def_handler,
                                                          revoc_reg_def_request):
     revoc_reg_def_request.operation[CRED_DEF_ID] = 'sample' * 3
@@ -20,6 +21,7 @@ def test_revoc_reg_def_dynamic_validation_fails_wrong_id(revoc_reg_def_handler,
         revoc_reg_def_handler.static_validation(revoc_reg_def_request)
 
 
+@pytest.mark.request_handlers
 def test_revoc_reg_def_dynamic_validation_fails_no_cred_def(revoc_reg_def_handler,
                                                             revoc_reg_def_request):
     add_to_idr(revoc_reg_def_handler.database_manager.idr_cache,
@@ -41,6 +43,7 @@ def test_revoc_reg_def_dynamic_validation_fails_no_cred_def(revoc_reg_def_handle
         revoc_reg_def_handler.dynamic_validation(revoc_reg_def_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_revoc_reg_def_dynamic_validation_passes(revoc_reg_def_handler,
                                                  revoc_reg_def_request):
     add_to_idr(revoc_reg_def_handler.database_manager.idr_cache,
@@ -52,6 +55,7 @@ def test_revoc_reg_def_dynamic_validation_passes(revoc_reg_def_handler,
     revoc_reg_def_handler.dynamic_validation(revoc_reg_def_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_revoc_reg_def_dynamic_validation_without_permission(revoc_reg_def_handler,
                                                              revoc_reg_def_request):
     add_to_idr(revoc_reg_def_handler.database_manager.idr_cache,
@@ -65,6 +69,7 @@ def test_revoc_reg_def_dynamic_validation_without_permission(revoc_reg_def_handl
         revoc_reg_def_handler.dynamic_validation(revoc_reg_def_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_update_state(revoc_reg_def_handler, revoc_reg_def_request):
     seq_no = 1
     txn_time = 1560241033

@@ -29,7 +29,8 @@ def nym_request(looper, sdk_wallet_trustee):
     return json.loads(nym_request)
 
 
-def testSendNymSucceedsForUuidIdentifierAnsdk_pool_handlemittedVerkey(
+@pytest.mark.nym_txn
+def test_send_nym_succeeds_for_uuid_identifier_ansdk_pool_handlemitted_verkey(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': createUuidIdentifier(),
@@ -41,7 +42,8 @@ def testSendNymSucceedsForUuidIdentifierAnsdk_pool_handlemittedVerkey(
     sdk_get_and_check_replies(looper, [request_couple])
 
 
-def testSendNymSucceedsForUuidIdentifierAndFullVerkey(
+@pytest.mark.nym_txn
+def test_send_nym_succeeds_for_uuid_identifier_and_full_verkey(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     uuidIdentifier, fullVerkey = createUuidIdentifierAndFullVerkey()
     parameters = {
@@ -55,7 +57,8 @@ def testSendNymSucceedsForUuidIdentifierAndFullVerkey(
     sdk_get_and_check_replies(looper, [request_couple])
 
 
-def testSendNymSucceedsForHalfKeyIdentifierAndAbbrevVerkey(
+@pytest.mark.nym_txn
+def test_send_nym_succeeds_for_half_key_identifier_and_abbrev_verkey(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     halfKeyIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
     parameters = {
@@ -70,7 +73,7 @@ def testSendNymSucceedsForHalfKeyIdentifierAndAbbrevVerkey(
 
 
 @pytest.mark.skip(reason='INDY-210')
-def testSendNymFailsForCryptonymIdentifierAnsdk_pool_handlemittedVerkey(
+def test_send_nym_fails_for_cryptonym_identifier_ansdk_pool_handlemitted_verkey(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': createCryptonym(),
@@ -83,7 +86,7 @@ def testSendNymFailsForCryptonymIdentifierAnsdk_pool_handlemittedVerkey(
 
 
 @pytest.mark.skip(reason='INDY-210')
-def testSendNymFailsForCryptonymIdentifierAndFullVerkey(
+def test_send_nym_fails_for_cryptonym_identifier_and_full_verkey(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     cryptonym = createCryptonym()
 
@@ -100,7 +103,8 @@ def testSendNymFailsForCryptonymIdentifierAndFullVerkey(
     sdk_get_and_check_replies(looper, [request_couple])
 
 
-def testSendNymFailsForCryptonymIdentifierAndMatchedAbbrevVerkey(
+@pytest.mark.nym_txn
+def test_send_nym_fails_for_cryptonym_identifier_and_matched_abbrev_verkey(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     cryptonym = createCryptonym()
 
@@ -119,7 +123,7 @@ def testSendNymFailsForCryptonymIdentifierAndMatchedAbbrevVerkey(
 
 
 @pytest.mark.skip(reason='SOV-1108')
-def testSendNymFailsIfIdentifierSizeIs15Bytes(
+def test_send_nym_fails_if_identifier_size_is15_bytes(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': rawToFriendly(randombytes(15)),
@@ -132,7 +136,7 @@ def testSendNymFailsIfIdentifierSizeIs15Bytes(
 
 
 @pytest.mark.skip(reason='SOV-1108')
-def testSendNymFailsIfIdentifierSizeIs17Bytes(
+def test_send_nym_fails_if_identifier_size_is17_bytes(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': rawToFriendly(randombytes(17)),
@@ -145,7 +149,7 @@ def testSendNymFailsIfIdentifierSizeIs17Bytes(
 
 
 @pytest.mark.skip(reason='SOV-1108')
-def testSendNymFailsIfFullVerkeySizeIs31Bytes(
+def test_send_nym_fails_if_full_verkey_size_is31_bytes(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': rawToFriendly(randombytes(16)),
@@ -159,7 +163,7 @@ def testSendNymFailsIfFullVerkeySizeIs31Bytes(
 
 
 @pytest.mark.skip(reason='SOV-1108')
-def testSendNymFailsIfFullVerkeySizeIs33Bytes(
+def test_send_nym_fails_if_full_verkey_size_is33_bytes(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': rawToFriendly(randombytes(16)),
@@ -173,7 +177,7 @@ def testSendNymFailsIfFullVerkeySizeIs33Bytes(
 
 
 @pytest.mark.skip(reason='SOV-1108')
-def testSendNymFailsIfAbbrevVerkeySizeIs15Bytes(
+def test_send_nym_fails_if_abbrev_verkey_size_is15_bytes(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': rawToFriendly(randombytes(16)),
@@ -187,7 +191,7 @@ def testSendNymFailsIfAbbrevVerkeySizeIs15Bytes(
 
 
 @pytest.mark.skip(reason='SOV-1108')
-def testSendNymFailsIfAbbrevVerkeySizeIs17Bytes(
+def test_send_nym_fails_if_abbrev_verkey_size_is17_bytes(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': rawToFriendly(randombytes(16)),
@@ -201,7 +205,7 @@ def testSendNymFailsIfAbbrevVerkeySizeIs17Bytes(
 
 
 @pytest.mark.skip(reason='SOV-1109')
-def testSendNymFailsIfUuidIdentifierIsHexEncoded(
+def test_send_nym_fails_if_uuid_identifier_is_hex_encoded(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': friendlyToHexStr(createUuidIdentifier()),
@@ -214,7 +218,7 @@ def testSendNymFailsIfUuidIdentifierIsHexEncoded(
 
 
 @pytest.mark.skip(reason='SOV-1109')
-def testSendNymFailsIfFullVerkeyIsHexEncoded(
+def test_send_nym_fails_if_full_verkey_is_hex_encoded(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     uuidIdentifier, fullVerkey = createUuidIdentifierAndFullVerkey()
     parameters = {
@@ -229,7 +233,7 @@ def testSendNymFailsIfFullVerkeyIsHexEncoded(
 
 
 @pytest.mark.skip(reason='SOV-1109')
-def testSendNymFailsIfAbbrevVerkeyIsHexEncoded(
+def test_send_nym_fails_if_abbrev_verkey_is_hex_encoded(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     halfKeyIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
     parameters = {
@@ -244,7 +248,7 @@ def testSendNymFailsIfAbbrevVerkeyIsHexEncoded(
 
 
 @pytest.mark.skip(reason='SOV-1109')
-def testSendNymFailsIfIdentifierContainsNonBase58Characters(
+def test_send_nym_fails_if_identifier_contains_non_base58_characters(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     uuidIdentifier = createUuidIdentifier()
     parameters = {
@@ -258,7 +262,7 @@ def testSendNymFailsIfIdentifierContainsNonBase58Characters(
 
 
 @pytest.mark.skip(reason='SOV-1109')
-def testSendNymFailsIfFullVerkeyContainsNonBase58Characters(
+def test_send_nym_fails_if_full_verkey_contains_non_base58_characters(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     uuidIdentifier, fullVerkey = createUuidIdentifierAndFullVerkey()
     parameters = {
@@ -273,7 +277,7 @@ def testSendNymFailsIfFullVerkeyContainsNonBase58Characters(
 
 
 @pytest.mark.skip(reason='SOV-1109')
-def testSendNymFailsIfAbbrevVerkeyContainsNonBase58Characters(
+def test_send_nym_fails_if_abbrev_verkey_contains_non_base58_characters(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     halfKeyIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
     parameters = {
@@ -288,7 +292,7 @@ def testSendNymFailsIfAbbrevVerkeyContainsNonBase58Characters(
 
 
 @pytest.mark.skip(reason='SOV-1109')
-def testSendNymFailsIfFullVerkeyContainsTilde(
+def test_send_nym_fails_if_full_verkey_contains_tilde(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     uuidIdentifier, fullVerkey = createUuidIdentifierAndFullVerkey()
     parameters = {
@@ -303,7 +307,7 @@ def testSendNymFailsIfFullVerkeyContainsTilde(
 
 
 @pytest.mark.skip(reason='SOV-1109')
-def testSendNymFailsIfAbbrevVerkeysdk_pool_handleesNotContainTilde(
+def test_send_nym_fails_if_abbrev_verkeysdk_pool_handlees_not_contain_tilde(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     halfKeyIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
     parameters = {
@@ -318,7 +322,7 @@ def testSendNymFailsIfAbbrevVerkeysdk_pool_handleesNotContainTilde(
 
 
 @pytest.mark.skip(reason='SOV-1110')
-def testSendNymFailsIfRoleIsUnknown(
+def test_send_nym_fails_if_role_is_unknown(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     halfKeyIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
     parameters = {
@@ -333,7 +337,7 @@ def testSendNymFailsIfRoleIsUnknown(
 
 
 @pytest.mark.skip(reason='SOV-1110')
-def testSendNymFailsIfRoleIsSpecifiedUsingNumericCode(
+def test_send_nym_fails_if_role_is_specified_using_numeric_code(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     halfKeyIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
     parameters = {
@@ -348,7 +352,7 @@ def testSendNymFailsIfRoleIsSpecifiedUsingNumericCode(
 
 
 @pytest.mark.skip(reason='SOV-1111')
-def testSendNymHasInvalidSyntaxIfParametersOrderIsWrong(
+def test_send_nym_has_invalid_syntax_if_parameters_order_is_wrong(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     halfKeyIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
     parameters = {
@@ -363,7 +367,7 @@ def testSendNymHasInvalidSyntaxIfParametersOrderIsWrong(
 
 
 @pytest.mark.skip(reason='SOV-1111')
-def testSendNymHasInvalidSyntaxIfIdentifierIsEmpty(
+def test_send_nym_has_invalid_syntax_if_identifier_is_empty(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     _, fullVerkey = createUuidIdentifierAndFullVerkey()
     parameters = {
@@ -378,7 +382,7 @@ def testSendNymHasInvalidSyntaxIfIdentifierIsEmpty(
 
 
 @pytest.mark.skip(reason='SOV-1111')
-def testSendNymHasInvalidSyntaxIfIdentifierIsOmitted(
+def test_send_nym_has_invalid_syntax_if_identifier_is_omitted(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     _, fullVerkey = createUuidIdentifierAndFullVerkey()
     parameters = {
@@ -391,7 +395,8 @@ def testSendNymHasInvalidSyntaxIfIdentifierIsOmitted(
     sdk_get_and_check_replies(looper, [request_couple])
 
 
-def testSendNymHasInvalidSyntaxForUuidIdentifierAndEmptyVerkey(
+@pytest.mark.nym_txn
+def test_send_nym_has_invalid_syntax_for_uuid_identifier_and_empty_verkey(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'dest': createUuidIdentifier(),
@@ -406,7 +411,7 @@ def testSendNymHasInvalidSyntaxForUuidIdentifierAndEmptyVerkey(
 
 
 @pytest.mark.skip(reason='SOV-1111')
-def testSendNymHasInvalidSyntaxIfIdentifierAndVerkeyAreOmitted(
+def test_send_nym_has_invalid_syntax_if_identifier_and_verkey_are_omitted(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     parameters = {
         'role': ENDORSER
@@ -418,7 +423,7 @@ def testSendNymHasInvalidSyntaxIfIdentifierAndVerkeyAreOmitted(
 
 
 @pytest.mark.skip(reason='SOV-1111')
-def testSendNymHasInvalidSyntaxIfUnknownParameterIsPassed(
+def test_send_nym_has_invalid_syntax_if_unknown_parameter_is_passed(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     uuidIdentifier, fullVerkey = createUuidIdentifierAndFullVerkey()
     parameters = {
@@ -433,7 +438,8 @@ def testSendNymHasInvalidSyntaxIfUnknownParameterIsPassed(
     sdk_get_and_check_replies(looper, [request_couple])
 
 
-def testSendNymHasInvalidSyntaxIfAllParametersAreOmitted(
+@pytest.mark.nym_txn
+def test_send_nym_has_invalid_syntax_if_all_parameters_are_omitted(
         looper, sdk_pool_handle, txnPoolNodeSet, nym_request, sdk_wallet_trustee):
     for f in nym_request[OPERATION].keys():
         nym_request[OPERATION][f] = ''

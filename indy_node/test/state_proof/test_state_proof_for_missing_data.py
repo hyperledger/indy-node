@@ -22,6 +22,7 @@ def check_no_data_and_valid_proof(result):
     check_valid_proof(result)
 
 
+@pytest.mark.state_proof
 def test_state_proof_returned_for_missing_attr(looper, nodeSetWithOneNodeResponding,
                                                attributeName,
                                                sdk_pool_handle,
@@ -41,6 +42,7 @@ def test_state_proof_returned_for_missing_attr(looper, nodeSetWithOneNodeRespond
     check_no_data_and_valid_proof(result)
 
 
+@pytest.mark.state_proof
 def test_state_proof_returned_for_missing_nym(looper, nodeSetWithOneNodeResponding,
                                               sdk_pool_handle,
                                               sdk_wallet_endorser,
@@ -63,6 +65,7 @@ def test_state_proof_returned_for_missing_nym(looper, nodeSetWithOneNodeRespondi
     check_no_data_and_valid_proof(result)
 
 
+@pytest.mark.state_proof
 def test_state_proof_returned_for_missing_schema(looper, nodeSetWithOneNodeResponding,
                                                  sdk_pool_handle,
                                                  sdk_wallet_endorser):
@@ -87,6 +90,7 @@ def test_state_proof_returned_for_missing_schema(looper, nodeSetWithOneNodeRespo
     check_valid_proof(result)
 
 
+@pytest.mark.state_proof
 def test_state_proof_returned_for_missing_claim_def(looper, nodeSetWithOneNodeResponding,
                                                     sdk_pool_handle,
                                                     sdk_wallet_endorser):

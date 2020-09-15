@@ -11,6 +11,7 @@ from plenum.common.exceptions import UnauthorizedClientRequest
 MAX_SIG_COUNT = 3
 
 
+@pytest.mark.auth
 def test_plugin_simple_error_msg_no_plugin_field(write_auth_req_validator):
     set_auth_constraint(write_auth_req_validator,
                         AuthConstraint(role=IDENTITY_OWNER, sig_count=1, need_to_be_owner=True,
@@ -26,6 +27,7 @@ def test_plugin_simple_error_msg_no_plugin_field(write_auth_req_validator):
     assert ("missing required plugin field") in str(excinfo.value)
 
 
+@pytest.mark.auth
 def test_plugin_simple_error_msg_extra_plugin_field(write_auth_req_validator):
     set_auth_constraint(write_auth_req_validator,
                         AuthConstraint(role=IDENTITY_OWNER, sig_count=1, need_to_be_owner=True))
@@ -40,6 +42,7 @@ def test_plugin_simple_error_msg_extra_plugin_field(write_auth_req_validator):
     assert ("plugin field must be absent") in str(excinfo.value)
 
 
+@pytest.mark.auth
 def test_plugin_simple_error_msg_not_enough_amount(write_auth_req_validator):
     set_auth_constraint(write_auth_req_validator,
                         AuthConstraint(role=IDENTITY_OWNER, sig_count=1, need_to_be_owner=True,
@@ -55,6 +58,7 @@ def test_plugin_simple_error_msg_not_enough_amount(write_auth_req_validator):
     assert ("not enough amount in plugin field") in str(excinfo.value)
 
 
+@pytest.mark.auth
 def test_plugin_or_error_msg_not_enough_amount(write_auth_req_validator):
     set_auth_constraint(write_auth_req_validator,
                         AuthConstraintOr(auth_constraints=[
@@ -80,6 +84,7 @@ def test_plugin_or_error_msg_not_enough_amount(write_auth_req_validator):
     assert expected in str(excinfo.value.reason)
 
 
+@pytest.mark.auth
 def test_plugin_or_error_msg_not_enough_amount_multiple_metadata_fields(write_auth_req_validator):
     set_auth_constraint(write_auth_req_validator,
                         AuthConstraintOr(auth_constraints=[

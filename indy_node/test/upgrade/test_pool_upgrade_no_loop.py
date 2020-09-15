@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+import pytest
+
 from indy_node.test import waits
 from stp_core.loop.eventually import eventually
 from plenum.common.constants import VERSION
@@ -9,6 +11,8 @@ from indy_node.test.upgrade.helper import bumpedVersion, checkUpgradeScheduled, 
 from indy_node.server.upgrade_log import UpgradeLog
 from indy_node.utils.node_control_utils import NodeControlUtil
 
+
+@pytest.mark.upgrade
 def test_upgrade_does_not_get_into_loop(looper, tconf, nodeSet,
                                         validUpgrade, sdk_pool_handle,
                                         sdk_wallet_trustee, monkeypatch):

@@ -21,5 +21,6 @@ def pres_def_req(pres_def_handler):
     return req
 
 
+@pytest.mark.request_handlers
 def test_schema_dynamic_validation_passes(pres_def_handler, pres_def_req):
     pres_def_handler.dynamic_validation(pres_def_req, 0)

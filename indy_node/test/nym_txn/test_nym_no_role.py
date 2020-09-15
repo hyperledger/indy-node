@@ -7,6 +7,7 @@ from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_and_submit_op
 
 
+@pytest.mark.nym_txn
 def test_new_DID_cannot_update_another_DID(looper,
                                            sdk_pool_handle,
                                            sdk_wallet_trustee,

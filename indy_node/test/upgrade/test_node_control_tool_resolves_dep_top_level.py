@@ -25,6 +25,7 @@ def tconf(tconf, tdir):
     tconf.UPGRADE_ENTRY = oldv
 
 
+@pytest.mark.upgrade
 def test_node_as_depend(monkeypatch, tconf):
     nct = NodeControlTool(config=tconf)
     top_level_package = (EXT_PKT_NAME, EXT_PKT_VERSION)

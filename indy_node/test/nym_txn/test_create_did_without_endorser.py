@@ -47,6 +47,7 @@ def change_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee, constraint):
     sdk_send_and_check_req_json(looper, sdk_pool_handle, sdk_wallet_trustee, req)
 
 
+@pytest.mark.nym_txn
 def test_create_did_without_endorser_fails(looper, txnPoolNodeSet, nym_txn_data, sdk_pool_handle):
     wh, alias, sender_did, sender_verkey = nym_txn_data
     nym_request = looper.loop.run_until_complete(
@@ -57,6 +58,7 @@ def test_create_did_without_endorser_fails(looper, txnPoolNodeSet, nym_txn_data,
         sdk_get_and_check_replies(looper, [request_couple])
 
 
+@pytest.mark.nym_txn
 def test_create_did_without_endorser(looper, txnPoolNodeSet, nym_txn_data, sdk_pool_handle, sdk_wallet_trustee):
     change_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee, constraint=AuthConstraint(role='*',
                                                                                             sig_count=1,
@@ -74,6 +76,7 @@ def test_create_did_without_endorser(looper, txnPoolNodeSet, nym_txn_data, sdk_p
     assert details[VERKEY] == sender_verkey
 
 
+@pytest.mark.nym_txn
 def test_create_did_without_endorser_empty_verkey(looper, nym_txn_data, sdk_wallet_client, sdk_pool_handle):
     wh, alias, sender_did, sender_verkey = nym_txn_data
 
@@ -85,6 +88,7 @@ def test_create_did_without_endorser_empty_verkey(looper, nym_txn_data, sdk_wall
         sdk_get_and_check_replies(looper, [request_couple])
 
 
+@pytest.mark.nym_txn
 def test_create_did_without_endorser_with_different_dest(looper, nym_txn_data, sdk_wallet_client, sdk_pool_handle):
     wh, alias, sender_did, sender_verkey = nym_txn_data
 
@@ -97,6 +101,7 @@ def test_create_did_without_endorser_with_different_dest(looper, nym_txn_data, s
         sdk_get_and_check_replies(looper, [request_couple])
 
 
+@pytest.mark.nym_txn
 def test_create_did_without_endorser_sig_count_0(looper, txnPoolNodeSet, nym_txn_data, sdk_pool_handle,
                                                  sdk_wallet_trustee):
     change_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee, constraint=AuthConstraint(role='*',
@@ -115,6 +120,7 @@ def test_create_did_without_endorser_sig_count_0(looper, txnPoolNodeSet, nym_txn
     assert details[VERKEY] == sender_verkey
 
 
+@pytest.mark.nym_txn
 def test_create_did_without_endorser_need_to_be(looper, txnPoolNodeSet, nym_txn_data, sdk_pool_handle,
                                                 sdk_wallet_trustee):
     change_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee, constraint=AuthConstraint(role='*',

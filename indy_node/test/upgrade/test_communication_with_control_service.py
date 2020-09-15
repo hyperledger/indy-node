@@ -1,6 +1,7 @@
 import asyncio
 from datetime import datetime
 
+import pytest
 from stp_core.loop.eventually import eventuallySoon
 
 from indy_node.server.upgrade_log import UpgradeLogData
@@ -46,7 +47,8 @@ def _checkFuture(future):
     return _check
 
 
-def testScheduleNodeUpgrade(tconf, nodeSet):
+@pytest.mark.upgrade
+def test_schedule_node_upgrade(tconf, nodeSet):
     """
     Tests that upgrade scheduling works. For that it starts mock
     control service, schedules upgrade for near future and then checks that
@@ -82,7 +84,7 @@ def testScheduleNodeUpgrade(tconf, nodeSet):
     assert result == expectedResult.toJson()
 
 
-# def testCancelNodeUpgrade():
+# def test_cancel_node_upgrade():
 #     """
 #     Test cancellation of scheduled upgrades. This test schedules upgrade for
 #     unreachable moment in future and then tries to cancel that

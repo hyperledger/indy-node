@@ -1,0 +1,158 @@
+name: indy-node-build
+on: [ push, pull_request ]
+
+jobs:
+  workflow-setup:
+    runs-on: ubuntu-latest
+    outputs:
+      CACHE_KEY_LINT: ${{ steps.cache.outputs.CACHE_KEY_LINT }}
+      CACHE_KEY_BUILD: ${{ steps.cache.outputs.CACHE_KEY_BUILD }}
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+      - name: Set outputs
+        id: cache
+        run: |
+          echo "::set-output name=CACHE_KEY_LINT::${{ hashFiles('.github/workflows/lint/Dockerfile') }}"
+          echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile') }}"
+           
+  build-lint-image:
+    needs: workflow-setup
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
+      CACHE_KEY_LINT: ${{ needs.workflow-setup.outputs.CACHE_KEY_LINT }}
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+      - name: Try load from cache.
+        id: cache-image-lint
+        uses: actions/cache@v2
+        with:
+          path: ${GITHUB_WORKSPACE}/cache
+          key: ${{ env.CACHE_KEY_LINT }}
+      - name: If NOT found in cache, build and push image.
+        if: steps.cache-image-lint.outputs.cache-hit != 'true'
+        run: |
+          echo ${{ secrets.CR_PAT }} | docker login ghcr.io --username ${{ secrets.CR_USER }} --password-stdin
+          docker build -f .github/workflows/lint/Dockerfile --no-cache -t ${GITHUB_REPOSITORY}/indy-node-lint:${{ env.CACHE_KEY_LINT }} .
+          docker tag ${GITHUB_REPOSITORY}/indy-node-lint:${{ env.CACHE_KEY_LINT }} ghcr.io/${GITHUB_REPOSITORY}/indy-node-lint:latest
+          docker push ghcr.io/${GITHUB_REPOSITORY}/indy-node-lint:latest
+          mkdir -p ${GITHUB_WORKSPACE}/cache
+          touch ${GITHUB_WORKSPACE}/cache/${{ env.CACHE_KEY_LINT }}
+
+  build-test-image:
+    needs: workflow-setup
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
+      CACHE_KEY_BUILD: ${{ needs.workflow-setup.outputs.CACHE_KEY_BUILD }}
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+      - name: Try load from cache.
+        id: cache-image-build
+        uses: actions/cache@v2
+        with:
+          path: ${GITHUB_WORKSPACE}/cache
+          key: ${{ env.CACHE_KEY_BUILD }}
+      - name: If NOT found in cache, build and push image.
+        if: steps.cache-image-build.outputs.cache-hit != 'true'
+        run: |
+          echo ${{ secrets.CR_PAT }} | docker login ghcr.io --username ${{ secrets.CR_USER }} --password-stdin
+          docker build -f .github/workflows/build/Dockerfile --no-cache -t ${GITHUB_REPOSITORY}/indy-node-build:${{ env.CACHE_KEY_BUILD }} .
+          docker tag ${GITHUB_REPOSITORY}/indy-node-build:${{ env.CACHE_KEY_BUILD }} ghcr.io/${GITHUB_REPOSITORY}/indy-node-build:latest
+          docker push ghcr.io/${GITHUB_REPOSITORY}/indy-node-build:latest
+          mkdir -p ${GITHUB_WORKSPACE}/cache
+          touch ${GITHUB_WORKSPACE}/cache/${{ env.CACHE_KEY_BUILD }}
+
+
+  decorator-checks:
+    name: Run decorator checks
+    needs: 
+      - build-test-image
+      - lint
+    runs-on: ubuntu-18.04
+    container:
+      image: ghcr.io/${{ github.repository }}/indy-node-build
+    outputs:
+      matrix-common: ${{ steps.ctd.outputs.matrix-common }}
+      matrix-node: ${{ steps.ctd.outputs.matrix-node }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Check test decorators
+        id: ctd
+        run: |
+          chmod +x ./scripts/run_pytest_check.sh
+          ./scripts/run_pytest_check.sh
+
+  indy_common:
+    name: Build Indy Common
+    needs: decorator-checks
+    runs-on: ubuntu-18.04
+    container:
+      image: ghcr.io/${{ github.repository }}/indy-node-build
+    strategy:
+      matrix: ${{fromJson(needs.decorator-checks.outputs.matrix-common)}}
+      fail-fast: false
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: pip install .[tests]
+        continue-on-error: true
+
+      - name: Run Indy Common tests
+        run: python3 -m pytest -l -m ${{ matrix.module }} -vv --junitxml=test-result-common-${{ matrix.module }}.xml indy_common
+
+      - name: Publish Test Report
+        uses: scacap/action-surefire-report@v1
+        with:
+          check_name: Indy Common ${{ matrix.module }} Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: test-result-common-${{ matrix.module }}.xml
+
+  indy_node:
+    name: Build Indy Node
+    needs: decorator-checks
+    runs-on: ubuntu-18.04
+    container:
+      image: ghcr.io/${{ github.repository }}/indy-node-build
+    strategy:
+      matrix: ${{fromJson(needs.decorator-checks.outputs.matrix-node)}}
+      fail-fast: false
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: pip install .[tests]
+        continue-on-error: true
+
+      - name: Run Indy Node ${{ matrix.module }} tests
+        run: python3 -m pytest -l -m ${{ matrix.module }} -vv --junitxml=test-result-node-${{ matrix.module }}.xml indy_node
+
+      - name: Publish Test Report
+        uses: scacap/action-surefire-report@v1
+        with:
+          check_name: Indy Node ${{ matrix.module }} Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: test-result-node-${{ matrix.module }}.xml
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}/indy-node-lint
+    needs:
+      - build-lint-image
+    steps:      
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: flake8
+        run: python3 -m flake8
+          

@@ -24,6 +24,7 @@ def tdirWithPoolTxns(tdirWithPoolTxns, poolTxnNodeNames, tdir, tconf):
     return tdirWithPoolTxns
 
 
+@pytest.mark.upgrade
 def test_node_detected_upgrade_failed(nodeSet):
     '''
     Test that each node checks Upgrade Log on startup (after Upgrade restart), and writes FAIL to it
@@ -35,6 +36,7 @@ def test_node_detected_upgrade_failed(nodeSet):
         assert node.upgrader.lastActionEventInfo.ev_type == UpgradeLog.Events.failed
 
 
+@pytest.mark.upgrade
 def test_node_sent_upgrade_fail(looper, nodeSet, nodeIds):
     '''
     Test that each node sends NODE_UPGRADE Fail event (because it sees FAIL in Upgrade log)
@@ -46,6 +48,7 @@ def test_node_sent_upgrade_fail(looper, nodeSet, nodeIds):
                                          expected_version=INVALID_VERSION)
 
 
+@pytest.mark.upgrade
 def test_node_sent_upgrade_unsuccessful_once(looper, nodeSet, nodeIds):
     '''
     Test that each node sends NODE_UPGRADE Fail event only once,

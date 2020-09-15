@@ -22,12 +22,14 @@ valid_auth_rule_operation_extra_large = generate_auth_rule_operation(constraint=
                                             generate_constraint_entity()])]))
 
 
+@pytest.mark.auth_rule
 def test_valid():
     validator.validate(valid_auth_rule_operation_small)
     validator.validate(valid_auth_rule_operation_large)
     validator.validate(valid_auth_rule_operation_extra_large)
 
 
+@pytest.mark.auth_rule
 def test_invalid_operation_action():
     # must be ADD_PREFIX or EDIT_PREFIX
     invalid_auth_rule_operation = generate_auth_rule_operation(auth_action="auth_action")
@@ -35,6 +37,7 @@ def test_invalid_operation_action():
         validator.validate(invalid_auth_rule_operation)
 
 
+@pytest.mark.auth_rule
 def test_invalid_entity_role():
     # ConstraintEntityField without required field 'role'
     invalid_auth_rule_operation = generate_auth_rule_operation()
@@ -43,6 +46,7 @@ def test_invalid_entity_role():
         validator.validate(invalid_auth_rule_operation)
 
 
+@pytest.mark.auth_rule
 def test_invalid_entity_role_in_extra_large_constraint():
     # ConstraintEntityField without required field 'role'
     invalid_auth_rule_operation = generate_auth_rule_operation(constraint=generate_constraint_list(
@@ -55,6 +59,7 @@ def test_invalid_entity_role_in_extra_large_constraint():
         validator.validate(invalid_auth_rule_operation)
 
 
+@pytest.mark.auth_rule
 def test_invalid_operation_auth_constraints():
     # ConstraintListField without required field 'auth_constraints'
     invalid_auth_rule_operation = generate_auth_rule_operation(constraint=generate_constraint_list(
@@ -65,6 +70,7 @@ def test_invalid_operation_auth_constraints():
         validator.validate(invalid_auth_rule_operation)
 
 
+@pytest.mark.auth_rule
 def test_invalid_operation_auth_constraints_with_large_constraint():
     # ConstraintListField without required field 'auth_constraints' on the 2nd level
     invalid_auth_rule_operation = generate_auth_rule_operation(constraint=generate_constraint_list(
@@ -77,6 +83,7 @@ def test_invalid_operation_auth_constraints_with_large_constraint():
         validator.validate(invalid_auth_rule_operation)
 
 
+@pytest.mark.auth_rule
 def test_invalid_operation_constraint_id_with_large_constraint():
     # ConstraintListField without required field CONSTRAINT_ID on the 2nd level
     invalid_auth_rule_operation = generate_auth_rule_operation(constraint=generate_constraint_list(
@@ -89,6 +96,7 @@ def test_invalid_operation_constraint_id_with_large_constraint():
         validator.validate(invalid_auth_rule_operation)
 
 
+@pytest.mark.auth_rule
 def test_invalid_operation_with_empty_auth_constraints():
     # ConstraintListField without empty list in auth_constraints
     invalid_auth_rule_operation = generate_auth_rule_operation(constraint=generate_constraint_list(
@@ -100,6 +108,7 @@ def test_invalid_operation_with_empty_auth_constraints():
         validator.validate(invalid_auth_rule_operation)
 
 
+@pytest.mark.auth_rule
 def test_invalid_operation_with_empty_constraint_list():
     # ClientAuthRuleOperation with empty list of constraints
     invalid_auth_rule_operation = generate_auth_rule_operation(constraint=[])
@@ -108,6 +117,7 @@ def test_invalid_operation_with_empty_constraint_list():
         validator.validate(invalid_auth_rule_operation)
 
 
+@pytest.mark.auth_rule
 def test_invalid_operation_without_none_constraint():
     # ConstraintListField without None in field CONSTRAINT
     invalid_auth_rule_operation = generate_auth_rule_operation()
@@ -117,6 +127,7 @@ def test_invalid_operation_without_none_constraint():
         validator.validate(invalid_auth_rule_operation)
 
 
+@pytest.mark.auth_rule
 def test_auth_constraint_from_dct_succesfull():
     unkwn = 'unknown_field'
     auth_dct = {ROLE: STEWARD,
@@ -133,6 +144,7 @@ def test_auth_constraint_from_dct_succesfull():
     assert not hasattr(constr, unkwn)
 
 
+@pytest.mark.auth_rule
 def test_auth_constraint_without_off_ledger_sig_from_dct_succesfull():
     unkwn = 'unknown_field'
     auth_dct = {CONSTRAINT_ID: ConstraintsEnum.ROLE_CONSTRAINT_ID,

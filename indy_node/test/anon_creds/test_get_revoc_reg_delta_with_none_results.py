@@ -1,3 +1,4 @@
+import pytest
 import copy
 import json
 
@@ -11,6 +12,7 @@ from plenum.common.util import get_utc_epoch
 from plenum.test.helper import sdk_send_and_check
 
 
+@pytest.mark.anon_creds
 def test_send_reg_def_and_get_delta_then(
         looper,
         txnPoolNodeSet,

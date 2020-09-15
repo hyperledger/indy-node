@@ -1,3 +1,4 @@
+import pytest
 import json
 import time
 from indy_common.constants import CRED_DEF_ID, ID, REVOC_TYPE, TAG, GET_REVOC_REG_DEF, VALUE, MAX_CRED_NUM, TXN_TYPE
@@ -15,6 +16,7 @@ def compare_request_reply(req, reply):
     assert req['operation'][VALUE] == reply['result']['data'][VALUE]
 
 
+@pytest.mark.anon_creds
 def test_send_get_revoc_reg_def(looper,
                                 txnPoolNodeSet,
                                 sdk_wallet_steward,
@@ -42,6 +44,7 @@ def test_send_get_revoc_reg_def(looper,
     compare_request_reply(revoc_req, reply)
 
 
+@pytest.mark.anon_creds
 def test_get_revoc_reg_def_from_uncommited(looper,
                                            txnPoolNodeSet,
                                            sdk_wallet_steward,

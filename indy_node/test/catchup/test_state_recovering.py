@@ -87,6 +87,7 @@ def send_auth_rule(looper,
                                                                                    sig_count=1).as_dict)
 
 
+@pytest.mark.catchup
 def test_state_recovering_for_auth_rule(nodeSet, looper, sdk_pool_handle, sdk_wallet_steward,
                                         sdk_wallet_trustee,
                                         tdir, tconf,

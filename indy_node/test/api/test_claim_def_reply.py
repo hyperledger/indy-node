@@ -1,11 +1,13 @@
 import json
 
+import pytest
 from indy.anoncreds import issuer_create_and_store_credential_def
 from indy.ledger import build_cred_def_request, build_get_schema_request, parse_get_schema_response
 from indy_node.test.api.helper import validate_write_reply, validate_claim_def_txn, sdk_write_schema
 from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req
 
 
+@pytest.mark.api
 def test_claim_def_reply_is_valid(looper, sdk_pool_handle, sdk_wallet_steward):
     wallet_handle, identifier = sdk_wallet_steward
 

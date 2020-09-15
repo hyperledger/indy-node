@@ -14,17 +14,20 @@ from plenum.common.constants import IDENTIFIER
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_sign_and_send_prepared_request
 
 
-def testSendGetNymSucceedsForExistingUuidDest(
+@pytest.mark.txn_validation
+def test_send_get_nym_succeeds_for_existing_uuid_dest(
         looper, sdk_pool_handle, sdk_wallet_trustee):
     new_wallet = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trustee)
     get_nym(looper, sdk_pool_handle, sdk_wallet_trustee, new_wallet[1])
 
 
-def testSendGetNymFailsForNotExistingUuidDest(
+@pytest.mark.txn_validation
+def test_send_get_nym_fails_for_not_existing_uuid_dest(
         looper, sdk_pool_handle, sdk_wallet_trustee):
     get_nym(looper, sdk_pool_handle, sdk_wallet_trustee, createUuidIdentifier())
 
 
+@pytest.mark.txn_validation
 def test_get_nym_returns_role(
         looper, sdk_pool_handle, sdk_wallet_trustee):
     current_role = ENDORSER_STRING
@@ -39,12 +42,14 @@ def test_get_nym_returns_role(
     get_nym(looper, sdk_pool_handle, sdk_wallet_trustee, createUuidIdentifier())
 
 
-def testSendGetNymFailsIfCryptonymIsPassedAsDest(
+@pytest.mark.txn_validation
+def test_send_get_nym_fails_if_cryptonym_is_passed_as_dest(
         looper, sdk_pool_handle, sdk_wallet_trustee):
     get_nym(looper, sdk_pool_handle, sdk_wallet_trustee, createCryptonym())
 
 
-def testSendGetNymFailsIfDestIsPassedInHexFormat(
+@pytest.mark.txn_validation
+def test_send_get_nym_fails_if_dest_is_passed_in_hex_format(
         looper, sdk_pool_handle, sdk_wallet_trustee):
     # Sometimes hex representation can use only base58 compatible characters
     while True:
@@ -65,7 +70,8 @@ def testSendGetNymFailsIfDestIsPassedInHexFormat(
     e.match('should not contain the following chars')
 
 
-def testSendGetNymFailsIfDestIsInvalid(
+@pytest.mark.txn_validation
+def test_send_get_nym_fails_if_dest_is_invalid(
         looper, sdk_pool_handle, sdk_wallet_trustee):
     uuidIdentifier = createUuidIdentifier()
     invalidIdentifier = uuidIdentifier[:-4]
@@ -79,7 +85,8 @@ def testSendGetNymFailsIfDestIsInvalid(
     e.match('should be one of \[16, 32\]')
 
 
-def testSendGetNymHasInvalidSyntaxIfDestIsEmpty(
+@pytest.mark.txn_validation
+def test_send_get_nym_has_invalid_syntax_if_dest_is_empty(
         looper, sdk_pool_handle, sdk_wallet_trustee):
     uuidIdentifier = createUuidIdentifier()
     _, s_did = sdk_wallet_trustee

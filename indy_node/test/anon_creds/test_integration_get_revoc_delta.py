@@ -9,6 +9,7 @@ from indy_node.test.schema.test_send_get_schema import send_schema_req
 from indy_node.test.state_proof.conftest import nodeSetWithOneNodeResponding
 
 
+@pytest.mark.anon_creds
 def test_state_proof_returned_for_get_revoc_reg_delta(looper,
                                                       nodeSetWithOneNodeResponding,
                                                       sdk_wallet_steward,

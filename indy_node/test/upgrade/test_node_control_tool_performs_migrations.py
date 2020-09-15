@@ -28,7 +28,8 @@ def tconf(tconf, tdir):
     yield tconf
 
 
-def testNodeControlPerformsMigrations(monkeypatch, tdir, looper, tconf):
+@pytest.mark.upgrade
+def test_node_control_performs_migrations(monkeypatch, tdir, looper, tconf):
     version = bumpedVersion()
     stdout = 'teststdout'
     migrationFile = 'migrationProof'
@@ -75,5 +76,6 @@ def testNodeControlPerformsMigrations(monkeypatch, tdir, looper, tconf):
         nct.stop()
 
 
+@pytest.mark.upgrade
 def test_get_current_platform():
     _get_current_platform()

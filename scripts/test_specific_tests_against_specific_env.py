@@ -100,7 +100,7 @@
 #
 # # TODO: Need to properly test this and make sure monkey patching
 # # doesn't break any other tests (which run after this one)
-# def testSpecificModTest(monkeypatch):
+# def test_specific_mod_test(monkeypatch):
 #     envExitCodes = {}
 #     curDirPath = os.path.dirname(os.path.abspath(__file__))
 #

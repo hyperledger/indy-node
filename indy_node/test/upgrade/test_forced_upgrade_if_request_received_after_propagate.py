@@ -1,3 +1,5 @@
+import pytest
+
 from indy_node.server.upgrade_log import UpgradeLog
 from indy_node.test import waits
 from indy_node.test.upgrade.helper import checkUpgradeScheduled, sdk_ensure_upgrade_sent
@@ -8,6 +10,7 @@ from plenum.test.delayers import req_delay, ppgDelay
 from plenum.test.test_node import getNonPrimaryReplicas
 
 
+@pytest.mark.upgrade
 def test_forced_upgrade_handled_once_if_request_received_after_propagate(
         looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee,
         validUpgradeExpForceTrue):

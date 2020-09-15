@@ -1,4 +1,5 @@
 import dateutil.parser
+import pytest
 
 from indy_common.constants import IN_PROGRESS
 from indy_node.server.upgrade_log import UpgradeLogData
@@ -8,6 +9,7 @@ from indy_node.test.upgrade.helper import check_node_sent_acknowledges_upgrade, 
 whitelist = ['unable to send message']
 
 
+@pytest.mark.upgrade
 def test_node_sent_upgrade_in_progress(looper, nodeSet, nodeIds, validUpgrade):
     '''
     Test that each node sends NODE_UPGRADE In Progress event

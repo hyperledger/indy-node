@@ -5,6 +5,7 @@ from indy_common.constants import JSON_LD_CONTEXT, RICH_SCHEMA, RICH_SCHEMA_ENCO
     RICH_SCHEMA_MAPPING, RICH_SCHEMA_CRED_DEF, RICH_SCHEMA_PRES_DEF
 
 
+@pytest.mark.auth
 @pytest.mark.parametrize('txn_type',
                          [JSON_LD_CONTEXT, RICH_SCHEMA, RICH_SCHEMA_ENCODING, RICH_SCHEMA_MAPPING,
                           RICH_SCHEMA_CRED_DEF, RICH_SCHEMA_PRES_DEF])
@@ -17,6 +18,7 @@ def test_rich_schema_object_adding(write_request_validation, req, is_owner, txn_
                                                                  is_owner=is_owner)])
 
 
+@pytest.mark.auth
 @pytest.mark.parametrize('txn_type',
                          [JSON_LD_CONTEXT, RICH_SCHEMA, RICH_SCHEMA_ENCODING, RICH_SCHEMA_MAPPING,
                           RICH_SCHEMA_CRED_DEF, RICH_SCHEMA_PRES_DEF])

@@ -9,6 +9,7 @@ from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.util import randomString
 
 
+@pytest.mark.anon_creds
 def test_validation_with_prev_accum_but_empty_ledger(
         build_txn_for_revoc_def_entry_by_default,
         create_node_and_not_start):
@@ -20,6 +21,7 @@ def test_validation_with_prev_accum_but_empty_ledger(
         node.write_manager.dynamic_validation(Request(**req_entry), 0)
 
 
+@pytest.mark.anon_creds
 def test_validation_with_right_accums_but_empty_indices(
         build_txn_for_revoc_def_entry_by_default,
         create_node_and_not_start):
@@ -34,6 +36,7 @@ def test_validation_with_right_accums_but_empty_indices(
         node.write_manager.dynamic_validation(Request(**req_entry), 0)
 
 
+@pytest.mark.anon_creds
 def test_validation_with_unexpected_accum(
         build_txn_for_revoc_def_entry_by_default,
         create_node_and_not_start):
@@ -44,6 +47,7 @@ def test_validation_with_unexpected_accum(
         node.write_manager.dynamic_validation(Request(**req_entry), 0)
 
 
+@pytest.mark.anon_creds
 def test_validation_with_same_revoked_by_default(
         build_txn_for_revoc_def_entry_by_default,
         create_node_and_not_start):
@@ -57,6 +61,7 @@ def test_validation_with_same_revoked_by_default(
         node.write_manager.dynamic_validation(Request(**req_entry), 0)
 
 
+@pytest.mark.anon_creds
 def test_validation_with_issued_no_revoked_before_by_default(
         build_txn_for_revoc_def_entry_by_default,
         create_node_and_not_start):
@@ -72,6 +77,7 @@ def test_validation_with_issued_no_revoked_before_by_default(
         node.write_manager.dynamic_validation(Request(**req_entry), 0)
 
 
+@pytest.mark.anon_creds
 def test_validation_with_same_issued_by_demand(
         build_txn_for_revoc_def_entry_by_demand,
         create_node_and_not_start):
@@ -86,6 +92,7 @@ def test_validation_with_same_issued_by_demand(
         node.write_manager.dynamic_validation(Request(**req_entry), 0)
 
 
+@pytest.mark.anon_creds
 def test_validation_with_revoked_no_issued_before_by_demand(
         build_txn_for_revoc_def_entry_by_demand,
         create_node_and_not_start):
@@ -100,6 +107,7 @@ def test_validation_with_revoked_no_issued_before_by_demand(
         node.write_manager.dynamic_validation(Request(**req_entry), 0)
 
 
+@pytest.mark.anon_creds
 def test_validation_if_issued_revoked_has_same_index(
         build_txn_for_revoc_def_entry_by_default,
         create_node_and_not_start):
@@ -111,6 +119,7 @@ def test_validation_if_issued_revoked_has_same_index(
         node.write_manager.dynamic_validation(Request(**req_entry), 0)
 
 
+@pytest.mark.anon_creds
 def test_validation_if_revoc_def_does_not_exist(
         build_txn_for_revoc_def_entry_by_default,
         create_node_and_not_start):
@@ -126,6 +135,7 @@ def test_validation_if_revoc_def_does_not_exist(
         node.write_manager.dynamic_validation(Request(**req_entry), 0)
 
 
+@pytest.mark.anon_creds
 def test_validation_with_equal_accums_but_not_empty_indices(
         build_txn_for_revoc_def_entry_by_default,
         create_node_and_not_start):

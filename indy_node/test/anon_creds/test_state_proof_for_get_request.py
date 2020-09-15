@@ -1,3 +1,4 @@
+import pytest
 import json
 import copy
 from indy_common.constants import CRED_DEF_ID, ID, REVOC_TYPE, TAG, GET_REVOC_REG_DEF, \
@@ -13,6 +14,7 @@ from plenum.test.helper import sdk_send_and_check
 from plenum.common.util import get_utc_epoch
 
 
+@pytest.mark.anon_creds
 def test_state_proof_returned_for_get_revoc_reg_def(looper,
                                                     txnPoolNodeSet,
                                                     sdk_wallet_steward,
@@ -39,6 +41,7 @@ def test_state_proof_returned_for_get_revoc_reg_def(looper,
     check_valid_proof(reply)
 
 
+@pytest.mark.anon_creds
 def test_state_proof_returned_for_get_revoc_reg(looper,
                                                 txnPoolNodeSet,
                                                 sdk_pool_handle,
@@ -53,6 +56,7 @@ def test_state_proof_returned_for_get_revoc_reg(looper,
     check_valid_proof(reply)
 
 
+@pytest.mark.anon_creds
 def test_state_proof_returned_for_get_revoc_reg_delta(looper,
                                                       txnPoolNodeSet,
                                                       sdk_pool_handle,
@@ -95,6 +99,7 @@ def test_state_proof_returned_for_get_revoc_reg_delta(looper,
     check_valid_proof(reply)
 
 
+@pytest.mark.anon_creds
 def test_state_proof_returned_for_get_revoc_reg_delta_with_only_to(
                                                       looper,
                                                       txnPoolNodeSet,
@@ -111,6 +116,7 @@ def test_state_proof_returned_for_get_revoc_reg_delta_with_only_to(
     check_valid_proof(reply)
 
 
+@pytest.mark.anon_creds
 def test_state_proof_returned_for_delta_with_None_reply(
                                                       looper,
                                                       txnPoolNodeSet,
@@ -127,6 +133,7 @@ def test_state_proof_returned_for_delta_with_None_reply(
     assert STATE_PROOF not in reply['result']
 
 
+@pytest.mark.anon_creds
 def test_state_proof_returned_for_delta_with_from_earlier(
                                                       looper,
                                                       txnPoolNodeSet,

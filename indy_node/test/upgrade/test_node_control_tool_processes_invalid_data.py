@@ -18,6 +18,7 @@ def tconf(tconf, tdir):
     yield tconf
 
 
+@pytest.mark.upgrade
 def test_node_control_tool_processes_invalid_json(
     monkeypatch, tdir, tconf
 ):
@@ -32,6 +33,7 @@ def test_node_control_tool_processes_invalid_json(
         tool._process_data('{12345}'.encode('utf-8'))
 
 
+@pytest.mark.upgrade
 @pytest.mark.parametrize(
     'pkg_name,version',
     [

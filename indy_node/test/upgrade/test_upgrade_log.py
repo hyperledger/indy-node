@@ -25,12 +25,14 @@ def src_version_cls_patched(monkeypatch):
     )
 
 
+@pytest.mark.upgrade
 def test_upgrade_log_data_unpack_invalid_version():
     with pytest.raises(TypeError) as excinfo:
         UpgradeLogData(str(datetime.datetime.utcnow()), 123, 'some_id', 'some_pkg')
     assert "'version' should be 'SourceVersion' or 'str'" in str(excinfo.value)
 
 
+@pytest.mark.upgrade
 def test_upgrade_log_data_pack_unpack():
     delimiter = '|'
     data = UpgradeLogData(datetime.datetime.utcnow(), '1.2.3', 'some_id', 'some_pkg')
@@ -40,6 +42,7 @@ def test_upgrade_log_data_pack_unpack():
 
 
 # TODO actually it is already well tested in base calss ActionLog
+@pytest.mark.upgrade
 @pytest.mark.parametrize('ev_type', UpgradeLog.Events)
 def test_upgrade_log_append_api(log_file_path, ev_type):
     upgrade_log = UpgradeLog(log_file_path)
@@ -49,6 +52,7 @@ def test_upgrade_log_append_api(log_file_path, ev_type):
     assert upgrade_log.last_event.ev_type == ev_type
 
 
+@pytest.mark.upgrade
 def test_upgrade_log_loads_legacy_data(monkeypatch, log_file_path):
 
     ev_index = None

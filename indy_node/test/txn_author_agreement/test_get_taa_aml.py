@@ -11,6 +11,7 @@ from plenum.common.constants import TXN_TYPE, GET_TXN_AUTHOR_AGREEMENT_AML, CURR
 from plenum.common.types import OPERATION, f
 
 
+@pytest.mark.txn_author_agreement
 def test_get_taa_aml_static_validation_fails(looper, txnPoolNodeSet, sdk_pool_handle, sdk_wallet_client):
     req = {
         OPERATION: {

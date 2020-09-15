@@ -1,4 +1,7 @@
 from collections import OrderedDict
+
+import pytest
+
 from indy_common.types import ClientGetRevocRegField
 from plenum.common.messages.fields import NonEmptyStringField, ConstantField, IntegerField
 from indy_common.constants import TXN_TYPE, REVOC_REG_DEF_ID, TIMESTAMP, GET_REVOC_REG
@@ -11,6 +14,7 @@ EXPECTED_GET_REVOC_REG_FIELD = OrderedDict([
 ])
 
 
+@pytest.mark.types
 def test_get_revoc_reg_def_schema():
     actual_field_name = OrderedDict(ClientGetRevocRegField.schema).keys()
     assert EXPECTED_GET_REVOC_REG_FIELD.keys() == actual_field_name

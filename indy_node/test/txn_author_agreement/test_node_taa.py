@@ -16,6 +16,7 @@ from plenum.common.util import randomString, get_utc_epoch
 from plenum.test.txn_author_agreement.helper import sdk_send_txn_author_agreement, sdk_get_txn_author_agreement
 
 
+@pytest.mark.txn_author_agreement
 def test_send_valid_txn_author_agreement_succeeds(looper, setup_aml, txnPoolNodeSet, sdk_pool_handle,
                                                   sdk_wallet_trustee, sdk_wallet_client):
     text = randomString(1024)
@@ -32,6 +33,7 @@ def test_send_valid_txn_author_agreement_succeeds(looper, setup_aml, txnPoolNode
     assert result[TXN_AUTHOR_AGREEMENT_RATIFICATION_TS] == ratified
 
 
+@pytest.mark.txn_author_agreement
 def test_send_valid_txn_author_agreement_without_enough_privileges_fails(looper, setup_aml, txnPoolNodeSet,
                                                                          sdk_pool_handle,
                                                                          sdk_wallet_steward):
@@ -40,6 +42,7 @@ def test_send_valid_txn_author_agreement_without_enough_privileges_fails(looper,
                                       randomString(16), randomString(1024))
 
 
+@pytest.mark.txn_author_agreement
 def test_txn_author_agreement_respects_current_auth_rules(looper, setup_aml, txnPoolNodeSet, sdk_pool_handle,
                                                           sdk_wallet_trustee, sdk_wallet_steward):
     sdk_send_and_check_auth_rule_request(looper, sdk_pool_handle, sdk_wallet_trustee,

@@ -12,6 +12,7 @@ from plenum.common.constants import TXN_TYPE, CURRENT_PROTOCOL_VERSION
 from plenum.common.types import OPERATION, f
 
 
+@pytest.mark.upgrade
 def test_send_node_upgrade_txn(looper, sdk_wallet_client, sdk_pool_handle):
     req = {
         OPERATION: {

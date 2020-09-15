@@ -22,6 +22,7 @@ def send_and_check(looper, sdk_pool_handle, req_json, wallet):
         looper, sdk_pool_handle, wallet, req_json)[0]
 
 
+@pytest.mark.claim_def
 def test_auth_rule_transaction_for_edit(looper,
                                         txnPoolNodeSet,
                                         sdk_wallet_trustee,

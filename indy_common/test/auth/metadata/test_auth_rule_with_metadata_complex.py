@@ -1,3 +1,5 @@
+import pytest
+
 from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER, AuthConstraintOr, AuthConstraintAnd, \
     AuthConstraintForbidden
 from indy_common.constants import ENDORSER
@@ -7,6 +9,7 @@ from plenum.common.constants import TRUSTEE, STEWARD
 MAX_SIG_COUNT = 3
 
 
+@pytest.mark.auth
 def test_plugin_and_or_rule_same_role_trustee_no_endorser(write_auth_req_validator, write_request_validation,
                                                           signatures, amount):
     validate(
@@ -40,6 +43,7 @@ def test_plugin_and_or_rule_same_role_trustee_no_endorser(write_auth_req_validat
     )
 
 
+@pytest.mark.auth
 def test_plugin_and_or_rule_diff_role_trustee_no_endorser(write_auth_req_validator, write_request_validation,
                                                           signatures, is_owner, amount):
     validate(
@@ -81,6 +85,7 @@ def test_plugin_and_or_rule_diff_role_trustee_no_endorser(write_auth_req_validat
     )
 
 
+@pytest.mark.auth
 def test_plugin_or_and_rule_diff_roles_trustee_no_endorser(write_auth_req_validator, write_request_validation,
                                                            signatures, is_owner, amount):
     validate(
@@ -128,6 +133,7 @@ def test_plugin_or_and_rule_diff_roles_trustee_no_endorser(write_auth_req_valida
     )
 
 
+@pytest.mark.auth
 def test_plugin_complex_trustee_no_endorser(write_auth_req_validator, write_request_validation,
                                             signatures, is_owner, amount):
     validate(
@@ -202,6 +208,7 @@ def test_plugin_complex_trustee_no_endorser(write_auth_req_validator, write_requ
     )
 
 
+@pytest.mark.auth
 def test_plugin_complex_with_and_rule_with_not_allowed(write_auth_req_validator, write_request_validation,
                                                        signatures, is_owner, off_ledger_signature, amount):
     validate(
@@ -219,6 +226,7 @@ def test_plugin_complex_with_and_rule_with_not_allowed(write_auth_req_validator,
     )
 
 
+@pytest.mark.auth
 def test_plugin_complex_with_or_rule_with_not_allowed_trustee_no_endorser(write_auth_req_validator,
                                                                           write_request_validation,
                                                                           signatures, is_owner, off_ledger_signature,

@@ -24,7 +24,7 @@ def txnPoolNodeSet(tconf, nodeSet):
 
 
 @pytest.mark.skip(reason='SOV-559')
-def testUpgradeLatestUncancelledVersion(looper,
+def test_upgrade_latest_uncancelled_version(looper,
                                         txnPoolNodeSet, tconf, sdk_node_theta_added,
                                         validUpgrade, sdk_pool_handle, sdk_wallet_trustee,
                                         tdirWithPoolTxns, allPluginsPath):

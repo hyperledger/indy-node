@@ -26,6 +26,7 @@ from indy_node.test.auth_rule.helper import generate_constraint_list, \
 RESULT = "result"
 
 
+@pytest.mark.auth_rule
 def test_fail_get_auth_rule_with_incorrect_key(looper,
                                                sdk_wallet_trustee,
                                                sdk_pool_handle):
@@ -55,6 +56,7 @@ def _check_key(key, resp_key):
         assert OLD_VALUE not in resp_key
 
 
+@pytest.mark.auth_rule
 def test_get_one_auth_rule_transaction(looper,
                                        sdk_wallet_trustee,
                                        sdk_pool_handle):
@@ -69,6 +71,7 @@ def test_get_one_auth_rule_transaction(looper,
         assert auth_map.get(str_key).as_dict == resp_rule[CONSTRAINT]
 
 
+@pytest.mark.auth_rule
 def test_get_unknown_auth_rule_transaction_is_rejected(
     looper, sdk_wallet_trustee, sdk_pool_handle
 ):
@@ -84,6 +87,7 @@ def test_get_unknown_auth_rule_transaction_is_rejected(
         )
 
 
+@pytest.mark.auth_rule
 def test_get_one_disabled_auth_rule_transaction(looper,
                                                 sdk_wallet_trustee,
                                                 sdk_pool_handle):
@@ -99,6 +103,7 @@ def test_get_one_disabled_auth_rule_transaction(looper,
     assert AuthConstraintForbidden().as_dict == result[0][CONSTRAINT]
 
 
+@pytest.mark.auth_rule
 def test_get_all_auth_rule_transactions(looper,
                                         sdk_wallet_trustee,
                                         sdk_pool_handle):
@@ -116,6 +121,7 @@ def test_get_all_auth_rule_transactions(looper,
             assert constraint.as_dict == rule[CONSTRAINT]
 
 
+@pytest.mark.auth_rule
 def test_get_one_auth_rule_transaction_after_write(looper,
                                                    sdk_wallet_trustee,
                                                    sdk_pool_handle):
@@ -143,6 +149,7 @@ def test_get_one_auth_rule_transaction_after_write(looper,
     assert resp[0][1]["result"][STATE_PROOF]
 
 
+@pytest.mark.auth_rule
 def test_get_all_auth_rule_transactions_after_write(looper,
                                                     sdk_wallet_trustee,
                                                     sdk_pool_handle):
@@ -174,6 +181,7 @@ def test_get_all_auth_rule_transactions_after_write(looper,
             assert auth_map[key].as_dict == rule[CONSTRAINT]
 
 
+@pytest.mark.auth_rule
 def test_auth_rule_after_get_auth_rule_as_is(
     looper, sdk_pool_handle, sdk_wallet_trustee
 ):
@@ -211,6 +219,7 @@ def test_auth_rule_after_get_auth_rule_as_is(
         assert get_response[0][1]["result"][STATE_PROOF]
 
 
+@pytest.mark.auth_rule
 def test_auth_rule_after_get_auth_rule_as_is_using_sdk(
     looper, sdk_pool_handle, sdk_wallet_trustee
 ):
@@ -247,6 +256,7 @@ def test_auth_rule_after_get_auth_rule_as_is_using_sdk(
         assert get_response[0][1]["result"][STATE_PROOF]
 
 
+@pytest.mark.auth_rule
 def test_auth_rule_after_get_auth_rule_as_is_except_constraint(
     looper, sdk_wallet_trustee, sdk_pool_handle
 ):

@@ -29,6 +29,7 @@ def create_node_upgrade_txn(version, frm, timestamp=0):
                                                     VERSION: version}}}}
 
 
+@pytest.mark.catchup
 def test_update_version_without_pool_upgrade(txn_version_controller):
     version = "version1"
     assert txn_version_controller.version is None
@@ -37,6 +38,7 @@ def test_update_version_without_pool_upgrade(txn_version_controller):
     assert txn_version_controller.version == version
 
 
+@pytest.mark.catchup
 def test_update_version_with_pool_upgrade(txn_version_controller, pool_upgrade_txn):
     version = "version1"
     assert txn_version_controller.version is None
@@ -52,6 +54,7 @@ def test_update_version_with_pool_upgrade(txn_version_controller, pool_upgrade_t
     assert txn_version_controller.version == version
 
 
+@pytest.mark.catchup
 def test_cleanup_after_update_version(txn_version_controller, pool_upgrade_txn):
     version1 = "version1"
     version2 = "version2"
@@ -72,6 +75,7 @@ def test_cleanup_after_update_version(txn_version_controller, pool_upgrade_txn):
     assert txn_version_controller.version == version2
 
 
+@pytest.mark.catchup
 def test_get_version_with_timestamp(txn_version_controller, pool_upgrade_txn):
     version1 = "version1"
     version2 = "version2"

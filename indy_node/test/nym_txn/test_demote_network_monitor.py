@@ -9,6 +9,7 @@ from plenum.test.helper import sdk_sign_and_submit_op, sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
+@pytest.mark.nym_txn
 def test_network_monitor_suspension_by_another_steward(looper,
                                                        sdk_pool_handle,
                                                        sdk_wallet_steward,
@@ -51,6 +52,7 @@ def test_network_monitor_suspension_by_another_steward(looper,
             sdk_get_validator_info(looper, (sdk_wallet_handle, new_network_monitor_did), sdk_pool_handle)
 
 
+@pytest.mark.nym_txn
 def test_network_monitor_suspension_by_itself(looper,
                                               sdk_pool_handle,
                                               sdk_wallet_steward,

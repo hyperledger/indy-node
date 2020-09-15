@@ -1,6 +1,9 @@
+import pytest
+
 from indy_common.authorize import auth_map
 
 
+@pytest.mark.auth_rule
 def test_auth_map_node():
     node_rules = [(auth_map.adding_new_node, "0--ADD--services--*--['VALIDATOR']"),
                   (auth_map.adding_new_node_with_empty_services, "0--ADD--services--*--[]"),
@@ -17,6 +20,7 @@ def test_auth_map_node():
         assert rule_str in auth_map.auth_map.keys()
 
 
+@pytest.mark.auth_rule
 def test_auth_map_nym():
     nym_rules = [(auth_map.add_new_trustee, "1--ADD--role--*--0"),
                  (auth_map.add_new_steward, "1--ADD--role--*--2"),
@@ -30,6 +34,7 @@ def test_auth_map_nym():
         assert rule_str in auth_map.auth_map.keys()
 
 
+@pytest.mark.auth_rule
 def test_auth_map_txn_author_agreement():
     rules = [(auth_map.txn_author_agreement, "4--ADD--*--*--*"), ]
 
@@ -38,6 +43,7 @@ def test_auth_map_txn_author_agreement():
         assert rule_str in auth_map.auth_map.keys()
 
 
+@pytest.mark.auth_rule
 def test_auth_map_txn_author_agreement_aml():
     rules = [(auth_map.txn_author_agreement_aml, "5--ADD--*--*--*"), ]
 
@@ -46,6 +52,7 @@ def test_auth_map_txn_author_agreement_aml():
         assert rule_str in auth_map.auth_map.keys()
 
 
+@pytest.mark.auth_rule
 def test_auth_map_attrib():
     rules = [(auth_map.add_attrib, "100--ADD--*--*--*"),
              (auth_map.edit_attrib, "100--EDIT--*--*--*")]
@@ -55,6 +62,7 @@ def test_auth_map_attrib():
         assert rule_str in auth_map.auth_map.keys()
 
 
+@pytest.mark.auth_rule
 def test_auth_map_schema():
     rules = [(auth_map.add_schema, "101--ADD--*--*--*")]
 
@@ -63,6 +71,7 @@ def test_auth_map_schema():
         assert rule_str in auth_map.auth_map.keys()
 
 
+@pytest.mark.auth_rule
 def test_auth_map_schema_for_omitted():
     rules = [(auth_map.edit_schema, "101--EDIT--*--*--*")]
 
@@ -71,6 +80,7 @@ def test_auth_map_schema_for_omitted():
         assert rule_str in auth_map.auth_map.keys()
 
 
+@pytest.mark.auth_rule
 def test_auth_map_claim_def():
     rules = [(auth_map.add_claim_def, "102--ADD--*--*--*"),
              (auth_map.edit_claim_def, "102--EDIT--*--*--*")]
@@ -80,6 +90,7 @@ def test_auth_map_claim_def():
         assert rule_str in auth_map.auth_map.keys()
 
 
+@pytest.mark.auth_rule
 def test_auth_map_upgrade():
     rules = [(auth_map.start_upgrade, "109--ADD--action--*--start"),
              (auth_map.cancel_upgrade, "109--EDIT--action--start--cancel")]
@@ -89,6 +100,7 @@ def test_auth_map_upgrade():
         assert rule_str in auth_map.auth_map.keys()
 
 
+@pytest.mark.auth_rule
 def test_auth_map_config():
     rules = [(auth_map.pool_config, "111--EDIT--action--*--*"), ]
 
@@ -97,6 +109,7 @@ def test_auth_map_config():
         assert rule_str in auth_map.auth_map.keys()
 
 
+@pytest.mark.auth_rule
 def test_auth_map_action():
     nym_rules = [(auth_map.pool_restart, "118--ADD--action--*--*"),
                  (auth_map.auth_rule, "120--EDIT--*--*--*"),
@@ -108,6 +121,7 @@ def test_auth_map_action():
         assert rule_str in auth_map.auth_map.keys()
 
 
+@pytest.mark.auth_rule
 def test_auth_map_revoc_reg():
     nym_rules = [(auth_map.add_revoc_reg_def, "113--ADD--*--*--*"),
                  (auth_map.add_revoc_reg_entry, "114--ADD--*--*--*"),
@@ -119,6 +133,7 @@ def test_auth_map_revoc_reg():
         assert rule_str in auth_map.auth_map.keys()
 
 
+@pytest.mark.auth_rule
 def test_auth_map_disable_taa():
     rules = [(auth_map.disable_txn_author_agreement, '8--ADD--*--*--*')]
 

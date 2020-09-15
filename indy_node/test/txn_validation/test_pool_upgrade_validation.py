@@ -10,6 +10,7 @@ from indy_common.constants import JUSTIFICATION, JUSTIFICATION_MAX_SIZE
 from indy_node.test.upgrade.conftest import validUpgrade, nodeIds, pckg
 
 
+@pytest.mark.txn_validation
 def testPoolUpgradeFailsIfVersionIsLowerThanCurrent(
         looper, sdk_pool_handle, validUpgrade, sdk_wallet_trustee):
     upgrade = deepcopy(validUpgrade)
@@ -20,6 +21,7 @@ def testPoolUpgradeFailsIfVersionIsLowerThanCurrent(
     e.match('Version {} is not upgradable'.format(upgrade[VERSION]))
 
 
+@pytest.mark.txn_validation
 def testPoolUpgradeHasInvalidSyntaxIfJustificationIsEmpty(
         looper, sdk_pool_handle, validUpgrade, sdk_wallet_trustee):
     upgrade = deepcopy(validUpgrade)
@@ -30,6 +32,7 @@ def testPoolUpgradeHasInvalidSyntaxIfJustificationIsEmpty(
     e.match('empty string')
 
 
+@pytest.mark.txn_validation
 def testPoolUpgradeHasInvalidSyntaxIfJustificationIsVeryLong(
         looper, sdk_pool_handle, validUpgrade, sdk_wallet_trustee):
     upgrade = deepcopy(validUpgrade)

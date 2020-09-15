@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+import pytest
+
 from indy_node.test import waits
 from stp_core.loop.eventually import eventually
 from plenum.common.constants import VERSION
@@ -14,6 +16,7 @@ whitelist = ['Failed to upgrade node',
              'This problem may have external reasons, check syslog for more information']
 
 
+@pytest.mark.upgrade
 def test_upgrade_does_not_get_into_loop_if_reinstall_and_failed(
         looper, tconf, nodeSet, validUpgrade, sdk_pool_handle, sdk_wallet_trustee, monkeypatch):
     new_version = bumpedVersion(validUpgrade['version'])

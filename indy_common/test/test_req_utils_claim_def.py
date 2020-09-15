@@ -73,81 +73,99 @@ def read_claim_def_request_no_tag(read_claim_def_request):
     return read_claim_def_request
 
 
+@pytest.mark.test
 def test_get_write_claim_def_signature_type(write_claim_def_request):
     assert 'CL1' == get_write_claim_def_signature_type(write_claim_def_request)
 
 
+@pytest.mark.test
 def test_get_write_claim_def_signature_type_default(write_claim_def_request_no_signature_type):
     assert 'CL' == get_write_claim_def_signature_type(write_claim_def_request_no_signature_type)
 
 
+@pytest.mark.test
 def test_get_write_claim_def_schema_ref(write_claim_def_request):
     assert 18 == get_write_claim_def_schema_ref(write_claim_def_request)
 
 
+@pytest.mark.test
 def test_get_write_claim_def_tag(write_claim_def_request):
     assert 'key111' == get_write_claim_def_tag(write_claim_def_request)
 
 
+@pytest.mark.test
 def test_get_write_claim_def_tag_default(write_claim_def_request_no_tag):
     assert 'tag' == get_write_claim_def_tag(write_claim_def_request_no_tag)
 
 
+@pytest.mark.test
 def test_get_write_claim_public_keys(write_claim_def_request):
     assert {'primary': {'primaryKey1': 'a'}, 'revocation': {'revocationKey1': 'b'}} == \
         get_write_claim_def_public_keys(write_claim_def_request)
 
 
+@pytest.mark.test
 def test_get_txn_claim_def_signature_type(write_claim_def_request):
     txn = reqToTxn(write_claim_def_request)
     assert 'CL1' == get_txn_claim_def_signature_type(txn)
 
 
+@pytest.mark.test
 def test_get_txn_claim_def_signature_type_default(write_claim_def_request_no_signature_type):
     txn = reqToTxn(write_claim_def_request_no_signature_type)
     assert 'CL' == get_txn_claim_def_signature_type(txn)
 
 
+@pytest.mark.test
 def test_get_txn_claim_def_schema_ref(write_claim_def_request):
     txn = reqToTxn(write_claim_def_request)
     assert 18 == get_txn_claim_def_schema_ref(txn)
 
 
+@pytest.mark.test
 def test_get_txn_claim_def_tag(write_claim_def_request):
     txn = reqToTxn(write_claim_def_request)
     assert 'key111' == get_txn_claim_def_tag(txn)
 
 
+@pytest.mark.test
 def test_get_txn_claim_def_tag_default(write_claim_def_request_no_tag):
     txn = reqToTxn(write_claim_def_request_no_tag)
     assert 'tag' == get_txn_claim_def_tag(txn)
 
 
+@pytest.mark.test
 def test_get_txn_claim_public_keys(write_claim_def_request):
     txn = reqToTxn(write_claim_def_request)
     assert {'primary': {'primaryKey1': 'a'}, 'revocation': {'revocationKey1': 'b'}} == \
         get_txn_claim_def_public_keys(txn)
 
 
+@pytest.mark.test
 def test_get_read_claim_def_signature_type(read_claim_def_request):
     assert 'CL1' == get_read_claim_def_signature_type(read_claim_def_request)
 
 
+@pytest.mark.test
 def test_get_read_claim_def_signature_type_default(read_claim_def_request_no_signature_type):
     assert 'CL' == get_read_claim_def_signature_type(read_claim_def_request_no_signature_type)
 
 
+@pytest.mark.test
 def test_get_read_claim_def_schema_ref(read_claim_def_request):
     assert 18 == get_read_claim_def_schema_ref(read_claim_def_request)
 
 
+@pytest.mark.test
 def test_get_read_claim_def_tag(read_claim_def_request):
     assert 'key111' == get_read_claim_def_tag(read_claim_def_request)
 
 
+@pytest.mark.test
 def test_get_read_claim_def_tag_default(read_claim_def_request_no_tag):
     assert 'tag' == get_read_claim_def_tag(read_claim_def_request_no_tag)
 
 
+@pytest.mark.test
 def test_get_read_claim_def_from(read_claim_def_request):
     assert 'L5AD5g65TDQr1PPHHRoiGf' == get_read_claim_def_from(read_claim_def_request)

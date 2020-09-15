@@ -17,6 +17,7 @@ def write_auth_req_validator(write_auth_req_validator):
     return write_auth_req_validator
 
 
+@pytest.mark.auth
 def test_auth_request_without_signatures(write_request_validation):
     req = Request(identifier="UnknownIdr",
                   operation={})

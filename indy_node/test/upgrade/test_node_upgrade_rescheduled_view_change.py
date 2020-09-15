@@ -1,4 +1,5 @@
 import dateutil
+import pytest
 
 from indy_common.constants import APP_NAME
 from indy_node.server.upgrade_log import UpgradeLogData, UpgradeLog
@@ -10,6 +11,7 @@ whitelist = ['unable to send message']
 # TODO: Implement a client in node
 
 
+@pytest.mark.upgrade
 def test_scheduled_once_after_view_change(nodeSet, validUpgrade, upgradeScheduled):
     '''
     Test that each node schedules update only once after each view change

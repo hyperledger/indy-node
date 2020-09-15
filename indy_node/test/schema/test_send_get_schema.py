@@ -37,6 +37,7 @@ def send_schema_req(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
     return schema_json, reply
 
 
+@pytest.mark.schema
 def test_send_get_schema_succeeds(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, send_schema):
     _, did = sdk_wallet_trustee
@@ -46,6 +47,7 @@ def test_send_get_schema_succeeds(
     assert rep[0][1]['result']['seqNo']
 
 
+@pytest.mark.schema
 def test_send_get_schema_as_client(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_client, send_schema):
     _, did = sdk_wallet_client
@@ -55,6 +57,7 @@ def test_send_get_schema_as_client(
     assert rep[0][1]['result']['seqNo']
 
 
+@pytest.mark.schema
 def test_send_get_schema_fails_with_invalid_name(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, send_schema):
     _, did = sdk_wallet_trustee
@@ -65,6 +68,7 @@ def test_send_get_schema_fails_with_invalid_name(
     assert rep[0][1]['result']['seqNo'] is None
 
 
+@pytest.mark.schema
 def test_send_get_schema_fails_with_invalid_dest(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, send_schema):
     uuid_identifier = createUuidIdentifier()
@@ -76,6 +80,7 @@ def test_send_get_schema_fails_with_invalid_dest(
     assert rep[0][1]['result']['seqNo'] is None
 
 
+@pytest.mark.schema
 def test_send_get_schema_fails_with_invalid_version(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, send_schema):
     _, did = sdk_wallet_trustee
@@ -86,6 +91,7 @@ def test_send_get_schema_fails_with_invalid_version(
     assert rep[0][1]['result']['seqNo'] is None
 
 
+@pytest.mark.schema
 def test_send_get_schema_fails_with_invalid_version_syntax(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, send_schema):
     _, did = sdk_wallet_trustee
@@ -97,6 +103,7 @@ def test_send_get_schema_fails_with_invalid_version_syntax(
     e.match("Invalid version: 'asd'")
 
 
+@pytest.mark.schema
 def test_send_get_schema_fails_without_version(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, send_schema):
     _, did = sdk_wallet_trustee
@@ -110,6 +117,7 @@ def test_send_get_schema_fails_without_version(
     e.match('missed fields - version')
 
 
+@pytest.mark.schema
 def test_send_get_schema_fails_without_name(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, send_schema):
     _, did = sdk_wallet_trustee
@@ -123,6 +131,7 @@ def test_send_get_schema_fails_without_name(
     e.match('missed fields - name')
 
 
+@pytest.mark.schema
 def test_send_get_schema_fails_without_dest(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, send_schema):
     _, did = sdk_wallet_trustee

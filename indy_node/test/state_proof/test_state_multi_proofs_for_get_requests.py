@@ -4,6 +4,7 @@ import random
 import time
 
 import base58
+import pytest
 
 from common.serializers.serialization import state_roots_serializer, domain_state_serializer
 from crypto.bls.bls_multi_signature import MultiSignature, MultiSignatureValue
@@ -62,7 +63,7 @@ def is_proof_verified(db_manager,
 
 
 # Similar tests for Rich Schema objects are in indy_node/test/request_handlers/rich_schema
-
+@pytest.mark.state_proof
 def test_state_proofs_for_get_attr(write_manager,
                                    read_manager,
                                    db_manager):
@@ -109,6 +110,7 @@ def test_state_proofs_for_get_attr(write_manager,
                              domain.hash_of(attr_value), seq_no, txn_time)
 
 
+@pytest.mark.state_proof
 def test_state_proofs_for_get_claim_def(write_manager,
                                         read_manager,
                                         db_manager):
@@ -167,6 +169,7 @@ def test_state_proofs_for_get_claim_def(write_manager,
                              key_components, seq_no, txn_time)
 
 
+@pytest.mark.state_proof
 def test_state_proofs_for_get_schema(write_manager,
                                      read_manager,
                                      db_manager):
@@ -292,6 +295,7 @@ def get_nym_verify_proof(read_manager,
     )
 
 
+@pytest.mark.state_proof
 def test_state_proofs_for_get_nym(write_manager,
                                   read_manager,
                                   db_manager):
@@ -312,6 +316,7 @@ def test_state_proofs_for_get_nym(write_manager,
     assert get_nym_verify_proof(read_manager, db_manager, garbled_nym, None, multi_sig)
 
 
+@pytest.mark.state_proof
 def test_no_state_proofs_if_protocol_version_less(write_manager,
                                                   read_manager,
                                                   db_manager):

@@ -1,8 +1,11 @@
+import pytest
+
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
 from plenum.common.constants import SERVICES, NODE, NODE_IP, NODE_PORT, CLIENT_PORT, \
     CLIENT_IP, BLS_KEY, ALIAS
 
 
+@pytest.mark.auth
 def test_node_enable(write_request_validation, req, is_owner):
     authorized = (req.identifier == "steward_identifier" and is_owner)
     assert authorized == write_request_validation(req,
@@ -12,6 +15,7 @@ def test_node_enable(write_request_validation, req, is_owner):
                                                                  is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_node_enable_with_empty_services(write_request_validation, req, is_owner):
     authorized = (req.identifier == "steward_identifier" and is_owner)
     assert authorized == write_request_validation(req,
@@ -21,6 +25,7 @@ def test_node_enable_with_empty_services(write_request_validation, req, is_owner
                                                                  is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_node_promote(write_request_validation, req, is_owner):
     authorized = (req.identifier == "steward_identifier" and is_owner) or (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -31,6 +36,7 @@ def test_node_promote(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_node_demote(write_request_validation, req, is_owner):
     authorized = (req.identifier == "steward_identifier" and is_owner) or (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -41,6 +47,7 @@ def test_node_demote(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_node_wrong_old_service_name(write_request_validation, req, is_owner):
     assert not write_request_validation(req,
                                         [AuthActionEdit(txn_type=NODE,
@@ -50,6 +57,7 @@ def test_node_wrong_old_service_name(write_request_validation, req, is_owner):
                                                         is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_node_wrong_new_service_name(write_request_validation, req, is_owner):
     assert not write_request_validation(req,
                                         [AuthActionEdit(txn_type=NODE,
@@ -59,6 +67,7 @@ def test_node_wrong_new_service_name(write_request_validation, req, is_owner):
                                                         is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_node_change_node_ip(write_request_validation, req, is_owner):
     authorized = (req.identifier == "steward_identifier" and is_owner)
     assert authorized == write_request_validation(req,
@@ -69,6 +78,7 @@ def test_node_change_node_ip(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_node_change_node_port(write_request_validation, req, is_owner):
     authorized = (req.identifier == "steward_identifier" and is_owner)
     assert authorized == write_request_validation(req,
@@ -79,6 +89,7 @@ def test_node_change_node_port(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_node_change_client_ip(write_request_validation, req, is_owner):
     authorized = (req.identifier == "steward_identifier" and is_owner)
     assert authorized == write_request_validation(req,
@@ -89,6 +100,7 @@ def test_node_change_client_ip(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_node_change_client_port(write_request_validation, req, is_owner):
     authorized = (req.identifier == "steward_identifier" and is_owner)
     assert authorized == write_request_validation(req,
@@ -99,6 +111,7 @@ def test_node_change_client_port(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_node_change_bls_keys(write_request_validation, req, is_owner):
     authorized = (req.identifier == "steward_identifier" and is_owner)
     assert authorized == write_request_validation(req,
@@ -109,6 +122,7 @@ def test_node_change_bls_keys(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_node_change_alias(write_request_validation, req, is_owner):
     authorized = False  # alias can not be changed
     assert authorized == write_request_validation(req,

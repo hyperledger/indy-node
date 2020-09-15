@@ -58,6 +58,7 @@ def req(request, looper, sdk_pool_handle, sdk_wallet_steward):
     return Request(**json.loads(req_signed))
 
 
+@pytest.mark.request_propagates
 def test_propagate_request(looper, node, sdk_wallet_steward, req):
     # Emulate Received PROPAGATE with the req
     propagate = Propagate(req.as_dict, "client_name")

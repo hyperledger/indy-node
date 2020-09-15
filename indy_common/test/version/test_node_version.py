@@ -12,6 +12,7 @@ from indy_common.node_version import NodeVersion, InvalidVersionError
 #  epoch
 #  local version
 #  parts num != 3
+@pytest.mark.version
 @pytest.mark.parametrize(
     'version',
     [
@@ -30,6 +31,7 @@ def test_node_version_invalid_value(version):
         NodeVersion(version)
 
 
+@pytest.mark.version
 @pytest.mark.parametrize(
     'version',
     [
@@ -42,12 +44,14 @@ def test_node_version_valid(version):
     NodeVersion(version)
 
 
+@pytest.mark.version
 def test_node_version_parts():
     assert NodeVersion('1.2.3.dev2').parts == (1, 2, 3, 'dev', 2)
     assert NodeVersion('1.2.3.rc3').parts == (1, 2, 3, 'rc', 3)
     assert NodeVersion('1.2.3').parts == (1, 2, 3, None, None)
 
 
+@pytest.mark.version
 def test_node_version_upstream():
     pv = NodeVersion('1.2.3')
     assert pv.upstream is pv

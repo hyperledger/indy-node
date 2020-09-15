@@ -1,7 +1,11 @@
 from operator import itemgetter
+
+import pytest
+
 from indy_common.util import getIndex
 
 
+@pytest.mark.test
 def test_getIndex():
     items = [('a', {'key1': 1}), ('b', {'key2': 2})]
     getDict = itemgetter(1)

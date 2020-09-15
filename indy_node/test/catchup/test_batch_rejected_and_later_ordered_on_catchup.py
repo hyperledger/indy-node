@@ -42,6 +42,7 @@ concerningLogLevels = [logging.WARNING,
                        logging.CRITICAL]
 
 
+@pytest.mark.catchup
 def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
         looper,
         tdirWithPoolTxns,

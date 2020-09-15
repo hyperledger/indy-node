@@ -17,19 +17,23 @@ STATUS_FILENAME = '{}_info.json'.format(TEST_NODE_NAME.lower())
 INFO_FILENAME = '{}_info.json'.format(TEST_NODE_NAME.lower())
 
 
+@pytest.mark.validator_info
 def test_validator_info_file_schema_is_valid(info):
     assert isinstance(info, dict)
     assert 'config' in info['Node_info']['Metrics']['transaction-count']
 
 
+@pytest.mark.validator_info
 def test_validator_info_file_metrics_count_ledger_field_valid(info):
     assert info['Node_info']['Metrics']['transaction-count']['config'] == 0
 
 
+@pytest.mark.validator_info
 def test_validator_info_bls_key_field_valid(node, info):
     assert info['Node_info']['BLS_key']
 
 
+@pytest.mark.validator_info
 def test_validator_info_ha_fields_valid(node, info):
     assert info['Node_info']['Node_ip']
     assert info['Node_info']['Client_ip']
@@ -37,6 +41,7 @@ def test_validator_info_ha_fields_valid(node, info):
     assert info['Node_info']['Client_port']
 
 
+@pytest.mark.validator_info
 def test_validator_info_file_software_indy_node_valid(info):
     assert info['Software']['indy-node'] == node_pgk_version
 
@@ -49,6 +54,7 @@ def node_with_broken_info_tool(node):
     node._info_tool._node = node_bk
 
 
+@pytest.mark.validator_info
 def test_validator_info_file_handle_fails(node_with_broken_info_tool,
                                           node):
     latest_info = node._info_tool.info
@@ -56,6 +62,7 @@ def test_validator_info_file_handle_fails(node_with_broken_info_tool,
     assert 'Node_info' not in latest_info
 
 
+@pytest.mark.validator_info
 def test_validator_info_file_get_nym(read_txn_and_get_latest_info,
                                      node):
     reset_node_total_read_request_number(node)
@@ -65,6 +72,7 @@ def test_validator_info_file_get_nym(read_txn_and_get_latest_info,
     assert latest_info['Node_info']['Metrics']['average-per-second']['read-transactions'] > 0
 
 
+@pytest.mark.validator_info
 def test_validator_info_file_get_schema(read_txn_and_get_latest_info,
                                         node):
     reset_node_total_read_request_number(node)
@@ -74,6 +82,7 @@ def test_validator_info_file_get_schema(read_txn_and_get_latest_info,
     assert latest_info['Node_info']['Metrics']['average-per-second']['read-transactions'] > 0
 
 
+@pytest.mark.validator_info
 def test_validator_info_file_get_attr(read_txn_and_get_latest_info,
                                       node):
     reset_node_total_read_request_number(node)
@@ -83,6 +92,7 @@ def test_validator_info_file_get_attr(read_txn_and_get_latest_info,
     assert latest_info['Node_info']['Metrics']['average-per-second']['read-transactions'] > 0
 
 
+@pytest.mark.validator_info
 def test_validator_info_file_get_claim_def(read_txn_and_get_latest_info,
                                            node):
     reset_node_total_read_request_number(node)
@@ -179,6 +189,7 @@ class FakeLedgerEx(FakeLedger):
         return 100
 
 
+@pytest.mark.validator_info
 def test_validator_info_file_metrics_count_all_ledgers_field_valid(node):
     new_ids = [444, 555, 666, 777]
     for newid in new_ids:
@@ -188,6 +199,7 @@ def test_validator_info_file_metrics_count_all_ledgers_field_valid(node):
     assert has_cnt == len(new_ids) + 4
 
 
+@pytest.mark.validator_info
 def test_validator_info_update_date_field_valid(info):
     assert "Update_time" in info
     import time

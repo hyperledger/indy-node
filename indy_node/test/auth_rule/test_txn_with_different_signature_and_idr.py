@@ -9,6 +9,7 @@ from plenum.test.helper import sdk_multi_sign_request_objects, \
 from plenum.test.pool_transactions.helper import prepare_nym_request
 
 
+@pytest.mark.auth_rule
 def test_txn_with_different_signature_and_idr(
         looper, txnPoolNodeSet, sdk_pool_handle, sdk_wallet_trustee, sdk_wallet_client):
     # filling nym request and getting steward did

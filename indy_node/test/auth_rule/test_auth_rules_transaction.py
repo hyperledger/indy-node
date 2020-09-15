@@ -25,6 +25,7 @@ def _send_and_check_get_auth_rule(looper, sdk_pool_handle, sdk_wallet, key):
     )
 
 
+@pytest.mark.auth_rule
 def test_auth_rules_transaction_without_changes(looper,
                                                 sdk_wallet_trustee,
                                                 sdk_pool_handle):
@@ -41,6 +42,7 @@ def test_auth_rules_transaction_without_changes(looper,
     assert before_resp[0][1]["result"][DATA] == after_resp[0][1]["result"][DATA]
 
 
+@pytest.mark.auth_rule
 def test_auth_rules_transaction(looper,
                                 sdk_wallet_trustee,
                                 sdk_pool_handle):
@@ -58,6 +60,7 @@ def test_auth_rules_transaction(looper,
     assert [rule] == after_resp[0][1]["result"][DATA]
 
 
+@pytest.mark.auth_rule
 def test_reject_all_rules_from_auth_rules_txn(looper,
                                               sdk_wallet_trustee,
                                               sdk_pool_handle):
@@ -79,6 +82,7 @@ def test_reject_all_rules_from_auth_rules_txn(looper,
     assert before_resp["result"][DATA] == after_resp["result"][DATA]
 
 
+@pytest.mark.auth_rule
 def test_reject_with_empty_rules_list(looper,
                                       sdk_wallet_trustee,
                                       sdk_pool_handle):
@@ -90,6 +94,7 @@ def test_reject_with_empty_rules_list(looper,
                                                       rules=[])
 
 
+@pytest.mark.auth_rule
 def test_reject_with_unacceptable_role_in_constraint(looper,
                                                      sdk_wallet_trustee,
                                                      sdk_pool_handle):
@@ -106,6 +111,7 @@ def test_reject_with_unacceptable_role_in_constraint(looper,
     e.match('Role {} is not acceptable'.format(unacceptable_role))
 
 
+@pytest.mark.auth_rule
 def test_reject_auth_rules_transaction(looper,
                                        sdk_wallet_steward,
                                        sdk_pool_handle):
@@ -116,6 +122,7 @@ def test_reject_auth_rules_transaction(looper,
     e.match('Not enough TRUSTEE signatures')
 
 
+@pytest.mark.auth_rule
 def test_reqnack_auth_rules_transaction_with_wrong_key(looper,
                                                        sdk_wallet_trustee,
                                                        sdk_pool_handle):
@@ -129,6 +136,7 @@ def test_reqnack_auth_rules_transaction_with_wrong_key(looper,
     e.match("is not found in authorization map")
 
 
+@pytest.mark.auth_rule
 def test_reqnack_auth_rules_edit_transaction_with_wrong_format(looper,
                                                                sdk_wallet_trustee,
                                                                sdk_pool_handle):
@@ -146,6 +154,7 @@ def test_reqnack_auth_rules_edit_transaction_with_wrong_format(looper,
             format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
 
 
+@pytest.mark.auth_rule
 def test_reqnack_auth_rules_add_transaction_with_wrong_format(looper,
                                                               sdk_wallet_trustee,
                                                               sdk_pool_handle):

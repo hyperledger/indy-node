@@ -28,6 +28,7 @@ def set_aml(txn_author_agreement_handler):
                                                               serializer=config_state_serializer))
 
 
+@pytest.mark.request_handlers
 def test_dynamic_validation_without_permission(taa_request,
                                                txn_author_agreement_handler: TxnAuthorAgreementHandler,
                                                creator,
@@ -37,6 +38,7 @@ def test_dynamic_validation_without_permission(taa_request,
         txn_author_agreement_handler.dynamic_validation(taa_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_dynamic_validation(taa_request,
                             txn_author_agreement_handler: TxnAuthorAgreementHandler,
                             creator,

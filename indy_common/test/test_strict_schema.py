@@ -1,9 +1,12 @@
+import pytest
+
 from indy_common.types import SafeRequest
 from plenum.common.constants import CURRENT_PROTOCOL_VERSION, TXN_TYPE, TARGET_NYM, VERKEY, NYM
 from plenum.common.types import f, OPERATION
 from plenum.test.input_validation.constants import TEST_TARGET_NYM, TEST_VERKEY_ABBREVIATED
 
 
+@pytest.mark.test
 def test_client_safe_req_not_strict_by_default():
     operation = {
         TXN_TYPE: NYM,

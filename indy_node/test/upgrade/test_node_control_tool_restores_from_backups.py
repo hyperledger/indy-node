@@ -5,6 +5,7 @@ import shutil
 
 import time
 
+import pytest
 from stp_core.loop.eventually import eventually
 from indy_common.version import src_version_cls
 from indy_node.server.upgrader import Upgrader
@@ -22,7 +23,8 @@ m = multiprocessing.Manager()
 whitelist = ['Unexpected error in _upgrade test']
 
 
-def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper, tconf):
+@pytest.mark.upgrade
+def test_node_control_restores_from_backups(monkeypatch, tdir, looper, tconf):
     version = bumpedVersion()
     stdout = 'teststdout'
     backupWasRestored = m.Value('b', False)

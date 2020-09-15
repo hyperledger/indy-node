@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+import pytest
+
 from indy_common.constants import ACTION, CANCEL, SCHEDULE
 from indy_node.test import waits
 from indy_node.test.upgrade.helper import checkNoUpgradeScheduled, \
@@ -9,6 +11,7 @@ from stp_core.loop.eventually import eventually
 from indy_common.config_helper import NodeConfigHelper
 
 
+@pytest.mark.upgrade
 def test_node_does_not_reschedule_cancelled_upgrade_after_restart(
         upgradeScheduled, looper, nodeSet, validUpgrade,
         testNodeClass, tdir, tconf, allPluginsPath,

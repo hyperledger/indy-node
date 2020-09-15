@@ -9,6 +9,7 @@ from plenum.test.helper import sdk_sign_and_submit_op, sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
+@pytest.mark.auth_rule
 def test_check_rule_for_edit_action_changing(looper,
                                              sdk_wallet_trustee,
                                              sdk_wallet_steward,

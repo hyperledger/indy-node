@@ -49,21 +49,25 @@ def other_req_id():
                    protocolVersion=CURRENT_PROTOCOL_VERSION)
 
 
+@pytest.mark.auth
 def test_authorize_with_role(composite_authorizer, req_auth):
     assert composite_authorizer.authorize(req_auth, AuthConstraint(STEWARD, 1), None)
 
 
+@pytest.mark.auth
 def test_raise_on_not_authorize_with_other_role(composite_authorizer, req_auth):
     with pytest.raises(AuthValidationError):
         assert composite_authorizer.authorize(req_auth, AuthConstraint(TRUSTEE, 1), None)
 
 
+@pytest.mark.auth
 def test_authorize_with_and_constraint(composite_authorizer, req_auth):
     composite_authorizer.authorize(req_auth,
                                    AuthConstraintAnd([AuthConstraint(STEWARD, 1), AuthConstraint(STEWARD, 1)]),
                                    None)
 
 
+@pytest.mark.auth
 def test_not_authorize_with_and_constraint(composite_authorizer, req_auth):
     with pytest.raises(AuthValidationError):
         composite_authorizer.authorize(req_auth,
@@ -71,18 +75,21 @@ def test_not_authorize_with_and_constraint(composite_authorizer, req_auth):
                                        None)
 
 
+@pytest.mark.auth
 def test_authorize_with_or_constraint(composite_authorizer, req_auth):
     composite_authorizer.authorize(req_auth,
                                    AuthConstraintOr([AuthConstraint(STEWARD, 1), AuthConstraint(STEWARD, 1)]),
                                    None)
 
 
+@pytest.mark.auth
 def test_authorize_with_or_constraint_with_one_fail(composite_authorizer, req_auth):
     composite_authorizer.authorize(req_auth,
                                    AuthConstraintOr([AuthConstraint(STEWARD, 1), AuthConstraint(TRUSTEE, 1)]),
                                    None)
 
 
+@pytest.mark.auth
 def test_not_authorized_with_or_constraint(composite_authorizer, req_auth):
     with pytest.raises(AuthValidationError):
         composite_authorizer.authorize(req_auth,

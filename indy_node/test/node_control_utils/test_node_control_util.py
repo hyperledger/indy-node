@@ -29,6 +29,7 @@ def catch_generated_commands(monkeypatch):
     monkeypatch.setattr(NodeControlUtil, 'run_shell_command', _f)
 
 
+@pytest.mark.node_control_utils
 def test_generated_cmd_get_curr_info(catch_generated_commands):
     pkg_name = 'some_package'
     # TODO not an API for now
@@ -37,6 +38,7 @@ def test_generated_cmd_get_curr_info(catch_generated_commands):
     assert generated_commands[0] == "dpkg -s {}".format(pkg_name)
 
 
+@pytest.mark.node_control_utils
 def test_generated_cmd_get_latest_pkg_version(catch_generated_commands):
     pkg_name = 'some_package'
     NodeControlUtil.get_latest_pkg_version(pkg_name)
@@ -58,6 +60,7 @@ def test_generated_cmd_get_latest_pkg_version(catch_generated_commands):
     )
 
 
+@pytest.mark.node_control_utils
 def test_generated_cmd_get_info_from_package_manager(catch_generated_commands):
     packages = ['package1', 'package2']
     # TODO not an API for now
@@ -66,12 +69,14 @@ def test_generated_cmd_get_info_from_package_manager(catch_generated_commands):
     assert generated_commands[0] == "apt-cache show {}".format(" ".join(packages))
 
 
+@pytest.mark.node_control_utils
 def test_generated_cmd_update_package_cache(catch_generated_commands):
     NodeControlUtil.update_package_cache()
     assert len(generated_commands) == 1
     assert generated_commands[0] == "apt update"
 
 
+@pytest.mark.node_control_utils
 def test_generated_cmd_get_sys_holds(monkeypatch, catch_generated_commands):
     monkeypatch.setattr(shutil, 'which', lambda *_: 'path')
     NodeControlUtil.get_sys_holds()
@@ -79,6 +84,7 @@ def test_generated_cmd_get_sys_holds(monkeypatch, catch_generated_commands):
     assert generated_commands[0] == "apt-mark showhold"
 
 
+@pytest.mark.node_control_utils
 def test_generated_cmd_hold_packages(monkeypatch, catch_generated_commands):
     packages = ['package1', 'package2']
     monkeypatch.setattr(shutil, 'which', lambda *_: 'path')
@@ -87,6 +93,7 @@ def test_generated_cmd_hold_packages(monkeypatch, catch_generated_commands):
     assert generated_commands[0] == "apt-mark hold {}".format(' '.join(packages))
 
 
+@pytest.mark.node_control_utils
 def test_get_latest_pkg_version_invalid_args():
     pkg_name = 'any_package'
     with pytest.raises(TypeError) as excinfo:
@@ -101,6 +108,7 @@ def test_get_latest_pkg_version_invalid_args():
     )
 
 
+@pytest.mark.node_control_utils
 @pytest.mark.parametrize(
     'pkg_name,upstream,output,expected',
     [
@@ -149,16 +157,19 @@ def test_get_latest_pkg_version(
     assert expected == res if expected is None else res.upstream
 
 
+@pytest.mark.node_control_utils
 def test_get_latest_pkg_version_for_unknown_package():
     assert NodeControlUtil.get_latest_pkg_version(
         'some-unknown-package-name', update_cache=False) is None
 
 
+@pytest.mark.node_control_utils
 def test_curr_pkg_info_no_data(monkeypatch):
     monkeypatch.setattr(NodeControlUtil, 'run_shell_command', lambda *_: '')
     assert (None, []) == NodeControlUtil.curr_pkg_info('any_package')
 
 
+@pytest.mark.node_control_utils
 def test_curr_pkg_info(monkeypatch):
     output = 'Version: 1.2.3\nDepends: aaa (= 1.2.4), bbb (>= 1.2.5), ccc, aaa'
     expected_deps = ['aaa=1.2.4', 'bbb=1.2.5', 'ccc']

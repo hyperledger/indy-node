@@ -1,5 +1,6 @@
 import shutil
 
+import pytest
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.util import randomString
 from plenum.test.node_catchup.helper import ensure_all_nodes_have_same_data, \
@@ -13,6 +14,7 @@ from indy_node.test.helper import TestNode, sdk_add_raw_attribute
 TestRunningTimeLimitSec = 200
 
 
+@pytest.mark.replay
 def test_state_regenerated_from_ledger(looper,
                                        nodeSet, tconf, tdir,
                                        sdk_pool_handle,

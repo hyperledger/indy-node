@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 import dateutil
+import pytest
 
 from indy_common.constants import START
 from indy_node.server.restart_log import RestartLog
@@ -8,6 +9,7 @@ from indy_node.test.pool_restart.helper import _createServer, sdk_send_restart, 
 from indy_node.test.pool_restart.test_pool_restart import _comparison_reply, _check_restart_log
 
 
+@pytest.mark.pool_restart
 def test_pool_restarts_one_by_one(
         sdk_pool_handle, sdk_wallet_trustee, looper, tconf, txnPoolNodeSet):
     server, indicator = looper.loop.run_until_complete(

@@ -8,6 +8,8 @@ from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_and_submit_op
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
+
+@pytest.mark.nym_txn
 def test_steward_suspension_by_another_trustee(looper,
                                                sdk_pool_handle,
                                                sdk_wallet_trustee,
@@ -40,6 +42,7 @@ def test_steward_suspension_by_another_trustee(looper,
         sdk_get_and_check_replies(looper, [req])
 
 
+@pytest.mark.nym_txn
 def test_steward_cannot_create_endorsers_after_demote(looper,
                                                           sdk_pool_handle,
                                                           sdk_wallet_trustee,

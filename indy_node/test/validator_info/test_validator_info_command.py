@@ -11,6 +11,7 @@ from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, \
     sdk_get_reply, sdk_send_signed_requests, sdk_get_and_check_replies
 
 
+@pytest.mark.validator_info
 def test_validator_info_command(
         sdk_pool_handle, sdk_wallet_trustee, looper):
     req, resp = sdk_get_validator_info(looper,
@@ -19,6 +20,7 @@ def test_validator_info_command(
     _comparison_reply(resp, req)
 
 
+@pytest.mark.validator_info
 def test_fail_validator_info_command(
         sdk_pool_handle, sdk_wallet_client, looper):
     with pytest.raises(RequestRejectedException) as excinfo:

@@ -43,6 +43,7 @@ def run_script(script_name, args):
             return rtn
 
 
+@pytest.mark.tools
 def test_nscapture_unit_tests():
     cmd_path = os.path.join(find_ns_script_dir(), 'nscapture')
     with open(cmd_path, 'r+b') as r_file:

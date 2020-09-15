@@ -8,6 +8,7 @@ from indy_common.version import (
 )
 
 
+@pytest.mark.version
 def test_schema_version():
     for version in ['', '1', '1.2.3.4', '1.2.a']:
         with pytest.raises(InvalidVersionError):
@@ -16,6 +17,7 @@ def test_schema_version():
     SchemaVersion('1.2.3')
 
 
+@pytest.mark.version
 def test_top_package_default_version():
     for version in ['', '1', '1.2.3.4', '1.2.a']:
         with pytest.raises(InvalidVersionError):
@@ -24,6 +26,7 @@ def test_top_package_default_version():
     TopPkgDefVersion('1.2.3')
 
 
+@pytest.mark.version
 def test_src_version_cls():
     assert src_version_cls() == NodeVersion
     assert src_version_cls(APP_NAME) == NodeVersion

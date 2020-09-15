@@ -1,3 +1,4 @@
+import pytest
 import json
 
 from indy_common.constants import CRED_DEF_ID, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_TAG
@@ -6,6 +7,7 @@ from plenum.test.helper import sdk_send_and_check
 from plenum.test.helper import sdk_sign_request_from_dict
 
 
+@pytest.mark.anon_creds
 def test_send_revoc_reg_def(looper,
                             txnPoolNodeSet,
                             sdk_wallet_steward,

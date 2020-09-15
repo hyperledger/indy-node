@@ -49,11 +49,13 @@ def idr_cache_none_role(req_auth):
     return cache
 
 
+@pytest.mark.auth
 def test_role_authorizer_get_role(idr_cache, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache)
     assert authorizer.get_role(req_auth) == STEWARD
 
 
+@pytest.mark.auth
 def test_role_authorizer_is_role_accepted(idr_cache):
     authorizer = RolesAuthorizer(cache=idr_cache)
     assert authorizer.is_role_accepted(role="", auth_constraint_role=IDENTITY_OWNER)
@@ -63,6 +65,7 @@ def test_role_authorizer_is_role_accepted(idr_cache):
     assert authorizer.is_role_accepted(role="", auth_constraint_role="*")
 
 
+@pytest.mark.auth
 def test_role_authorizer_is_owner_accepted(idr_cache, is_owner):
     authorizer = RolesAuthorizer(cache=idr_cache)
     authorized = is_owner
@@ -71,6 +74,7 @@ def test_role_authorizer_is_owner_accepted(idr_cache, is_owner):
         AuthActionAdd(txn_type=NYM, field='some_field', value='some_value', is_owner=is_owner))
 
 
+@pytest.mark.auth
 def test_role_authorizer_authorize_with_owner(idr_cache, req_auth, is_owner):
     req = Request(identifier=req_auth.identifier,
                   operation={TARGET_NYM: req_auth.identifier,
@@ -84,12 +88,14 @@ def test_role_authorizer_authorize_with_owner(idr_cache, req_auth, is_owner):
     assert authorized == is_owner
 
 
+@pytest.mark.auth
 def test_role_authorizer_authorize_with_role(idr_cache, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache)
     authorized, reason = authorizer.authorize(req_auth, AuthConstraint(role=STEWARD, sig_count=1))
     assert authorized
 
 
+@pytest.mark.auth
 def test_role_authorizer_not_authorize_role(idr_cache, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache)
     authorized, reason = authorizer.authorize(req_auth, AuthConstraint(role=TRUSTEE, sig_count=1))
@@ -97,6 +103,7 @@ def test_role_authorizer_not_authorize_role(idr_cache, req_auth):
     assert reason == "Not enough TRUSTEE signatures"
 
 
+@pytest.mark.auth
 def test_role_authorizer_not_authorize_unknown_nym(idr_cache):
     authorizer = RolesAuthorizer(cache=idr_cache)
 
@@ -112,16 +119,19 @@ def test_role_authorizer_not_authorize_unknown_nym(idr_cache):
     assert reason == "sender's DID {} is not found in the Ledger".format(unknown_req_auth.identifier)
 
 
+@pytest.mark.auth
 def test_role_authorizer_is_sig_count_accepted(idr_cache_none_role, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache_none_role)
     assert authorizer.is_sig_count_accepted(req_auth, AuthConstraint(role="*", sig_count=1))
 
 
+@pytest.mark.auth
 def test_role_authorizer_not_is_sig_count_accepted(idr_cache_none_role, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache_none_role)
     assert not authorizer.is_sig_count_accepted(req_auth, AuthConstraint(role=TRUSTEE, sig_count=10))
 
 
+@pytest.mark.auth
 def test_role_authorizer_off_ledger_signature_pass(idr_cache, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache)
     req_auth._identifier = 'id_off_ledger'
@@ -130,6 +140,7 @@ def test_role_authorizer_off_ledger_signature_pass(idr_cache, req_auth):
     assert authorized
 
 
+@pytest.mark.auth
 def test_role_authorizer_off_ledger_signature_not_pass(idr_cache, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache)
     req_auth._identifier = 'id_off_ledger'
@@ -139,6 +150,7 @@ def test_role_authorizer_off_ledger_signature_not_pass(idr_cache, req_auth):
     assert "DID id_off_ledger is not found in the Ledger" in reason
 
 
+@pytest.mark.auth
 def test_role_authorizer_off_ledger_signature_count_2_pass(idr_cache, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache)
     req_auth._identifier = 'id_off_ledger'
@@ -149,6 +161,7 @@ def test_role_authorizer_off_ledger_signature_count_2_pass(idr_cache, req_auth):
     assert authorized
 
 
+@pytest.mark.auth
 def test_role_authorizer_off_ledger_signature_count_2_different_pass(idr_cache, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache)
     req_auth.signature = None
@@ -158,6 +171,7 @@ def test_role_authorizer_off_ledger_signature_count_2_different_pass(idr_cache, 
     assert authorized
 
 
+@pytest.mark.auth
 def test_role_authorizer_off_ledger_signature_count_0_pass(idr_cache, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache)
     req_auth._identifier = 'id_off_ledger'
@@ -166,6 +180,7 @@ def test_role_authorizer_off_ledger_signature_count_0_pass(idr_cache, req_auth):
     assert authorized
 
 
+@pytest.mark.auth
 def test_signed_by_author_if_more_than_1_sig(idr_cache, req_multi_signed_by_non_author):
     authorizer = RolesAuthorizer(cache=idr_cache)
     authorized, reason = authorizer.authorize(req_multi_signed_by_non_author,
@@ -174,6 +189,7 @@ def test_signed_by_author_if_more_than_1_sig(idr_cache, req_multi_signed_by_non_
     assert "Author must sign the transaction" in reason
 
 
+@pytest.mark.auth
 def test_no_sign_by_author_if_0_sig(idr_cache, req_multi_signed_by_non_author):
     authorizer = RolesAuthorizer(cache=idr_cache)
     authorized, reason = authorizer.authorize(req_multi_signed_by_non_author,

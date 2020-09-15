@@ -1,9 +1,11 @@
+import pytest
 from indy.ledger import build_nym_request
 from indy_node.test.helper import createHalfKeyIdentifierAndAbbrevVerkey
 from indy_node.test.api.helper import validate_write_reply, validate_nym_txn
 from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req
 
 
+@pytest.mark.api
 def test_nym_reply_is_valid(looper, sdk_pool_handle, sdk_wallet_steward):
     idr, verkey = createHalfKeyIdentifierAndAbbrevVerkey()
 

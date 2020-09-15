@@ -65,6 +65,7 @@ def reg_entry_with_other_reg_id(looper,
     return txn
 
 
+@pytest.mark.anon_creds
 def test_get_delta_with_other_reg_def_in_state(looper,
                                                create_node_and_not_start,
                                                reg_entry_with_other_reg_id,

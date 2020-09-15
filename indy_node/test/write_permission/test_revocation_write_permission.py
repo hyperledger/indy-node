@@ -47,6 +47,7 @@ def create_revoc_reg_entry(looper, txnPoolNodeSet, sdk_pool_handle, build_revoc,
     return rev_entry_req
 
 
+@pytest.mark.write_permission
 def test_client_cant_create_revoc_reg_def(looper,
                                           txnPoolNodeSet,
                                           sdk_wallet_client,
@@ -58,6 +59,7 @@ def test_client_cant_create_revoc_reg_def(looper,
                              claim_def, sdk_wallet_client)
 
 
+@pytest.mark.write_permission
 def test_allowed_roles_can_create_revoc_reg_def(looper,
                                                 txnPoolNodeSet,
                                                 sdk_wallet_trustee,
@@ -77,6 +79,7 @@ def test_allowed_roles_can_create_revoc_reg_def(looper,
                          claim_def, sdk_wallet_trustee)
 
 
+@pytest.mark.write_permission
 def test_allowed_roles_can_send_revoc_reg_entry(looper,
                                                 txnPoolNodeSet,
                                                 sdk_wallet_trustee,
@@ -99,6 +102,7 @@ def test_allowed_roles_can_send_revoc_reg_entry(looper,
                          build_revoc_def_by_default, claim_def, sdk_wallet_trustee)
 
 
+@pytest.mark.write_permission
 def test_client_not_owner_cant_create_revoc_reg_entry(looper,
                                                       txnPoolNodeSet,
                                                       sdk_wallet_trustee,
@@ -117,6 +121,7 @@ def test_client_not_owner_cant_create_revoc_reg_entry(looper,
         sdk_send_and_check([json.dumps(rev_entry_req_client)], looper, txnPoolNodeSet, sdk_pool_handle)
 
 
+@pytest.mark.write_permission
 def test_endorser_not_owner_cant_create_revoc_reg_entry(looper,
                                                             txnPoolNodeSet,
                                                             sdk_wallet_trustee,
@@ -135,6 +140,7 @@ def test_endorser_not_owner_cant_create_revoc_reg_entry(looper,
         sdk_send_and_check([json.dumps(rev_entry_req_endorser)], looper, txnPoolNodeSet, sdk_pool_handle)
 
 
+@pytest.mark.write_permission
 def test_trustee_not_owner_cant_create_revoc_reg_entry(looper,
                                                        txnPoolNodeSet,
                                                        sdk_wallet_trustee,
@@ -154,6 +160,7 @@ def test_trustee_not_owner_cant_create_revoc_reg_entry(looper,
         sdk_send_and_check([json.dumps(rev_entry_req_trustee)], looper, txnPoolNodeSet, sdk_pool_handle)
 
 
+@pytest.mark.write_permission
 def test_allowed_roles_can_edit_revoc_reg_entry(looper,
                                                 txnPoolNodeSet,
                                                 sdk_wallet_endorser,
@@ -206,6 +213,7 @@ def test_allowed_roles_can_edit_revoc_reg_entry(looper,
     sdk_send_and_check([json.dumps(revoc_entry_req_steward)], looper, txnPoolNodeSet, sdk_pool_handle)
 
 
+@pytest.mark.write_permission
 def test_not_owner_trustee_cant_edit_revoc_reg_entry(looper,
                                                      txnPoolNodeSet,
                                                      sdk_wallet_trustee,
@@ -227,6 +235,7 @@ def test_not_owner_trustee_cant_edit_revoc_reg_entry(looper,
         sdk_send_and_check([json.dumps(revoc_entry_req_steward)], looper, txnPoolNodeSet, sdk_pool_handle)
 
 
+@pytest.mark.write_permission
 def test_not_owner_steward_cant_edit_revoc_reg_entry(looper,
                                                      txnPoolNodeSet,
                                                      sdk_wallet_steward,
@@ -248,6 +257,7 @@ def test_not_owner_steward_cant_edit_revoc_reg_entry(looper,
         sdk_send_and_check([json.dumps(revoc_entry_req_steward)], looper, txnPoolNodeSet, sdk_pool_handle)
 
 
+@pytest.mark.write_permission
 def test_not_owner_endorser_cant_edit_revoc_reg_entry(looper,
                                                           txnPoolNodeSet,
                                                           sdk_wallet_steward,

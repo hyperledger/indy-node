@@ -1,3 +1,5 @@
+import pytest
+
 from indy_common.constants import NYM, NODE, ATTRIB, SCHEMA, CLAIM_DEF, DISCLO, GET_ATTR, GET_NYM, GET_TXNS, \
     GET_SCHEMA, GET_CLAIM_DEF, POOL_UPGRADE, NODE_UPGRADE, \
     POOL_CONFIG, REVOC_REG_DEF, REVOC_REG_ENTRY, \
@@ -9,6 +11,7 @@ from indy_common.constants import NYM, NODE, ATTRIB, SCHEMA, CLAIM_DEF, DISCLO, 
 from indy_common.transactions import IndyTransactions
 
 
+@pytest.mark.test
 def test_transactions_are_encoded():
     assert NODE == "0"
     assert NYM == "1"
@@ -49,6 +52,7 @@ def test_transactions_are_encoded():
     assert GET_RICH_SCHEMA_OBJECT_BY_METADATA == "301"
 
 
+@pytest.mark.test
 def test_transaction_enum_decoded():
     assert IndyTransactions.NODE.name == "NODE"
     assert IndyTransactions.NYM.name == "NYM"
@@ -89,6 +93,7 @@ def test_transaction_enum_decoded():
     assert IndyTransactions.GET_RICH_SCHEMA_OBJECT_BY_METADATA.name == "GET_RICH_SCHEMA_OBJECT_BY_METADATA"
 
 
+@pytest.mark.test
 def test_transaction_enum_encoded():
     assert IndyTransactions.NODE.value == "0"
     assert IndyTransactions.NYM.value == "1"
@@ -125,6 +130,7 @@ def test_transaction_enum_encoded():
     assert IndyTransactions.GET_RICH_SCHEMA_OBJECT_BY_METADATA.value == "301"
 
 
+@pytest.mark.test
 def test_get_name_from_code():
     assert IndyTransactions.get_name_from_code(IndyTransactions.NODE.value) == "NODE"
     assert IndyTransactions.get_name_from_code(IndyTransactions.NYM.value) == "NYM"

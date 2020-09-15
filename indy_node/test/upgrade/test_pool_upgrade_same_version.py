@@ -8,6 +8,7 @@ from plenum.common.constants import VERSION
 from indy_node.test.upgrade.helper import sdk_ensure_upgrade_sent, lowerVersion
 
 
+@pytest.mark.upgrade
 def test_do_not_upgrade_to_the_same_version(looper, tconf, nodeSet,
                                             validUpgrade, sdk_pool_handle,
                                             sdk_wallet_trustee):

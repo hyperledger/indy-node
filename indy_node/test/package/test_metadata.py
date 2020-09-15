@@ -30,6 +30,7 @@ def idfn(v):
     return str(v).replace(' ', '')
 
 
+@pytest.mark.package
 @pytest.mark.parametrize(
     'version',
     [
@@ -50,7 +51,7 @@ def test_load_version_invalid(version, version_file_path):
 
 
 # TODO ??? wider coverage
-
+@pytest.mark.package
 @pytest.mark.parametrize(
     'version',
     [
@@ -72,6 +73,7 @@ def test_set_version_invalid(version, version_file_path):
         set_version(version, version_file_path)
 
 
+@pytest.mark.package
 @pytest.mark.parametrize(
     'version',
     [
@@ -85,12 +87,13 @@ def test_set_load_version_valid(version, version_file_path):
     assert load_version(version_file_path) == NodeVersion(version)
 
 
-
+@pytest.mark.package
 def test_load_absent_manifest(manifest_file_path):
     assert load_manifest(manifest_file_path) is None
 
 
 # TODO ??? wider coverage
+@pytest.mark.package
 @pytest.mark.parametrize(
     'manifest',
     [

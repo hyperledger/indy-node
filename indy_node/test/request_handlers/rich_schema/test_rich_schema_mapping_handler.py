@@ -130,10 +130,12 @@ def mapping_req(rich_schema_handler, encoding_handler, rich_schema_req):
     return req
 
 
+@pytest.mark.request_handlers
 def test_static_validation_pass(mapping_handler, mapping_req):
     mapping_handler.static_validation(mapping_req)
 
 
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
 @pytest.mark.parametrize('missing_field', ['schema', 'attributes'])
 def test_static_validation_fail_no_schema_or_attribute(mapping_handler, mapping_req, status, missing_field):
@@ -151,6 +153,7 @@ def test_static_validation_fail_no_schema_or_attribute(mapping_handler, mapping_
         mapping_handler.static_validation(mapping_req)
 
 
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
 def test_static_validation_fail_no_schema_and_attributes(mapping_handler, mapping_req, status):
     content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
@@ -170,6 +173,7 @@ def test_static_validation_fail_no_schema_and_attributes(mapping_handler, mappin
         mapping_handler.static_validation(mapping_req)
 
 
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
 @pytest.mark.parametrize('missing_field', ['issuer', 'issuanceDate'])
 def test_static_validation_fail_no_issuer_or_issuance_date(mapping_handler, mapping_req, status, missing_field):
@@ -187,6 +191,7 @@ def test_static_validation_fail_no_issuer_or_issuance_date(mapping_handler, mapp
         mapping_handler.static_validation(mapping_req)
 
 
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
 def test_static_validation_fail_no_issuance_date_and_issuer(mapping_handler, mapping_req, status):
     content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
@@ -206,10 +211,12 @@ def test_static_validation_fail_no_issuance_date_and_issuer(mapping_handler, map
         mapping_handler.static_validation(mapping_req)
 
 
+@pytest.mark.request_handlers
 def test_schema_dynamic_validation_passes(mapping_handler, mapping_req):
     mapping_handler.dynamic_validation(mapping_req, 0)
 
 
+@pytest.mark.request_handlers
 def test_dynamic_validation_not_existent_schema(mapping_handler, mapping_req):
     schema_id = randomString()
     content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
@@ -222,6 +229,7 @@ def test_dynamic_validation_not_existent_schema(mapping_handler, mapping_req):
         mapping_handler.dynamic_validation(mapping_req, 0)
 
 
+@pytest.mark.request_handlers
 def test_dynamic_validation_not_schema_in_schema_field(mapping_handler, mapping_req):
     content = copy.deepcopy(json.loads(mapping_req.operation[RS_CONTENT]))
     content[RS_MAPPING_SCHEMA] = TEST_ENCODING_1.operation[RS_ID]
@@ -237,6 +245,7 @@ def get_mapping_attr_value(keys, mapping_content):
 
 
 # a test against TEST_MAPPING
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('enc_path, index', [
     (['attr1'], 0),
     (['attr2'], 0),
@@ -264,6 +273,7 @@ def test_dynamic_validation_empty_field_in_encoding_desc(mapping_handler, mappin
 
 
 # a test against TEST_MAPPING
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('enc_path, index', [
     (['attr1'], 0),
     (['attr2'], 0),
@@ -296,6 +306,7 @@ def test_dynamic_validation_empty_encoding_desc(mapping_handler, mapping_req,
 
 
 # a test against TEST_MAPPING
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('enc_path, index', [
     (['attr1'], 0),
     (['attr2'], 0),
@@ -318,6 +329,7 @@ def test_dynamic_validation_not_existent_encoding(mapping_handler, mapping_req,
 
 
 # a test against TEST_MAPPING
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('enc_path, index', [
     (['attr1'], 0),
     (['attr2'], 0),
@@ -340,6 +352,7 @@ def test_dynamic_validation_not_encoding_in_enc_field(mapping_handler, mapping_r
 
 
 # a test against TEST_MAPPING
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('enc_path, index', [
     (['attr1'], 0),
     (['attr2'], 0),
@@ -363,6 +376,7 @@ def test_dynamic_validation_rank_sequence(mapping_handler, mapping_req,
         mapping_handler.dynamic_validation(mapping_req, 0)
 
 
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('enc_path, index', [
     (['attr1'], 0),
     (['attr2'], 0),

@@ -1,3 +1,4 @@
+import pytest
 import time
 
 from indy_common.constants import TIMESTAMP
@@ -7,11 +8,13 @@ from plenum.common.constants import TXN_TIME, STATE_PROOF, DATA, DOMAIN_LEDGER_I
 from plenum.common.types import f, OPERATION
 
 
+@pytest.mark.anon_creds
 def test_validate_get_revoc_reg_entry(looper, sdk_wallet_steward):
     req = build_get_revoc_reg_entry(looper, sdk_wallet_steward)
     SafeRequest(**req)
 
 
+@pytest.mark.anon_creds
 def test_get_revoc_reg_entry_without_any_rev_entry(send_revoc_reg_def_by_default,
                                                    looper, sdk_wallet_steward,
                                                    txnPoolNodeSet):

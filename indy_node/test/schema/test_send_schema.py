@@ -12,6 +12,7 @@ from plenum.common.util import randomString
 from plenum.config import NAME_FIELD_LIMIT
 
 
+@pytest.mark.schema
 def test_send_schema_multiple_attrib(looper, sdk_pool_handle,
                                      sdk_wallet_endorser):
     sdk_write_schema_and_check(
@@ -23,6 +24,7 @@ def test_send_schema_multiple_attrib(looper, sdk_pool_handle,
     )
 
 
+@pytest.mark.schema
 def test_send_schema_one_attrib(looper, sdk_pool_handle,
                                 sdk_wallet_endorser):
     sdk_write_schema_and_check(
@@ -34,6 +36,7 @@ def test_send_schema_one_attrib(looper, sdk_pool_handle,
     )
 
 
+@pytest.mark.schema
 def test_can_not_send_same_schema(looper, sdk_pool_handle,
                                   sdk_wallet_endorser):
     sdk_write_schema_and_check(
@@ -56,6 +59,7 @@ def test_can_not_send_same_schema(looper, sdk_pool_handle,
         validate_write_reply(resp)
 
 
+@pytest.mark.schema
 def test_schema_maximum_attrib(looper, sdk_pool_handle,
                                sdk_wallet_endorser):
     attribs = []
@@ -71,6 +75,7 @@ def test_schema_maximum_attrib(looper, sdk_pool_handle,
     )
 
 
+@pytest.mark.schema
 def test_schema_over_maximum_attrib():
     attribs = []
     for i in range(SCHEMA_ATTRIBUTES_LIMIT + 1):

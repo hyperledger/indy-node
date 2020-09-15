@@ -26,6 +26,7 @@ def context_req(context_handler):
     return req
 
 
+@pytest.mark.request_handlers
 def test_static_validation_context_no_context_field(context_handler, context_req):
     context_req.operation[RS_CONTENT] = json.dumps({"aaa": "2http:/..@#$"})
     with pytest.raises(InvalidClientRequest) as e:
@@ -34,6 +35,7 @@ def test_static_validation_context_no_context_field(context_handler, context_req
     assert "must contain a @context field" in str(e.value)
 
 
+@pytest.mark.request_handlers
 def test_static_validation_context_fail_bad_uri(context_handler, context_req):
     context_req.operation[RS_CONTENT] = json.dumps({JSON_LD_CONTEXT_FIELD: "2http:/..@#$"})
     with pytest.raises(InvalidClientRequest) as e:
@@ -42,6 +44,7 @@ def test_static_validation_context_fail_bad_uri(context_handler, context_req):
     assert "@context URI 2http:/..@#$ badly formed" in str(e.value)
 
 
+@pytest.mark.request_handlers
 def test_static_validation_fail_context_not_uri_or_array_or_object(context_handler, context_req):
     context_req.operation[RS_CONTENT] = json.dumps({JSON_LD_CONTEXT_FIELD: 52})
     with pytest.raises(InvalidClientRequest) as e:
@@ -50,6 +53,7 @@ def test_static_validation_fail_context_not_uri_or_array_or_object(context_handl
     assert "'@context' value must be url, array, or object" in str(e.value)
 
 
+@pytest.mark.request_handlers
 def test_static_validation_pass_context_value_is_dict(context_handler, context_req):
     context = {
         "favoriteColor": "https://example.com/vocab#favoriteColor"
@@ -58,6 +62,7 @@ def test_static_validation_pass_context_value_is_dict(context_handler, context_r
     context_handler.static_validation(context_req)
 
 
+@pytest.mark.request_handlers
 def test_static_validation_pass_context_value_is_list_with_dict_and_uri(context_handler, context_req):
     context = [
         {
@@ -69,6 +74,7 @@ def test_static_validation_pass_context_value_is_list_with_dict_and_uri(context_
     context_handler.static_validation(context_req)
 
 
+@pytest.mark.request_handlers
 def test_static_validation_pass_context_w3c_example_15(context_handler, context_req):
     context = {
         "@context": {
@@ -80,6 +86,7 @@ def test_static_validation_pass_context_w3c_example_15(context_handler, context_
     context_handler.static_validation(context_req)
 
 
+@pytest.mark.request_handlers
 def test_static_validation_fail_context_is_list_with_dict_and_bad_uri(context_handler, context_req):
     context = [
         {
@@ -94,6 +101,7 @@ def test_static_validation_fail_context_is_list_with_dict_and_bad_uri(context_ha
     assert "@context URI this is a bad uri badly formed" in str(e.value)
 
 
+@pytest.mark.request_handlers
 def test_static_validation_pass_context_w3c_base(context_handler, context_req):
     # Sample from specification: https://w3c.github.io/vc-data-model/#base-context
     # Actual file contents from: https://www.w3.org/2018/credentials/v1
@@ -101,17 +109,20 @@ def test_static_validation_pass_context_w3c_base(context_handler, context_req):
     context_handler.static_validation(context_req)
 
 
+@pytest.mark.request_handlers
 def test_static_validation_pass_context_w3c_examples_v1(context_handler, context_req):
     # test for https://www.w3.org/2018/credentials/examples/v1
     context_req.operation[RS_CONTENT] = json.dumps(W3C_EXAMPLE_V1_CONTEXT)
     context_handler.static_validation(context_req)
 
 
+@pytest.mark.request_handlers
 def test_static_validation_fail_invalid_type(context_handler, context_req):
     context_req.operation[TXN_TYPE] = "201"
     with pytest.raises(LogicError):
         context_handler.static_validation(context_req)
 
 
+@pytest.mark.request_handlers
 def test_schema_dynamic_validation_passes(context_handler, context_req):
     context_handler.dynamic_validation(context_req, 0)

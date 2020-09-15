@@ -1,4 +1,5 @@
 import json
+
 import pytest
 
 from indy.did import create_and_store_my_did, replace_keys_start, replace_keys_apply
@@ -33,8 +34,10 @@ def endorser_did_verkey(looper, sdk_wallet_client):
     return named_did, verkey
 
 
+@pytest.mark.nym_txn
 def test_pool_nodes_started(nodeSet):
     pass
+
 
 @pytest.fixture(scope='function', params=['trustee', 'steward'])
 def sdk_wallet(request, sdk_wallet_steward, sdk_wallet_trustee):
@@ -44,6 +47,7 @@ def sdk_wallet(request, sdk_wallet_steward, sdk_wallet_trustee):
         yield sdk_wallet_trustee
 
 
+@pytest.mark.nym_txn
 def test_send_same_nyms_only_first_gets_written(
         looper, sdk_pool_handle, sdk_wallet):
     wh, _ = sdk_wallet
@@ -71,6 +75,7 @@ def get_nym(looper, sdk_pool_handle, sdk_wallet_steward, t_did):
     return sdk_get_and_check_replies(looper, [req])
 
 
+@pytest.mark.nym_txn
 def test_get_nym_without_adding_it(looper, sdk_pool_handle, sdk_wallet_steward,
                                    endorser_did_verkey):
     t_did, _ = endorser_did_verkey
@@ -84,10 +89,12 @@ def nym_added(looper, sdk_pool_handle, sdk_wallet_steward, endorser_did_verkey):
     set_verkey(looper, sdk_pool_handle, sdk_wallet_steward, dest, None)
 
 
+@pytest.mark.nym_txn
 def test_add_nym(nym_added):
     pass
 
 
+@pytest.mark.nym_txn
 def test_get_nym_without_verkey(looper, sdk_pool_handle, sdk_wallet_steward, nym_added,
                                 endorser_did_verkey):
     t_did, _ = endorser_did_verkey
@@ -97,6 +104,7 @@ def test_get_nym_without_verkey(looper, sdk_pool_handle, sdk_wallet_steward, nym
 
 
 @pytest.fixture(scope="module")
+@pytest.mark.nym_txn
 def verkey_added_to_nym(looper, sdk_pool_handle, sdk_wallet_steward, nym_added, endorser_did_verkey):
     wh, _ = sdk_wallet_steward
     did, _ = endorser_did_verkey
@@ -105,10 +113,12 @@ def verkey_added_to_nym(looper, sdk_pool_handle, sdk_wallet_steward, nym_added, 
     looper.loop.run_until_complete(replace_keys_apply(wh, did))
 
 
+@pytest.mark.nym_txn
 def test_add_verkey_to_existing_nym(verkey_added_to_nym):
     pass
 
 
+@pytest.mark.nym_txn
 def test_get_did_with_verkey(looper, sdk_pool_handle, sdk_wallet_steward, verkey_added_to_nym,
                              endorser_did_verkey):
     t_did, _ = endorser_did_verkey
@@ -117,6 +127,7 @@ def test_get_did_with_verkey(looper, sdk_pool_handle, sdk_wallet_steward, verkey
     assert json.loads(rep[0][1]['result']['data'])['verkey']
 
 
+@pytest.mark.nym_txn
 def test_send_attrib_for_did(looper, sdk_pool_handle, sdk_wallet_steward,
                              verkey_added_to_nym, endorser_did_verkey):
     raw = '{"name": "Alice"}'
@@ -126,6 +137,7 @@ def test_send_attrib_for_did(looper, sdk_pool_handle, sdk_wallet_steward,
 
 
 @pytest.fixture(scope="module")
+@pytest.mark.nym_txn
 def verkey_removed_from_existing_did(looper, sdk_pool_handle, sdk_wallet_steward,
                                      verkey_added_to_nym, endorser_did_verkey):
     did, _ = endorser_did_verkey
@@ -133,6 +145,7 @@ def verkey_removed_from_existing_did(looper, sdk_pool_handle, sdk_wallet_steward
     set_verkey(looper, sdk_pool_handle, (wh, did), did, None)
 
 
+@pytest.mark.nym_txn
 def test_remove_verkey_from_did(verkey_removed_from_existing_did):
     pass
 
@@ -141,6 +154,6 @@ def test_remove_verkey_from_did(verkey_removed_from_existing_did):
     reason="SOV-568. Obsolete assumption, if an identity has set "
            "its verkey to blank, no-one including "
            "itself can change it")
-def testNewverkey_added_to_nym(be, do, philCli, abbrevIdr,
+def test_newverkey_added_to_nym(be, do, philCli, abbrevIdr,
                                verkeyRemovedFromExistingDID):
     pass

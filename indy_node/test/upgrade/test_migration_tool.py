@@ -15,7 +15,8 @@ TEST_NEW_VERSION = '0.10.105'
 TEST_TIMEOUT = 1
 
 
-def testGetRelevantMigrations():
+@pytest.mark.upgrade
+def test_get_relevant_migrations():
     relevantMigrations = migration_tool._get_relevant_migrations(
         TEST_MIGRATION_SCRIPTS, TEST_VERSION, TEST_NEW_VERSION)
     assert len(relevantMigrations) == 3
@@ -23,7 +24,8 @@ def testGetRelevantMigrations():
         '0_3_100_to_0_3_101', '0_3_100_to_0_3_104', '0_9_2_to_0_9_10']
 
 
-def testMigrate(monkeypatch):
+@pytest.mark.upgrade
+def test_migrate(monkeypatch):
     testList = []
 
     monkeypatch.setattr(migration_tool, '_call_migration_script',
@@ -36,7 +38,8 @@ def testMigrate(monkeypatch):
     assert len(testList) == 3
 
 
-def testMigrateTimesOut(monkeypatch):
+@pytest.mark.upgrade
+def test_migrate_times_out(monkeypatch):
     monkeypatch.setattr(migration_tool, '_call_migration_script',
                         lambda *x: exec('raise(TimeoutError())'))
     monkeypatch.setattr(migration_tool, '_get_migration_scripts',
@@ -45,7 +48,9 @@ def testMigrateTimesOut(monkeypatch):
     with pytest.raises(TimeoutError):
         migration_tool.migrate(TEST_VERSION, TEST_NEW_VERSION, TEST_TIMEOUT)
 
-def testGetMigrationScripts():
+
+@pytest.mark.upgrade
+def test_get_migration_scripts():
     try:
         res = migration_tool._get_migration_scripts(migration_tool._get_current_platform())
     except Exception as e:

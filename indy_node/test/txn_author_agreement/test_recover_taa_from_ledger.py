@@ -1,3 +1,4 @@
+import pytest
 from plenum.common.constants import TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_DIGEST, \
     TXN_AUTHOR_AGREEMENT_RATIFICATION_TS, TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_RETIREMENT_TS, \
     CURRENT_TXN_PAYLOAD_VERSIONS
@@ -12,6 +13,7 @@ from plenum.test.txn_author_agreement.helper import sdk_send_txn_author_agreemen
     sdk_send_txn_author_agreement_disable
 
 
+@pytest.mark.txn_author_agreement
 def test_recover_taa_from_ledger(txnPoolNodeSet,
                                  sdk_pool_handle,
                                  sdk_wallet_trustee,

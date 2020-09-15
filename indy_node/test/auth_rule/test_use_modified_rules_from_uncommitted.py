@@ -1,3 +1,5 @@
+import pytest
+
 from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_node.test.auth_rule.helper import create_verkey_did, sdk_send_and_check_auth_rule_request
@@ -9,6 +11,7 @@ from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.stasher import delay_rules
 
 
+@pytest.mark.auth_rule
 def test_use_modified_rules_from_uncommitted(looper,
                                              txnPoolNodeSet,
                                              sdk_wallet_trustee,

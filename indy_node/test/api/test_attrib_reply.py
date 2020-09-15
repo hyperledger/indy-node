@@ -1,5 +1,6 @@
 import json
 
+import pytest
 from indy.ledger import build_attrib_request
 from indy_node.test.api.helper import validate_write_reply, validate_attrib_txn
 from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req
@@ -12,6 +13,7 @@ def execute_attrib_txn(looper, sdk_pool_handle, sdk_wallet_steward, xhash, raw, 
     return sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, request))[1]
 
 
+@pytest.mark.api
 def test_attrib_xhash_reply_is_valid(looper, sdk_pool_handle, sdk_wallet_steward):
     xhash = sha256("Hello, world".encode()).hexdigest()
     reply = execute_attrib_txn(looper, sdk_pool_handle, sdk_wallet_steward, xhash, None, None)
@@ -21,6 +23,7 @@ def test_attrib_xhash_reply_is_valid(looper, sdk_pool_handle, sdk_wallet_steward
     assert reply['result']['txn']['data']['hash'] == xhash
 
 
+@pytest.mark.api
 def test_attrib_raw_reply_is_valid(looper, sdk_pool_handle, sdk_wallet_steward):
     raw = json.dumps({'answer': 42})
     reply = execute_attrib_txn(looper, sdk_pool_handle, sdk_wallet_steward, None, raw, None)
@@ -30,6 +33,7 @@ def test_attrib_raw_reply_is_valid(looper, sdk_pool_handle, sdk_wallet_steward):
     assert json.loads(reply['result']['txn']['data']['raw']) == json.loads(raw)
 
 
+@pytest.mark.api
 def test_attrib_enc_reply_is_valid(looper, sdk_pool_handle, sdk_wallet_steward):
     enc = "amgine"
     reply = execute_attrib_txn(looper, sdk_pool_handle, sdk_wallet_steward, None, None, enc)

@@ -7,7 +7,8 @@ from plenum.common.exceptions import RequestRejectedException, RequestNackedExce
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
-def testTrusteeSuspendingEndorser(looper, sdk_pool_handle, sdk_wallet_trustee,
+@pytest.mark.suspension
+def test_trustee_suspending_endorser(looper, sdk_pool_handle, sdk_wallet_trustee,
                                      sdk_wallet_endorser):
     _, did = sdk_wallet_endorser
     sdk_suspend_role(looper, sdk_pool_handle, sdk_wallet_trustee, did)
@@ -16,7 +17,8 @@ def testTrusteeSuspendingEndorser(looper, sdk_pool_handle, sdk_wallet_trustee,
     e.match('Rule for this action is')
 
 
-def testTrusteeSuspendingTrustee(looper, sdk_pool_handle, sdk_wallet_trustee,
+@pytest.mark.suspension
+def test_trustee_suspending_trustee(looper, sdk_pool_handle, sdk_wallet_trustee,
                                  another_trustee):
     _, did = another_trustee
     sdk_suspend_role(looper, sdk_pool_handle, sdk_wallet_trustee, did)
@@ -25,7 +27,8 @@ def testTrusteeSuspendingTrustee(looper, sdk_pool_handle, sdk_wallet_trustee,
     e.match('Rule for this action is')
 
 
-def testTrusteeSuspendingSteward(looper, sdk_pool_handle, sdk_wallet_trustee,
+@pytest.mark.suspension
+def test_trustee_suspending_steward(looper, sdk_pool_handle, sdk_wallet_trustee,
                                  sdk_wallet_steward):
     _, did = sdk_wallet_steward
     sdk_suspend_role(looper, sdk_pool_handle, sdk_wallet_trustee, did)
@@ -34,7 +37,8 @@ def testTrusteeSuspendingSteward(looper, sdk_pool_handle, sdk_wallet_trustee,
     e.match('Rule for this action is')
 
 
-def testEndorserSuspendingHimselfByVerkeyFlush(looper, sdk_pool_handle,
+@pytest.mark.suspension
+def test_endorser_suspending_himself_by_verkey_flush(looper, sdk_pool_handle,
                                                   sdk_wallet_endorser):
     # The endorser has already lost its role due to previous tests,
     # but it is ok for this test where the endorser flushes its verkey

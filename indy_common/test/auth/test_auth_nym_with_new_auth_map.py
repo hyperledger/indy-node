@@ -10,6 +10,7 @@ def is_owner(request):
     return request.param
 
 
+@pytest.mark.auth
 def test_make_trustee(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -19,6 +20,7 @@ def test_make_trustee(write_request_validation, req, is_owner):
                                                                  is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_make_steward(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -28,6 +30,7 @@ def test_make_steward(write_request_validation, req, is_owner):
                                                                  is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_make_endorser(write_request_validation, req, is_owner):
     authorized = req.identifier in ("trustee_identifier", "steward_identifier")
     assert authorized == write_request_validation(req,
@@ -37,6 +40,7 @@ def test_make_endorser(write_request_validation, req, is_owner):
                                                                  is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_make_network_monitor(write_request_validation, req, is_owner):
     authorized = req.identifier in ("trustee_identifier", "steward_identifier")
     assert authorized == write_request_validation(req,
@@ -47,6 +51,8 @@ def test_make_network_monitor(write_request_validation, req, is_owner):
 
 
 # Trustee tests
+
+@pytest.mark.auth
 def test_change_trustee_to_trustee(write_request_validation, req, is_owner):
     authorized = is_owner
     assert authorized == write_request_validation(req,
@@ -57,6 +63,7 @@ def test_change_trustee_to_trustee(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_trustee_to_steward(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -67,6 +74,7 @@ def test_change_trustee_to_steward(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_trustee_to_endorser(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -77,6 +85,7 @@ def test_change_trustee_to_endorser(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_trustee_to_network_monitor(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -87,6 +96,7 @@ def test_change_trustee_to_network_monitor(write_request_validation, req, is_own
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_trustee_to_identity_owner(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -98,6 +108,8 @@ def test_change_trustee_to_identity_owner(write_request_validation, req, is_owne
 
 
 # Steward tests
+
+@pytest.mark.auth
 def test_change_steward_to_trustee(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -108,6 +120,7 @@ def test_change_steward_to_trustee(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_steward_to_steward(write_request_validation, req, is_owner):
     authorized = is_owner
     assert authorized == write_request_validation(req,
@@ -118,6 +131,7 @@ def test_change_steward_to_steward(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_steward_to_endorser(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -128,6 +142,7 @@ def test_change_steward_to_endorser(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_steward_to_network_monitor(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -138,6 +153,7 @@ def test_change_steward_to_network_monitor(write_request_validation, req, is_own
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_steward_to_identity_owner(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -149,6 +165,8 @@ def test_change_steward_to_identity_owner(write_request_validation, req, is_owne
 
 
 # Endorser tests
+
+@pytest.mark.auth
 def test_change_endorser_to_trustee(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -159,6 +177,7 @@ def test_change_endorser_to_trustee(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_endorser_to_steward(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -169,6 +188,7 @@ def test_change_endorser_to_steward(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_endorser_to_endorser(write_request_validation, req, is_owner):
     authorized = is_owner
     assert authorized == write_request_validation(req,
@@ -179,6 +199,7 @@ def test_change_endorser_to_endorser(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_endorser_to_network_monitor(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -189,6 +210,7 @@ def test_change_endorser_to_network_monitor(write_request_validation, req, is_ow
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_endorser_to_identity_owner(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -200,6 +222,8 @@ def test_change_endorser_to_identity_owner(write_request_validation, req, is_own
 
 
 # Network Monitor tests
+
+@pytest.mark.auth
 def test_change_network_monitor_to_trustee(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -210,6 +234,7 @@ def test_change_network_monitor_to_trustee(write_request_validation, req, is_own
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_network_monitor_to_steward(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -220,6 +245,7 @@ def test_change_network_monitor_to_steward(write_request_validation, req, is_own
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_network_monitor_to_endorser(write_request_validation, req, is_owner):
     authorized = req.identifier in ("trustee_identifier", "steward_identifier")
     assert authorized == write_request_validation(req,
@@ -230,6 +256,7 @@ def test_change_network_monitor_to_endorser(write_request_validation, req, is_ow
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_network_monitor_to_network_monitor(write_request_validation, req, is_owner):
     authorized = is_owner
     assert authorized == write_request_validation(req,
@@ -240,6 +267,7 @@ def test_change_network_monitor_to_network_monitor(write_request_validation, req
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_network_monitor_to_identity_owner(write_request_validation, req, is_owner):
     authorized = req.identifier in ("trustee_identifier", "steward_identifier")
     assert authorized == write_request_validation(req,
@@ -251,6 +279,8 @@ def test_change_network_monitor_to_identity_owner(write_request_validation, req,
 
 
 # Identity Owner tests
+
+@pytest.mark.auth
 def test_change_identity_owner_to_trustee(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -261,6 +291,7 @@ def test_change_identity_owner_to_trustee(write_request_validation, req, is_owne
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_identity_owner_to_steward(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -271,6 +302,7 @@ def test_change_identity_owner_to_steward(write_request_validation, req, is_owne
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_identity_owner_to_endorser(write_request_validation, req, is_owner):
     authorized = req.identifier in ("trustee_identifier", "steward_identifier")
     assert authorized == write_request_validation(req,
@@ -281,6 +313,7 @@ def test_change_identity_owner_to_endorser(write_request_validation, req, is_own
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_identity_owner_to_network_monitor(write_request_validation, req, is_owner):
     authorized = req.identifier in ("trustee_identifier", "steward_identifier")
     assert authorized == write_request_validation(req,
@@ -291,6 +324,7 @@ def test_change_identity_owner_to_network_monitor(write_request_validation, req,
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_identity_owner_to_identity_owner(write_request_validation, req, is_owner):
     authorized = is_owner
     assert authorized == write_request_validation(req,
@@ -301,6 +335,7 @@ def test_change_identity_owner_to_identity_owner(write_request_validation, req, 
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_change_verkey(write_request_validation, req, is_owner):
     authorized = is_owner
     assert authorized == write_request_validation(req,

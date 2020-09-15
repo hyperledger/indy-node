@@ -9,6 +9,7 @@ from plenum.common.exceptions import RequestRejectedException
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
+@pytest.mark.auth_rule
 def test_check_rule_for_add_action_changing(looper,
                                             sdk_wallet_trustee,
                                             sdk_wallet_steward,

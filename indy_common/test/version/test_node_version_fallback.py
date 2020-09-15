@@ -5,16 +5,19 @@ from indy_common.node_version_fallback import (
 )
 
 
+@pytest.mark.version
 def test_node_version_fallback_str():
     version = '1.2.3'
     assert str(NodeVersionFallback(version)) == version
 
 
+@pytest.mark.version
 def test_node_version_fallback_repr():
     version = '1.2.3'
     assert (repr(NodeVersionFallback(version)) == "{}(version='{}')".format(NodeVersionFallback.__name__, version))
 
 
+@pytest.mark.version
 @pytest.mark.parametrize(
     'version',
     [
@@ -52,6 +55,7 @@ def test_node_version_fallback_init_invalid(version):
         NodeVersionFallback(version)
 
 
+@pytest.mark.version
 @pytest.mark.parametrize(
     'version',
     [
@@ -68,12 +72,14 @@ def test_node_version_fallback_init_valid(version):
     NodeVersionFallback(version)
 
 
+@pytest.mark.version
 def test_sem_ver_base_api():
     assert NodeVersionFallback('1.2.3').major == 1
     assert NodeVersionFallback('1.2.3').minor == 2
     assert NodeVersionFallback('1.2.3').patch == 3
 
 
+@pytest.mark.version
 def test_node_version_fallback_comparison_operators():
     with pytest.raises(TypeError):
         assert NodeVersionFallback('1.2.2') < NodeVersionFallback('1.2.3')
@@ -92,11 +98,13 @@ def test_node_version_fallback_comparison_operators():
     assert NodeVersionFallback('1.2.2') != NodeVersionFallback('1.2.3')
 
 
+@pytest.mark.version
 def test_node_version_fallback_upstream():
     pv = NodeVersionFallback('1.2.3')
     assert pv.upstream is pv
 
 
+@pytest.mark.version
 def test_node_version_fallback_public():
     assert NodeVersionFallback('1.2.3.dev0').parts == (1, 2, 3, 'dev', 0)
     assert NodeVersionFallback('1.2.3.dev2').parts == (1, 2, 3, 'dev', 2)
@@ -105,12 +113,14 @@ def test_node_version_fallback_public():
     assert NodeVersionFallback('1.2.3').parts == (1, 2, 3, None, None)
 
 
+@pytest.mark.version
 def test_node_version_fallback_parts():
     assert NodeVersionFallback('1.2.3.dev2').parts == (1, 2, 3, 'dev', 2)
     assert NodeVersionFallback('1.2.3.rc3').parts == (1, 2, 3, 'rc', 3)
     assert NodeVersionFallback('1.2.3').parts == (1, 2, 3, None, None)
 
 
+@pytest.mark.version
 @pytest.mark.parametrize(
     'version',
     [

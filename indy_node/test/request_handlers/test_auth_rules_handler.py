@@ -29,10 +29,12 @@ def auth_rules_request(creator):
                               RULES: [generate_auth_rule()]})
 
 
+@pytest.mark.request_handlers
 def test_auth_rule_static_validation(auth_rules_request, auth_rules_handler: AuthRulesHandler):
     auth_rules_handler.static_validation(auth_rules_request)
 
 
+@pytest.mark.request_handlers
 def test_auth_rule_static_validation_failed_without_old_value(auth_rules_request,
                                                               auth_rules_handler: AuthRulesHandler):
     rule = auth_rules_request.operation[RULES][0]
@@ -43,6 +45,7 @@ def test_auth_rule_static_validation_failed_without_old_value(auth_rules_request
         auth_rules_handler.static_validation(auth_rules_request)
 
 
+@pytest.mark.request_handlers
 def test_auth_rule_static_validation_failed_with_excess_field(auth_rules_request,
                                                               auth_rules_handler: AuthRulesHandler):
     rule = auth_rules_request.operation[RULES][0]
@@ -52,6 +55,7 @@ def test_auth_rule_static_validation_failed_with_excess_field(auth_rules_request
         auth_rules_handler.static_validation(auth_rules_request)
 
 
+@pytest.mark.request_handlers
 def test_auth_rule_static_validation_failed_with_incorrect_key(auth_rules_request,
                                                                auth_rules_handler: AuthRulesHandler):
     auth_rules_request.operation[RULES].append(generate_auth_rule(auth_action=ADD_PREFIX,
@@ -61,6 +65,7 @@ def test_auth_rule_static_validation_failed_with_incorrect_key(auth_rules_reques
         auth_rules_handler.static_validation(auth_rules_request)
 
 
+@pytest.mark.request_handlers
 def test_auth_rule_dynamic_validation_without_permission(auth_rules_request,
                                                          auth_rules_handler: AuthRulesHandler, creator):
     add_to_idr(auth_rules_handler.database_manager.idr_cache, creator, STEWARD)
@@ -68,11 +73,13 @@ def test_auth_rule_dynamic_validation_without_permission(auth_rules_request,
         auth_rules_handler.dynamic_validation(auth_rules_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_auth_rule_dynamic_validation(auth_rules_request,
                                       auth_rules_handler: AuthRulesHandler, creator):
     add_to_idr(auth_rules_handler.database_manager.idr_cache, creator, TRUSTEE)
 
 
+@pytest.mark.request_handlers
 def test_update_state(auth_rules_request, auth_rules_handler: AuthRulesHandler):
     txn = reqToTxn(auth_rules_request)
     payload = get_payload_data(txn)

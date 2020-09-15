@@ -19,6 +19,7 @@ from plenum.server.request_handlers.utils import get_nym_details
 from plenum.test.helper import sdk_multisign_request_object, sdk_get_and_check_replies, sdk_send_signed_requests
 
 
+@pytest.mark.endorser
 def test_send_by_endorser(looper, sdk_pool_handle, sdk_wallet_new_client, sdk_wallet_endorser):
     # try writing without Endorser by a None-role client
     with pytest.raises(RequestRejectedException):
@@ -33,6 +34,7 @@ def test_send_by_endorser(looper, sdk_pool_handle, sdk_wallet_new_client, sdk_wa
                                      request_json=req_json)
 
 
+@pytest.mark.endorser
 def test_both_author_and_endorser_must_sign(looper, sdk_pool_handle, sdk_wallet_trustee, sdk_wallet_endorser):
     '''
     Both author and endorser must sign the request even if the author can send the request without Endorser
@@ -60,6 +62,7 @@ def test_both_author_and_endorser_must_sign(looper, sdk_pool_handle, sdk_wallet_
     sdk_get_and_check_replies(looper, [request_couple])
 
 
+@pytest.mark.endorser
 def test_endorser_field_must_be_explicit(looper, sdk_pool_handle, sdk_wallet_new_client, sdk_wallet_endorser):
     req_json = sdk_build_schema_request(looper, sdk_wallet_new_client,
                                         ["attr1", "attr2"], "name2", "3.0")
@@ -75,6 +78,7 @@ def test_endorser_field_must_be_explicit(looper, sdk_pool_handle, sdk_wallet_new
         sdk_get_and_check_replies(looper, [request_couple])
 
 
+@pytest.mark.endorser
 def test_endorser_must_have_known_role(looper, sdk_pool_handle, sdk_wallet_new_client, sdk_wallet_trustee):
     req_json = sdk_build_schema_request(looper, sdk_wallet_trustee,
                                         ["attr1", "attr2"], "name3", "4.0")
@@ -85,6 +89,7 @@ def test_endorser_must_have_known_role(looper, sdk_pool_handle, sdk_wallet_new_c
                                          request_json=req_json)
 
 
+@pytest.mark.endorser
 def test_endorser_not_required_when_two_trustee_sigs(looper, sdk_pool_handle, sdk_wallet_trustee_list):
     change_new_schema_auth_rule(looper, sdk_pool_handle, sdk_wallet_trustee_list[0],
                                 constraint=AuthConstraint(role=TRUSTEE, sig_count=2))
@@ -98,6 +103,7 @@ def test_endorser_not_required_when_two_trustee_sigs(looper, sdk_pool_handle, sd
     sdk_get_and_check_replies(looper, [request_couple])
 
 
+@pytest.mark.endorser
 def test_endorser_required_when_multi_sig_with_off_ledger_signature(looper, txnPoolNodeSet,
                                                                     sdk_wallet_client,
                                                                     sdk_pool_handle,

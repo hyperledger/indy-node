@@ -19,6 +19,7 @@ def state_serializer():
     return ConstraintsSerializer(domain_state_serializer)
 
 
+@pytest.mark.auth
 def test_config_strategy_get_constraint_from_state(state,
                                                    state_serializer):
     action_id = "1--2--3--4--5"
@@ -39,6 +40,7 @@ def test_config_strategy_get_constraint_from_state(state,
     assert from_state == constraint_to_state
 
 
+@pytest.mark.auth
 def test_config_strategy_constraint_from_map(state,
                                              state_serializer):
     action_id = "1--2--3--4--5"
@@ -53,6 +55,7 @@ def test_config_strategy_constraint_from_map(state,
     assert from_map == constraint
 
 
+@pytest.mark.auth
 def test_config_strategy_constraint_not_found(state,
                                               state_serializer):
     state_action_id = "1--2--3--4--5"

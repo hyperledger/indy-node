@@ -12,11 +12,13 @@ EXPECTED_ORDERED_FIELDS = OrderedDict([
 ])
 
 
+@pytest.mark.types
 def test_has_expected_fields():
     actual_field_names = OrderedDict(ClientDiscloOperation.schema).keys()
     assert actual_field_names == EXPECTED_ORDERED_FIELDS.keys()
 
 
+@pytest.mark.types
 def test_has_expected_validators():
     schema = dict(ClientDiscloOperation.schema)
     for field, validator in EXPECTED_ORDERED_FIELDS.items():

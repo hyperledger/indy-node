@@ -1,7 +1,10 @@
+import pytest
+
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.constants import POOL_UPGRADE, ACTION
 
 
+@pytest.mark.auth
 def test_pool_upgrade_start(write_request_validation, is_owner, req):
     authorized = req.identifier == "trustee_identifier"
     assert authorized == write_request_validation(req,
@@ -11,6 +14,7 @@ def test_pool_upgrade_start(write_request_validation, is_owner, req):
                                                                  is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_pool_upgrade_cancel(write_request_validation, is_owner, req):
     authorized = req.identifier == "trustee_identifier"
     assert authorized == write_request_validation(req,
@@ -21,6 +25,7 @@ def test_pool_upgrade_cancel(write_request_validation, is_owner, req):
                                                                   is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_pool_upgrade_cancel_wrong_new_value(write_request_validation, is_owner, req):
     assert not write_request_validation(req,
                                         [AuthActionEdit(txn_type=POOL_UPGRADE,
@@ -30,6 +35,7 @@ def test_pool_upgrade_cancel_wrong_new_value(write_request_validation, is_owner,
                                                         is_owner=is_owner)])
 
 
+@pytest.mark.auth
 def test_pool_upgrade_cancel_wrong_old_value(write_request_validation, is_owner, req):
     assert not write_request_validation(req,
                                         [AuthActionEdit(txn_type=POOL_UPGRADE,

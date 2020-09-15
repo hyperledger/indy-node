@@ -9,6 +9,7 @@ from indy_node.test.auth_rule.helper import sdk_send_and_check_auth_rule_request
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, demote_node
 
 
+@pytest.mark.auth_rule
 def test_node_txn_demote_by_endorser(txnPoolNodeSet,
                                      sdk_pool_handle,
                                      sdk_wallet_trustee,

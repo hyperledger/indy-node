@@ -19,23 +19,27 @@ def make_schema_exist(schema_request, schema_handler):
     schema_handler.state.set(path, encode_state_value("value", "seqNo", "txnTime"))
 
 
+@pytest.mark.request_handlers
 def test_schema_dynamic_validation_failed_existing_schema(schema_request, schema_handler):
     make_schema_exist(schema_request, schema_handler)
     with pytest.raises(UnauthorizedClientRequest, match=str(AuthConstraintForbidden())):
         schema_handler.dynamic_validation(schema_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_schema_dynamic_validation_failed_not_authorised(schema_request, schema_handler):
     add_to_idr(schema_handler.database_manager.idr_cache, schema_request.identifier, None)
     with pytest.raises(UnauthorizedClientRequest):
         schema_handler.dynamic_validation(schema_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_schema_dynamic_validation_passes(schema_request, schema_handler):
     add_to_idr(schema_handler.database_manager.idr_cache, schema_request.identifier, TRUSTEE)
     schema_handler.dynamic_validation(schema_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_update_state(schema_request, schema_handler):
     seq_no = 1
     txn_time = 1560241033

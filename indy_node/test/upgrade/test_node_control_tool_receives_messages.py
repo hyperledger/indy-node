@@ -1,4 +1,6 @@
 import multiprocessing
+
+import pytest
 from stp_core.loop.eventually import eventually
 from indy_common.version import src_version_cls
 from indy_node.utils.node_control_utils import NodeControlUtil, DebianVersion
@@ -17,7 +19,8 @@ m = multiprocessing.Manager()
 whitelist = ['Unexpected error in _upgrade test']
 
 
-def testNodeControlReceivesMessages(monkeypatch, looper, tdir, tconf):
+@pytest.mark.upgrade
+def test_node_control_receives_messages(monkeypatch, looper, tdir, tconf):
     received = m.list()
     version = bumpedVersion()
     stdout = 'teststdout'

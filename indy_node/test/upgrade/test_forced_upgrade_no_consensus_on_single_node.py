@@ -1,3 +1,5 @@
+import pytest
+
 from indy_node.test import waits
 from indy_node.test.upgrade.helper import bumpVersion, get_req_from_update
 from plenum.common.constants import VERSION
@@ -6,6 +8,7 @@ from stp_core.loop.eventually import eventually
 from indy_common.version import src_version_cls
 
 
+@pytest.mark.upgrade
 def test_forced_upgrade_no_consensus_on_single_node(
         validUpgradeExpForceTrue, looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee):
     nup = validUpgradeExpForceTrue.copy()

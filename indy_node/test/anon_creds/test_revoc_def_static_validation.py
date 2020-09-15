@@ -43,6 +43,7 @@ def revoc_def_req(looper,
     return _expected, sdk_sign_request_from_dict(looper, sdk_wallet_steward, _req['operation'])
 
 
+@pytest.mark.anon_creds
 def test_revoc_def_static_validation_on_field_size(revoc_def_req,
                                                    looper,
                                                    txnPoolNodeSet,

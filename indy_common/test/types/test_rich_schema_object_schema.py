@@ -18,6 +18,7 @@ EXPECTED_ORDERED_FIELDS = OrderedDict([
 ])
 
 
+@pytest.mark.types
 @pytest.mark.parametrize('operation_class',
                          [ClientJsonLdContextOperation, ClientRichSchemaOperation, ClientRichSchemaEncodingOperation,
                           ClientRichSchemaMappingOperation,
@@ -28,6 +29,7 @@ def test_has_expected_fields(operation_class):
     assert actual_field_names == EXPECTED_ORDERED_FIELDS.keys()
 
 
+@pytest.mark.types
 @pytest.mark.parametrize('operation_class, txn_type, rs_type',
                          [(ClientJsonLdContextOperation, "200", 'ctx'),
                           (ClientRichSchemaOperation, "201", 'sch'),

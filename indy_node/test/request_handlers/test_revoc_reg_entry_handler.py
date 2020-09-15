@@ -32,6 +32,7 @@ def revoc_reg_entry_request():
                    signature="randomString")
 
 
+@pytest.mark.request_handlers
 def test_revoc_reg_entry_dynamic_validation_without_req_def(revoc_reg_entry_handler,
                                                             revoc_reg_entry_request):
     with pytest.raises(InvalidClientRequest,
@@ -39,6 +40,7 @@ def test_revoc_reg_entry_dynamic_validation_without_req_def(revoc_reg_entry_hand
         revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_revoc_reg_entry_dynamic_validation_passes(revoc_reg_entry_handler,
                                                    revoc_reg_entry_request):
     add_to_idr(revoc_reg_entry_handler.database_manager.idr_cache,
@@ -51,6 +53,7 @@ def test_revoc_reg_entry_dynamic_validation_passes(revoc_reg_entry_handler,
     revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_revoc_reg_entry_dynamic_validation_fail_in_strategy(revoc_reg_entry_handler,
                                                              revoc_reg_entry_request):
     add_to_idr(revoc_reg_entry_handler.database_manager.idr_cache,
@@ -66,6 +69,7 @@ def test_revoc_reg_entry_dynamic_validation_fail_in_strategy(revoc_reg_entry_han
         revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_revoc_reg_entry_dynamic_validation_without_permission(revoc_reg_entry_handler,
                                                                revoc_reg_entry_request):
     add_to_idr(revoc_reg_entry_handler.database_manager.idr_cache,
@@ -82,6 +86,7 @@ def test_revoc_reg_entry_dynamic_validation_without_permission(revoc_reg_entry_h
         revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_failed_update_state(revoc_reg_entry_handler, revoc_reg_entry_request):
     seq_no = 1
     txn_time = 1560241033
@@ -92,6 +97,7 @@ def test_failed_update_state(revoc_reg_entry_handler, revoc_reg_entry_request):
         revoc_reg_entry_handler.update_state(txn, None, revoc_reg_entry_request)
 
 
+@pytest.mark.request_handlers
 def test_update_state(revoc_reg_entry_handler, revoc_reg_entry_request,
                       revoc_reg_def_handler, revoc_reg_def_request):
     # create revoc_req_def

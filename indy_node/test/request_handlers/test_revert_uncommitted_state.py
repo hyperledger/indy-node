@@ -23,6 +23,7 @@ def fake_ordering_service(config_ledger,
     return ordering_service
 
 
+@pytest.mark.request_handlers
 def test_revert_uncommitted_state(write_manager,
                                   db_manager,
                                   constraint_serializer,

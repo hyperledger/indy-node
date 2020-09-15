@@ -14,6 +14,7 @@ VALID_HASH = '6d4a333838d0ef96756cccC680AF2531075C512502Fb68c5503c63d93de859b3'
 assert len(VALID_HASH) == 64
 
 
+@pytest.mark.types
 def test_attrib_with_enc_raw_hash_at_same_time_fails():
     msg = {
         TXN_TYPE: ATTRIB,
@@ -29,6 +30,7 @@ def test_attrib_with_enc_raw_hash_at_same_time_fails():
                   "".format(RAW, ENC, HASH))
 
 
+@pytest.mark.types
 def test_attrib_without_enc_raw_hash_fails():
     msg = {
         TXN_TYPE: ATTRIB,
@@ -44,6 +46,7 @@ def test_attrib_without_enc_raw_hash_fails():
             HASH))
 
 
+@pytest.mark.types
 def test_attrib_with_raw_string_fails():
     msg = {
         TXN_TYPE: ATTRIB,
@@ -56,6 +59,7 @@ def test_attrib_with_raw_string_fails():
                   r"valid JSON string \({}=foo\)".format(RAW))
 
 
+@pytest.mark.types
 def test_attrib_with_raw_empty_json_fails():
     msg = {
         TXN_TYPE: ATTRIB,
@@ -69,6 +73,7 @@ def test_attrib_with_raw_empty_json_fails():
         r"\({}={{}}\)".format(RAW))
 
 
+@pytest.mark.types
 def test_attrib_with_raw_array_fails():
     msg = {
         TXN_TYPE: ATTRIB,
@@ -82,6 +87,7 @@ def test_attrib_with_raw_array_fails():
         r"\({}=<class 'list'>\)".format(RAW))
 
 
+@pytest.mark.types
 def test_attrib_with_raw_having_more_one_attrib_fails():
     msg = {
         TXN_TYPE: ATTRIB,
@@ -95,6 +101,7 @@ def test_attrib_with_raw_having_more_one_attrib_fails():
         r"\({}={{.*}}\)".format(RAW))
 
 
+@pytest.mark.types
 def test_attrib_with_raw_having_one_attrib_passes():
     msg = {
         TXN_TYPE: ATTRIB,
@@ -104,6 +111,7 @@ def test_attrib_with_raw_having_one_attrib_passes():
     validator.validate(msg)
 
 
+@pytest.mark.types
 def test_attrib_with_raw_having_endpoint_equal_null_passes():
     msg = {
         TXN_TYPE: ATTRIB,
@@ -113,6 +121,7 @@ def test_attrib_with_raw_having_endpoint_equal_null_passes():
     validator.validate(msg)
 
 
+@pytest.mark.types
 def test_attrib_with_raw_having_endpoint_ha_equal_null_passes():
     msg = {
         TXN_TYPE: ATTRIB,
@@ -122,6 +131,7 @@ def test_attrib_with_raw_having_endpoint_ha_equal_null_passes():
     validator.validate(msg)
 
 
+@pytest.mark.types
 def test_attrib_with_raw_having_endpoint_without_ha_passes():
     msg = {
         TXN_TYPE: ATTRIB,
@@ -131,6 +141,7 @@ def test_attrib_with_raw_having_endpoint_without_ha_passes():
     validator.validate(msg)
 
 
+@pytest.mark.types
 def test_attrib_with_raw_having_endpoint_ha_with_ip_address_only_fails():
     msg = {
         TXN_TYPE: ATTRIB,
@@ -144,6 +155,7 @@ def test_attrib_with_raw_having_endpoint_ha_with_ip_address_only_fails():
         r"\({}={{'ha': '8.8.8.8'}}\)".format(ENDPOINT))
 
 
+@pytest.mark.types
 def test_attrib_with_raw_having_endpoint_ha_with_invalid_port_fails():
     msg = {
         TXN_TYPE: ATTRIB,
@@ -157,6 +169,7 @@ def test_attrib_with_raw_having_endpoint_ha_with_invalid_port_fails():
         r"\(ha=8.8.8.8:65536\)")
 
 
+@pytest.mark.types
 def test_attrib_with_raw_having_endpoint_ha_with_invalid_ip_address_fails():
     msg = {
         TXN_TYPE: ATTRIB,
@@ -170,6 +183,7 @@ def test_attrib_with_raw_having_endpoint_ha_with_invalid_ip_address_fails():
         r"\(ha=256.8.8.8:9700\)")
 
 
+@pytest.mark.types
 def test_attrib_with_valid_hash_passes():
     msg = {
         TXN_TYPE: ATTRIB,
@@ -179,6 +193,7 @@ def test_attrib_with_valid_hash_passes():
     validator.validate(msg)
 
 
+@pytest.mark.types
 def test_attrib_with_shorter_hash_fails():
     invalid_hash = VALID_HASH[:-1]
     msg = {
@@ -192,6 +207,7 @@ def test_attrib_with_shorter_hash_fails():
                   r"\(needs to be in hex too\) \({}={}\)".format(HASH, invalid_hash))
 
 
+@pytest.mark.types
 def test_attrib_with_longer_hash_fails():
     invalid_hash = VALID_HASH + 'a'
     msg = {
@@ -205,6 +221,7 @@ def test_attrib_with_longer_hash_fails():
                   r"\(needs to be in hex too\) \({}={}\)".format(HASH, invalid_hash))
 
 
+@pytest.mark.types
 def test_attrib_with_invalid_hash_fails():
     idx = 10
     invalid_hash = VALID_HASH[:idx] + 'X' + VALID_HASH[idx + 1:]
@@ -220,6 +237,7 @@ def test_attrib_with_invalid_hash_fails():
                   r"\(needs to be in hex too\) \({}={}\)".format(HASH, invalid_hash))
 
 
+@pytest.mark.types
 def test_attrib_with_empty_hash_fails():
     empty_hash = ''
     msg = {
@@ -244,6 +262,7 @@ def test_attrib_with_empty_hash_fails():
                   r"'str', got 'NoneType' \({}={}\)".format(HASH, empty_hash))
 
 
+@pytest.mark.types
 def test_attrib_with_enc_passes():
     secretBox = SecretBox()
     enc_data = secretBox.encrypt(json.dumps({'name': 'Alice'}).encode()).hex()
@@ -256,6 +275,7 @@ def test_attrib_with_enc_passes():
     validator.validate(msg)
 
 
+@pytest.mark.types
 def test_attrib_with_empty_enc_fails():
     empty_enc = ''
     msg = {

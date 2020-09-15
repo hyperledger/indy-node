@@ -28,6 +28,7 @@ def aml_request(txn_author_agreement_aml_handler, creator):
                               AML_CONTEXT: "AML_CONTEXT"})
 
 
+@pytest.mark.request_handlers
 def test_dynamic_validation_without_permission(aml_request,
                                                txn_author_agreement_aml_handler: TxnAuthorAgreementAmlHandler,
                                                creator):
@@ -36,6 +37,7 @@ def test_dynamic_validation_without_permission(aml_request,
         txn_author_agreement_aml_handler.dynamic_validation(aml_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_dynamic_validation(aml_request,
                             txn_author_agreement_aml_handler: TxnAuthorAgreementAmlHandler,
                             creator):

@@ -1,7 +1,10 @@
+import pytest
+
 from indy_common.authorize.auth_actions import AuthActionEdit
 from indy_common.constants import POOL_CONFIG, ACTION, AUTH_RULE
 
 
+@pytest.mark.auth
 def test_auth_rule(write_request_validation, is_owner, req):
     authorized = req.identifier == "trustee_identifier"
     assert authorized == write_request_validation(req,

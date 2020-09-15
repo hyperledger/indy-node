@@ -3,6 +3,8 @@ from copy import deepcopy
 import dateutil
 from datetime import timedelta
 
+import pytest
+
 from indy_common.constants import SHA256, SCHEDULE
 from indy_node.test import waits
 from indy_node.test.upgrade.helper import bumpVersion, checkUpgradeScheduled, \
@@ -12,6 +14,7 @@ from plenum.common.util import randomString
 from stp_core.loop.eventually import eventually
 
 
+@pytest.mark.upgrade
 def test_node_reschedules_upgrade_for_proper_datetime(
         looper, tconf, nodeSet, validUpgrade,
         sdk_pool_handle, sdk_wallet_trustee):

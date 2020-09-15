@@ -37,6 +37,7 @@ from plenum.common.util import randomString, SortedDict
 from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_and_submit_req
 
 
+@pytest.mark.state_proof
 def test_state_proof_returned_for_get_attr(looper,
                                            nodeSetWithOneNodeResponding,
                                            sdk_added_raw_attribute,
@@ -65,6 +66,7 @@ def test_state_proof_returned_for_get_attr(looper,
     check_valid_proof(result)
 
 
+@pytest.mark.state_proof
 def test_state_proof_returned_for_get_nym(looper,
                                           nodeSetWithOneNodeResponding,
                                           sdk_user_wallet_a,
@@ -104,6 +106,7 @@ def test_state_proof_returned_for_get_nym(looper,
     check_valid_proof(result)
 
 
+@pytest.mark.state_proof
 def test_state_proof_returned_for_get_schema(looper,
                                              nodeSetWithOneNodeResponding,
                                              sdk_wallet_endorser,
@@ -271,6 +274,7 @@ def test_state_proof_returned_for_get_rich_schema_obj_by_metadata(looper,
     check_valid_proof(result)
 
 
+@pytest.mark.state_proof
 def test_state_proof_returned_for_get_claim_def(looper,
                                                 nodeSetWithOneNodeResponding,
                                                 sdk_wallet_endorser,
@@ -315,6 +319,7 @@ def test_state_proof_returned_for_get_claim_def(looper,
     check_valid_proof(result)
 
 
+@pytest.mark.state_proof
 def test_state_proof_returned_for_get_auth_rule(looper,
                                                 nodeSetWithOneNodeResponding,
                                                 sdk_wallet_steward,
@@ -337,6 +342,7 @@ def test_state_proof_returned_for_get_auth_rule(looper,
     check_valid_proof(result)
 
 
+@pytest.mark.state_proof
 def test_state_proof_returned_for_get_revoc_reg_def(looper,
                                                     nodeSetWithOneNodeResponding,
                                                     sdk_wallet_steward,
@@ -360,6 +366,7 @@ def test_state_proof_returned_for_get_revoc_reg_def(looper,
     check_valid_proof(result)
 
 
+@pytest.mark.state_proof
 def test_state_proof_returned_for_get_revoc_reg_entry(looper,
                                                       nodeSetWithOneNodeResponding,
                                                       sdk_wallet_steward,
@@ -411,6 +418,7 @@ def check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def
         check_valid_proof(result)
 
 
+@pytest.mark.state_proof
 def test_state_proof_returned_for_get_revoc_reg_delta(looper,
                                                       nodeSetWithOneNodeResponding,
                                                       sdk_wallet_steward,

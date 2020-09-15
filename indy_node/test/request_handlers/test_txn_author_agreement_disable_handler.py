@@ -23,6 +23,8 @@ def disable_taa_request(request):
                                    signature="sign",
                                    operation=operation))
 
+
+@pytest.mark.request_handlers
 def test_taa_disable_only_for_trustee(disable_taa_handler,
                                       disable_taa_request):
     who, req = disable_taa_request

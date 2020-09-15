@@ -12,6 +12,7 @@ def pckg(request):
     return EXT_PKT_NAME, EXT_PKT_VERSION
 
 
+@pytest.mark.upgrade
 def test_forced_request_validation(looper, txnPoolNodeSet,
                                    sdk_pool_handle, sdk_wallet_steward,
                                    sdk_wallet_trustee, validUpgradeExpForceTrue):

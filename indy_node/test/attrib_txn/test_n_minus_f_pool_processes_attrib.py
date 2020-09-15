@@ -1,7 +1,9 @@
+import pytest
 from plenum.test.test_node import ensure_node_disconnected, getNonPrimaryReplicas
 from indy_node.test.helper import sdk_add_raw_attribute
 
 
+@pytest.mark.attrib_txn
 def test_n_minus_f_pool_processes_attrib(looper, nodeSet,
                                          sdk_pool_handle,
                                          sdk_wallet_steward):

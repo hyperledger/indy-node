@@ -1,9 +1,12 @@
+import pytest
+
 from indy_node.utils.node_control_tool import NodeControlTool
 from plenum.test.helper import randomText
 from indy_node.utils.node_control_utils import NodeControlUtil, MAX_DEPS_DEPTH
 
 
-def testNodeControlResolvesDependencies(monkeypatch, tconf):
+@pytest.mark.upgrade
+def test_node_control_resolves_dependencies(monkeypatch, tconf):
     nct = NodeControlTool(config=tconf)
     node_package = ('indy-node', '0.0.1')
     plenum_package = ('indy-plenum', '0.0.3')
@@ -31,6 +34,7 @@ def testNodeControlResolvesDependencies(monkeypatch, tconf):
                                           node_package_with_version])
 
 
+@pytest.mark.upgrade
 def test_create_deps_for_exotic_version_style():
     depends = ['package1', 'package2']
     versions = ['1.6.74', '0.9.4~+.-AbCd1.2.3.4.EiF']
@@ -69,6 +73,7 @@ Description: Some package
     assert any(["{}={}".format(depends[1], versions[1]) in l for l in ret[1][0]])
 
 
+@pytest.mark.upgrade
 def test_max_depth_for_deps_tree():
     depends = ['package1', 'package2']
     def mock_info_from_package_manager(*package):

@@ -33,6 +33,7 @@ def get_rich_schema_by_id_handler(db_manager):
     return GetRichSchemaObjectByIdHandler(db_manager)
 
 
+@pytest.mark.request_handlers
 def test_get_rich_schema_obj(db_manager, handler_and_request, id,
                              get_rich_schema_by_id_handler, get_rich_schema_req):
     # prepare: store object in state with bls multi-sg
@@ -73,6 +74,7 @@ def test_get_rich_schema_obj(db_manager, handler_and_request, id,
                              path, result[DATA], seq_no, txn_time)
 
 
+@pytest.mark.request_handlers
 def test_get_rich_schema_obj_not_existent(db_manager, handler_and_request,
                                           get_rich_schema_by_id_handler, get_rich_schema_req):
     save_multi_sig(db_manager)
@@ -89,6 +91,7 @@ def test_get_rich_schema_obj_not_existent(db_manager, handler_and_request,
     check_valid_proof(result)
 
 
+@pytest.mark.request_handlers
 def test_get_rich_schema_obj_committed_only(db_manager, handler_and_request, id,
                                             get_rich_schema_by_id_handler, get_rich_schema_req):
     # prepare: store object in state with bls multi-sig, and then update the object (uncommitted)

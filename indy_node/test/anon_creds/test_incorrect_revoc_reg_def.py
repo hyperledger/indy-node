@@ -10,6 +10,7 @@ from plenum.common.exceptions import RequestNackedException
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
 
 
+@pytest.mark.anon_creds
 def test_incorrect_revoc_reg_def(looper,
                                   txnPoolNodeSet,
                                   sdk_wallet_steward,

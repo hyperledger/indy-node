@@ -3,6 +3,8 @@ from copy import deepcopy
 import dateutil
 from datetime import timedelta
 
+import pytest
+
 from indy_common.constants import SCHEDULE
 from indy_node.test import waits
 from indy_node.test.upgrade.helper import checkUpgradeScheduled, \
@@ -11,6 +13,7 @@ from plenum.common.constants import VERSION
 from stp_core.loop.eventually import eventually
 
 
+@pytest.mark.upgrade
 def test_node_schedules_upgrade_for_proper_datetime(
         looper, tconf, nodeSet, validUpgrade, sdk_pool_handle, sdk_wallet_trustee):
     upgr1 = deepcopy(validUpgrade)

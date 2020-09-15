@@ -7,6 +7,7 @@ from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.util import randomString
 
 
+@pytest.mark.anon_creds
 def test_validation_cred_def_not_present(build_revoc_def_by_default,
                                          create_node_and_not_start):
     node = create_node_and_not_start
@@ -15,6 +16,7 @@ def test_validation_cred_def_not_present(build_revoc_def_by_default,
         node.write_manager.dynamic_validation(Request(**req), 0)
 
 
+@pytest.mark.anon_creds
 def test_invalid_cred_def_id_format(build_revoc_def_by_default,
                                     create_node_and_not_start):
     node = create_node_and_not_start

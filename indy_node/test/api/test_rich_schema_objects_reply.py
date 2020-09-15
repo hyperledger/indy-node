@@ -22,6 +22,7 @@ def tconf(tconf):
 # The order of creation is essential as some rich schema object reference others by ID
 # Encoding's id must be equal to the one used in RICH_SCHEMA_MAPPING_EX1
 
+@pytest.mark.api
 @pytest.mark.parametrize('txn_type, rs_type, content, rs_id',
                          [(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT, randomString()),
                           (RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1, RICH_SCHEMA_EX1['@id']),

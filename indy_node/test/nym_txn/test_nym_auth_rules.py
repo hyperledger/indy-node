@@ -316,6 +316,8 @@ def sign_and_validate(looper, node, action_id, signer, op, did_ledger=None):
 # TESTS
 # Note. some fixtures are referred explicitly just to make test nodeid names predictable
 
+
+@pytest.mark.nym_txn
 def test_nym_add(
         provisioner_role, nym_add_dest_role, nym_add_dest_verkey,
         looper, txnPoolNodeSet,
@@ -323,6 +325,7 @@ def test_nym_add(
     sign_and_validate(looper, txnPoolNodeSet[0], ActionIds.add, provisioner, add_op)
 
 
+@pytest.mark.nym_txn
 def test_nym_edit(
         edited_ledger_role, edited_ledger_verkey, editor_type,
         edited_nym_role, edited_nym_verkey,

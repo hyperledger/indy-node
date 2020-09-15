@@ -2,7 +2,7 @@ import dateutil.tz
 import pytest
 from datetime import datetime, timedelta
 from collections import OrderedDict
-
+import unittest
 from indy_node.test.auth_rule.auth_framework.disable_taa import TAADisableTest
 from plenum.common.constants import STEWARD, TRUSTEE, IDENTITY_OWNER
 
@@ -55,6 +55,7 @@ nodeCount = 7
 from stp_core.common.log import Logger
 
 Logger().enableStdLogging()
+unittest.TestLoader.sortTestMethodsUsing = None
 
 
 @pytest.fixture(scope="module")
@@ -63,19 +64,8 @@ def tconf(tconf):
         yield tconf
 
 
-class TestAuthRuleUsing():
-    map_of_tests = OrderedDict({
-        auth_map.add_new_trustee.get_action_id(): AddNewTrusteeTest,
-        auth_map.add_new_steward.get_action_id(): AddNewStewardTest,
-        auth_map.add_new_endorser.get_action_id(): AddNewEndorserTest,
-        auth_map.add_new_network_monitor.get_action_id(): AddNewNetworkMonitorTest,
-        auth_map.add_new_identity_owner.get_action_id(): AddNewIdentityOwnerTest,
-        auth_map.add_attrib.get_action_id(): AddAttribTest,
-        auth_map.edit_attrib.get_action_id(): EditAttribTest,
-        auth_map.add_revoc_reg_def.get_action_id(): AddRevocRegDefTest,
-        auth_map.edit_revoc_reg_def.get_action_id(): EditRevocRegDefTest,
-        auth_map.add_revoc_reg_entry.get_action_id(): AddRevocRegEntryTest,
-        auth_map.edit_revoc_reg_entry.get_action_id(): EditRevocRegEntryTest,
+class TestEditRoleActionsUsing:
+    edit_role_actions_test = OrderedDict({
         auth_map.edit_role_actions[TRUSTEE][STEWARD].get_action_id(): EditTrusteeToStewardTest,
         auth_map.edit_role_actions[TRUSTEE][ENDORSER].get_action_id(): EditTrusteeToEndorserTest,
         auth_map.edit_role_actions[TRUSTEE][NETWORK_MONITOR].get_action_id(): EditTrusteeToNetworkMonitorTest,
@@ -101,46 +91,24 @@ class TestAuthRuleUsing():
         auth_map.edit_role_actions[ENDORSER][ENDORSER].get_action_id(): EditEndorserToEndorserTest,
         auth_map.edit_role_actions[NETWORK_MONITOR][NETWORK_MONITOR].get_action_id(): EditNetworkMonitorToNetworkMonitorTest,
         auth_map.edit_role_actions[IDENTITY_OWNER][IDENTITY_OWNER].get_action_id(): EditIdentityOwnerToIdentityOwnerTest,
-        auth_map.key_rotation.get_action_id(): RotateKeyTest,
-        auth_map.txn_author_agreement_aml.get_action_id(): TxnAuthorAgreementAMLTest,
-        auth_map.add_schema.get_action_id(): SchemaTest,
-        auth_map.add_claim_def.get_action_id(): AddClaimDefTest,
-        auth_map.edit_claim_def.get_action_id(): EditClaimDefTest,
-        auth_map.start_upgrade.get_action_id(): StartUpgradeTest,
-        auth_map.cancel_upgrade.get_action_id(): CancelUpgradeTest,
-        auth_map.pool_restart.get_action_id(): RestartTest,
-        auth_map.pool_config.get_action_id(): PoolConfigTest,
-        auth_map.auth_rule.get_action_id(): AuthRuleTest,
-        auth_map.auth_rules.get_action_id(): AuthRulesTest,
-        auth_map.validator_info.get_action_id(): ValidatorInfoTest,
-        auth_map.adding_new_node.get_action_id(): AddNewNodeTest,
-        auth_map.adding_new_node_with_empty_services.get_action_id(): AddNewNodeEmptyServiceTest,
-        auth_map.demote_node.get_action_id(): DemoteNodeTest,
-        auth_map.promote_node.get_action_id(): PromoteNodeTest,
-        auth_map.change_node_ip.get_action_id(): EditNodeIpTest,
-        auth_map.change_node_port.get_action_id(): EditNodePortTest,
-        auth_map.change_client_ip.get_action_id(): EditNodeClientIpTest,
-        auth_map.change_client_port.get_action_id(): EditNodeClientPortTest,
-        auth_map.change_bls_key.get_action_id(): EditNodeBlsTest,
-        auth_map.disable_txn_author_agreement.get_action_id(): TAADisableTest,
     })
 
     # TODO a workaround until sdk aceepts empty TAA to make possible its deactivation
-    map_of_tests[auth_map.txn_author_agreement.get_action_id()] = TxnAuthorAgreementTest
+    edit_role_actions_test[auth_map.txn_author_agreement.get_action_id()] = TxnAuthorAgreementTest
 
     @pytest.fixture(scope='module')
     def pckg(self):
         return (EXT_PKT_NAME, EXT_PKT_VERSION)
 
     @pytest.fixture(scope='module')
-    def monkeymodule(self):
+    def monkey_module(self):
         from _pytest.monkeypatch import MonkeyPatch
         mpatch = MonkeyPatch()
         yield mpatch
         mpatch.undo()
 
     @pytest.fixture(scope='module')
-    def validUpgrade(self, nodeIds, tconf, pckg, monkeymodule):
+    def valid_upgrade(self, nodeIds, tconf, pckg, monkey_module):
         schedule = {}
         unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
         startAt = unow + timedelta(seconds=3000)
@@ -150,7 +118,7 @@ class TestAuthRuleUsing():
             startAt = startAt + timedelta(seconds=acceptableDiff + 3)
 
         new_version = bumpedVersion(pckg[1])
-        patch_packet_mgr_output(monkeymodule, pckg[0], pckg[1], new_version)
+        patch_packet_mgr_output(monkey_module, pckg[0], pckg[1], new_version)
 
         return dict(name='upgrade-{}'.format(randomText(3)), version=new_version,
                     action=START, schedule=schedule, timeout=1, package=pckg[0],
@@ -171,7 +139,7 @@ class TestAuthRuleUsing():
             sdk_wallet_steward,
             sdk_wallet_endorser,
             sdk_wallet_client,
-            validUpgrade,
+            valid_upgrade,
             poolConfigWTFF,
             sdk_wallet_network_monitor,
             txnPoolNodeSet):
@@ -191,19 +159,157 @@ class TestAuthRuleUsing():
                              sdk_wallet_client=sdk_wallet_client,
                              role_to_wallet=role_to_wallet,
                              txnPoolNodeSet=txnPoolNodeSet,
-                             valid_upgrade=validUpgrade,
+                             valid_upgrade=valid_upgrade,
                              pool_config_wtff=poolConfigWTFF)
 
-    @pytest.fixture(scope='module', params=[k for k in map_of_tests.keys()])
-    def auth_rule_tests(self, request, env):
-        action_id = request.param
-        test_cls = self.map_of_tests[action_id]
-        test = test_cls(env, action_id)
-        return action_id, test
+    # @pytest.fixture(scope='module', params=[k for k in edit_role_actions_test.keys()])
+    # def edit_role_actions_tests(self, request, env):
+    #     action_id = request.param
+    #     test_cls = self.edit_role_actions_test[action_id]
+    #     test = test_cls(env, action_id)
+    #     return action_id, test
 
-    def test_auth_rule_using(self, auth_rule_tests):
-        descr, test = auth_rule_tests
-        print("Running test: {}".format(descr))
+    @pytest.mark.auth_framework
+    def test_auth_rule_add_new_trustee(self, env):
+        self.runner(AddNewTrusteeTest(env, auth_map.add_new_trustee.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_rule_add_new_steward(self, env):
+        self.runner(AddNewStewardTest(env, auth_map.add_new_steward.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_rule_add_new_endorser(self, env):
+        self.runner(AddNewEndorserTest(env, auth_map.add_new_endorser.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_rule_add_new_network_monitor(self, env):
+        self.runner(AddNewNetworkMonitorTest(env, auth_map.add_new_network_monitor.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_rule_add_new_identity_owner(self, env):
+        self.runner(AddNewIdentityOwnerTest(env, auth_map.add_new_identity_owner.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_rule_add_attrib(self, env):
+        self.runner(AddAttribTest(env, auth_map.add_attrib.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_rule_edit_attrib(self, env):
+        self.runner(EditAttribTest(env, auth_map.edit_attrib.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_rule_add_revoc_reg_def(self, env):
+        self.runner(AddRevocRegDefTest(env, auth_map.add_revoc_reg_def.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_rule_edit_revoc_reg_def(self, env):
+        self.runner(EditRevocRegDefTest(env, auth_map.edit_revoc_reg_def.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_rule_add_revoc_reg_entry(self, env):
+        self.runner(AddRevocRegEntryTest(env, auth_map.add_revoc_reg_entry.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_rule_edit_revoc_reg_entry(self, env):
+        self.runner(EditRevocRegEntryTest(env, auth_map.edit_revoc_reg_entry.get_action_id()))
+
+    @pytest.mark.auth_framework
+    @pytest.fixture(scope='module', params=[k for k in edit_role_actions_test.keys()])
+    def test_edit_role_actions_using(self, request, env):
+        action_id = request.param
+        test_cls = self.edit_role_actions_test[action_id]
+        self.runner(test_cls(env, action_id))
+
+    @pytest.mark.auth_framework
+    def test_auth_rule_key_rotation(self, env):
+        self.runner(RotateKeyTest(env, auth_map.key_rotation.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_txn_author_agreement_aml(self, env):
+        self.runner(TxnAuthorAgreementAMLTest(env, auth_map.txn_author_agreement_aml.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_txn_add_schema(self, env):
+        self.runner(SchemaTest(env, auth_map.add_schema.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_add_claim_def(self, env):
+        self.runner(AddClaimDefTest(env, auth_map.add_claim_def.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_edit_claim_def(self, env):
+        self.runner(EditClaimDefTest(env, auth_map.edit_claim_def.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_start_upgrade(self, env):
+        self.runner(StartUpgradeTest(env, auth_map.start_upgrade.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_cancel_upgrade(self, env):
+        self.runner(CancelUpgradeTest(env, auth_map.cancel_upgrade.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_pool_restart(self, env):
+        self.runner(RestartTest(env, auth_map.pool_restart.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_pool_config(self, env):
+        self.runner(PoolConfigTest(env, auth_map.pool_config.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_auth_rule(self, env):
+        self.runner(AuthRuleTest(env, auth_map.auth_rule.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_auth_rules(self, env):
+        self.runner(AuthRulesTest(env, auth_map.auth_rules.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_validator_info(self, env):
+        self.runner(ValidatorInfoTest(env, auth_map.validator_info.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_adding_new_node(self, env):
+        self.runner(AddNewNodeTest(env, auth_map.adding_new_node.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_adding_new_node_with_empty_services(self, env):
+        self.runner(AddNewNodeEmptyServiceTest(env, auth_map.adding_new_node_with_empty_services.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_demote_node(self, env):
+        self.runner(DemoteNodeTest(env, auth_map.demote_node.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_promote_node(self, env):
+        self.runner(PromoteNodeTest(env, auth_map.promote_node.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_change_node_ip(self, env):
+        self.runner(EditNodeIpTest(env, auth_map.change_node_ip.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_change_node_port(self, env):
+        self.runner(EditNodePortTest(env, auth_map.change_node_port.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_change_client_ip(self, env):
+        self.runner(EditNodeClientIpTest(env, auth_map.change_client_ip.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_change_client_port(self, env):
+        self.runner(EditNodeClientPortTest(env, auth_map.change_client_port.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_change_bls_key(self, env):
+        self.runner(EditNodeBlsTest(env, auth_map.change_bls_key.get_action_id()))
+
+    @pytest.mark.auth_framework
+    def test_auth_disable_txn_author_agreement(self, env):
+        self.runner(TAADisableTest(env, auth_map.disable_txn_author_agreement.get_action_id()))
+
+    @staticmethod
+    def runner(test):
         test.prepare()
         test.run()
         test.result()

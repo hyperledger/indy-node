@@ -1,3 +1,5 @@
+import pytest
+
 from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER, AuthConstraintForbidden
 from indy_common.constants import ENDORSER
 from indy_common.test.auth.metadata.helper import validate, PLUGIN_FIELD, Action
@@ -6,6 +8,7 @@ from plenum.common.constants import TRUSTEE
 MAX_SIG_COUNT = 3
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_1_sig_owner_no_endorser(write_auth_req_validator, write_request_validation,
                                                     signatures, is_owner, amount):
     validate(
@@ -23,6 +26,7 @@ def test_plugin_simple_rule_1_sig_owner_no_endorser(write_auth_req_validator, wr
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_1_sig_owner_endorser(write_auth_req_validator, write_request_validation,
                                                  signatures, is_owner, amount):
     validate(
@@ -41,6 +45,7 @@ def test_plugin_simple_rule_1_sig_owner_endorser(write_auth_req_validator, write
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_1_sig_endorser_no_endorser(write_auth_req_validator, write_request_validation,
                                                        signatures, is_owner, amount):
     validate(
@@ -58,6 +63,7 @@ def test_plugin_simple_rule_1_sig_endorser_no_endorser(write_auth_req_validator,
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_1_sig_endorser_endorser(write_auth_req_validator, write_request_validation,
                                                     signatures, is_owner, amount):
     validate(
@@ -75,6 +81,7 @@ def test_plugin_simple_rule_1_sig_endorser_endorser(write_auth_req_validator, wr
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_1_sig_trustee_no_endorser(write_auth_req_validator, write_request_validation,
                                                       signatures, is_owner, amount):
     validate(
@@ -93,6 +100,7 @@ def test_plugin_simple_rule_1_sig_trustee_no_endorser(write_auth_req_validator, 
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_1_sig_trustee_endorser(write_auth_req_validator, write_request_validation,
                                                    signatures, is_owner, amount):
     validate(
@@ -112,6 +120,7 @@ def test_plugin_simple_rule_1_sig_trustee_endorser(write_auth_req_validator, wri
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_1_sig_all_roles_owner_no_endorser(write_auth_req_validator, write_request_validation,
                                                               signatures, is_owner, off_ledger_signature, amount):
     validate(
@@ -130,6 +139,7 @@ def test_plugin_simple_rule_1_sig_all_roles_owner_no_endorser(write_auth_req_val
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_1_sig_all_roles_owner_endorser(write_auth_req_validator, write_request_validation,
                                                            signatures, is_owner, off_ledger_signature, amount):
     validate(
@@ -149,6 +159,7 @@ def test_plugin_simple_rule_1_sig_all_roles_owner_endorser(write_auth_req_valida
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_1_sig_all_roles_trustee_no_endorser(write_auth_req_validator, write_request_validation,
                                                                 signatures, is_owner, off_ledger_signature, amount):
     validate(
@@ -167,6 +178,7 @@ def test_plugin_simple_rule_1_sig_all_roles_trustee_no_endorser(write_auth_req_v
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_1_sig_all_roles_trustee_endorser(write_auth_req_validator, write_request_validation,
                                                              signatures, is_owner, off_ledger_signature, amount):
     validate(
@@ -186,6 +198,7 @@ def test_plugin_simple_rule_1_sig_all_roles_trustee_endorser(write_auth_req_vali
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_3_sig_trustee_no_endorser(write_auth_req_validator, write_request_validation,
                                                       signatures, is_owner, amount):
     validate(
@@ -202,6 +215,7 @@ def test_plugin_simple_rule_3_sig_trustee_no_endorser(write_auth_req_validator, 
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_3_sig_trustee_endorser(write_auth_req_validator, write_request_validation,
                                                    signatures, is_owner, amount):
     validate(
@@ -220,6 +234,7 @@ def test_plugin_simple_rule_3_sig_trustee_endorser(write_auth_req_validator, wri
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_3_sig_owner_no_endorser(write_auth_req_validator, write_request_validation,
                                                     signatures, is_owner, amount):
     validate(
@@ -233,6 +248,7 @@ def test_plugin_simple_rule_3_sig_owner_no_endorser(write_auth_req_validator, wr
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_3_sig_owner_endorser(write_auth_req_validator, write_request_validation,
                                                  signatures, is_owner, amount):
     validate(
@@ -252,6 +268,7 @@ def test_plugin_simple_rule_3_sig_owner_endorser(write_auth_req_validator, write
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_0_sig_owner_no_endorser(write_auth_req_validator, write_request_validation,
                                                     signatures, is_owner, off_ledger_signature, amount):
     validate(
@@ -272,6 +289,7 @@ def test_plugin_simple_rule_0_sig_owner_no_endorser(write_auth_req_validator, wr
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_0_sig_owner_endorser(write_auth_req_validator, write_request_validation,
                                                  signatures, is_owner, off_ledger_signature, amount):
     validate(
@@ -289,6 +307,7 @@ def test_plugin_simple_rule_0_sig_owner_endorser(write_auth_req_validator, write
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_0_sig_trustee_no_endorser(write_auth_req_validator, write_request_validation,
                                                       signatures, is_owner, off_ledger_signature, amount):
     validate(
@@ -306,6 +325,7 @@ def test_plugin_simple_rule_0_sig_trustee_no_endorser(write_auth_req_validator, 
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_0_sig_trustee_endorser(write_auth_req_validator, write_request_validation,
                                                    signatures, is_owner, off_ledger_signature, amount):
     validate(
@@ -323,6 +343,7 @@ def test_plugin_simple_rule_0_sig_trustee_endorser(write_auth_req_validator, wri
     )
 
 
+@pytest.mark.auth
 def test_plugin_simple_rule_not_allowed(write_auth_req_validator, write_request_validation,
                                         author, endorser, signatures, is_owner, amount):
     validate(

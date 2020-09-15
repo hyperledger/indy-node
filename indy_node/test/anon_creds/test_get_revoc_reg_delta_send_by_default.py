@@ -1,3 +1,4 @@
+import pytest
 import json
 import copy
 
@@ -12,6 +13,7 @@ from plenum.common.types import f
 from plenum.common.util import randomString
 
 
+@pytest.mark.anon_creds
 def test_send_with_wrong_rev_reg_id_default(looper, txnPoolNodeSet,
                                             sdk_pool_handle,
                                             send_revoc_reg_entry_by_default,
@@ -27,6 +29,7 @@ def test_send_with_wrong_rev_reg_id_default(looper, txnPoolNodeSet,
     assert reply['result'][DATA] is None
 
 
+@pytest.mark.anon_creds
 def test_send_with_only_to_by_default(looper,
                             txnPoolNodeSet,
                             sdk_pool_handle,
@@ -44,6 +47,7 @@ def test_send_with_only_to_by_default(looper,
     assert rev_entry_req['operation'][VALUE][REVOKED] == reply['result'][DATA][VALUE][REVOKED]
 
 
+@pytest.mark.anon_creds
 def test_send_earlier_then_first_entry_by_default(
         looper,
         txnPoolNodeSet,
@@ -63,6 +67,7 @@ def test_send_earlier_then_first_entry_by_default(
     assert reply['result'][TXN_TIME] is None
 
 
+@pytest.mark.anon_creds
 def test_send_with_from_by_default(looper,
         txnPoolNodeSet,
         sdk_pool_handle,

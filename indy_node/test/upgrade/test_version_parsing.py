@@ -2,6 +2,7 @@ import pytest
 from indy_node.utils.node_control_utils import NodeControlUtil
 
 
+@pytest.mark.upgrade
 @pytest.mark.parametrize("vers_str,vers_parsed",
                          [("aa (= 1)", ["aa=1"]), ("aa (= 1), bb", ["aa=1", "bb"]),
                           ("aa (= 1), bb (= 2) | cc (= 3)", ["aa=1", "bb=2", "cc=3"]),
@@ -12,6 +13,7 @@ def test_version_parse(vers_str, vers_parsed):
     assert vers == vers_parsed
 
 
+@pytest.mark.upgrade
 @pytest.mark.parametrize("pkgs,pkgs_dd",
                          [([], []), (["aa=1"], ["aa=1"]), (["aa=1", "aa=1", "aa=2"], ["aa=1"]),
                           (["aa=1", "bb=2", "cc=3"], ["aa=1", "bb=2", "cc=3"]),

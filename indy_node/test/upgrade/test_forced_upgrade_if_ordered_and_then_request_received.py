@@ -1,3 +1,5 @@
+import pytest
+
 from indy_node.server.upgrade_log import UpgradeLog
 from indy_node.test import waits
 from indy_node.test.upgrade.helper import checkUpgradeScheduled, \
@@ -8,6 +10,7 @@ from plenum.test.test_node import getNonPrimaryReplicas
 from stp_core.loop.eventually import eventually
 
 
+@pytest.mark.upgrade
 def test_forced_upgrade_handled_once_if_ordered_and_then_request_received(
         looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee,
         validUpgradeExpForceTrue):

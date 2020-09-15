@@ -99,6 +99,7 @@ def add_new_nym(looper, sdk_pool_handle, creators_wallets,
     sdk_get_and_check_replies(looper, [request_couple])
 
 
+@pytest.mark.auth_rule
 def test_multi_sig_auth_rule(looper,
                              wallets_for_success,
                              sdk_pool_handle,
@@ -114,6 +115,7 @@ def test_multi_sig_auth_rule(looper,
     get_nym(looper, sdk_pool_handle, wallets_for_success[0], did)
 
 
+@pytest.mark.auth_rule
 def test_reject_request_with_multi_sig_auth_rule(looper,
                                                  wallets_for_fail,
                                                  sdk_pool_handle,
@@ -127,6 +129,7 @@ def test_reject_request_with_multi_sig_auth_rule(looper,
                     STEWARD_STRING)
 
 
+@pytest.mark.auth_rule
 def test_validate_by_auth_rule_without_signatures(looper,  # noqa: F811
                                                   sdk_wallet_client,
                                                   sdk_pool_handle,

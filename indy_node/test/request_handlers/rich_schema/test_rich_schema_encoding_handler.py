@@ -25,6 +25,7 @@ def encoding_req(encoding_handler):
     return req
 
 
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('missing_field', ['input', 'output', 'algorithm', 'testVectors'])
 @pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
 def test_static_validation_no_field(encoding_handler, encoding_req, missing_field, status):
@@ -42,6 +43,7 @@ def test_static_validation_no_field(encoding_handler, encoding_req, missing_fiel
         encoding_handler.static_validation(encoding_req)
 
 
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
 def test_static_validation_no_all_fields(encoding_handler, encoding_req, status):
     content = copy.deepcopy(json.loads(encoding_req.operation[RS_CONTENT]))
@@ -67,6 +69,7 @@ def test_static_validation_no_all_fields(encoding_handler, encoding_req, status)
         encoding_handler.static_validation(encoding_req)
 
 
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('missing_field', ['id', 'type'])
 @pytest.mark.parametrize('input_output', ['input', 'output'])
 @pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
@@ -85,6 +88,7 @@ def test_static_validation_input_output(encoding_handler, encoding_req, missing_
         encoding_handler.static_validation(encoding_req)
 
 
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('input_output', ['input', 'output'])
 @pytest.mark.parametrize('status', ['empty', 'none'])
 def test_static_validation_input_output_all_missing(encoding_handler, encoding_req, input_output,
@@ -103,6 +107,7 @@ def test_static_validation_input_output_all_missing(encoding_handler, encoding_r
         encoding_handler.static_validation(encoding_req)
 
 
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('missing_field', ['description', 'documentation', 'implementation'])
 @pytest.mark.parametrize('status', ['missing', 'empty', 'none'])
 def test_static_validation_algorithm(encoding_handler, encoding_req, missing_field, status):
@@ -120,6 +125,7 @@ def test_static_validation_algorithm(encoding_handler, encoding_req, missing_fie
         encoding_handler.static_validation(encoding_req)
 
 
+@pytest.mark.request_handlers
 @pytest.mark.parametrize('status', ['empty', 'none'])
 def test_static_validation_algorithm_all_missing(encoding_handler, encoding_req, status):
     content = copy.deepcopy(json.loads(encoding_req.operation[RS_CONTENT]))
@@ -139,5 +145,6 @@ def test_static_validation_algorithm_all_missing(encoding_handler, encoding_req,
         encoding_handler.static_validation(encoding_req)
 
 
+@pytest.mark.request_handlers
 def test_dynamic_validation_passes(encoding_handler, encoding_req):
     encoding_handler.dynamic_validation(encoding_req, 0)

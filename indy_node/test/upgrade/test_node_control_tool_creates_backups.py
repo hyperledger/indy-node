@@ -27,7 +27,8 @@ def tconf(tconf, tdir):
     yield tconf
 
 
-def testNodeControlCreatesBackups(monkeypatch, tdir, looper, tconf):
+@pytest.mark.upgrade
+def test_node_control_creates_backups(monkeypatch, tdir, looper, tconf):
     version = bumpedVersion()
     stdout = 'teststdout'
     curr_src_ver = Upgrader.get_src_version()

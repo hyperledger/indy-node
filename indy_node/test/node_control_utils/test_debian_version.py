@@ -40,6 +40,7 @@ def catch_generated_command(monkeypatch):
 
 
 # TODO coverage
+@pytest.mark.node_control_utils
 @pytest.mark.parametrize(
     'version',
     [
@@ -53,6 +54,7 @@ def test_invalid_no_upstream(version):
         DebianVersionTest(version)
 
 
+@pytest.mark.node_control_utils
 @pytest.mark.parametrize(
     'version',
     [
@@ -66,6 +68,7 @@ def test_invalid_epoch(version):
         DebianVersionTest(version)
 
 
+@pytest.mark.node_control_utils
 @pytest.mark.parametrize(
     'version',
     [
@@ -79,12 +82,14 @@ def test_invalid_upstream(version):
         DebianVersionTest(version)
 
 
+@pytest.mark.node_control_utils
 def test_invalid_upstream_keep_tilde():
     with pytest.raises(InvalidVersionError):
         DebianVersionTest('1.2.3~rc1', keep_tilde=True)
 
 
 # TODO coverage
+@pytest.mark.node_control_utils
 @pytest.mark.parametrize(
     'epoch,upstream,revision',
     [
@@ -116,10 +121,12 @@ def test_valid_version(epoch, upstream, revision):
     assert dv.release_parts == (epoch, upstream, revision)
 
 
+@pytest.mark.node_control_utils
 def test_default_upstream_cls():
     assert isinstance(DebianVersion('1.2.3').upstream, GenericVersion)
 
 
+@pytest.mark.node_control_utils
 def test_generated_cmd_cmp(catch_generated_command):
     version1 = '1.2.2'
     version2 = '1.2.3'
@@ -129,6 +136,7 @@ def test_generated_cmd_cmp(catch_generated_command):
     )
 
 
+@pytest.mark.node_control_utils
 def test_equal_no_shell_cmd(monkeypatch):
     called = 0
     run_shell_script_extended = NodeControlUtil.run_shell_script_extended
@@ -143,6 +151,7 @@ def test_equal_no_shell_cmd(monkeypatch):
     assert not called
 
 
+@pytest.mark.node_control_utils
 def test_comparison_operators():
     assert DebianVersionTest('1.2.2') < DebianVersionTest('1.2.3')
     assert DebianVersionTest('1.2.3') > DebianVersionTest('1.2.2')
@@ -152,6 +161,7 @@ def test_comparison_operators():
     assert DebianVersionTest('1.2.3') != DebianVersionTest('1.2.2')
 
 
+@pytest.mark.node_control_utils
 def test_compare_called_once(monkeypatch):
     called = 0
     run_shell_script_extended = NodeControlUtil.run_shell_script_extended
@@ -168,6 +178,7 @@ def test_compare_called_once(monkeypatch):
     assert called == 1
 
 
+@pytest.mark.node_control_utils
 @pytest.mark.parametrize(
     'v1,v2,expected',
     [
@@ -184,6 +195,7 @@ def test_compare_valid(v1, v2, expected):
     assert res if expected else not res
 
 
+@pytest.mark.node_control_utils
 def test_compare_shell_error(monkeypatch):
     run_shell_script_extended = NodeControlUtil.run_shell_script_extended
 

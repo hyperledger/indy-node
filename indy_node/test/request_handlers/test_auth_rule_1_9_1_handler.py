@@ -13,6 +13,7 @@ def auth_rule_handler_1_9_1(db_manager, write_auth_req_validator):
     return AuthRuleHandler191(db_manager, write_auth_req_validator)
 
 
+@pytest.mark.request_handlers
 def test_update_state(auth_rule_request, auth_rule_handler_1_9_1: AuthRuleHandler):
     txn = reqToTxn(auth_rule_request)
     payload = get_payload_data(txn)

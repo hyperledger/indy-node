@@ -14,6 +14,7 @@ def update_bls_keys(looper, tconf, nodeSet, sdk_pool_handle,
     check_bls_key(new_blspk, node, nodeSet)
 
 
+@pytest.mark.upgrade
 def test_node_schedules_upgrade_after_bls_keys_update(update_bls_keys,
                                                       upgradeScheduled):
     # Upgrade should work even after an update to the pool ledger with a

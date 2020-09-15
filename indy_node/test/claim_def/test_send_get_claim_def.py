@@ -33,6 +33,7 @@ def added_claim_def_id_large_schema(looper, sdk_pool_handle, nodeSet,
     return rep[0][1]['result'][TXN_METADATA][TXN_METADATA_ID]
 
 
+@pytest.mark.claim_def
 def test_send_get_claim_def_succeeds(looper, sdk_pool_handle, nodeSet,
                                      sdk_wallet_trustee, added_claim_def_id):
     _, did = sdk_wallet_trustee
@@ -40,6 +41,7 @@ def test_send_get_claim_def_succeeds(looper, sdk_pool_handle, nodeSet,
     sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
 
 
+@pytest.mark.claim_def
 def test_send_get_claim_def_succeeds_for_large_schema(looper, sdk_pool_handle, nodeSet,
                                                       sdk_wallet_trustee, added_claim_def_id_large_schema):
     _, did = sdk_wallet_trustee
@@ -47,6 +49,7 @@ def test_send_get_claim_def_succeeds_for_large_schema(looper, sdk_pool_handle, n
     sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
 
 
+@pytest.mark.claim_def
 def test_send_get_claim_def_as_client_succeeds(
         looper,
         sdk_pool_handle,
@@ -58,6 +61,7 @@ def test_send_get_claim_def_as_client_succeeds(
     sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, request)])
 
 
+@pytest.mark.claim_def
 def test_send_get_claim_def_with_invalid_ref_fails(looper, sdk_pool_handle, nodeSet,
                                                    sdk_wallet_trustee, added_claim_def_id):
     _, did = sdk_wallet_trustee
@@ -68,6 +72,7 @@ def test_send_get_claim_def_with_invalid_ref_fails(looper, sdk_pool_handle, node
     e.match('expected types \'int\', got \'str\'')
 
 
+@pytest.mark.claim_def
 def test_send_get_claim_def_with_invalid_signature_not_get_claim(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, added_claim_def_id):
     _, did = sdk_wallet_trustee

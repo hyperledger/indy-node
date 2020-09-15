@@ -1,3 +1,4 @@
+import pytest
 import json
 import copy
 
@@ -12,6 +13,7 @@ from plenum.common.types import f
 from plenum.common.util import randomString
 
 
+@pytest.mark.anon_creds
 def test_send_with_only_to_by_demand(looper,
                             txnPoolNodeSet,
                             sdk_pool_handle,
@@ -29,6 +31,7 @@ def test_send_with_only_to_by_demand(looper,
     assert rev_entry_req['operation'][VALUE][ISSUED] == reply['result'][DATA][VALUE][ISSUED]
 
 
+@pytest.mark.anon_creds
 def test_send_earlier_then_first_entry_by_demand(
         looper,
         txnPoolNodeSet,
@@ -48,6 +51,7 @@ def test_send_earlier_then_first_entry_by_demand(
     assert reply['result'][TXN_TIME] is None
 
 
+@pytest.mark.anon_creds
 def test_send_with_from_by_demand(looper,
         txnPoolNodeSet,
         sdk_pool_handle,

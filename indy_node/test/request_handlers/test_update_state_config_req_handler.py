@@ -45,6 +45,7 @@ def prepare_request(looper, sdk_wallet_trustee):
     return action, constraint, Request(**json.loads(req_json))
 
 
+@pytest.mark.request_handlers
 def test_update_state(write_manager,
                       db_manager,
                       prepare_request,
@@ -61,6 +62,7 @@ def test_update_state(write_manager,
     assert head_hash_after != head_hash_before
 
 
+@pytest.mark.request_handlers
 def test_uncommitted_state_after_apply(write_manager,
                                        db_manager,
                                        constraint_serializer,
@@ -77,6 +79,7 @@ def test_uncommitted_state_after_apply(write_manager,
     assert constraint_serializer.deserialize(from_state) == constraint
 
 
+@pytest.mark.request_handlers
 def test_init_state_from_ledger(write_manager,
                                 db_manager,
                                 constraint_serializer,

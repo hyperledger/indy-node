@@ -1,3 +1,4 @@
+import pytest
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.util import randomString
 from plenum.test.node_catchup.helper import checkNodeDataForEquality, \
@@ -11,6 +12,7 @@ from indy_node.test.helper import TestNode, sdk_add_raw_attribute, \
 from indy_common.config_helper import NodeConfigHelper
 
 
+@pytest.mark.catchup
 def test_new_node_catchup_update_projection(looper,
                                             nodeSet, tconf, tdir,
                                             sdk_pool_handle,

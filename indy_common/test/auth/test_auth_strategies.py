@@ -27,11 +27,13 @@ def local_auth_strategy(auth_map):
     return LocalAuthStrategy(auth_map=auth_map)
 
 
+@pytest.mark.auth
 def test_local_strategy_found_the_same_action_id(local_auth_strategy):
     assert local_auth_strategy.get_auth_constraint("SomeType--ADD--some_field--*--new_value")
     assert local_auth_strategy.get_auth_constraint("SomeType--EDIT--some_field--old_value--new_value")
 
 
+@pytest.mark.auth
 def test_local_strategy_not_found_action_id(local_auth_strategy):
     assert local_auth_strategy.get_auth_constraint("SomeType--ADD--some_field--*--other_new_value") is None
     assert local_auth_strategy.get_auth_constraint("SomeType--EDIT--some_field--old_value--other_new_value") is None
@@ -52,51 +54,61 @@ def config_ledger_strategy(state, state_serializer):
                                     serializer=state_serializer)
 
 
+@pytest.mark.auth
 def test_is_accepted_by_the_same(is_accepted):
     assert is_accepted("TYPE--PREFIX--FIELD--OLD_VALUE--NEW_VALUE",
                        "TYPE--PREFIX--FIELD--OLD_VALUE--NEW_VALUE")
 
 
+@pytest.mark.auth
 def test_not_is_accepted_by_prefix(is_accepted):
     assert not is_accepted("TYPE--PREFIX--FIELD--OLD_VALUE--NEW_VALUE",
                            "aaTYPE--PREFIX--FIELD--OLD_VALUE--NEW_VALUE")
 
 
+@pytest.mark.auth
 def test_not_is_accepted_by_type(is_accepted):
     assert not is_accepted("TYPE--PREFIX--FIELD--OLD_VALUE--NEW_VALUE",
                            "TYPE--aaPREFIX--FIELD--OLD_VALUE--NEW_VALUE")
 
 
+@pytest.mark.auth
 def test_not_is_accepted_by_field(is_accepted):
     assert not is_accepted("TYPE--PREFIX--FIELD--OLD_VALUE--NEW_VALUE",
                            "TYPE--PREFIX--aaFIELD--OLD_VALUE--NEW_VALUE")
 
 
+@pytest.mark.auth
 def test_not_is_accepted_by_old_value(is_accepted):
     assert not is_accepted("TYPE--PREFIX--FIELD--OLD_VALUE--NEW_VALUE",
                            "TYPE--PREFIX--FIELD--aaOLD_VALUE--NEW_VALUE")
 
 
+@pytest.mark.auth
 def test_not_is_accepted_by_new_value(is_accepted):
     assert not is_accepted("TYPE--PREFIX--FIELD--OLD_VALUE--NEW_VALUE",
                            "TYPE--PREFIX--FIELD--OLD_VALUE--aaNEW_VALUE")
 
 
+@pytest.mark.auth
 def test_is_accepted_for_all_field(is_accepted):
     assert is_accepted("TYPE--PREFIX--*--OLD_VALUE--NEW_VALUE",
                        "TYPE--PREFIX--FIELD--OLD_VALUE--NEW_VALUE")
 
 
+@pytest.mark.auth
 def test_is_accepted_for_all_old_value(is_accepted):
     assert is_accepted("TYPE--PREFIX--FIELD--*--NEW_VALUE",
                        "TYPE--PREFIX--FIELD--OLD_VALUE--NEW_VALUE")
 
 
+@pytest.mark.auth
 def test_is_accepted_for_all_new_value(is_accepted):
     assert is_accepted("TYPE--PREFIX--FIELD--OLD_VALUE--*",
                        "TYPE--PREFIX--FIELD--OLD_VALUE--NEW_VALUE")
 
 
+@pytest.mark.auth
 def test_is_accepted_for_all(is_accepted):
     assert is_accepted("TYPE--PREFIX--*--*--*",
                        "TYPE--PREFIX--FIELD--OLD_VALUE--NEW_VALUE")

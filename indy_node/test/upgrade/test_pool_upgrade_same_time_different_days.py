@@ -4,10 +4,12 @@ from datetime import datetime, timedelta
 
 import dateutil
 import dateutil.tz
+import pytest
 
 from indy_node.test.upgrade.helper import sdk_ensure_upgrade_sent
 
 
+@pytest.mark.upgrade
 def test_pool_upgrade_same_time_different_days(looper, tconf, nodeSet,
                                                validUpgrade, sdk_pool_handle,
                                                sdk_wallet_trustee, nodeIds):

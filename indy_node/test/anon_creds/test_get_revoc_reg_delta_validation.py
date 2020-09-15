@@ -9,6 +9,7 @@ from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 
 
+@pytest.mark.anon_creds
 def test_revoc_reg_delta_schema_validation_wrong_type(looper, sdk_wallet_steward):
     req = build_get_revoc_reg_delta(looper, sdk_wallet_steward)
     req['operation'][FROM] = "10"
@@ -16,6 +17,7 @@ def test_revoc_reg_delta_schema_validation_wrong_type(looper, sdk_wallet_steward
         SafeRequest(**req)
 
 
+@pytest.mark.anon_creds
 def test_revoc_reg_delta_schema_validation_missed_fields(looper, sdk_wallet_steward):
     req = build_get_revoc_reg_delta(looper, sdk_wallet_steward)
     del req['operation'][REVOC_REG_DEF_ID]
@@ -23,6 +25,7 @@ def test_revoc_reg_delta_schema_validation_missed_fields(looper, sdk_wallet_stew
         SafeRequest(**req)
 
 
+@pytest.mark.anon_creds
 def test_revoc_reg_delta_from_greater_then_to(create_node_and_not_start,
                                               looper, sdk_wallet_steward):
     node = create_node_and_not_start

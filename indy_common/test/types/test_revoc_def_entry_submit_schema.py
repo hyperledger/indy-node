@@ -1,4 +1,7 @@
 from collections import OrderedDict
+
+import pytest
+
 from indy_common.types import RevocRegEntryValueField, ClientRevocRegEntrySubmitField
 from plenum.common.messages.fields import NonEmptyStringField, IterableField, ConstantField, LimitedLengthStringField
 from indy_common.constants import REVOC_REG_DEF_ID, REVOC_TYPE, VALUE, PREV_ACCUM, \
@@ -20,24 +23,28 @@ EXPECTED_REVOC_DEF_ENTRY_SUBMIT_FIELDS = OrderedDict([
 ])
 
 
+@pytest.mark.types
 def test_revoc_entry_value_has_expected_fields():
     actual_field_names = OrderedDict(
         RevocRegEntryValueField.schema).keys()
     assert actual_field_names == EXPECTED_REVOC_DEF_ENTRY_VALUE_FIELDS.keys()
 
 
+@pytest.mark.types
 def test_revoc_entry_value_has_expected_validators():
     schema = dict(RevocRegEntryValueField.schema)
     for field, validator in EXPECTED_REVOC_DEF_ENTRY_VALUE_FIELDS.items():
         assert isinstance(schema[field], validator)
 
 
+@pytest.mark.types
 def test_client_revoc_entry_submit_has_expected_fields():
     actual_field_names = OrderedDict(
         ClientRevocRegEntrySubmitField.schema).keys()
     assert actual_field_names == EXPECTED_REVOC_DEF_ENTRY_SUBMIT_FIELDS.keys()
 
 
+@pytest.mark.types
 def test_client_revoc_entry_submit_has_expected_validators():
     schema = dict(ClientRevocRegEntrySubmitField.schema)
     for field, validator in EXPECTED_REVOC_DEF_ENTRY_SUBMIT_FIELDS.items():

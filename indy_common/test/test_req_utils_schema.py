@@ -68,59 +68,72 @@ def get_schema_reply():
     }
 
 
+@pytest.mark.test
 def test_get_write_schema_name(write_schema_request):
     assert 'Degree' == get_write_schema_name(write_schema_request)
 
 
+@pytest.mark.test
 def test_get_write_schema_version(write_schema_request):
     assert '1.0' == get_write_schema_version(write_schema_request)
 
 
+@pytest.mark.test
 def test_get_write_schema_attr_names(write_schema_request):
     assert ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad',
             'expiry_date'] == get_write_schema_attr_names(write_schema_request)
 
 
+@pytest.mark.test
 def test_get_txn_schema_name(write_schema_request):
     txn = reqToTxn(write_schema_request)
     assert 'Degree' == get_txn_schema_name(txn)
 
 
+@pytest.mark.test
 def test_get_txn_schema_version(write_schema_request):
     txn = reqToTxn(write_schema_request)
     assert '1.0' == get_txn_schema_version(txn)
 
 
+@pytest.mark.test
 def test_get_txn_schema_attr_names(write_schema_request):
     txn = reqToTxn(write_schema_request)
     assert ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad',
             'expiry_date'] == get_txn_schema_attr_names(txn)
 
 
+@pytest.mark.test
 def test_get_read_schema_name(read_schema_request):
     assert 'Degree' == get_read_schema_name(read_schema_request)
 
 
+@pytest.mark.test
 def test_get_read_schema_version(read_schema_request):
     assert '1.0' == get_read_schema_version(read_schema_request)
 
 
+@pytest.mark.test
 def test_get_read_schema_from(read_schema_request):
     assert 'L5AD5g65TDQr1PPHHRoiGf' == get_read_schema_from(read_schema_request)
 
 
+@pytest.mark.test
 def test_get_reply_schema_name(get_schema_reply):
     assert 'Degree' == get_reply_schema_name(get_schema_reply)
 
 
+@pytest.mark.test
 def test_get_reply_schema_version(get_schema_reply):
     assert '1.0' == get_reply_schema_version(get_schema_reply)
 
 
+@pytest.mark.test
 def test_get_reply_schema_from(get_schema_reply):
     assert 'L5AD5g65TDQr1PPHHRoiGf' == get_reply_schema_from(get_schema_reply)
 
 
+@pytest.mark.test
 def test_get_reply_schema_attr_names(get_schema_reply):
     assert ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad',
             'expiry_date'] == get_reply_schema_attr_names(get_schema_reply)

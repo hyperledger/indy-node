@@ -43,6 +43,7 @@ def patch_pkg_mgr(monkeypatch):
                         lambda *x: mock_get_info_from_package_manager(*x))
 
 
+@pytest.mark.upgrade
 @pytest.mark.parametrize("fltr_hld,res_dep",
                          [
                           ([pkg_a[0]], [pkg_a]),

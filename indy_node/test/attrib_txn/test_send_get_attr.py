@@ -48,12 +48,14 @@ def send_hash_attrib(looper, sdk_pool_handle, sdk_wallet_trustee):
     return rep
 
 
+@pytest.mark.attrib_txn
 def test_send_get_attr_succeeds_for_existing_uuid_dest(
         looper, sdk_pool_handle, sdk_wallet_trustee, send_raw_attrib):
     wh, did = sdk_wallet_trustee
     sdk_get_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trustee, did, attrib_name)
 
 
+@pytest.mark.attrib_txn
 def test_send_get_attr_fails_for_nonexistent_uuid_dest(
         looper, sdk_pool_handle, sdk_wallet_trustee, send_raw_attrib):
     _, submitter_did = sdk_wallet_trustee
@@ -67,6 +69,7 @@ def test_send_get_attr_fails_for_nonexistent_uuid_dest(
     e.match('should be one of \[16, 32\]')
 
 
+@pytest.mark.attrib_txn
 def test_send_get_attr_fails_for_invalid_attrib(
         looper, sdk_pool_handle, sdk_wallet_trustee, send_raw_attrib):
     did = createUuidIdentifier()
@@ -78,6 +81,7 @@ def test_send_get_attr_fails_for_invalid_attrib(
     sdk_get_and_check_replies(looper, [request_couple])
 
 
+@pytest.mark.attrib_txn
 def test_send_get_attr_fails_with_missing_dest(
         looper, sdk_pool_handle, sdk_wallet_trustee, send_raw_attrib):
     _, submitter_did = sdk_wallet_trustee
@@ -91,6 +95,7 @@ def test_send_get_attr_fails_with_missing_dest(
     e.match('should be one of \[16, 32\]')
 
 
+@pytest.mark.attrib_txn
 def test_send_get_attr_fails_with_missing_attrib(
         looper, sdk_pool_handle, sdk_wallet_trustee, send_raw_attrib):
     _, submitter_did = sdk_wallet_trustee
@@ -106,6 +111,7 @@ def test_send_get_attr_fails_with_missing_attrib(
     e.match('missed fields')
 
 
+@pytest.mark.attrib_txn
 def test_send_get_attr_enc_succeeds_for_existing_uuid_dest(
         looper, sdk_pool_handle, sdk_wallet_trustee, send_enc_attrib):
     _, submitter_did = sdk_wallet_trustee
@@ -116,6 +122,7 @@ def test_send_get_attr_enc_succeeds_for_existing_uuid_dest(
     sdk_get_and_check_replies(looper, [request_couple])
 
 
+@pytest.mark.attrib_txn
 def test_send_get_attr_hash_succeeds_for_existing_uuid_dest(
         looper, sdk_pool_handle, sdk_wallet_trustee, send_hash_attrib):
     _, submitter_did = sdk_wallet_trustee

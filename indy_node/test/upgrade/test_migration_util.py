@@ -1,3 +1,5 @@
+import pytest
+
 from indy_node.utils.migration_tool import _get_relevant_migrations
 
 
@@ -10,6 +12,7 @@ def comparator_relevant_migration_script(
         migration_scripts, current_version, new_version)
 
 
+@pytest.mark.upgrade
 def test_relevant_migration_script_positive():
     comparator_relevant_migration_script(['1_0_96_to_1_0_97'],
                                          '1.0.95',
@@ -37,6 +40,7 @@ def test_relevant_migration_script_positive():
                                          ['1_0_96_to_1_0_97'])
 
 
+@pytest.mark.upgrade
 def test_relevant_migration_script_current_version_higher():
     comparator_relevant_migration_script(['1_0_96_to_1_0_97'],
                                          '1.0.97',
@@ -52,6 +56,7 @@ def test_relevant_migration_script_current_version_higher():
                                          [])
 
 
+@pytest.mark.upgrade
 def test_relevant_migration_script_downgrade():
     comparator_relevant_migration_script(['1_0_96_to_1_0_97'],
                                          '1.0.97',
@@ -71,6 +76,7 @@ def test_relevant_migration_script_downgrade():
                                          ['1_0_97_to_1_0_96'])
 
 
+@pytest.mark.upgrade
 def test_relevant_migration_script_new_version_lower():
     comparator_relevant_migration_script(['1_0_96_to_1_0_97'],
                                          '1.0.87',
@@ -82,6 +88,7 @@ def test_relevant_migration_script_new_version_lower():
                                          [])
 
 
+@pytest.mark.upgrade
 def test_relevant_migration_script_multiple_scripts():
     comparator_relevant_migration_script(['1_0_96_to_1_0_97', '1_0_100_to_1_0_102'],
                                          '1.0.87',
@@ -121,6 +128,7 @@ def test_relevant_migration_script_multiple_scripts():
                                           '1_0_102_to_1_0_104'])
 
 
+@pytest.mark.upgrade
 def test_relevant_migration_reinstall():
     comparator_relevant_migration_script(['1_0_96_to_1_0_97'],
                                          '1.0.96',

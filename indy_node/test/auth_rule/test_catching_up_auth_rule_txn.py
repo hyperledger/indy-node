@@ -17,6 +17,7 @@ from plenum.test.stasher import delay_rules_without_processing
 from stp_core.loop.eventually import eventually
 
 
+@pytest.mark.auth_rule
 def test_catching_up_auth_rule_txn(looper,
                                    txnPoolNodeSet,
                                    sdk_wallet_trustee,

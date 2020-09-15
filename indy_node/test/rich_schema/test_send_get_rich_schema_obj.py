@@ -61,6 +61,7 @@ def write_rich_schema(looper, sdk_pool_handle, sdk_wallet_endorser):
                                                rs_version=rs_version, rs_type=rs_type, rs_content=content)
 
 
+@pytest.mark.rich_schema
 @pytest.mark.parametrize('txn_type, rs_type, content, rs_id, rs_name, rs_version', PARAMS)
 def test_send_get_rich_schema_obj_by_id(looper, sdk_pool_handle, sdk_wallet_endorser,
                                         write_rich_schema,
@@ -90,6 +91,7 @@ def test_send_get_rich_schema_obj_by_id(looper, sdk_pool_handle, sdk_wallet_endo
     check_valid_proof(result)
 
 
+@pytest.mark.rich_schema
 @pytest.mark.parametrize('txn_type, rs_type, content, rs_id, rs_name, rs_version', PARAMS)
 def test_send_get_rich_schema_obj_by_metadata(looper, sdk_pool_handle, sdk_wallet_endorser, sdk_wallet_client,
                                               write_rich_schema,
@@ -121,6 +123,7 @@ def test_send_get_rich_schema_obj_by_metadata(looper, sdk_pool_handle, sdk_walle
     check_valid_proof(result)
 
 
+@pytest.mark.rich_schema
 @pytest.mark.parametrize('txn_type, rs_type, content, rs_id, rs_name, rs_version', PARAMS)
 def test_send_get_rich_schema_obj_by_invalid_id(looper, sdk_pool_handle, sdk_wallet_endorser,
                                                 write_rich_schema,
@@ -140,6 +143,7 @@ def test_send_get_rich_schema_obj_by_invalid_id(looper, sdk_pool_handle, sdk_wal
     check_valid_proof(result)
 
 
+@pytest.mark.rich_schema
 @pytest.mark.parametrize('txn_type, rs_type, content, rs_id, rs_name, rs_version', PARAMS)
 @pytest.mark.parametrize('invalid_meta_name, invalid_meta_value', [(RS_NAME, randomString()),
                                                                    (RS_VERSION, "100.3"),
@@ -166,6 +170,7 @@ def test_send_get_rich_schema_obj_by_invalid_metadata(looper, sdk_pool_handle, s
     check_valid_proof(result)
 
 
+@pytest.mark.rich_schema
 @pytest.mark.parametrize('txn_type, rs_type, content, rs_id, rs_name, rs_version', PARAMS)
 def test_send_get_rich_schema_obj_by_no_id(looper, sdk_pool_handle, sdk_wallet_endorser,
                                            write_rich_schema,
@@ -180,6 +185,7 @@ def test_send_get_rich_schema_obj_by_no_id(looper, sdk_pool_handle, sdk_wallet_e
                                             get_rich_schema_by_id_operation)
 
 
+@pytest.mark.rich_schema
 @pytest.mark.parametrize('txn_type, rs_type, content, rs_id, rs_name, rs_version', PARAMS)
 @pytest.mark.parametrize('absent_meta', [RS_NAME, RS_VERSION, RS_TYPE])
 def test_send_get_rich_schema_obj_by_no_metadata(looper, sdk_pool_handle, sdk_wallet_endorser,

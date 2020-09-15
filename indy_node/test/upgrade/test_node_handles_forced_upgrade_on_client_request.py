@@ -1,3 +1,5 @@
+import pytest
+
 from indy_node.test import waits
 from indy_node.test.upgrade.helper import checkUpgradeScheduled, \
     sdk_send_upgrade
@@ -7,6 +9,7 @@ from plenum.test.test_node import getNonPrimaryReplicas
 from stp_core.loop.eventually import eventually
 
 
+@pytest.mark.upgrade
 def test_node_handles_forced_upgrade_on_client_request(
         looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee,
         validUpgradeExpForceTrue):

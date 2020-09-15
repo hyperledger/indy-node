@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+import pytest
+
 from indy_common.constants import SHA256
 from indy_node.test import waits
 from indy_node.test.upgrade.helper import bumpVersion, checkUpgradeScheduled, \
@@ -9,7 +11,8 @@ from plenum.common.util import randomString
 from stp_core.loop.eventually import eventually
 
 
-def testRescheduleUpgradeToLowerVersionThanPreviouslyScheduled(
+@pytest.mark.upgrade
+def test_reschedule_upgrade_to_lower_version_than_previously_scheduled(
         looper, tconf, nodeSet, validUpgrade, sdk_pool_handle, sdk_wallet_trustee):
     """
     A node starts at version 1.2 running has scheduled upgrade for version 1.5

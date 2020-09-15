@@ -1,5 +1,6 @@
 import json
 
+import pytest
 from indy.ledger import build_nym_request, sign_request, submit_request
 
 from indy_common.state import domain
@@ -10,6 +11,7 @@ from plenum.test.node_catchup.helper import waitNodeDataEquality
 from plenum.test.pool_transactions.helper import disconnect_node_and_ensure_disconnected
 
 
+@pytest.mark.persistance
 def test_idr_cache_update_after_catchup(txnPoolNodeSet,
                                         looper,
                                         sdk_pool_handle,

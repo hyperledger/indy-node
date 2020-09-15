@@ -1,3 +1,5 @@
+import pytest
+
 from indy_node.test import waits
 from indy_node.test.upgrade.helper import checkUpgradeScheduled
 from plenum.common.constants import VERSION
@@ -6,6 +8,7 @@ from stp_core.loop.eventually import eventually
 from indy_common.config_helper import NodeConfigHelper
 
 
+@pytest.mark.upgrade
 def testNodeSchedulesUpgradeAfterRestart(upgradeScheduled, looper, nodeSet,
                                          validUpgrade, testNodeClass,
                                          tdir, tconf, allPluginsPath):

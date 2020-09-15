@@ -27,6 +27,7 @@ def tdirWithPoolTxns(tdirWithPoolTxns, poolTxnNodeNames, tdir, tconf):
     return tdirWithPoolTxns
 
 
+@pytest.mark.upgrade
 def test_node_detected_upgrade_done(nodeSet):
     '''
     Test that each node checks Upgrade Log on startup (after Upgrade restart), and writes SUCCESS to it
@@ -38,6 +39,7 @@ def test_node_detected_upgrade_done(nodeSet):
         assert node.upgrader.lastActionEventInfo.ev_type == UpgradeLog.Events.succeeded
 
 
+@pytest.mark.upgrade
 def test_node_sent_upgrade_successful(looper, nodeSet, nodeIds):
     '''
     Test that each node sends NODE_UPGRADE Success event (because it sees SUCCESS in Upgrade log)
@@ -49,6 +51,7 @@ def test_node_sent_upgrade_successful(looper, nodeSet, nodeIds):
                                          expected_version=version)
 
 
+@pytest.mark.upgrade
 def test_node_sent_upgrade_successful_once_view_change(looper, nodeSet, nodeIds):
     '''
     Test that each node sends NODE_UPGRADE Success event only once after each view change
@@ -66,6 +69,7 @@ def test_node_sent_upgrade_successful_once_view_change(looper, nodeSet, nodeIds)
                                                 expected_version=version)
 
 
+@pytest.mark.upgrade
 def test_node_sent_upgrade_successful_once_restart(looper, nodeSet, nodeIds):
     '''
     Test that each node sends NODE_UPGRADE Success event only once after restart,

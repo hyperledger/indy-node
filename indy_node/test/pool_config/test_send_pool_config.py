@@ -1,3 +1,5 @@
+import pytest
+
 from indy_node.test.pool_config.helper import check_pool_config_writable_set, \
     sdk_ensure_pool_config_sent, sdk_pool_config_sent
 from stp_core.loop.eventually import eventually
@@ -5,6 +7,7 @@ from stp_core.loop.eventually import eventually
 from plenum.test.pool_transactions.helper import disconnect_node_and_ensure_disconnected
 
 
+@pytest.mark.pool_config
 def test_send_pool_config_writes_false_force_false(
         nodeSet, looper, sdk_pool_handle, sdk_wallet_trustee, poolConfigWFFF):
     sdk_ensure_pool_config_sent(looper, sdk_pool_handle, sdk_wallet_trustee,
@@ -12,6 +15,7 @@ def test_send_pool_config_writes_false_force_false(
     check_pool_config_writable_set(nodeSet, False)
 
 
+@pytest.mark.pool_config
 def test_send_pool_config_writes_true_force_true(
         nodeSet, looper, sdk_pool_handle, sdk_wallet_trustee, poolConfigWTFT):
     sdk_ensure_pool_config_sent(looper, sdk_pool_handle, sdk_wallet_trustee,
@@ -19,6 +23,7 @@ def test_send_pool_config_writes_true_force_true(
     check_pool_config_writable_set(nodeSet, True)
 
 
+@pytest.mark.pool_config
 def test_send_pool_config_writes_false_force_true(
         nodeSet, looper, sdk_pool_handle, sdk_wallet_trustee, poolConfigWFFT):
     sdk_ensure_pool_config_sent(looper, sdk_pool_handle, sdk_wallet_trustee,
@@ -26,6 +31,7 @@ def test_send_pool_config_writes_false_force_true(
     check_pool_config_writable_set(nodeSet, False)
 
 
+@pytest.mark.pool_config
 def test_send_pool_config_writes_true_force_false(
         nodeSet, looper, sdk_pool_handle, sdk_wallet_trustee, poolConfigWTFF):
     sdk_ensure_pool_config_sent(looper, sdk_pool_handle, sdk_wallet_trustee,
@@ -33,6 +39,7 @@ def test_send_pool_config_writes_true_force_false(
     check_pool_config_writable_set(nodeSet, True)
 
 
+@pytest.mark.pool_config
 def test_send_pool_config_2_nodes_can_force_writes_false_force_true(
         nodeSet, looper, sdk_pool_handle, sdk_wallet_trustee, poolConfigWFFT):
     assert len(nodeSet) == 4

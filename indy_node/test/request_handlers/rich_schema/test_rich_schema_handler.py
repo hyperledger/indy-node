@@ -20,5 +20,6 @@ def rich_schema_req(rich_schema_handler):
     return req
 
 
+@pytest.mark.request_handlers
 def test_schema_dynamic_validation_passes(rich_schema_handler, rich_schema_req):
     rich_schema_handler.dynamic_validation(rich_schema_req, 0)

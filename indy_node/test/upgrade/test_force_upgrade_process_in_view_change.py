@@ -19,6 +19,7 @@ def fake_node(tdir, tconf):
     return node
 
 
+@pytest.mark.upgrade
 def test_client_force_request_not_discard_in_view_change_with_dict(fake_node):
     sender = "frm"
     msg = sdk_gen_request({TXN_TYPE: POOL_UPGRADE, FORCE: True}).as_dict

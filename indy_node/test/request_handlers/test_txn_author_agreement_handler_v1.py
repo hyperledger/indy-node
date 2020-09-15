@@ -27,6 +27,7 @@ def txn_author_agreement_handler(tconf, domain_state, write_auth_req_validator):
     return handler
 
 
+@pytest.mark.request_handlers
 def test_update_state(txn_author_agreement_handler, taa_request):
     seq_no = 1
     txn_time = 1560241033

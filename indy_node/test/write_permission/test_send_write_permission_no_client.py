@@ -18,6 +18,7 @@ from indy.anoncreds import issuer_create_schema
 from indy.ledger import build_schema_request
 
 
+@pytest.mark.write_permission
 def test_client_cant_send_nym(looper,
                               txnPoolNodeSet,
                               sdk_wallet_client,
@@ -32,6 +33,7 @@ def test_client_cant_send_nym(looper,
     e.match('Rule for this action is')
 
 
+@pytest.mark.write_permission
 def test_client_can_send_attrib(looper,
                                 sdk_wallet_client,
                                 sdk_wallet_endorser,
@@ -50,6 +52,7 @@ def test_client_can_send_attrib(looper,
     assert e.match('can not touch raw field since only the owner can modify it')
 
 
+@pytest.mark.write_permission
 def test_client_cant_send_schema(looper,
                                  txnPoolNodeSet,
                                  sdk_wallet_client,
@@ -71,6 +74,7 @@ def test_client_cant_send_schema(looper,
                          RequestRejectedException, 'Rule for this action is')
 
 
+@pytest.mark.write_permission
 def test_client_cant_send_claim_def(looper,
                                     txnPoolNodeSet,
                                     sdk_wallet_client,

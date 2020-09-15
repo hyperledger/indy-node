@@ -36,6 +36,7 @@ def sdk_wallet_new_steward(looper, sdk_pool_handle, sdk_wallet_trustee):
     return wh, client_did
 
 
+@pytest.mark.view_change
 def test_view_change_during_alternating_unstash(looper, txnPoolNodeSet, sdk_pool_handle,
                                                 sdk_wallet_trustee, sdk_wallet_new_steward, tconf):
     slow_node = txnPoolNodeSet[-1]

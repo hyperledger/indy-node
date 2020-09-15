@@ -53,6 +53,7 @@ def claim_def_request(creator, schema):
                               'data': {}})
 
 
+@pytest.mark.request_handlers
 def test_claim_def_dynamic_validation_without_schema(claim_def_request,
                                                      claim_def_handler: ClaimDefHandler):
     with pytest.raises(InvalidClientRequest) as e:
@@ -61,12 +62,14 @@ def test_claim_def_dynamic_validation_without_schema(claim_def_request,
            in e._excinfo[1].reason
 
 
+@pytest.mark.request_handlers
 def test_claim_def_dynamic_validation_for_new_claim_def(claim_def_request, schema,
                                                         claim_def_handler: ClaimDefHandler):
     claim_def_handler.ledger.appendTxns([schema])
     claim_def_handler.dynamic_validation(claim_def_request, 0)
 
 
+@pytest.mark.request_handlers
 def test_claim_def_dynamic_validation_without_permission(claim_def_request, schema,
                                                          claim_def_handler: ClaimDefHandler):
     claim_def_handler.ledger.appendTxns([schema])
@@ -83,6 +86,7 @@ def test_claim_def_dynamic_validation_without_permission(claim_def_request, sche
         claim_def_handler.dynamic_validation(request, 0)
 
 
+@pytest.mark.request_handlers
 def test_claim_def_dynamic_validation_for_unknown_identifier(claim_def_request, schema,
                                                              claim_def_handler: ClaimDefHandler):
     test_identifier = randomString()
@@ -95,6 +99,7 @@ def test_claim_def_dynamic_validation_for_unknown_identifier(claim_def_request, 
         claim_def_handler.dynamic_validation(request, 0)
 
 
+@pytest.mark.request_handlers
 def test_claim_def_dynamic_validation_without_ref_to_not_schema(claim_def_request, schema,
                                                                 claim_def_handler: ClaimDefHandler, creator):
     claim_def_handler.ledger.appendTxns([schema])
@@ -107,6 +112,7 @@ def test_claim_def_dynamic_validation_without_ref_to_not_schema(claim_def_reques
            in e._excinfo[1].reason
 
 
+@pytest.mark.request_handlers
 def test_update_state(claim_def_request, claim_def_handler: ClaimDefHandler, schema_handler, schema_request):
     # add schema to state
     schema_seq_no = 1
@@ -129,6 +135,7 @@ def test_update_state(claim_def_request, claim_def_handler: ClaimDefHandler, sch
                                                       claim_def_txn_time)
 
 
+@pytest.mark.request_handlers
 def test_update_state_with_incorrect_data(claim_def_request, claim_def_handler: ClaimDefHandler,
                                           schema_handler, schema_request):
     # add schema to state
@@ -152,6 +159,7 @@ def test_update_state_with_incorrect_data(claim_def_request, claim_def_handler: 
         claim_def_handler.update_state(claim_def_txn, None, claim_def_request)
 
 
+@pytest.mark.request_handlers
 def test_update_state_with_incorrect_schema_seq_no(claim_def_request, claim_def_handler: ClaimDefHandler,
                                                    schema_handler, schema_request):
     claim_def_seq_no = 1

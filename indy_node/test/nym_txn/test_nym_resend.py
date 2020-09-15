@@ -1,10 +1,14 @@
 import json
 
+import pytest
+
 from indy_node.test.helper import createHalfKeyIdentifierAndAbbrevVerkey
 from indy.ledger import sign_request, submit_request, build_nym_request
 from plenum.common.constants import REPLY, REJECT
 
 
+
+@pytest.mark.nym_txn
 def test_nym_send_twice(looper, sdk_pool_handle, sdk_wallet_steward):
     idr, verkey = createHalfKeyIdentifierAndAbbrevVerkey()
 
@@ -21,6 +25,7 @@ def test_nym_send_twice(looper, sdk_pool_handle, sdk_wallet_steward):
             assert result['op'] == REJECT
 
 
+@pytest.mark.nym_txn
 def test_nym_resend(looper, sdk_pool_handle, sdk_wallet_steward):
     idr, verkey = createHalfKeyIdentifierAndAbbrevVerkey()
 

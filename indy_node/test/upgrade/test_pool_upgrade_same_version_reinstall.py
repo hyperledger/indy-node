@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+import pytest
+
 from indy_node.test import waits
 from stp_core.loop.eventually import eventually
 from plenum.common.constants import VERSION
@@ -9,6 +11,7 @@ from indy_node.test.upgrade.helper import checkUpgradeScheduled, \
 from indy_common.constants import REINSTALL
 
 
+@pytest.mark.upgrade
 def test_do_upgrade_to_the_same_version_if_reinstall(looper, tconf, nodeSet,
                                                      validUpgrade, sdk_pool_handle,
                                                      sdk_wallet_trustee):

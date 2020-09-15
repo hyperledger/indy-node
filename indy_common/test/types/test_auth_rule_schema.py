@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+import pytest
+
 from indy_common.types import ClientSchemaOperation, SchemaField, ConstraintListField, ClientAuthRuleOperation, \
     ConstraintEntityField, ConstraintField, AuthRuleValueField
 from plenum.common.messages.fields import ConstantField, VersionField, IterableField, LimitedLengthStringField, \
@@ -12,11 +14,13 @@ EXPECTED_ORDERED_FIELDS_CONSTRAINT_LIST = OrderedDict([
 ])
 
 
+@pytest.mark.types
 def test_has_expected_fields_list():
     actual_field_names = OrderedDict(ConstraintListField().schema).keys()
     assert actual_field_names == EXPECTED_ORDERED_FIELDS_CONSTRAINT_LIST.keys()
 
 
+@pytest.mark.types
 def test_has_expected_validators_list():
     schema = dict(ConstraintListField().schema)
     for field, validator in EXPECTED_ORDERED_FIELDS_CONSTRAINT_LIST.items():
@@ -34,11 +38,13 @@ EXPECTED_ORDERED_FIELDS_CONSTRAINT_ENTITY = OrderedDict([
 ])
 
 
+@pytest.mark.types
 def test_has_expected_fields_entity():
     actual_field_names = OrderedDict(ConstraintEntityField.schema).keys()
     assert actual_field_names == EXPECTED_ORDERED_FIELDS_CONSTRAINT_ENTITY.keys()
 
 
+@pytest.mark.types
 def test_has_expected_validators_entity():
     schema = dict(ConstraintEntityField.schema)
     for field, validator in EXPECTED_ORDERED_FIELDS_CONSTRAINT_ENTITY.items():
@@ -57,11 +63,13 @@ EXPECTED_ORDERED_FIELDS = OrderedDict([
 ])
 
 
+@pytest.mark.types
 def test_has_expected_fields():
     actual_field_names = OrderedDict(ClientAuthRuleOperation.schema).keys()
     assert actual_field_names == EXPECTED_ORDERED_FIELDS.keys()
 
 
+@pytest.mark.types
 def test_has_expected_validators():
     schema = dict(ClientAuthRuleOperation.schema)
     for field, validator in EXPECTED_ORDERED_FIELDS.items():

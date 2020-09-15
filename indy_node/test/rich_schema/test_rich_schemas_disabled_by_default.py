@@ -24,6 +24,7 @@ def write_rich_schema(looper, sdk_pool_handle, sdk_wallet_endorser, tconf):
                                                    rs_version=rs_version, rs_type=rs_type, rs_content=content)
 
 
+@pytest.mark.rich_schema
 @pytest.mark.parametrize('txn_type, rs_type, content, rs_id',
                          [(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT, randomString())])
 def test_send_rich_schema_obj_disabled_by_default(looper, sdk_pool_handle, sdk_wallet_endorser, txn_type, rs_type,
@@ -39,6 +40,7 @@ def test_send_rich_schema_obj_disabled_by_default(looper, sdk_pool_handle, sdk_w
         sdk_get_and_check_replies(looper, [req])
 
 
+@pytest.mark.rich_schema
 @pytest.mark.parametrize('txn_type, rs_type, content, rs_id, rs_name, rs_version', PARAMS)
 def test_send_get_rich_schema_obj_by_id_disabled_by_default(looper, sdk_pool_handle, sdk_wallet_endorser, txn_type,
                                                             rs_type, content, rs_id, rs_name, rs_version,
@@ -54,6 +56,7 @@ def test_send_get_rich_schema_obj_by_id_disabled_by_default(looper, sdk_pool_han
                                             get_rich_schema_by_id_operation)
 
 
+@pytest.mark.rich_schema
 @pytest.mark.parametrize('txn_type, rs_type, content, rs_id, rs_name, rs_version', PARAMS)
 def test_send_get_rich_schema_obj_by_metadata_disabled_by_default(looper, sdk_pool_handle, sdk_wallet_endorser,
                                                                   txn_type, rs_type, content, rs_id, rs_name,

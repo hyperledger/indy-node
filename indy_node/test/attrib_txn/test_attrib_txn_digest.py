@@ -26,21 +26,25 @@ def req(req_json, looper, sdk_wallet_steward):
     return Request(**json.loads(req_signed))
 
 
+@pytest.mark.attrib_txn
 def test_attrib_txn_payload_digest_req_json(req_json, req):
     txn = reqToTxn(req_json)
     assert get_payload_digest(txn) == req.payload_digest
 
 
+@pytest.mark.attrib_txn
 def test_attrib_txn_digest_req_dict(req):
     txn = reqToTxn(req.as_dict)
     assert get_digest(txn) == req.digest
 
 
+@pytest.mark.attrib_txn
 def test_attrib_txn_digest_req_instance(req):
     txn = reqToTxn(req)
     assert get_digest(txn) == req.digest
 
 
+@pytest.mark.attrib_txn
 def test_attrib_txn_different_payload(req_json):
     req_json = json.loads(req_json)
     n_req = Request(**req_json)

@@ -1,6 +1,9 @@
+import pytest
+
 from indy_common.authorize.auth_actions import compile_action_id, ADD_PREFIX, EDIT_PREFIX, split_action_id, ActionDef
 
 
+@pytest.mark.auth
 def test_get_action_id_action_add(action_add):
     assert action_add.get_action_id() == compile_action_id(txn_type='SomeType',
                                                            field='some_field',
@@ -9,6 +12,7 @@ def test_get_action_id_action_add(action_add):
                                                            prefix=ADD_PREFIX)
 
 
+@pytest.mark.auth
 def test_get_action_id_action_edit(action_edit):
     assert action_edit.get_action_id() == compile_action_id(txn_type='SomeType',
                                                             field='some_field',
@@ -17,6 +21,7 @@ def test_get_action_id_action_edit(action_edit):
                                                             prefix=EDIT_PREFIX)
 
 
+@pytest.mark.auth
 def test_split_action_id():
     origin = ActionDef('SomeType', 'PREFIX', 'some_field', 'old_value', 'new_value')
     splitted_action = split_action_id(compile_action_id(txn_type='SomeType',

@@ -1,15 +1,16 @@
+import pytest
 from plenum.common.util import get_utc_epoch
 from storage.kv_in_memory import KeyValueStorageInMemory
 from indy_node.persistence.idr_cache import IdrCache
 
 identifier = "fake_identifier"
-committed_items = (0,   # seq_no
-                   get_utc_epoch(), # txn_time
+committed_items = (0,  # seq_no
+                   get_utc_epoch(),  # txn_time
                    "committed_ta_value",
                    "committed_role_value",
                    "committed_verkey_value",)
 uncommitted_items = (1,
-                     get_utc_epoch(), # txn_time
+                     get_utc_epoch(),  # txn_time
                      "uncommitted_ta_value",
                      "uncommitted_role_value",
                      "uncommitted_verkey_value",)
@@ -21,6 +22,7 @@ def make_idr_cache():
     return cache
 
 
+@pytest.mark.persistance
 def test_committed():
     """
     Check that it is possible to set and get committed items
@@ -33,6 +35,7 @@ def test_committed():
     assert committed_items == real_items
 
 
+@pytest.mark.persistance
 def test_uncommitted():
     """
     Check that it is possible to set and get uncommitted items
@@ -43,6 +46,7 @@ def test_uncommitted():
     assert uncommitted_items == real_items
 
 
+@pytest.mark.persistance
 def test_committed_and_uncommitted():
     """
     Check that uncommitted and committed can present together

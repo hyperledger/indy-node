@@ -6,6 +6,7 @@ from plenum.common.types import f
 from plenum.test.helper import sdk_gen_request, sdk_sign_request_objects
 
 
+@pytest.mark.validator_info
 def test_validator_info_handler(monkeypatch,
                                 sdk_wallet_trustee,
                                 txnPoolNodeSet,
