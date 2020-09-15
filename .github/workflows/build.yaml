@@ -1,0 +1,15 @@
+name: build
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-18.04
+    container: m00sey/indy-node-build:1.0
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - run: pwd
+
+      - name: Install dependencies
+        run: pip install -e .[tests]

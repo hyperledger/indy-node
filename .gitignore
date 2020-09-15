@@ -72,8 +72,9 @@ include/
 # generated doc files
 docs/source/api_docs/
 
-# hidden files
-.*
+# IntelliJ specific condig
+*.idea
+*.iml
 
 # Vagrant files
 .vagrant
