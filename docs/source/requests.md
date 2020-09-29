@@ -302,7 +302,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
              - `identifier` is a DID of a transaction author who doesn't have write permissions; `endorser` is a DID of a user with Endorser role (that is with write permissions).
              - new NYM creation: `identifier` is a DID of an Endorser creating a new DID, and `dest` is a newly created DID.
         - `reqId` (integer): 
-            Unique ID number of the requested transaction.
+            Unique ID number of the request containing a transaction to be written.
   
         - `digest` (SHA256 hex digest string):
             SHA256 hash hex digest of all fields in the initial requests (including signatures) 
