@@ -56,8 +56,6 @@ Parameters:
 - _indy_node_channel_ (master): which release channel to use (master/rc/stable)
 - _indy_node_ver_
 - _indy_plenum_ver_
-- _python_indy_crypto_ver_
-- _libindy_crypto_ver_
 
 Todos:
 - allow providing only _indy_node_ver_
