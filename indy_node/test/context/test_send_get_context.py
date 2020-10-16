@@ -1,3 +1,5 @@
+# Ensure that enableRichSchemas is set to True in the indy_common.config file before running this test
+
 import json
 
 import pytest

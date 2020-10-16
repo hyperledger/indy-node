@@ -1,4 +1,5 @@
 from typing import Type
+from indy_common.config import enableRichSchemas
 
 from common.version import (
     DigitDotVersion, SourceVersion, PackageVersion
@@ -10,10 +11,11 @@ from indy_common.node_version import NodeVersion
 
 NodeVersion = NodeVersion
 
-#Rich Schema
-class ContextVersion(DigitDotVersion):
-    def __init__(self, version: str, **kwargs):
-        super().__init__(version, parts_num=(2, 3), **kwargs)
+# Rich Schema
+if enableRichSchemas == True:
+    class ContextVersion(DigitDotVersion):
+        def __init__(self, version: str, **kwargs):
+            super().__init__(version, parts_num=(2, 3), **kwargs)
 
 
 class SchemaVersion(DigitDotVersion):

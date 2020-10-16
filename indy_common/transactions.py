@@ -1,4 +1,5 @@
 from plenum.common.transactions import Transactions, PlenumTransactions
+from indy_common.config import enableRichSchemas
 
 
 class IndyTransactions(Transactions):
@@ -38,9 +39,10 @@ class IndyTransactions(Transactions):
     GET_AUTH_RULE = "121"
     AUTH_RULES = "122"
 
-    #Rich Schema
-    SET_CONTEXT = "200"
-    GET_CONTEXT = "300"
+    # Rich Schema
+    if enableRichSchemas == True:
+        SET_CONTEXT = "200"
+        GET_CONTEXT = "300"
 
     @staticmethod
     def get_name_from_code(code: str):

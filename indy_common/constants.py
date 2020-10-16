@@ -4,6 +4,7 @@ from plenum.common.constants import TXN_TYPE, TARGET_NYM, ORIGIN, DATA, RAW, \
     ENC, HASH, NAME, VERSION, ALIAS, VERKEY, FORCE
 from indy_common.roles import Roles
 from indy_common.transactions import IndyTransactions
+from indy_common.config import enableRichSchemas
 
 Environment = NamedTuple("Environment", [
     ("poolLedger", str),
@@ -11,11 +12,12 @@ Environment = NamedTuple("Environment", [
 ])
 
 # Rich Schema
-# CONTEXT
-CONTEXT_NAME = "name"
-CONTEXT_VERSION = "version"
-CONTEXT_CONTEXT = "context"
-CONTEXT_FROM = "dest"
+if enableRichSchemas == True:
+    # CONTEXT
+    CONTEXT_NAME = "name"
+    CONTEXT_VERSION = "version"
+    CONTEXT_CONTEXT = "context"
+    CONTEXT_FROM = "dest"
 
 # SCHEMA
 SCHEMA_NAME = "name"

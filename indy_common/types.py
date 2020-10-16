@@ -42,7 +42,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     AUTH_TYPE, \
     FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
 from indy_common.version import SchemaVersion, ContextVersion
-
+from indy_common.config import enableRichSchemas
 
 class Request(PRequest):
     def signingPayloadState(self, identifier=None):
@@ -98,22 +98,23 @@ class SchemaField(MessageValidator):
 # This should work if URIs are passed
 # FIXME This will break if dictionary entries are passed
 # FIXME Replace LimitedLengthStringField with something that can validate a context.
-class SetContextField(MessageValidator):
-    context = (
-        (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
-        (CONTEXT_CONTEXT, IterableField(
-            LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
-            min_length=1,
-            max_length=CONTEXT_ATTRIBUTES_LIMIT)),
-    )
+if enableRichSchemas == True:
+    class SetContextField(MessageValidator):
+        context = (
+            (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+            (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
+            (CONTEXT_CONTEXT, IterableField(
+                LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
+                min_length=1,
+                max_length=CONTEXT_ATTRIBUTES_LIMIT)),
+        )
 
-class GetContextField(MessageValidator):
-    context = (
-        (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
-        (ORIGIN, IdentifierField(optional=True))
-    )
+    class GetContextField(MessageValidator):
+        context = (
+            (CONTEXT_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+            (CONTEXT_VERSION, VersionField(version_cls=ContextVersion)),
+            (ORIGIN, IdentifierField(optional=True))
+        )
 
 
 class ClaimDefField(MessageValidator):
@@ -178,19 +179,20 @@ class ClientGetSchemaOperation(MessageValidator):
     )
 
 
-#Rich Schema
-class ClientSetContextOperation(MessageValidator):
-    context = (
-        (TXN_TYPE, ConstantField(SET_CONTEXT)),
-        (DATA, SetContextField()),
-    )
+# Rich Schema
+if enableRichSchemas == True:
+    class ClientSetContextOperation(MessageValidator):
+        context = (
+            (TXN_TYPE, ConstantField(SET_CONTEXT)),
+            (DATA, SetContextField()),
+        )
 
-class ClientGetContextOperation(MessageValidator):
-    context = (
-        (TXN_TYPE, ConstantField(GET_CONTEXT)),
-        (CONTEXT_FROM, IdentifierField()),
-        (DATA, GetContextField()),
-    )
+    class ClientGetContextOperation(MessageValidator):
+        context = (
+            (TXN_TYPE, ConstantField(GET_CONTEXT)),
+            (CONTEXT_FROM, IdentifierField()),
+            (DATA, GetContextField()),
+        )
 
 
 class ClientAttribOperation(MessageValidator):
@@ -445,7 +447,34 @@ class ClientGetAuthRuleOperation(MessageValidator):
 
 
 class ClientOperationField(PClientOperationField):
-    _specific_operations = {
+    if enableRichSchemas == True:
+        _specific_operations = {
+            SCHEMA: ClientSchemaOperation(),
+            ATTRIB: ClientAttribOperation(),
+            GET_ATTR: ClientGetAttribOperation(),
+            CLAIM_DEF: ClientClaimDefSubmitOperation(),
+            GET_CLAIM_DEF: ClientClaimDefGetOperation(),
+            DISCLO: ClientDiscloOperation(),
+            GET_NYM: ClientGetNymOperation(),
+            GET_SCHEMA: ClientGetSchemaOperation(),
+            POOL_UPGRADE: ClientPoolUpgradeOperation(),
+            POOL_CONFIG: ClientPoolConfigOperation(),
+            AUTH_RULE: ClientAuthRuleOperation(),
+            AUTH_RULES: ClientAuthRulesOperation(),
+            GET_AUTH_RULE: ClientGetAuthRuleOperation(),
+            POOL_RESTART: ClientPoolRestartOperation(),
+            VALIDATOR_INFO: ClientValidatorInfoOperation(),
+            REVOC_REG_DEF: ClientRevocDefSubmitField(),
+            REVOC_REG_ENTRY: ClientRevocRegEntrySubmitField(),
+            GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
+            GET_REVOC_REG: ClientGetRevocRegField(),
+            GET_REVOC_REG_DELTA: ClientGetRevocRegDeltaField(),
+            # Rich Schema 
+            SET_CONTEXT: ClientSetContextOperation(), 
+            GET_CONTEXT: ClientGetContextOperation(),
+        }
+    else:
+        _specific_operations = {
         SCHEMA: ClientSchemaOperation(),
         ATTRIB: ClientAttribOperation(),
         GET_ATTR: ClientGetAttribOperation(),
@@ -466,9 +495,7 @@ class ClientOperationField(PClientOperationField):
         GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
         GET_REVOC_REG: ClientGetRevocRegField(),
         GET_REVOC_REG_DELTA: ClientGetRevocRegDeltaField(),
-        SET_CONTEXT: ClientSetContextOperation(), #Rich Schema 
-        GET_CONTEXT: ClientGetContextOperation(),
-    }
+        }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class
     # constant
