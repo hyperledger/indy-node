@@ -9,6 +9,7 @@ from indy_common.constants import RS_CONTEXT_TYPE_VALUE, JSON_LD_CONTEXT, RS_SCH
     RICH_SCHEMA_MAPPING, RICH_SCHEMA_CRED_DEF, RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
 from indy_node.test.api.helper import sdk_write_rich_schema_object_and_check, \
     sdk_build_rich_schema_request
+from indy_node.test.rich_schema.helper import rich_schemas_enabled_scope
 from indy_node.test.rich_schema.templates import W3C_BASE_CONTEXT, RICH_SCHEMA_EX1, RICH_SCHEMA_ENCODING_EX1, \
     RICH_SCHEMA_MAPPING_EX1, RICH_SCHEMA_CRED_DEF_EX1, RICH_SCHEMA_PRES_DEF_EX1
 from plenum.common.constants import TXN_PAYLOAD_METADATA_REQ_ID
@@ -16,6 +17,12 @@ from plenum.common.exceptions import RequestRejectedException, RequestNackedExce
 from plenum.common.types import OPERATION
 from plenum.common.util import randomString
 from plenum.test.helper import sdk_sign_and_submit_req, sdk_get_and_check_replies
+
+
+@pytest.fixture(scope="module")
+def tconf(tconf):
+    with rich_schemas_enabled_scope(tconf):
+        yield tconf
 
 
 # The order of creation is essential as some rich schema object reference others by ID

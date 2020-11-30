@@ -8,6 +8,7 @@ from indy_common.constants import DOMAIN_LEDGER_ID, RS_ID, RS_TYPE, RS_VERSION, 
     JSON_LD_TYPE_FIELD
 from indy_common.state.domain import encode_state_value
 from indy_common.types import Request
+from indy_common.config_util import getConfig
 from plenum.common.constants import TXN_PAYLOAD_METADATA_ENDORSER, TXN_PAYLOAD_METADATA_FROM, TXN_PAYLOAD_VERSION
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.txn_util import get_payload_data, get_seq_no, get_txn_time, get_from, get_endorser, \
@@ -37,6 +38,10 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler, metaclass=ABCMeta):
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
+
+        if not getConfig().enableRichSchemas:
+            raise InvalidClientRequest(request.identifier, request.reqId, "RicheSchemas feature is disabled")
+
         try:
             content_as_dict = JsonSerializer.loads(request.operation[RS_CONTENT])
         except ValueError:

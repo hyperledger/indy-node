@@ -1,9 +1,11 @@
 from indy_common.constants import RS_NAME, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
     RS_TYPE, RS_VERSION
+from indy_common.config_util import getConfig
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.abstract_rich_schema_object_handler import \
     AbstractRichSchemaObjectHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.request import Request
+from plenum.common.exceptions import InvalidClientRequest
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
 
@@ -15,6 +17,10 @@ class GetRichSchemaObjectByMetadataHandler(ReadRequestHandler):
 
     def get_result(self, request: Request):
         self._validate_request_type(request)
+
+        if not getConfig().enableRichSchemas:
+            raise InvalidClientRequest(request.identifier, request.reqId, "RicheSchemas feature is disabled")
+
         secondary_key = AbstractRichSchemaObjectHandler.make_secondary_key(request.operation[RS_TYPE],
                                                                            request.operation[RS_NAME],
                                                                            request.operation[RS_VERSION])
