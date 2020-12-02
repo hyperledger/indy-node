@@ -16,9 +16,16 @@ from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_sche
     RichSchemaMappingHandler
 from indy_node.server.request_handlers.domain_req_handlers.rich_schema.rich_schema_pres_def_handler import \
     RichSchemaPresDefHandler
+from indy_node.test.helper import rich_schemas_enabled_scope
 from indy_node.test.request_handlers.rich_schema.helper import context_request, rich_schema_request, \
     rich_schema_encoding_request, rich_schema_mapping_request, rich_schema_cred_def_request, \
     rich_schema_pres_def_request
+
+
+@pytest.fixture(scope="module")
+def tconf(tconf):
+    with rich_schemas_enabled_scope(tconf):
+        yield tconf
 
 
 @pytest.fixture(params=[RS_CONTEXT_TYPE_VALUE, RS_SCHEMA_TYPE_VALUE,

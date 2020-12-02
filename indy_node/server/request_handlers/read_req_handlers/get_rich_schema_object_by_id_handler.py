@@ -15,8 +15,8 @@ class GetRichSchemaObjectByIdHandler(ReadRequestHandler):
     def get_result(self, request: Request):
         self._validate_request_type(request)
 
-        if not getConfig().enableRichSchemas:
-            raise InvalidClientRequest(request.identifier, request.reqId, "RicheSchemas feature is disabled")
+        if not getConfig().ENABLE_RICH_SCHEMAS:
+            raise InvalidClientRequest(request.identifier, request.reqId, "RichSchema queries are disabled")
 
         id = request.operation[RS_ID]
 

@@ -18,8 +18,8 @@ class GetRichSchemaObjectByMetadataHandler(ReadRequestHandler):
     def get_result(self, request: Request):
         self._validate_request_type(request)
 
-        if not getConfig().enableRichSchemas:
-            raise InvalidClientRequest(request.identifier, request.reqId, "RicheSchemas feature is disabled")
+        if not getConfig().ENABLE_RICH_SCHEMAS:
+            raise InvalidClientRequest(request.identifier, request.reqId, "RichSchema queries are disabled")
 
         secondary_key = AbstractRichSchemaObjectHandler.make_secondary_key(request.operation[RS_TYPE],
                                                                            request.operation[RS_NAME],

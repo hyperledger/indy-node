@@ -39,8 +39,8 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler, metaclass=ABCMeta):
     def static_validation(self, request: Request):
         self._validate_request_type(request)
 
-        if not getConfig().enableRichSchemas:
-            raise InvalidClientRequest(request.identifier, request.reqId, "RicheSchemas feature is disabled")
+        if not getConfig().ENABLE_RICH_SCHEMAS:
+            raise InvalidClientRequest(request.identifier, request.reqId, "RichSchema transactions are disabled")
 
         try:
             content_as_dict = JsonSerializer.loads(request.operation[RS_CONTENT])

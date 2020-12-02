@@ -8,7 +8,7 @@ from indy_common.constants import JSON_LD_CONTEXT, RICH_SCHEMA, RICH_SCHEMA_ENCO
     GET_RICH_SCHEMA_OBJECT_BY_ID, RS_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, RS_NAME, RS_VERSION, RS_TYPE, \
     RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
 from indy_node.test.api.helper import sdk_write_rich_schema_object_and_check
-from indy_node.test.rich_schema.helper import rich_schemas_enabled_scope
+from indy_node.test.helper import rich_schemas_enabled_scope
 from indy_node.test.rich_schema.templates import RICH_SCHEMA_EX1, W3C_BASE_CONTEXT, RICH_SCHEMA_PRES_DEF_EX1, \
     RICH_SCHEMA_CRED_DEF_EX1, RICH_SCHEMA_MAPPING_EX1, RICH_SCHEMA_ENCODING_EX1
 from indy_node.test.state_proof.helper import check_valid_proof, sdk_submit_operation_and_get_result
