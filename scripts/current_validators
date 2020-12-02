@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import string
 import json
 import csv
 import logging

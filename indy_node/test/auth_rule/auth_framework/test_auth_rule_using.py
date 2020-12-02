@@ -3,6 +3,7 @@ import pytest
 from datetime import datetime, timedelta
 from collections import OrderedDict
 
+from indy_node.test.auth_rule.auth_framework.disable_taa import TAADisableTest
 from plenum.common.constants import STEWARD, TRUSTEE, IDENTITY_OWNER
 
 from indy_common.constants import (
@@ -10,7 +11,7 @@ from indy_common.constants import (
 )
 from indy_common.authorize import auth_map
 
-from plenum.test.helper import randomText
+from plenum.test.helper import randomText, view_change_timeout
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.testing_utils import FakeSomething
 
@@ -49,24 +50,21 @@ from indy_node.test.auth_rule.auth_framework.validator_info import ValidatorInfo
 from indy_node.test.pool_config.conftest import poolConfigWTFF
 from indy_node.test.upgrade.conftest import patch_packet_mgr_output, EXT_PKT_NAME, EXT_PKT_VERSION
 
-
 nodeCount = 7
 
 from stp_core.common.log import Logger
+
 Logger().enableStdLogging()
+
+
+@pytest.fixture(scope="module")
+def tconf(tconf):
+    with view_change_timeout(tconf, vc_timeout=5) as tconf:
+        yield tconf
 
 
 class TestAuthRuleUsing():
     map_of_tests = OrderedDict({
-        auth_map.adding_new_node.get_action_id(): AddNewNodeTest,
-        auth_map.adding_new_node_with_empty_services.get_action_id(): AddNewNodeEmptyServiceTest,
-        auth_map.demote_node.get_action_id(): DemoteNodeTest,
-        auth_map.promote_node.get_action_id(): PromoteNodeTest,
-        auth_map.change_node_ip.get_action_id(): EditNodeIpTest,
-        auth_map.change_node_port.get_action_id(): EditNodePortTest,
-        auth_map.change_client_ip.get_action_id(): EditNodeClientIpTest,
-        auth_map.change_client_port.get_action_id(): EditNodeClientPortTest,
-        auth_map.change_bls_key.get_action_id(): EditNodeBlsTest,
         auth_map.add_new_trustee.get_action_id(): AddNewTrusteeTest,
         auth_map.add_new_steward.get_action_id(): AddNewStewardTest,
         auth_map.add_new_endorser.get_action_id(): AddNewEndorserTest,
@@ -115,6 +113,16 @@ class TestAuthRuleUsing():
         auth_map.auth_rule.get_action_id(): AuthRuleTest,
         auth_map.auth_rules.get_action_id(): AuthRulesTest,
         auth_map.validator_info.get_action_id(): ValidatorInfoTest,
+        auth_map.adding_new_node.get_action_id(): AddNewNodeTest,
+        auth_map.adding_new_node_with_empty_services.get_action_id(): AddNewNodeEmptyServiceTest,
+        auth_map.demote_node.get_action_id(): DemoteNodeTest,
+        auth_map.promote_node.get_action_id(): PromoteNodeTest,
+        auth_map.change_node_ip.get_action_id(): EditNodeIpTest,
+        auth_map.change_node_port.get_action_id(): EditNodePortTest,
+        auth_map.change_client_ip.get_action_id(): EditNodeClientIpTest,
+        auth_map.change_client_port.get_action_id(): EditNodeClientPortTest,
+        auth_map.change_bls_key.get_action_id(): EditNodeBlsTest,
+        auth_map.disable_txn_author_agreement.get_action_id(): TAADisableTest,
     })
 
     # TODO a workaround until sdk aceepts empty TAA to make possible its deactivation
@@ -135,7 +143,7 @@ class TestAuthRuleUsing():
     def validUpgrade(self, nodeIds, tconf, pckg, monkeymodule):
         schedule = {}
         unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-        startAt = unow + timedelta(seconds=1000)
+        startAt = unow + timedelta(seconds=3000)
         acceptableDiff = tconf.MinSepBetweenNodeUpgrades + 1
         for i in nodeIds:
             schedule[i] = datetime.isoformat(startAt)

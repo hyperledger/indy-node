@@ -75,17 +75,22 @@ Indy Node repo consists of the following parts:
     - An official SDK for Indy.
     - It contains client and anoncreds implementation
     - You don't need it to contribute to Indy-Node. But please use indy-sdk for your own applications dealing with Indy ecosystem.
-- [indy-crypto](https://github.com/hyperledger/indy-crypto)
-    - A shared crypto library
-    - It's based on [AMCL](https://github.com/milagro-crypto/amcl)
+- [ursa](https://github.com/hyperledger/ursa)
+    - Hyperledger's shared crypto library
     - In particular, it contains BLS multi-signature crypto needed for state proofs support in Indy.
 
 ## Contact us
 
 - Bugs, stories, and backlog for this codebase are managed in [Hyperledger's Jira](https://jira.hyperledger.org).
 Use project name `INDY`.
-- Join us on [Jira's Rocket.Chat](https://chat.hyperledger.org/channel/indy) at `#indy` and/or `#indy-node` channels to discuss.
 
+
+[chat-url-indy]:https://chat.hyperledger.org/channel/indy
+[chat-url-indy-node]:https://chat.hyperledger.org/channel/indy-node
+[chat-image-indy]:https://raw.githubusercontent.com/hyperledger/chat-assets/master/indy.svg?sanitize=true
+[chat-image-indy-node]:https://raw.githubusercontent.com/hyperledger/chat-assets/master/indy-node.svg?sanitize=true
+
+- Join us on [Hyperledger's chat](https://chat.hyperledger.org/) in [![indy][chat-image-indy]][chat-url-indy] or [![indy-node][chat-image-indy-node]][chat-url-indy-node] to discuss.
 
 ## How to Contribute
 

@@ -36,8 +36,7 @@ def testNonTrustyCannotCancelUpgrade(looper, validUpgradeSent, sdk_pool_handle,
 def test_accept_then_reject_upgrade(
         looper, sdk_pool_handle, sdk_wallet_trustee, validUpgradeSent, validUpgrade):
     upgrade_name = validUpgrade[NAME]
-    error_msg = "InvalidClientRequest(\"Upgrade '{}' is already scheduled\"". \
-        format(upgrade_name)
+    error_msg = "Upgrade '{}' is already scheduled".format(upgrade_name)
 
     validUpgrade2 = deepcopy(validUpgrade)
 

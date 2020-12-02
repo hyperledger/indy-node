@@ -1,8 +1,8 @@
 from _sha256 import sha256
 from copy import deepcopy
 from json import JSONDecodeError
+from typing import Optional
 
-from common.exceptions import LogicError
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.serialization import attrib_raw_data_serializer
@@ -12,7 +12,7 @@ from indy_common.constants import ATTRIB
 from indy_common.state.state_constants import MARKER_ATTR
 from indy_node.server.request_handlers.utils import validate_attrib_keys
 from plenum.common.constants import DOMAIN_LEDGER_ID, RAW, ENC, HASH, TARGET_NYM
-from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
+from plenum.common.exceptions import InvalidClientRequest
 
 from plenum.common.request import Request
 from plenum.common.txn_util import get_type, get_request_data, get_payload_data, get_seq_no, get_txn_time
@@ -55,13 +55,12 @@ class AttributeHandler(WriteRequestHandler):
                                            'Attribute field must be dict while adding it as a row field'.
                                            format(TARGET_NYM))
 
-    def dynamic_validation(self, request: Request):
+    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
 
         identifier, req_id, operation = get_request_data(request)
 
-        if not (not operation.get(TARGET_NYM) or
-                self.__has_nym(operation[TARGET_NYM], is_committed=False)):
+        if not (not operation.get(TARGET_NYM) or self.__has_nym(operation[TARGET_NYM], is_committed=False)):
             raise InvalidClientRequest(identifier, request.reqId,
                                        '{} should be added before adding '
                                        'attribute for it'.

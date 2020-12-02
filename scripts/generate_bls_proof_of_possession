@@ -4,7 +4,7 @@ import os
 
 from crypto.bls.bls_key_manager import LoadBLSKeyError
 from crypto.bls.indy_crypto.bls_crypto_indy_crypto import \
-    BlsCryptoSignerIndyCrypto
+    BlsCryptoSignerIndyCrypto, IndyCryptoBlsUtils
 from indy_common.config_helper import NodeConfigHelper
 from plenum.bls.bls_key_manager_file import BlsKeyManagerFile
 from indy_common.config_util import getConfig
@@ -60,5 +60,6 @@ if __name__ == "__main__":
 
     if None not in [pk, sk]:
         print("The Public BLS Key is", pk)
-        key_proof = BlsCryptoSignerIndyCrypto.generate_key_proof(sk, pk)
-        print("BLS Proof of possession for the Public BLS Key is", key_proof)
+        key_proof_raw = BlsCryptoSignerIndyCrypto.generate_key_proof(sk, pk)
+        key_proof_str = IndyCryptoBlsUtils.bls_to_str(key_proof_raw)
+        print("BLS Proof of possession for the Public BLS Key is", key_proof_str)

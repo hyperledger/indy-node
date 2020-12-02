@@ -307,10 +307,10 @@ def sign_and_validate(looper, node, action_id, signer, op, did_ledger=None):
     request = Request(**json.loads(s_req))
 
     if auth_check(action_id, signer, op, did_ledger):
-        node.write_manager.dynamic_validation(request)
+        node.write_manager.dynamic_validation(request, 0)
     else:
         with pytest.raises(UnauthorizedClientRequest):
-            node.write_manager.dynamic_validation(request)
+            node.write_manager.dynamic_validation(request, 0)
 
 
 # TESTS
@@ -333,5 +333,9 @@ def test_nym_edit(
 
     if editor.verkey is None:  # skip that as well since it doesn't make sense
         return
+
+    if not ROLE in edit_op:  # skip if the update operation changes neither role nor verkey
+        if not VERKEY in edit_op:
+            return
 
     sign_and_validate(looper, txnPoolNodeSet[0], ActionIds.edit, editor, edit_op, did_ledger=edited)

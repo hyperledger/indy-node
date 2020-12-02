@@ -22,18 +22,18 @@ def make_schema_exist(schema_request, schema_handler):
 def test_schema_dynamic_validation_failed_existing_schema(schema_request, schema_handler):
     make_schema_exist(schema_request, schema_handler)
     with pytest.raises(UnauthorizedClientRequest, match=str(AuthConstraintForbidden())):
-        schema_handler.dynamic_validation(schema_request)
+        schema_handler.dynamic_validation(schema_request, 0)
 
 
 def test_schema_dynamic_validation_failed_not_authorised(schema_request, schema_handler):
     add_to_idr(schema_handler.database_manager.idr_cache, schema_request.identifier, None)
     with pytest.raises(UnauthorizedClientRequest):
-        schema_handler.dynamic_validation(schema_request)
+        schema_handler.dynamic_validation(schema_request, 0)
 
 
 def test_schema_dynamic_validation_passes(schema_request, schema_handler):
     add_to_idr(schema_handler.database_manager.idr_cache, schema_request.identifier, TRUSTEE)
-    schema_handler.dynamic_validation(schema_request)
+    schema_handler.dynamic_validation(schema_request, 0)
 
 
 def test_update_state(schema_request, schema_handler):

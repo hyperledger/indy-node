@@ -14,7 +14,6 @@ from plenum.common.constants import TRUSTEE, TXN_TYPE, STEWARD
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import reqToTxn, get_payload_data
-from plenum.common.util import randomString
 
 
 @pytest.fixture(scope="module")
@@ -28,14 +27,6 @@ def auth_rules_request(creator):
                    reqId=5,
                    operation={TXN_TYPE: AUTH_RULES,
                               RULES: [generate_auth_rule()]})
-
-
-@pytest.fixture(scope="module")
-def creator(db_manager):
-    identifier = randomString()
-    idr = db_manager.idr_cache
-    add_to_idr(idr, identifier, None)
-    return identifier
 
 
 def test_auth_rule_static_validation(auth_rules_request, auth_rules_handler: AuthRulesHandler):
@@ -74,7 +65,7 @@ def test_auth_rule_dynamic_validation_without_permission(auth_rules_request,
                                                          auth_rules_handler: AuthRulesHandler, creator):
     add_to_idr(auth_rules_handler.database_manager.idr_cache, creator, STEWARD)
     with pytest.raises(UnauthorizedClientRequest):
-        auth_rules_handler.dynamic_validation(auth_rules_request)
+        auth_rules_handler.dynamic_validation(auth_rules_request, 0)
 
 
 def test_auth_rule_dynamic_validation(auth_rules_request,

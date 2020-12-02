@@ -1,12 +1,10 @@
 #!/usr/bin/python3
 
-import string
 import json
 import logging
 from logging.handlers import RotatingFileHandler
 import argparse
 import sys
-import fileinput
 import csv
 import collections
 
@@ -24,6 +22,7 @@ log.setLevel(logging.INFO)
 
 log.addHandler(my_handler)
 
+
 def getCurrentValidatorsAddressPort():
     log.info('extracting addresses and ports of current validators')
     validatorsAddressPort = collections.OrderedDict()
@@ -34,6 +33,7 @@ def getCurrentValidatorsAddressPort():
         if 'VALIDATOR' in validator['services']:
             validatorsAddressPort[validator['alias']] = {'address': validator['node_ip'], 'port': validator['node_port']}
     return validatorsAddressPort
+
 
 def writeResult(validatorsAddressPort, outputFormat):
     if outputFormat == 'json':
@@ -55,11 +55,12 @@ def writeResult(validatorsAddressPort, outputFormat):
             validatorsAddressPort[key]['alias'] = key
             writer.writerow(validatorsAddressPort[key])
 
+
 def parseInputs():
     parser = argparse.ArgumentParser(description = 'This script accepts validator JSON data on stdin, and extracts the node address and port information from it.')
     parser.add_argument('--outFormat', help='May be json, csv, or aws. (Default: the output is csv.)')
     args = parser.parse_args()
-    if args.outFormat == None:
+    if args.outFormat is None:
         return 'csv'
     elif args.outFormat in ['csv', 'json', 'aws']:
         return args.outFormat
@@ -71,4 +72,4 @@ def parseInputs():
 if __name__ == '__main__':
     outputFormat = parseInputs()
     validatorsAddressPort = getCurrentValidatorsAddressPort()
-    writeResult = writeResult(validatorsAddressPort, outputFormat)
+    writeResult(validatorsAddressPort, outputFormat)

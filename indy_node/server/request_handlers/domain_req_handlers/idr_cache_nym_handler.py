@@ -1,3 +1,5 @@
+from typing import Optional
+
 from indy_common.constants import NYM, ROLE
 from indy_common.types import Request
 from plenum.common.constants import TARGET_NYM, VERKEY, TXN_TIME, DOMAIN_LEDGER_ID
@@ -34,7 +36,7 @@ class IdrCacheNymHandler(WriteRequestHandler):
     def static_validation(self, request):
         pass
 
-    def dynamic_validation(self, request):
+    def dynamic_validation(self, request, req_pp_time: Optional[int]):
         pass
 
     def gen_state_key(self, txn):

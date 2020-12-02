@@ -1,4 +1,5 @@
 from binascii import hexlify
+from typing import Optional
 
 from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
@@ -41,7 +42,7 @@ class NymHandler(PNymHandler):
                                        "{} not a valid role".
                                        format(role))
 
-    def dynamic_validation(self, request: Request):
+    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
         operation = request.operation
 
@@ -108,8 +109,10 @@ class NymHandler(PNymHandler):
         is_owner = origin == owner
 
         updateKeys = [ROLE, VERKEY]
+        updateKeysInOperationOrOwner = is_owner
         for key in updateKeys:
             if key in operation:
+                updateKeysInOperationOrOwner = True
                 newVal = operation[key]
                 oldVal = nym_data.get(key)
                 self.write_req_validator.validate(request,
@@ -118,6 +121,8 @@ class NymHandler(PNymHandler):
                                                                   old_value=oldVal,
                                                                   new_value=newVal,
                                                                   is_owner=is_owner)])
+        if not updateKeysInOperationOrOwner:
+            raise InvalidClientRequest(request.identifier, request.reqId)
 
     def _decode_state_value(self, encoded):
         if encoded:

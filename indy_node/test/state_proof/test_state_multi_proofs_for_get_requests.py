@@ -1,37 +1,25 @@
 import base64
 import copy
 import random
-
 import time
 
 import base58
-import pytest
-from common.serializers import serialization
+
 from common.serializers.serialization import state_roots_serializer, domain_state_serializer
 from crypto.bls.bls_multi_signature import MultiSignature, MultiSignatureValue
-from indy_common.authorize.auth_constraints import ConstraintsSerializer
-from indy_common.authorize.auth_map import auth_map
-from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from plenum.bls.bls_store import BlsStore
-from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, \
-    IDENTIFIER, NAME, VERSION, ROLE, VERKEY, KeyValueStorageType, \
-    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME, CURRENT_PROTOCOL_VERSION, DOMAIN_LEDGER_ID, NYM
-from plenum.common.txn_util import reqToTxn, append_txn_metadata, append_payload_metadata, set_type
-from plenum.common.types import f
 from indy_common.constants import \
     ATTRIB, CLAIM_DEF, SCHEMA, CLAIM_DEF_FROM, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_SIGNATURE_TYPE, \
-    CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES, LOCAL_AUTH_POLICY, \
-    CONFIG_LEDGER_AUTH_POLICY, GET_NYM, GET_ATTR, GET_CLAIM_DEF, GET_SCHEMA
-from indy_common.types import Request
-from indy_node.persistence.attribute_store import AttributeStore
-from indy_node.persistence.idr_cache import IdrCache
-from plenum.common.util import get_utc_epoch, friendlyToRaw, rawToFriendly, \
-    friendlyToHex, hexToFriendly
-from plenum.server.request_handlers.utils import nym_to_state_key
-from plenum.test.testing_utils import FakeSomething
-from state.pruning_state import PruningState
-from storage.kv_in_memory import KeyValueStorageInMemory
+    CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES, GET_NYM, GET_ATTR, \
+    GET_CLAIM_DEF, GET_SCHEMA
 from indy_common.state import domain
+from indy_common.types import Request
+from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, \
+    IDENTIFIER, NAME, VERSION, ROLE, VERKEY, STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME, \
+    CURRENT_PROTOCOL_VERSION, DOMAIN_LEDGER_ID, NYM
+from plenum.common.txn_util import reqToTxn, append_txn_metadata, append_payload_metadata, set_type
+from plenum.common.types import f
+from plenum.common.util import get_utc_epoch, friendlyToHex, hexToFriendly
+from plenum.server.request_handlers.utils import nym_to_state_key
 
 
 def extract_proof(result, expected_multi_sig):
@@ -72,6 +60,8 @@ def is_proof_verified(db_manager,
     )
     return verified
 
+
+# Similar tests for Rich Schema objects are in indy_node/test/request_handlers/rich_schema
 
 def test_state_proofs_for_get_attr(write_manager,
                                    read_manager,

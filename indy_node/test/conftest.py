@@ -31,8 +31,8 @@ from stp_core.common.log import Logger
 from plenum.common.util import randomString
 from plenum.common.constants import VALIDATOR, STEWARD_STRING, POOL_LEDGER_ID, DOMAIN_LEDGER_ID, IDR_CACHE_LABEL, \
     ATTRIB_LABEL, TRUSTEE, STEWARD, KeyValueStorageType, BLS_LABEL, TRUSTEE_STRING
-from plenum.test.helper import sdk_get_and_check_replies
-from plenum.test.test_node import checkNodesConnected
+from plenum.test.helper import sdk_get_and_check_replies, waitForViewChange
+from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir as plenum_tdir, nodeReg, \
@@ -55,7 +55,7 @@ from indy_common.constants import APP_NAME, CONFIG_LEDGER_ID, CONFIG_LEDGER_AUTH
 from indy_common.config_helper import NodeConfigHelper
 
 # noinspection PyUnresolvedReferences
-from indy_common.test.conftest import general_conf_tdir, tconf, poolTxnTrusteeNames, \
+from indy_common.test.conftest import general_conf_tdir, tconf as _tconf, poolTxnTrusteeNames, \
     domainTxnOrderedFields, looper, setTestLogLevel, node_config_helper_class, config_helper_class
 
 from indy_node.test.helper import TestNode, TestNodeBootstrap
@@ -70,6 +70,13 @@ strict_types.defaultShouldCheck = True
 
 Logger.setLogLevel(logging.NOTSET)
 
+
+@pytest.fixture(scope="module")
+def tconf(_tconf):
+    oldMax3PCBatchSize = _tconf.Max3PCBatchSize
+    _tconf.Max3PCBatchSize = 1
+    yield _tconf
+    _tconf.Max3PCBatchSize = oldMax3PCBatchSize
 
 @pytest.fixture(scope='module')
 def sdk_pool_handle(plenum_pool_handle, nodeSet):
@@ -100,7 +107,8 @@ def sdk_node_theta_added(looper,
                          allPluginsPath,
                          node_config_helper_class,
                          testNodeClass,
-                         name=None):
+                         name=None,
+                         services=[VALIDATOR]):
     new_steward_name = "testClientSteward" + randomString(3)
     new_node_name = name or "Theta"
 
@@ -125,7 +133,7 @@ def sdk_node_theta_added(looper,
                              nodePort=nodePort,
                              bls_key=bls_key,
                              sigseed=sigseed,
-                             services=[VALIDATOR],
+                             services=services,
                              key_proof=key_proof))
 
     # sending request using 'sdk_' functions
@@ -141,8 +149,9 @@ def sdk_node_theta_added(looper,
                                          testNodeClass,
                                          configClass=node_config_helper_class)
 
-    txnPoolNodeSet.append(new_node)
-    looper.run(checkNodesConnected(txnPoolNodeSet))
+    if services == [VALIDATOR]:
+        txnPoolNodeSet.append(new_node)
+        looper.run(checkNodesConnected(txnPoolNodeSet))
     sdk_pool_refresh(looper, sdk_pool_handle)
     return new_steward_wallet, new_node
 
@@ -211,6 +220,7 @@ def testNodeBootstrapClass():
 @pytest.fixture(scope="module")
 def newNodeAdded(looper, nodeSet, tdir, tconf, sdk_pool_handle,
                  sdk_wallet_trustee, allPluginsPath):
+    view_no = nodeSet[0].viewNo
     new_steward_wallet, new_node = sdk_node_theta_added(looper,
                                                         nodeSet,
                                                         tdir,
@@ -221,6 +231,9 @@ def newNodeAdded(looper, nodeSet, tdir, tconf, sdk_pool_handle,
                                                         node_config_helper_class=NodeConfigHelper,
                                                         testNodeClass=TestNode,
                                                         name='')
+    waitForViewChange(looper=looper, txnPoolNodeSet=nodeSet,
+                      expectedViewNo=view_no + 1)
+    ensureElectionsDone(looper=looper, nodes=nodeSet)
     return new_steward_wallet, new_node
 
 

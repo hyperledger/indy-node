@@ -338,7 +338,7 @@ def testSendAttribFailsForRawWithEndpointBeingEmptyString(
     })
     with pytest.raises(RequestNackedException) as e:
         sdk_add_attribute_and_check(looper, sdk_pool_handle, new_wallet, parameters)
-    e.match('object has no attribute')
+    e.match('should be a dict')
 
 
 def testSendAttribFailsIfRawContainsMulipleAttrs(

@@ -3,7 +3,7 @@ from perf_load.perf_req_gen import RequestGenerator
 
 
 class RGSeqReqs(RequestGenerator):
-    def __init__(self, *args, reqs=list(), next_random: bool=False, **kwargs):
+    def __init__(self, *args, reqs=list(), next_random: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
         self._req_idx = -1
         self._next_idx = self._rand_idx if next_random else self._seq_idx
@@ -13,7 +13,6 @@ class RGSeqReqs(RequestGenerator):
         for reqc, prms in reqs:
             if not issubclass(reqc, RequestGenerator):
                 raise RuntimeError("Bad Request class provided")
-            cnt = 1
             param = {}
             if isinstance(prms, int) and prms > 0:
                 cnt = prms

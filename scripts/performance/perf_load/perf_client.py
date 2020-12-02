@@ -152,17 +152,17 @@ class LoadClient:
                 self._taa_time = current_time + 1  # We are "signing" just 1 second after TAA created
                 break
 
-            # Check whether we can reach desired TAA state at all
-            if text == "" and version == "" and current_text != "":
-                raise RuntimeError("Cannot remove TAA from ledger without explicitely setting new version")
-
             # Check that we don't already have different TAA with same version
             expected_text, expected_version, _ = await self._get_taa(version)
             if expected_text != text and expected_version == version:
                 raise RuntimeError("Ledger already contains different TAA with same version ")
 
             # Try to set taa
-            set_taa = await ledger.build_txn_author_agreement_request(self._test_did, text, version)
+            if text != "":
+                set_taa = await ledger.build_txn_author_agreement_request(self._test_did, text, version,
+                                                                          ratification_ts=1500000000)
+            else:
+                set_taa = await ledger.build_disable_all_txn_author_agreements_request(self._test_did)
             await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, set_taa)
 
         self._logger.info("_taa_init done")
@@ -246,7 +246,7 @@ class LoadClient:
         if result['data'] is None:
             return "", "", None
 
-        return result['data']['text'], result['data']['version'], result['txnTime']
+        return result['data']['text'], result['data']['version'], result['data']['ratification_ts']
 
     async def _pool_auth_rules_init(self):
         if not self._set_auth_rule:
@@ -400,7 +400,7 @@ class LoadClient:
         if self._taa_text == "":
             return req
 
-        if '"type":"10001"' in req:
+        if json.loads(req)['operation']['type'] in ['10001', '0']:
             return req
 
         return await ledger.append_txn_author_agreement_acceptance_to_request(

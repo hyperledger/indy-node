@@ -117,3 +117,11 @@ def test_auth_map_revoc_reg():
     for (rule, rule_str) in nym_rules:
         assert rule.get_action_id() == rule_str
         assert rule_str in auth_map.auth_map.keys()
+
+
+def test_auth_map_disable_taa():
+    rules = [(auth_map.disable_txn_author_agreement, '8--ADD--*--*--*')]
+
+    for (rule, rule_str) in rules:
+        assert rule.get_action_id() == rule_str
+        assert rule_str in auth_map.auth_map.keys()
