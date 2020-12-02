@@ -10,6 +10,7 @@ from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNE
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
 from plenum.common.constants import TXN_AUTHOR_AGREEMENT
 from plenum.common.exceptions import RequestRejectedException
+from plenum.common.util import get_utc_epoch
 from plenum.test.helper import sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_sign_and_send_prepared_request
 from plenum.test.txn_author_agreement.helper import sdk_send_txn_author_agreement
@@ -34,16 +35,19 @@ class TxnAuthorAgreementTest(AuthTest):
 
         # Step 2. Check, that we cannot do txn the old way
         with pytest.raises(RequestRejectedException):
-            sdk_send_txn_author_agreement(self.looper, self.sdk_pool_handle, self.trustee_wallet, 'some_text', 'v1')
+            sdk_send_txn_author_agreement(self.looper, self.sdk_pool_handle, self.trustee_wallet, 'v1', 'some_text',
+                                          ratified=get_utc_epoch() - 300)
 
         # Step 3. Check, that new auth rule is used
-        sdk_send_txn_author_agreement(self.looper, self.sdk_pool_handle, self.new_default_wallet, 'other_text', 'v2')
+        sdk_send_txn_author_agreement(self.looper, self.sdk_pool_handle, self.new_default_wallet, 'v2', 'other_text',
+                                      ratified=get_utc_epoch() - 300)
 
         # Step 4. Return default auth rule
         self.send_and_check(self.default_auth_rule, wallet=self.trustee_wallet)
 
         # Step 5. Check, that default auth rule works
-        sdk_send_txn_author_agreement(self.looper, self.sdk_pool_handle, self.trustee_wallet, 'another_text', 'v3')
+        sdk_send_txn_author_agreement(self.looper, self.sdk_pool_handle, self.trustee_wallet, 'v3', 'another_text',
+                                      ratified=get_utc_epoch() - 300)
 
     def result(self):
         pass

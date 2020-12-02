@@ -5,8 +5,11 @@ from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr, accepted_roles, IDENTITY_OWNER, \
     AuthConstraintForbidden
 from indy_common.constants import ENDORSER, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
-    CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF, ATTRIB, AUTH_RULES
-from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML
+    CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, \
+    REVOC_REG_DEF, ATTRIB, AUTH_RULES, JSON_LD_CONTEXT, RICH_SCHEMA, RICH_SCHEMA_MAPPING, \
+    RICH_SCHEMA_ENCODING, RICH_SCHEMA_CRED_DEF, RICH_SCHEMA_PRES_DEF
+from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML, \
+    TXN_AUTHOR_AGREEMENT_DISABLE
 
 edit_role_actions = {}  # type: Dict[str, Dict[str, AuthActionEdit]]
 for role_from in accepted_roles:
@@ -46,6 +49,15 @@ txn_author_agreement = AuthActionAdd(txn_type=TXN_AUTHOR_AGREEMENT,
                                      field='*',
                                      value='*')
 
+edit_txn_author_agreement = AuthActionEdit(txn_type=TXN_AUTHOR_AGREEMENT,
+                                           field='*',
+                                           old_value='*',
+                                           new_value='*')
+
+disable_txn_author_agreement = AuthActionAdd(txn_type=TXN_AUTHOR_AGREEMENT_DISABLE,
+                                             field='*',
+                                             value='*')
+
 txn_author_agreement_aml = AuthActionAdd(txn_type=TXN_AUTHOR_AGREEMENT_AML,
                                          field='*',
                                          value='*')
@@ -67,6 +79,60 @@ edit_schema = AuthActionEdit(txn_type=SCHEMA,
                              field='*',
                              old_value='*',
                              new_value='*')
+
+add_json_ld_context = AuthActionAdd(txn_type=JSON_LD_CONTEXT,
+                                    field='*',
+                                    value='*')
+
+edit_json_ld_context = AuthActionEdit(txn_type=JSON_LD_CONTEXT,
+                                      field='*',
+                                      old_value='*',
+                                      new_value='*')
+
+add_rich_schema = AuthActionAdd(txn_type=RICH_SCHEMA,
+                                field='*',
+                                value='*')
+
+edit_rich_schema = AuthActionEdit(txn_type=RICH_SCHEMA,
+                                  field='*',
+                                  old_value='*',
+                                  new_value='*')
+
+add_rich_schema_encoding = AuthActionAdd(txn_type=RICH_SCHEMA_ENCODING,
+                                         field='*',
+                                         value='*')
+
+edit_rich_schema_encoding = AuthActionEdit(txn_type=RICH_SCHEMA_ENCODING,
+                                           field='*',
+                                           old_value='*',
+                                           new_value='*')
+
+add_rich_schema_mapping = AuthActionAdd(txn_type=RICH_SCHEMA_MAPPING,
+                                        field='*',
+                                        value='*')
+
+edit_rich_schema_mapping = AuthActionEdit(txn_type=RICH_SCHEMA_MAPPING,
+                                          field='*',
+                                          old_value='*',
+                                          new_value='*')
+
+add_rich_schema_cred_def = AuthActionAdd(txn_type=RICH_SCHEMA_CRED_DEF,
+                                         field='*',
+                                         value='*')
+
+edit_rich_schema_cred_def = AuthActionEdit(txn_type=RICH_SCHEMA_CRED_DEF,
+                                           field='*',
+                                           old_value='*',
+                                           new_value='*')
+
+add_rich_schema_pres_def = AuthActionAdd(txn_type=RICH_SCHEMA_PRES_DEF,
+                                         field='*',
+                                         value='*')
+
+edit_rich_schema_pres_def = AuthActionEdit(txn_type=RICH_SCHEMA_PRES_DEF,
+                                           field='*',
+                                           old_value='*',
+                                           new_value='*')
 
 add_claim_def = AuthActionAdd(txn_type=CLAIM_DEF,
                               field='*',
@@ -213,11 +279,27 @@ auth_map = OrderedDict([
     (add_new_identity_owner.get_action_id(), endorser_or_steward_or_trustee_constraint),
     (key_rotation.get_action_id(), owner_constraint),
     (txn_author_agreement.get_action_id(), one_trustee_constraint),
+    (edit_txn_author_agreement.get_action_id(), one_trustee_constraint),
+    (disable_txn_author_agreement.get_action_id(), one_trustee_constraint),
     (txn_author_agreement_aml.get_action_id(), one_trustee_constraint),
     (add_attrib.get_action_id(), owner_constraint),
     (edit_attrib.get_action_id(), owner_constraint),
     (add_schema.get_action_id(), endorser_or_steward_or_trustee_constraint),
     (edit_schema.get_action_id(), no_one_constraint),
+
+    (add_json_ld_context.get_action_id(), endorser_or_steward_or_trustee_constraint),
+    (edit_json_ld_context.get_action_id(), no_one_constraint),
+    (add_rich_schema.get_action_id(), endorser_or_steward_or_trustee_constraint),
+    (edit_rich_schema.get_action_id(), no_one_constraint),
+    (add_rich_schema_encoding.get_action_id(), endorser_or_steward_or_trustee_constraint),
+    (edit_rich_schema_encoding.get_action_id(), no_one_constraint),
+    (add_rich_schema_mapping.get_action_id(), endorser_or_steward_or_trustee_constraint),
+    (edit_rich_schema_mapping.get_action_id(), no_one_constraint),
+    (add_rich_schema_cred_def.get_action_id(), endorser_or_steward_or_trustee_constraint),
+    (edit_rich_schema_cred_def.get_action_id(), no_one_constraint),
+    (add_rich_schema_pres_def.get_action_id(), endorser_or_steward_or_trustee_constraint),
+    (edit_rich_schema_pres_def.get_action_id(), no_one_constraint),
+
     (add_claim_def.get_action_id(), endorser_or_steward_or_trustee_constraint),
     (edit_claim_def.get_action_id(), owner_constraint),
     (adding_new_node.get_action_id(), steward_owner_constraint),

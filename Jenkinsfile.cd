@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('SovrinHelpers@v2.1.1') _
+@Library('SovrinHelpers@v2.2.1') _
 
 String name = 'indy-node'
 String pkgName = name
@@ -113,11 +113,11 @@ def systemTests = { component, releaseVersion ->
         pkgVersion = releaseVersion
         testSchema = [
             ['test_ledger.py'],
-            ['test_vc.py'],
-            ['test_consensus.py'],
+            ['TestViewChangeSuite.py'],
+            ['TestConsensusSuite.py'],
             ['test_state_proof.py']
         ]
-        testVersion = 'v0.8.13'
+        testVersion = 'v0.8.40'
         testVersionByTag = true
         delegate.gatherLogs = gatherLogs
     }

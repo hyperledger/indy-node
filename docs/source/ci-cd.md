@@ -136,7 +136,7 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
 2. [**Contributor**]
     - Create `rc-X.Y.Z.rcN` branch from `release-X.Y.Z` (`N` starts from `1` and is incremented for each new RC).
     - Apply necessary changes from `master` (either `merge` or `cherry-pick`).
-    - (_optional_) [`indy-node`] Set `indy-plenum` version in `setup.py`.
+    - (_optional_) [`indy-node`] Set **stable** (just X.Y.Z) `indy-plenum` version in `setup.py`.
     - Set the package version `./bump_version.sh X.Y.Z.rcN`.
     - Commit, push and create a PR to `release-X.Y.Z`.
 3. Until PR is merged:

@@ -37,8 +37,8 @@ class RGGetDefRevoc(RGDefRevoc):
     def _rand_data(self):
         raw = libnacl.randombytes(16)
         submitter_did = rawToFriendly(raw)
-        cred_def_id = ':'.join([submitter_did, '03', 'CL', '1'])
-        def_revoc_id = ':'.join([submitter_did, '04', cred_def_id, 'CL_ACCUM', 'reg1'])
+        cred_def_id = ':'.join([submitter_did, '3', 'CL', '1'])
+        def_revoc_id = ':'.join([submitter_did, '4', cred_def_id, 'CL_ACCUM', 'reg1'])
         return def_revoc_id
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
@@ -133,7 +133,7 @@ class RGEntryRevoc(RGDefRevoc):
         try:
             req = await ledger.build_revoc_reg_entry_request(submit_did, self._default_revoc_reg_def_id,
                                                              "CL_ACCUM", revoc_reg_delta_json)
-        except Exception as ex:
+        except Exception:
             self._old_reqs_cnt = 0
             await self._upd_revoc_reg()
             raise NoReqDataAvailableException()

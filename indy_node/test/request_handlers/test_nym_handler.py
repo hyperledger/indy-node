@@ -80,22 +80,36 @@ def test_nym_static_validation_not_authorized_random(nym_request, nym_handler: N
 def test_nym_dynamic_validation_for_new_nym(nym_request, nym_handler: NymHandler, creator):
     nym_handler.write_req_validator.validate = get_exception(False)
     add_to_idr(nym_handler.database_manager.idr_cache, creator, STEWARD)
-    nym_handler.dynamic_validation(nym_request)
+    nym_handler.dynamic_validation(nym_request, 0)
 
     nym_handler.write_req_validator.validate = get_exception(True)
     with pytest.raises(UnauthorizedClientRequest):
-        nym_handler.dynamic_validation(nym_request)
+        nym_handler.dynamic_validation(nym_request, 0)
 
 
 def test_nym_dynamic_validation_for_existing_nym(nym_request: Request, nym_handler: NymHandler, creator):
     add_to_idr(nym_handler.database_manager.idr_cache, nym_request.operation['dest'], None)
     nym_handler.write_req_validator.validate = get_exception(False)
     add_to_idr(nym_handler.database_manager.idr_cache, creator, STEWARD)
-    nym_handler.dynamic_validation(nym_request)
+    nym_handler.dynamic_validation(nym_request, 0)
 
     nym_handler.write_req_validator.validate = get_exception(True)
     with pytest.raises(UnauthorizedClientRequest):
-        nym_handler.dynamic_validation(nym_request)
+        nym_handler.dynamic_validation(nym_request, 0)
+
+
+def test_nym_dynamic_validation_for_existing_nym_fails_with_no_changes(nym_handler: NymHandler,
+                                                                       creator):
+    nym_request = Request(identifier=creator,
+                          reqId=5,
+                          operation={'type': NYM,
+                                     'dest': randomString()})
+    add_to_idr(nym_handler.database_manager.idr_cache, nym_request.operation['dest'], None)
+    add_to_idr(nym_handler.database_manager.idr_cache, creator, STEWARD)
+
+    nym_handler.write_req_validator.validate = get_exception(True)
+    with pytest.raises(InvalidClientRequest):
+        nym_handler.dynamic_validation(nym_request, 0)
 
 
 def test_update_state(nym_request: Request, nym_handler: NymHandler):

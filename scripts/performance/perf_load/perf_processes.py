@@ -24,6 +24,7 @@ from perf_load.perf_gen_req_parser import ReqTypeParser
 from perf_load.perf_client import LoadClient
 from perf_load.perf_client_runner import ClientRunner
 from perf_load.perf_client_fees import LoadClientFees
+from perf_load.perf_utils import PoolRegistry
 
 
 parser = argparse.ArgumentParser(description='The script generates bunch of txns for the pool with Indy SDK. '
@@ -101,14 +102,20 @@ parser.add_argument('--taa_text', default="test transaction author agreement tex
 parser.add_argument('--taa_version', default="test_taa", type=str, required=False,
                     help='Transaction author agreement version')
 
+parser.add_argument('--promotion_shift', default=60, type=int, required=False,
+                    help='Shift between demotions and promotions')
+
+parser.add_argument('--nodes_untouched', default=0, type=int, required=False,
+                    help='Number of nodes to keep them safe from demotions and promotions')
+
 
 class LoadRunner:
     def __init__(self, clients=0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
                  seed=["000000000000000000000000Trustee1"], req_kind="nym", batch_size=10, refresh_rate=10,
                  buff_req=30, out_dir=".", val_sep="|", wallet_key="key", mode="p", pool_config='',
                  sync_mode="freeflow", load_rate=10, out_file="", load_time=0, taa_text="", taa_version="",
-                 ext_set=None, client_runner=LoadClient.run, log_lvl=logging.INFO,
-                 short_stat=False):
+                 promotion_shift=60, nodes_untouched=0, ext_set=None, client_runner=LoadClient.run,
+                 log_lvl=logging.INFO, short_stat=False):
         self._client_runner = client_runner
         self._clients = dict()  # key process future; value ClientRunner
         self._loop = asyncio.get_event_loop()
@@ -136,6 +143,8 @@ class LoadRunner:
         self._batch_rate = 1 / lr
         self._taa_text = taa_text
         self._taa_version = taa_version
+        self._promotion_shift = promotion_shift
+        self._nodes_untouched = nodes_untouched
         self._ext_set = ext_set
         if pool_config:
             try:
@@ -453,6 +462,8 @@ if __name__ == '__main__':
     args, extra = parser.parse_known_args()
     dict_args = vars(args)
 
+    pool_registry = PoolRegistry(dict_args["genesis_path"], dict_args["promotion_shift"], dict_args["nodes_untouched"])
+
     if len(extra) > 1:
         raise argparse.ArgumentTypeError("Only path to config file expected, but found extra arguments: {}".format(extra))
 
@@ -493,7 +504,9 @@ if __name__ == '__main__':
                     dict_args["batch_size"], dict_args["refresh_rate"], dict_args["buff_req"], out_dir,
                     dict_args["val_sep"], dict_args["wallet_key"], dict_args["mode"], dict_args["pool_config"],
                     dict_args["sync_mode"], dict_args["load_rate"], dict_args["out_file"], dict_args["load_time"],
-                    dict_args["taa_text"], dict_args["taa_version"], dict_args["ext_set"],
+                    dict_args["taa_text"], dict_args["taa_version"], dict_args["promotion_shift"],
+                    dict_args["nodes_untouched"], dict_args["ext_set"],
                     client_runner=LoadClient.run if not dict_args["ext_set"] else LoadClientFees.run,
-                    log_lvl=log_lvl, short_stat=dict_args["short_stat"])
+                    log_lvl=log_lvl,
+                    short_stat=dict_args["short_stat"])
     tr.load_run()

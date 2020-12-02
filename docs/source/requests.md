@@ -10,6 +10,12 @@
     * [CLAIM_DEF](#claim_def)
     * [REVOC_REG_DEF](#revoc_reg_def)
     * [REVOC_REG_ENTRY](#revoc_reg_entry)
+    * [JSON_LD_CONTEXT](#json_ld_context)
+    * [RICH_SCHEMA](#rich_schema)
+    * [RICH_SCHEMA_ENCODING](#rich_schema_encoding)
+    * [RICH_SCHEMA_MAPPING](#rich_schema_mapping)
+    * [RICH_SCHEMA_CRED_DEF](#rich_schema_cred_def)
+    * [RICH_SCHEMA_PRES_DEF](#rich_schema_pres_def)
     * [NODE](#node)
     * [POOL_UPGRADE](#pool_upgrade)
     * [POOL_CONFIG](#pool_config)
@@ -17,6 +23,8 @@
     * [AUTH_RULES](#auth_rules)
     * [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)
     * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)    
+    * [TRANSACTION_AUTHOR_AGREEMENT_DISABLE](#transaction_author_agreement_disable)
+
 
 * [Read Requests](#read-requests)
 
@@ -26,10 +34,14 @@
     * [GET_CLAIM_DEF](#get_claim_def)
     * [GET_REVOC_REG_DEF](#get_revoc_reg_def)
     * [GET_REVOC_REG](#get_revoc_reg)
-    * [GET_REVOC_REG_DELTA](#get_revoc_reg_delta)    
+    * [GET_REVOC_REG_DELTA](#get_revoc_reg_delta)   
+    * [GET_RICH_SCHEMA_OBJECT_BY_ID](#get_rich_schema_object_by_id) 
+    * [GET_RICH_SCHEMA_OBJECT_BY_METADATA](#get_rich_schema_object_by_metadata)     
     * [GET_AUTH_RULE](#get_auth_rule)
     * [GET_TRANSACTION_AUTHOR_AGREEMENT](#get_transaction_author_agreement)
     * [GET_TRANSACTION_AUTHOR_AGREEMENT_AML](#get_transaction_author_agreement_aml)
+    * [GET_CONTEXT](#get_context)
+    * [GET_RICH_SCHEMA](#get_rich_schema)
     * [GET_TXN](#get_txn)
 
 * [Action Requests](#action-requests)
@@ -51,17 +63,18 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
 
 ```
 {
-    'operation': {
-        'type': <request type>,
+    "operation": {
+        "type": <request type>,
+        "ver": <operation version>,
         <request-specific fields>
     },
     
-    'identifier': <author DID>,
-    `endorser`: <endorser DID>, 
-    'reqId': <req_id unique integer>,
-    'protocolVersion': 2,
-    'signature': <signature_value>,
-    # 'signatures': {
+    "identifier": <author DID>,
+    "endorser": <endorser DID>, 
+    "reqId": <req_id unique integer>,
+    "protocolVersion": 2,
+    "signature": <signature_value>,
+    # "signatures": {
     #      `did1`: <sig1>,
     #      `did2`: <sig2>,
     #  }    
@@ -91,6 +104,12 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
             - REVOC_REG_ENTRY = "114"
             - AUTH_RULE = "120"
             - AUTH_RULES = "122"
+            - JSON_LD_CONTEXT = "200"
+            - RICH_SCHEMA = "201"
+            - RICH_SCHEMA_ENCODING = "202"
+            - RICH_SCHEMA_MAPPING = "203"
+            - RICH_SCHEMA_CRED_DEF = "204"
+            - RICH_SCHEMA_PRES_DEF = "205"
             
         - read requests:
         
@@ -104,7 +123,16 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
             - GET_REVOC_REG_DEF = "115"
             - GET_REVOC_REG = "116"
             - GET_REVOC_REG_DELTA = "117"  
-            - GET_AUTH_RULE = "121"      
+            - GET_AUTH_RULE = "121"
+            - GET_RICH_SCHEMA_OBJECT_BY_ID = "300"
+            - GET_RICH_SCHEMA_OBJECT_BY_METADATA = "301"
+
+    - `ver` (string; optional)
+    
+        Operation request version which will be used as a transaction's payload version.
+        If the input request doesn't have the version specified, then default one will be used.
+        Some transactions (for example TRANSACTION_AUTHOR_AGREEMENT) have non-default transaction payload version
+        defined in source code as a result of evolution of business logic and features. 
             
     - request-specific data
 
@@ -113,12 +141,12 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
      Identifier of the transaction author as base58-encoded string
      for 16 or 32 bit DID value.
  
-     For read requests this is read request submitter. It can be any DID (not necessary present on the ledger as a NYM txn)
+     For read requests, the identifier is the submitter of the read request. It can be any DID (not necessary present on the ledger as a NYM txn)
  
-     For write requests this is transaction author.
-     It may differ from `endorser` field who submits the transaction on behalf of `identifier`. If `endorser` is absent,
-     then the author (`identifier`) plays the role of endorser and submits request by his own.
-     It also may differ from `dest` field for some of requests (for example NYM), where `dest` is a 
+     For write requests, the identifier is the transaction author.
+     It may differ from the `endorser` field who submits the transaction on behalf of an `identifier`. If `endorser` is absent,
+     then the author (`identifier`) plays the role of the endorser and submits a request on his own.
+     It also may differ from `dest` field for some of the requests (for example NYM), where `dest` is a 
      target identifier (for example, a newly created DID identifier).
      
      *Example*:
@@ -154,22 +182,23 @@ Write requests to Domain and added-by-plugins ledgers may have additional Transa
 
 ```
 {
-    'operation': {
-        'type': <request type>,
+    "operation": {
+        "type": <request type>,
+        "ver": <operation version>,
         <request-specific fields>
     },
     
-    'identifier': <author DID>,
-    'endorser': <endorser DID>,
-    'reqId': <req_id unique integer>,
-    'taaAcceptance': {
-        'taaDigest': <digest hex string>,
-        'mechanism': <mechaism string>,
-        'time': <time integer>
+    "identifier": <author DID>,
+    "endorser": <endorser DID>,
+    "reqId": <req_id unique integer>,
+    "taaAcceptance": {
+        "taaDigest": <digest hex string>,
+        "mechanism": <mechaism string>,
+        "time": <time integer>
      }
-    'protocolVersion': 2,
-    'signature': <signature_value>,
-    # 'signatures': {
+    "protocolVersion": 2,
+    "signature": <signature_value>,
+    # "signatures": {
     #      `did1`: <sig1>,
     #      `did2`: <sig2>,
     #  }    
@@ -200,15 +229,16 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
 
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": <...>,
         "txn": {
             "type": <...>,
+            "ver": <...>,
             "protocolVersion": <...>,
             
             "data": {
-                "ver": <...>,
+
                 <txn-specific fields>
             },
             
@@ -238,8 +268,8 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
             }]
         }
     
-        'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'],
+        "rootHash": "5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
     }
 }
 ```
@@ -269,12 +299,21 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         - REVOC_REG_DEF = "113"
         - REVOC_REG_DEF = "114"
         - AUTH_RULE = "120"
+        - SET_CONTEXT = "200"
+        - SET_RICH_SCHEMA = "201"
 
     - `protocolVersion` (integer; optional): 
     
         The version of client-to-node or node-to-node protocol. Each new version may introduce a new feature in Requests/Replies/Data.
         Since clients and different Nodes may be at different versions, we need this field to support backward compatibility
         between clients and nodes.     
+     
+    - `ver` (string; optional)
+    
+        Transaction's payload version as defined in the input request.
+        If the input request doesn't have the version specified, then default one will be used.
+        Some transactions (for example TRANSACTION_AUTHOR_AGREEMENT) have non-default transaction payload version
+        defined in source code as a result of evolution of business logic and features.      
      
     - `data` (dict):
 
@@ -317,7 +356,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
                 
                 - `mechanism` (string): a mechanism used to accept the signature; must be present in the latest list of transaction author agreement acceptane mechanisms on the ledger  
                 
-                - `time` (integer as POSIX timestamp): transaction author agreement acceptance time
+                - `time` (integer as POSIX timestamp): transaction author agreement acceptance time. The time needs to be rounded to date to prevent correlation of different transactions which is possible when acceptance time is too precise.
                   
   
 - `txnMetadata` (dict):
@@ -364,44 +403,44 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
 
 ## Reply Structure for Read Requests
 
-The structure below is not applicable for [GET_TXN](#get_txn).
+The structure below is not applicable to [GET_TXN](#get_txn).
 
 Each Reply to read requests has a number of common metadata fields and state-proof related fields.
 Some of these fields are actually metadata fields of a transaction in the Ledger (see [transactions](transactions.md)).
 
-These common metadata values are added to result's JSON at the same level as real data.
+These common metadata values are added to the result's JSON at the same level as real data.
 
 **TODO**: consider distinguishing and separating real transaction data and metadata into different levels.
 
 
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '105',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514214863899317,
+    "op": "REPLY", 
+    "result": {
+        "type": "105",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514214863899317,
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'state_proof': {
-            'root_hash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514214795,
-                    'ledger_id': 1, 
-                    'txn_root_hash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-                    'pool_state_root_hash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-                    'state_root_hash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK'
+        "state_proof": {
+            "root_hash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514214795,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+                    "pool_state_root_hash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+                    "state_root_hash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK"
                 },
-                'signature': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
-        'data': <transaction-specific data>,
+        "data": <transaction-specific data>,
         
         <request-specific data>
 }
@@ -423,6 +462,8 @@ These common metadata values are added to result's JSON at the same level as rea
     - GET_REVOC_REG = "116"
     - GET_REVOC_REG_DELTA = "117"  
     - GET_AUTH_RULE = "121"    
+    - GET_CONTEXT = "300"
+    - GET_RICH_SCHEMA = "301"
 
 - `identifier` (base58-encoded string):
  
@@ -439,7 +480,7 @@ These common metadata values are added to result's JSON at the same level as rea
 
 - `txnTime` (integer as POSIX timestamp): 
 
-    the time when transaction was written to the Ledger as POSIX timestamp
+    the time when the transaction was written to the Ledger as POSIX timestamp
     
 - `state_proof` (dict):
 
@@ -470,18 +511,18 @@ The format of each request-specific data for each type of request.
 
 ### NYM
 Creates a new NYM record for a specific user, endorser, steward or trustee.
-Note that only trustees and stewards can create new endorsers and trustee can be created only by other trusties (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md)).
+Note that only trustees and stewards can create new endorsers and trustee can be created only by other trustees (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md)).
 
 The request can be used for 
-creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
+creation of new DIDs, setting, and rotation of verification key, setting and changing of roles.
 
 - `dest` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 byte DID value.
     It may differ from `identifier` metadata field, where `identifier` is the DID of the submitter.
-    If they are equal (in permissionless case), then transaction must be signed by the newly created `verkey`.
+    If they are equal (in permissionless case), then the transaction must be signed by the newly created `verkey`.
     
-    *Example*: `identifier` is a DID of a Endorser creating a new DID, and `dest` is a newly created DID.
+    *Example*: `identifier` is a DID of an Endorser creating a new DID, and `dest` is a newly created DID.
      
 - `role` (enum number as string; optional): 
 
@@ -501,18 +542,18 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     it's abbreviated verkey and should be 16 bytes long when decoded, otherwise it's a full verkey
     which should be 32 bytes long when decoded. If not set, then either the target identifier
     (`dest`) is 32-bit cryptonym CID (this is deprecated), or this is a user under guardianship
-    (doesnt owns the identifier yet).
-    Verkey can be changed to None by owner, it means that this user goes back under guardianship.
+    (doesn't own the identifier yet).
+    Verkey can be changed to None by the owner, it means that this user goes back under guardianship.
 
 - `alias` (string; optional): 
 
     NYM's alias.
     
 
-If there is no NYM transaction with the specified DID (`dest`), then it can be considered as creation of a new DID.
+If there is no NYM transaction with the specified DID (`dest`), then it can be considered as the creation of a new DID.
 
 If there is a NYM transaction with the specified DID (`dest`),  then this is update of existing DID.
-In this case we can specify only the values we would like to override. All unspecified values remain the same.
+In this case, we can specify only the values we would like to override. All unspecified values remain the same.
 So, if key rotation needs to be performed, the owner of the DID needs to send a NYM request with
 `dest` and `verkey` only. `role` and `alias` will stay the same.
 
@@ -520,32 +561,32 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '1'
-        'dest': 'GEzcdDLhCpGCYRHW82kjHd',
-        'role': '101',
-        'verkey': '~HmUWn928bnFT6Ephf65YXv'
+    "operation": {
+        "type": "1"
+        "dest": "GEzcdDLhCpGCYRHW82kjHd",
+        "role": "101",
+        "verkey": "~HmUWn928bnFT6Ephf65YXv"
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514213797569745,
-    'protocolVersion': 2,
-    'signature': '49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba',
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514213797569745,
+    "protocolVersion": 2,
+    "signature": "49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba",
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":"1",
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver": 1,
                 "dest":"GEzcdDLhCpGCYRHW82kjHd",
                 "verkey":"~HmUWn928bnFT6Ephf65YXv",
                 "role":101,
@@ -571,30 +612,30 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
             }]
         }
 		
-        'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'],
+        "rootHash": "5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
 		
-        'dest': 'N22KY2Dyvmuu2PyyqSFKue',
-        'role': '101',
-        'verkey': '31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE'
+        "dest": "N22KY2Dyvmuu2PyyqSFKue",
+        "role": "101",
+        "verkey": "31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE"
     }
 }
 ```
 
 ### ATTRIB
 
-Adds attribute to a NYM record.
+Adds or updates an attribute to a NYM record.
 
 - `dest` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
-    *Example*: `identifier` is a DID of a Endorser setting an attribute for a DID, and `dest` is the DID we set an attribute for.
+    *Example*: `identifier` is a DID of an Endorser setting an attribute for a DID, and `dest` is the DID we set an attribute for.
     
 - `raw` (json; mutually exclusive with `hash` and `enc`):
 
-    Raw data is represented as json, where key is attribute name and value is attribute value.
+    Raw data is represented as json, where the key is attribute name and value is attribute value.
 
 - `hash` (sha256 hash string; mutually exclusive with `raw` and `enc`):
 
@@ -607,33 +648,33 @@ Adds attribute to a NYM record.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '100'
-        'dest': 'N22KY2Dyvmuu2PyyqSFKue',
-        'raw': '{"name": "Alice"}'
+    "operation": {
+        "type": "100"
+        "dest": "N22KY2Dyvmuu2PyyqSFKue",
+        "raw": "{"name": "Alice"}"
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514213797569745,
-    'protocolVersion': 2,
-    'signature': '49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba',
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514213797569745,
+    "protocolVersion": 2,
+    "signature": "49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba",
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":"100",
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 "dest":"N22KY2Dyvmuu2PyyqSFKue",
-                'raw': '{"name":"Alice"}'
+                "raw": "{"name":"Alice"}"
             },
             
             "metadata": {
@@ -656,8 +697,8 @@ Adds attribute to a NYM record.
             }]
         }    
     
-        'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'],
+        "rootHash": "5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
 		
     }
 }
@@ -666,7 +707,7 @@ Adds attribute to a NYM record.
 ### SCHEMA
 Adds Claim's schema.
 
-It's not possible to update existing Schema.
+It's not possible to update an existing Schema.
 So, if the Schema needs to be evolved, a new Schema with a new version or name needs to be created.
 
 - `data` (dict):
@@ -680,39 +721,39 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '101',
-        'data': {
-            'version': '1.0',
-            'name': 'Degree',
-            'attr_names': ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad', 'expiry_date']
+    "operation": {
+        "type": "101",
+        "data": {
+            "version": "1.0",
+            "name": "Degree",
+            "attr_names": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
         },
     },
 
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
-    'reqId': 1514280215504647,
-    'protocolVersion': 2,
-    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":"101",
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 "data": {
                     "name": "Degree",
                     "version": "1.0",
-                    'attr_names': ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad', 'expiry_date']
+                    "attr_names": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
                 }
             },
             
@@ -737,8 +778,8 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
             }]
         }
  		
-        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
 		
     }
 }
@@ -775,43 +816,43 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '102',
-        'signature_type': 'CL',
-        'ref': 10,
-        'tag': 'some_tag',    
-        'data': {
-            'primary': ....,
-            'revocation': ....
+    "operation": {
+        "type": "102",
+        "signature_type": "CL",
+        "ref": 10,
+        "tag": "some_tag",    
+        "data": {
+            "primary": ....,
+            "revocation": ....
         }
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
-    'reqId': 1514280215504647,
-    'protocolVersion': 2,
-    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":"102",
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 "signature_type":"CL",
-                'ref': 10,    
-                'tag': 'some_tag',
-                'data': {
-                    'primary': ....,
-                    'revocation': ....
+                "ref": 10,    
+                "tag": "some_tag",
+                "data": {
+                    "primary": ....,
+                    "revocation": ....
                 }
             },
             
@@ -836,8 +877,8 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
             }]
         },
         
-        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
         
     }
 }
@@ -867,51 +908,51 @@ It contains public keys, maximum number of credentials the registry may contain,
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '113',
-        'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-        'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
-        'revocDefType': 'CL_ACCUM',
-        'tag': 'tag1',
-        'value': {
-            'maxCredNum': 1000000,
-            'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
-            'tailsLocation': 'http://tails.location.com',
-            'issuanceType': 'ISSUANCE_BY_DEFAULT',
-            'publicKeys': {},
+    "operation": {
+        "type": "113",
+        "id": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        "credDefId": "FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag"
+        "revocDefType": "CL_ACCUM",
+        "tag": "tag1",
+        "value": {
+            "maxCredNum": 1000000,
+            "tailsHash": "6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297",
+            "tailsLocation": "http://tails.location.com",
+            "issuanceType": "ISSUANCE_BY_DEFAULT",
+            "publicKeys": {},
         },
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
-    'reqId': 1514280215504647,
-    'protocolVersion': 2,
-    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":"113",
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
-                'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-                'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
-                'revocDefType': 'CL_ACCUM',
-                'tag': 'tag1',
-                'value': {
-                    'maxCredNum': 1000000,
-                    'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
-                    'tailsLocation': 'http://tails.location.com',
-                    'issuanceType': 'ISSUANCE_BY_DEFAULT',
-                    'publicKeys': {},
+                "id": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+                "credDefId": "FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag"
+                "revocDefType": "CL_ACCUM",
+                "tag": "tag1",
+                "value": {
+                    "maxCredNum": 1000000,
+                    "tailsHash": "6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297",
+                    "tailsLocation": "http://tails.location.com",
+                    "issuanceType": "ISSUANCE_BY_DEFAULT",
+                    "publicKeys": {},
                 },
             },
             
@@ -936,8 +977,8 @@ It contains public keys, maximum number of credentials the registry may contain,
             }]
         },
         
-        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
         
     }
 }
@@ -961,45 +1002,45 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '114',
-            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
-            'revocDefType': 'CL_ACCUM',
-            'value': {
-                'accum': 'accum_value',
-                'prevAccum': 'prev_acuum_value',
-                'issued': [],
-                'revoked': [10, 36, 3478],
+    "operation": {
+        "type": "114",
+            "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1"
+            "revocDefType": "CL_ACCUM",
+            "value": {
+                "accum": "accum_value",
+                "prevAccum": "prev_acuum_value",
+                "issued": [],
+                "revoked": [10, 36, 3478],
             },
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'endorser': 'D6HG5g65TDQr1PPHHRoiGf',
-    'reqId': 1514280215504647,
-    'protocolVersion': 2,
-    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":"114",
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
-                'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
-                'revocDefType': 'CL_ACCUM',
-                'value': {
-                    'accum': 'accum_value',
-                    'prevAccum': 'prev_acuum_value',
-                    'issued': [],
-                    'revoked': [10, 36, 3478],
+                "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1"
+                "revocDefType": "CL_ACCUM",
+                "value": {
+                    "accum": "accum_value",
+                    "prevAccum": "prev_acuum_value",
+                    "issued": [],
+                    "revoked": [10, 36, 3478],
                 },
             },
             
@@ -1024,13 +1065,890 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
             }]
         },
         
-        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
         
     }
 }
 ```
 
+### JSON_LD_CONTEXT
+Adds a JSON LD Context as part of Rich Schema feature.
+
+It's not possible to update an existing Context.
+If the Context needs to be evolved, a new Context with a new id and name-version needs to be created.
+
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Context object as JSON serialized in canonical form. It must have `@context` as a top level key.
+    The `@context` value must be either:
+    1) a URI (it should dereference to a Context object)
+    2) a Context object (a dict)
+    3) an array of Context objects and/or Context URIs
+
+- `rsType` (string):
+
+    Context's type. Currently expected to be `ctx`.
+    
+- `rsName` (string):
+
+    Context's name
+    
+- `rsVersion` (string):
+
+    Context's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "200",
+        "id": "did:sov:GGAD5g65TDQr1PPHHRoiGf",
+        "content":"{
+            "@context": [
+                {
+                    "@version": 1.1
+                },
+                "https://www.w3.org/ns/odrl.jsonld",
+                {
+                    "ex": "https://example.org/examples#",
+                    "schema": "http://schema.org/",
+                    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                }
+            ]
+        }",
+        "rsName":"SimpleContext",
+        "rsVersion":"1.0",
+        "rsType": "ctx"
+    },
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+}
+```
+
+*Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "ver": 1,
+        "txn": {
+            "type":"200",
+            "ver": 1,
+            "protocolVersion":2,
+            
+            "data": {
+            "id": "did:sov:GGAD5g65TDQr1PPHHRoiGf",
+            "content":"{
+                "@context": [
+                    {
+                        "@version": 1.1
+                    },
+                    "https://www.w3.org/ns/odrl.jsonld",
+                    {
+                        "ex": "https://example.org/examples#",
+                        "schema": "http://schema.org/",
+                        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                    }
+                ]
+            }",
+            "rsName":"SimpleContext",
+            "rsVersion":"1.0",
+            "rsType": "ctx"
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
+		
+    }
+}
+```
+
+### RICH_SCHEMA
+Adds a Rich Schema object as part of Rich Schema feature.
+
+It's not possible to update an existing Rich Schema.
+If the Rich Schema needs to be evolved, a new Rich Schema with a new id and name-version needs to be created.
+
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Rich Schema object as JSON serialized in canonical form.
+    This value must be a json-ld, rich schema object. json-ld supports many parameters that are optional for a rich schema txn.
+    However, the following parameters must be there:
+    
+    - `@id`:  The value of this property must be (or map to, via a context object) a URI.
+    - `@type`: The value of this property must be (or map to, via a context object) a URI.
+    - `@context`(optional): If present, the value of this property must be a context object or a URI which can be dereferenced to obtain a context object. 
+
+
+- `rsType` (string):
+
+    Rich Schema's type. Currently expected to be `sch`.
+    
+- `rsName` (string):
+
+    Rich Schema's name
+    
+- `rsVersion` (string):
+
+    Rich Schema's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "201",
+        "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+        "content":"{
+            "@id": "test_unique_id",
+            "@context": "ctx:sov:2f9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+            "@type": "rdfs:Class",
+            "rdfs:comment": "ISO18013 International Driver License",
+            "rdfs:label": "Driver License",
+            "rdfs:subClassOf": {
+                "@id": "sch:Thing"
+            },
+            "driver": "Driver",
+            "dateOfIssue": "Date",
+            "dateOfExpiry": "Date",
+            "issuingAuthority": "Text",
+            "licenseNumber": "Text",
+            "categoriesOfVehicles": {
+                "vehicleType": "Text",
+                "vehicleType-input": {
+                    "@type": "sch:PropertyValueSpecification",
+                    "valuePattern": "^(A|B|C|D|BE|CE|DE|AM|A1|A2|B1|C1|D1|C1E|D1E)$"
+                },
+                "dateOfIssue": "Date",
+                "dateOfExpiry": "Date",
+                "restrictions": "Text",
+                "restrictions-input": {
+                    "@type": "sch:PropertyValueSpecification",
+                    "valuePattern": "^([A-Z]|[1-9])$"
+                }
+            },
+            "administrativeNumber": "Text"
+        }",
+        "rsName":"SimpleRichSchema",
+        "rsVersion":"1.0",
+        "rsType": "sch"
+    },
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+}
+```
+*Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "ver": 1,
+        "txn": {
+            "type":"201",
+            "protocolVersion":2,
+            "ver":1,
+                                   
+            "data": {
+                "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+                "content":"{
+                    "@id": "test_unique_id",
+                    "@context": "ctx:sov:2f9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                    "@type": "rdfs:Class",
+                    "rdfs:comment": "ISO18013 International Driver License",
+                    "rdfs:label": "Driver License",
+                    "rdfs:subClassOf": {
+                        "@id": "sch:Thing"
+                    },
+                    "driver": "Driver",
+                    "dateOfIssue": "Date",
+                    "dateOfExpiry": "Date",
+                    "issuingAuthority": "Text",
+                    "licenseNumber": "Text",
+                    "categoriesOfVehicles": {
+                        "vehicleType": "Text",
+                        "vehicleType-input": {
+                            "@type": "sch:PropertyValueSpecification",
+                            "valuePattern": "^(A|B|C|D|BE|CE|DE|AM|A1|A2|B1|C1|D1|C1E|D1E)$"
+                        },
+                        "dateOfIssue": "Date",
+                        "dateOfExpiry": "Date",
+                        "restrictions": "Text",
+                        "restrictions-input": {
+                            "@type": "sch:PropertyValueSpecification",
+                            "valuePattern": "^([A-Z]|[1-9])$"
+                        }
+                    },
+                    "administrativeNumber": "Text"
+                }",
+                "rsName":"SimpleRichSchema",
+                "rsVersion":"1.0",
+                "rsType": "sch"
+                },
+                "meta": {
+                    "name":"recipeIngredient",
+                    "version":"1.0",
+                    "type": "sch",
+                    "tag": "sometag"
+                },
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1:recipeIngredient:1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
+		
+    }
+}
+```
+
+### RICH_SCHEMA_ENCODING
+Adds an Encoding object as part of Rich Schema feature.
+
+It's not possible to update an existing Encoding.
+If the Encoding needs to be evolved, a new Encoding with a new id and name-version needs to be created.
+
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Encoding object as JSON serialized in canonical form.
+    
+    - `input`: a description of the input value
+    - `output`: a description of the output value
+    - `algorithm`:
+      - `documentation`: a URL which references a specific github commit of
+        the documentation that fully describes the transformation algorithm.
+      - `implementation`: a URL that links to a reference implementation of the
+         transformation algorithm. It is not necessary to use the implementation
+         linked to here, as long as the implementation used implements the same
+         transformation algorithm.
+      - `description`: a brief description of the transformation algorithm.
+    - `testVectors`: a URL which references a specific github commit of a
+selection of test vectors that may be used to provide assurance that a
+transformation algorithm implementation is correct. 
+
+- `rsType` (string):
+
+    Encoding's type. Currently expected to be `enc`.
+    
+- `rsName` (string):
+
+    Encoding's name
+    
+- `rsVersion` (string):
+
+    Encoding's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "202",
+        "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+        "content":"{
+            "input": {
+                "id": "DateRFC3339",
+                "type": "string"
+            },
+            "output": {
+                "id": "UnixTime",
+                "type": "256-bit integer"
+            },
+            "algorithm": {
+                "description": "This encoding transforms an
+                    RFC3339-formatted datetime object into the number
+                    of seconds since January 1, 1970 (the Unix epoch).",
+                "documentation": URL to specific github commit,
+                "implementation": URL to implementation
+            },
+            "test_vectors": URL to specific github commit
+        }",
+        "rsName":"SimpleEncoding",
+        "rsVersion":"1.0",
+        "rsType": "enc"
+    },
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+}
+```
+*Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "ver": 1,
+        "txn": {
+            "type":"202",
+            "protocolVersion":2,
+            "ver":1,
+                                   
+            "data": {
+                "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+                "content":"{
+                    "input": {
+                        "id": "DateRFC3339",
+                        "type": "string"
+                    },
+                    "output": {
+                        "id": "UnixTime",
+                        "type": "256-bit integer"
+                    },
+                    "algorithm": {
+                        "description": "This encoding transforms an
+                            RFC3339-formatted datetime object into the number
+                            of seconds since January 1, 1970 (the Unix epoch).",
+                        "documentation": URL to specific github commit,
+                        "implementation": URL to implementation
+                    },
+                    "test_vectors": URL to specific github commit
+                }",
+                "rsName":"SimpleEncoding",
+                "rsVersion":"1.0",
+                "rsType": "enc"
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1:recipeIngredient:1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
+		
+    }
+}
+```
+
+### RICH_SCHEMA_MAPPING
+Adds a Mapping  object as part of Rich Schema feature.
+
+It's not possible to update an existing Mapping.
+If the Mapping needs to be evolved, a new Mapping with a new id and name-version needs to be created.
+
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Mapping object as JSON serialized in canonical form.
+    This value must be a json-ld object. json-ld supports many parameters that are optional for a rich schema txn.
+    However, the following parameters must be there:
+    
+    - `@id`:  The value of this property must be (or map to, via a context object) a URI.
+    - `@type`: The value of this property must be (or map to, via a context object) a URI.
+    - `@context`(optional): If present, the value of this property must be a context object or a URI which can be dereferenced to obtain a context object.
+    - `schema`:  An `id` of the corresponding Rich Schema
+    - `attributes` (dict): A dict of all the schema attributes the Mapping object is going to map to encodings and use in credentials.
+                    An attribute may have nested attributes matching the schema structure. 
+                    It must also contain the following default attributes required by any W3C compatible
+                    verifiable credential (plus any additional attributes that may have been included from the
+                    W3C verifiable credentials data model):
+                    
+        - `issuer`
+        - `issuanceDate`
+        - any additional attributes
+                        
+         Every leaf attribute's value is an array of the following pairs:
+
+        - `enc` (string): Encoding object (referenced by its `id`) to be used for representation of the attribute as an integer. 
+        - `rank` (int): Rank of the attribute to define the order in which the attribute is signed by the Issuer. It is important that no two `rank` values may be identical.
+    
+
+- `rsType` (string):
+
+    Mapping's type. Currently expected to be `map`.
+    
+- `rsName` (string):
+
+    Mapping's name
+    
+- `rsVersion` (string):
+
+    Mapping's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "203",
+        "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+        "content":"{
+            '@id': "did:sov:5e9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+            '@context': "did:sov:2f9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+            '@type': "rdfs:Class",
+            "schema": "did:sov:4e9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+            "attribuites" : {
+                "issuer": [{
+                    "enc": "did:sov:9x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                    "rank": 1
+                }],
+                "issuanceDate": [{
+                    "enc": "did:sov:119F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                    "rank": 2
+                }],    
+                "expirationDate": [{
+                    "enc": "did:sov:119F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                    "rank": 11
+                }],           
+                "driver": [{
+                    "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                    "rank": 5
+                }],
+                "dateOfIssue": [{
+                    "enc": "did:sov:2x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                    "rank": 4
+                }],
+                "issuingAuthority": [{
+                    "enc": "did:sov:3x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                    "rank": 3
+                }],
+                "licenseNumber": [
+                    {
+                        "enc": "did:sov:4x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 9
+                    },
+                    {
+                        "enc": "did:sov:5x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 10
+                    },
+                ],
+                "categoriesOfVehicles": {
+                    "vehicleType": [{
+                        "enc": "did:sov:6x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 6
+                    }],
+                    "dateOfIssue": [{
+                     "enc": "did:sov:7x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 7
+                    }],
+                },
+                "administrativeNumber": [{
+                    "enc": "did:sov:8x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                    "rank": 8
+                }]
+             }
+        }",
+        "rsName":"SimpleMapping",
+        "rsVersion":"1.0",
+        "rsType": "map"
+    },
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+}
+```
+*Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "ver": 1,
+        "txn": {
+            "type":"203",
+            "protocolVersion":2,
+            "ver":1,
+                                   
+            "data": {
+                "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+                "content":"{
+                    '@id': "did:sov:5e9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                    '@context': "did:sov:2f9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                    '@type': "rdfs:Class",
+                    "schema": "did:sov:4e9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                    "attribuites" : {
+                        "issuer": [{
+                            "enc": "did:sov:9x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 1
+                        }],
+                        "issuanceDate": [{
+                            "enc": "did:sov:119F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 2
+                        }],    
+                        "expirationDate": [{
+                            "enc": "did:sov:119F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 11
+                        }],           
+                        "driver": [{
+                            "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 5
+                        }],
+                        "dateOfIssue": [{
+                            "enc": "did:sov:2x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 4
+                        }],
+                        "issuingAuthority": [{
+                            "enc": "did:sov:3x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 3
+                        }],
+                        "licenseNumber": [
+                            {
+                                "enc": "did:sov:4x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                                "rank": 9
+                            },
+                            {
+                                "enc": "did:sov:5x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                                "rank": 10
+                            },
+                        ],
+                        "categoriesOfVehicles": {
+                            "vehicleType": [{
+                                "enc": "did:sov:6x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                                "rank": 6
+                            }],
+                            "dateOfIssue": [{
+                             "enc": "did:sov:7x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                                "rank": 7
+                            }],
+                        },
+                        "administrativeNumber": [{
+                            "enc": "did:sov:8x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 8
+                        }]
+                     }
+                }",
+                "rsName":"SimpleMapping",
+                "rsVersion":"1.0",
+                "rsType": "map"
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1:recipeIngredient:1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
+		
+    }
+}
+```
+
+### RICH_SCHEMA_CRED_DEF
+Adds a Credential Definition object as part of Rich Schema feature.
+
+Credential Definition is considered as a mutable object as the Issuer may rotate keys present there.
+However, rotation of Issuer's keys should be done carefully as it will invalidate all 
+credentials issued for this key.
+
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Credential Definition object as JSON serialized in canonical form.
+   
+    - `signatureType` (string):  Type of the ZKP signature. `CL` (Camenisch-Lysyanskaya) is the only supported type now.
+    - `mapping` (string):  An `id` of the corresponding Mapping
+    - `schema` (string): An `id` of the corresponding Rich Schema. The `mapping` must reference the same Schema.
+    - `publicKey` (dict): Issuer's public keys. Consists ot primary and revocation keys.
+        - `primary` (dict): primary key
+        - `revocation` (dict, optional): revocation key
+
+- `rsType` (string):
+
+    Credential Definition's type. Currently expected to be `cdf`.
+    
+- `rsName` (string):
+
+    Credential Definition's name
+    
+- `rsVersion` (string):
+
+    Credential Definition's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "204",
+        "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+        "content":"{
+            "signatureType": "CL",
+            "mapping": "did:sov:UVj5w8DRzcmPVDpUMr4AZhJ",
+            "schema": "did:sov:U5x5w8DRzcmPVDpUMr4AZhJ",
+            "publicKey": {
+                "primary": "...",
+                "revocation": "..."
+            }
+        }",
+        "rsName":"SimpleCredDef",
+        "rsVersion":"1.0",
+        "rsType": "cdf"
+    },
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+}
+```
+*Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "ver": 1,
+        "txn": {
+            "type":"204",
+            "protocolVersion":2,
+            "ver":1,
+                                   
+            "data": {
+                "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+                "content":"{
+                    "signatureType": "CL",
+                    "mapping": "did:sov:UVj5w8DRzcmPVDpUMr4AZhJ",
+                    "schema": "did:sov:U5x5w8DRzcmPVDpUMr4AZhJ",
+                    "publicKey": {
+                        "primary": "...",
+                        "revocation": "..."
+                    }
+                }",
+                "rsName":"SimpleCredDef",
+                "rsVersion":"1.0",
+                "rsType": "cdf"
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1:recipeIngredient:1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
+		
+    }
+}
+```
+
+### RICH_SCHEMA_PRES_DEF
+Adds a Presentation Definition object as part of Rich Schema feature.
+
+Presentation Definition is considered as a mutable object since restrictions to Issuers, Schemas and Credential Definitions 
+to be used in proof may evolve.
+ For example, Issuer's key for a given Credential Definition may be compromised, 
+ so Presentation Definition can be updated to exclude this Credential Definition from the list of recommended ones.
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+- `content` (json-serialized string): 
+
+    Presentation Definition object as JSON serialized in canonical form.
+
+- `rsType` (string):
+
+    Presentation Definition's type. Currently expected to be `pdf`.
+    
+- `rsName` (string):
+
+    Presentation Definition's name
+    
+- `rsVersion` (string):
+
+    Presentation Definition's version
+        
+`rsType`, `rsName` and `rsVersion` must be unique among all rich schema objects on the ledger.
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "205",
+        "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+        "content":"{
+            TBD
+        }",
+        "rsName":"SimplePresDef",
+        "rsVersion":"1.0",
+        "rsType": "pdf"
+    },
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+    "reqId": 1514280215504647,
+    "protocolVersion": 2,
+    "signature": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+}
+```
+*Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "ver": 1,
+        "txn": {
+            "type":"205",
+            "protocolVersion":2,
+            "ver":1,
+                                   
+            "data": {
+                "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+                "content":"{
+                    TBD
+                }",
+                "rsName":"SimplePresDef",
+                "rsVersion":"1.0",
+                "rsType": "pdf"
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "endorser": "D6HG5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf1:recipeIngredient:1.0",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        }
+ 		
+        "rootHash": "5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm",
+        "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b"],
+		
+    }
+}
+```
 ### NODE
 Adds a new node to the pool, or updates existing node in the pool.
 
@@ -1063,49 +1981,49 @@ There is no need to specify all other fields in `data`, and they will remain the
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '0'
-     	'data': {
-     		'alias': 'Node1',
-     		'client_ip': '127.0.0.1',
-     		'client_port': 7588,
-     		'node_ip': '127.0.0.1', 
-     		'node_port': 7587,
-     		'blskey': '00000000000000000000000000000000',
-     		'services': ['VALIDATOR']}
+    "operation": {
+        "type": "0"
+     	"data": {
+     		"alias": "Node1",
+     		"client_ip": "127.0.0.1",
+     		"client_port": 7588,
+     		"node_ip": "127.0.0.1", 
+     		"node_port": 7587,
+     		"blskey": "00000000000000000000000000000000",
+     		"services": ["VALIDATOR"]}
      	} ,
-     	'dest': '6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8'
+     	"dest": "6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8"
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 2,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":0,
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
-                'data': {
-                    'alias': 'Node1',
-                    'client_ip': '127.0.0.1',
-                    'client_port': 7588,
-                    'node_ip': '127.0.0.1', 
-                    'node_port': 7587,
-                    'blskey': '00000000000000000000000000000000',
-                    'services': ['VALIDATOR']}
+                "data": {
+                    "alias": "Node1",
+                    "client_ip": "127.0.0.1",
+                    "client_port": 7588,
+                    "node_ip": "127.0.0.1", 
+                    "node_port": 7587,
+                    "blskey": "00000000000000000000000000000000",
+                    "services": ["VALIDATOR"]}
                 } ,
-                'dest': '6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8'
+                "dest": "6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8"
             },
             
             "metadata": {
@@ -1127,8 +2045,8 @@ There is no need to specify all other fields in `data`, and they will remain the
             }]
         }
  		
-        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
-        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
+        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
     }
 }
 ```
@@ -1185,37 +2103,37 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '109'
-        'name': `upgrade-13`,
-        'action': `start`,
-        'version': `1.3`,
-        'schedule': {"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2":"2017-12-25T10:25:58.271857+00:00","AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3":"2017-12-25T10:26:16.271857+00:00","DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2":"2017-12-25T10:26:25.271857+00:00","JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ":"2017-12-25T10:26:07.271857+00:00"},
-        'sha256': `db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55`,
-        'force': false,
-        'reinstall': false,
-        'timeout': 1
+    "operation": {
+        "type": "109"
+        "name": `upgrade-13`,
+        "action": `start`,
+        "version": `1.3`,
+        "schedule": {"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2":"2017-12-25T10:25:58.271857+00:00","AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3":"2017-12-25T10:26:16.271857+00:00","DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2":"2017-12-25T10:26:25.271857+00:00","JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ":"2017-12-25T10:26:07.271857+00:00"},
+        "sha256": `db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55`,
+        "force": false,
+        "reinstall": false,
+        "timeout": 1
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 2,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver": 1,
         "txn": {
             "type":109,
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 "name":"upgrade-13",
                 "action":"start",
                 "version":"1.3",
@@ -1246,8 +2164,8 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
             }]
         },
         
-        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
-        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
+        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
     }
 }
 ```
@@ -1274,31 +2192,31 @@ Command to change Pool's configuration
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '111'
-        'writes':false,
-        'force':true
+    "operation": {
+        "type": "111"
+        "writes":false,
+        "force":true
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 2,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver":1,
         "txn": {
             "type":111,
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 "writes":false,
                 "force":true,
             },
@@ -1322,8 +2240,8 @@ Command to change Pool's configuration
             }]
         },
         
-        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
-        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
+        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
     }
 }
 ```
@@ -1379,18 +2297,18 @@ The `constraint_id` fields is where one can define the desired auth constraint f
     
         Constraint Type. As of now, the following constraint types are supported:
             
-            - 'ROLE': a constraint defining how many signatures of a given role are required
-            - 'OR': logical disjunction for all constraints from `auth_constraints` 
-            - 'AND': logical conjunction for all constraints from `auth_constraints`
-            - 'FORBIDDEN': a constraint for not allowed actions
+            - "ROLE": a constraint defining how many signatures of a given role are required
+            - "OR": logical disjunction for all constraints from `auth_constraints` 
+            - "AND": logical conjunction for all constraints from `auth_constraints`
+            - "FORBIDDEN": a constraint for not allowed actions
             
-    - fields if `'constraint_id': 'OR'` or `'constraint_id': 'AND'`
+    - fields if `"constraint_id": "OR"` or `"constraint_id": "AND"`
     
         - `auth_constraints` (list)
         
             A list of constraints. Any number of nested constraints is supported recursively
         
-    - fields if `'constraint_id': 'ROLE'`:
+    - fields if `"constraint_id": "ROLE"`:
                 
         - `role` (string enum)    
             
@@ -1417,7 +2335,7 @@ The `constraint_id` fields is where one can define the desired auth constraint f
         
             Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
         
-    - fields if `'constraint_id': 'FORBIDDEN'`:
+    - fields if `"constraint_id": "FORBIDDEN"`:
     
         no fields
 
@@ -1429,89 +2347,89 @@ Let's consider an example of changing a value of a NODE transaction's `service` 
  
 ```
 {
-    'operation': {
-        'type':'120',
-        'auth_type': '0', 
-        'auth_action': 'EDIT',
-        'field' :'services',
-        'old_value': [VALIDATOR],
-        'new_value': []
-        'constraint':{
-              'constraint_id': 'OR',
-              'auth_constraints': [{'constraint_id': 'ROLE', 
-                                    'role': '0',
-                                    'sig_count': 2, 
-                                    'need_to_be_owner': False, 
-                                    'metadata': {}}, 
+    "operation": {
+        "type":"120",
+        "auth_type": "0", 
+        "auth_action": "EDIT",
+        "field" :"services",
+        "old_value": [VALIDATOR],
+        "new_value": []
+        "constraint":{
+              "constraint_id": "OR",
+              "auth_constraints": [{"constraint_id": "ROLE", 
+                                    "role": "0",
+                                    "sig_count": 2, 
+                                    "need_to_be_owner": False, 
+                                    "metadata": {}}, 
                                    
-                                   {'constraint_id': 'ROLE', 
-                                    'role': '2',
-                                    'sig_count': 1, 
-                                    'need_to_be_owner': True, 
-                                    'metadata': {}}
+                                   {"constraint_id": "ROLE", 
+                                    "role": "2",
+                                    "sig_count": 1, 
+                                    "need_to_be_owner": True, 
+                                    "metadata": {}}
                                    ]
         }, 
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 2,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj'
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
 }
 ```
 
 *Reply Example*:
 ```
-{     'op':'REPLY',
-      'result':{  
-         'txnMetadata':{  
-            'seqNo':1,
-            'txnTime':1551776783
+{     "op":"REPLY",
+      "result":{  
+         "txnMetadata":{  
+            "seqNo":1,
+            "txnTime":1551776783
          },
-         'reqSignature':{  
-            'values':[  
+         "reqSignature":{  
+            "values":[  
                {  
-                  'value':'4j99V2BNRX1dn2QhnR8L9C3W9XQt1W3ScD1pyYaqD1NUnDVhbFGS3cw8dHRe5uVk8W7DoFtHb81ekMs9t9e76Fg',
-                  'from':'M9BJDuS24bqbJNvBRsoGg3'
+                  "value":"4j99V2BNRX1dn2QhnR8L9C3W9XQt1W3ScD1pyYaqD1NUnDVhbFGS3cw8dHRe5uVk8W7DoFtHb81ekMs9t9e76Fg",
+                  "from":"M9BJDuS24bqbJNvBRsoGg3"
                }
             ],
-            'type':'ED25519'
+            "type":"ED25519"
          },
-         'txn':{  
-            'data':{  
-                'auth_type': '0', 
-                'auth_action': 'EDIT',
-                'field' :'services',
-                'old_value': [VALIDATOR],
-                'new_value': []            
-                'constraint':{  
-                          'constraint_id': 'OR',
-                          'auth_constraints': [{'constraint_id': 'ROLE', 
-                                                'role': '0',
-                                                'sig_count': 2, 
-                                                'need_to_be_owner': False, 
-                                                'metadata': {}}, 
+         "txn":{  
+            "data":{  
+                "auth_type": "0", 
+                "auth_action": "EDIT",
+                "field" :"services",
+                "old_value": [VALIDATOR],
+                "new_value": []            
+                "constraint":{  
+                          "constraint_id": "OR",
+                          "auth_constraints": [{"constraint_id": "ROLE", 
+                                                "role": "0",
+                                                "sig_count": 2, 
+                                                "need_to_be_owner": False, 
+                                                "metadata": {}}, 
                                                
-                                               {'constraint_id': 'ROLE', 
-                                                'role': '2',
-                                                'sig_count': 1, 
-                                                'need_to_be_owner': True, 
-                                                'metadata': {}}
+                                               {"constraint_id": "ROLE", 
+                                                "role": "2",
+                                                "sig_count": 1, 
+                                                "need_to_be_owner": True, 
+                                                "metadata": {}}
                                                ]
                 }, 
             },
-            'protocolVersion':2,
-            'metadata':{  
-               'from':'M9BJDuS24bqbJNvBRsoGg3',
-               'digest':'ea13f0a310c7f4494d2828bccbc8ff0bd8b77d0c0bfb1ed9a84104bf55ad0436',
-               'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
-               'reqId':711182024
+            "protocolVersion":2,
+            "metadata":{  
+               "from":"M9BJDuS24bqbJNvBRsoGg3",
+               "digest":"ea13f0a310c7f4494d2828bccbc8ff0bd8b77d0c0bfb1ed9a84104bf55ad0436",
+               "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+               "reqId":711182024
             },
-            'type':'120'
+            "type":"120"
          },
-         'ver':'1',
-         'rootHash':'GJNfknLWDAb8R93cgAX3Bw6CYDo23HBhiwZnzb4fHtyi',
-         'auditPath':['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6']
+         "ver":"1",
+         "rootHash":"GJNfknLWDAb8R93cgAX3Bw6CYDo23HBhiwZnzb4fHtyi",
+         "auditPath":["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"]
       }
    }
 ```
@@ -1570,18 +2488,18 @@ A client will receive NACK for
     
         Constraint Type. As of now, the following constraint types are supported:
             
-            - 'ROLE': a constraint defining how many signatures of a given role are required
-            - 'OR': logical disjunction for all constraints from `auth_constraints` 
-            - 'AND': logical conjunction for all constraints from `auth_constraints`
-            - 'FORBIDDEN': a constraint for not allowed actions
+            - "ROLE": a constraint defining how many signatures of a given role are required
+            - "OR": logical disjunction for all constraints from `auth_constraints` 
+            - "AND": logical conjunction for all constraints from `auth_constraints`
+            - "FORBIDDEN": a constraint for not allowed actions
             
-    - fields if `'constraint_id': 'OR'` or `'constraint_id': 'AND'`
+    - fields if `"constraint_id": "OR"` or `"constraint_id": "AND"`
     
         - `auth_constraints` (list)
         
             A list of constraints. Any number of nested constraints is supported recursively
         
-    - fields if `'constraint_id': 'ROLE'`:
+    - fields if `"constraint_id": "ROLE"`:
                 
         - `role` (string enum)    
             
@@ -1608,103 +2526,103 @@ A client will receive NACK for
         
             Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
         
-    - fields if `'constraint_id': 'FORBIDDEN'`:
+    - fields if `"constraint_id": "FORBIDDEN"`:
     
         no fields
 
 *Request Example*:
 ```
 {
-    'operation': {
-           'type':'122',
-           'rules': [
-                {'constraint':{  
-                     'constraint_id': 'OR',
-                     'auth_constraints': [{'constraint_id': 'ROLE', 
-                                           'role': '0',
-                                           'sig_count': 1, 
-                                           'need_to_be_owner': False, 
-                                           'metadata': {}}, 
+    "operation": {
+           "type":"122",
+           "rules": [
+                {"constraint":{  
+                     "constraint_id": "OR",
+                     "auth_constraints": [{"constraint_id": "ROLE", 
+                                           "role": "0",
+                                           "sig_count": 1, 
+                                           "need_to_be_owner": False, 
+                                           "metadata": {}}, 
                                                                
-                                           {'constraint_id': 'ROLE', 
-                                            'role': '2',
-                                            'sig_count': 1, 
-                                            'need_to_be_owner': True, 
-                                            'metadata': {}}
+                                           {"constraint_id": "ROLE", 
+                                            "role": "2",
+                                            "sig_count": 1, 
+                                            "need_to_be_owner": True, 
+                                            "metadata": {}}
                                            ]
                    }, 
-                 'field' :'services',
-                 'auth_type': '0', 
-                 'auth_action': 'EDIT',
-                 'old_value': [VALIDATOR],
-                 'new_value': []
+                 "field" :"services",
+                 "auth_type": "0", 
+                 "auth_action": "EDIT",
+                 "old_value": [VALIDATOR],
+                 "new_value": []
                 },
                 ...
            ]
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 1,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj'
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 1,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
 }
 ```
 
 *Reply Example*:
 ```
-{     'op':'REPLY',
-      'result':{  
-         'txnMetadata':{  
-            'seqNo':1,
-            'txnTime':1551776783
+{     "op":"REPLY",
+      "result":{  
+         "txnMetadata":{  
+            "seqNo":1,
+            "txnTime":1551776783
          },
-         'reqSignature':{  
-            'values':[  
+         "reqSignature":{  
+            "values":[  
                {  
-                  'value':'4j99V2BNRX1dn2QhnR8L9C3W9XQt1W3ScD1pyYaqD1NUnDVhbFGS3cw8dHRe5uVk8W7DoFtHb81ekMs9t9e76Fg',
-                  'from':'M9BJDuS24bqbJNvBRsoGg3'
+                  "value":"4j99V2BNRX1dn2QhnR8L9C3W9XQt1W3ScD1pyYaqD1NUnDVhbFGS3cw8dHRe5uVk8W7DoFtHb81ekMs9t9e76Fg",
+                  "from":"M9BJDuS24bqbJNvBRsoGg3"
                }
             ],
-            'type':'ED25519'
+            "type":"ED25519"
          },
-         'txn':{  
-            'type':'122',
-            'data':{
-               'rules': [
-                    {'constraint':{  
-                         'constraint_id': 'OR',
-                         'auth_constraints': [{'constraint_id': 'ROLE', 
-                                               'role': '0',
-                                               'sig_count': 1, 
-                                               'need_to_be_owner': False, 
-                                               'metadata': {}}, 
+         "txn":{  
+            "type":"122",
+            "data":{
+               "rules": [
+                    {"constraint":{  
+                         "constraint_id": "OR",
+                         "auth_constraints": [{"constraint_id": "ROLE", 
+                                               "role": "0",
+                                               "sig_count": 1, 
+                                               "need_to_be_owner": False, 
+                                               "metadata": {}}, 
                                                                    
-                                               {'constraint_id': 'ROLE', 
-                                                'role': '2',
-                                                'sig_count': 1, 
-                                                'need_to_be_owner': True, 
-                                                'metadata': {}}
+                                               {"constraint_id": "ROLE", 
+                                                "role": "2",
+                                                "sig_count": 1, 
+                                                "need_to_be_owner": True, 
+                                                "metadata": {}}
                                                ]
                        }, 
-                     'field' :'services',
-                     'auth_type': '0', 
-                     'auth_action': 'EDIT',
-                     'old_value': [VALIDATOR],
-                     'new_value': []
+                     "field" :"services",
+                     "auth_type": "0", 
+                     "auth_action": "EDIT",
+                     "old_value": [VALIDATOR],
+                     "new_value": []
                     },
                     ...
                ]
             }
-            'protocolVersion':2,
-            'metadata':{  
-               'from':'M9BJDuS24bqbJNvBRsoGg3',
-               'digest':'ea13f0a310c7f4494d2828bccbc8ff0bd8b77d0c0bfb1ed9a84104bf55ad0436',
-               'reqId':711182024
+            "protocolVersion":2,
+            "metadata":{  
+               "from":"M9BJDuS24bqbJNvBRsoGg3",
+               "digest":"ea13f0a310c7f4494d2828bccbc8ff0bd8b77d0c0bfb1ed9a84104bf55ad0436",
+               "reqId":711182024
             }
          },
-         'ver':'1',
-         'rootHash':'GJNfknLWDAb8R93cgAX3Bw6CYDo23HBhiwZnzb4fHtyi',
-         'auditPath':[  
+         "ver":"1",
+         "rootHash":"GJNfknLWDAb8R93cgAX3Bw6CYDo23HBhiwZnzb4fHtyi",
+         "auditPath":[  
 
          ]
       }
@@ -1715,13 +2633,36 @@ A client will receive NACK for
 ### TRANSACTION_AUTHOR_AGREEMENT
 
 Setting (enabling/disabling) a transaction author agreement for the pool.
+
 If transaction author agreement is set, then all write requests to Domain ledger (transactions) must include additional metadata pointing to the latest transaction author agreement's digest which is signed by the transaction author.
-
-If no transaction author agreement is set, or it's disabled, then no additional metadata is required.
-
-Transaction author agreement can be disabled by setting an agreement with an empty text.
+If no transaction author agreement is set, or there are no active transaction author agreements, then no additional metadata is required.
 
 Each transaction author agreement has a unique version.
+If TRANSACTION_AUTHOR_AGREEMENT transaction is sent for already existing version it is considered an update 
+(for example of retirement timestamp), in this case text and ratification timestamp should be either absent or equal to original values.
+
+For any given version of transaction author agreement text and ratification timestamp cannot be changed once set. Ratification timestamp cannot be in future.
+In order to update Transaction Author Agreement `TRANSACTION_AUTHOR_AGREEMENT` transaction should be sent, 
+containing new version and new text of agreement. This makes it possible to use new Transaction Author Agreement, but doesn't disable previous one automatically.
+
+Individual transaction author agreements can be disabled by setting retirement timestamp using same transaction.
+Retirement timestamp can be in future, in this case deactivation of agreement won't happen immediately, it will be automatically deactivated at required time instead.
+
+It is possible to change existing retirement timestamp of agreement by sending a `TRANSACTION_AUTHOR_AGREEMENT` transaction with a new retirement timestamp.
+This may potentially re-enable already retired Agreement.
+Re-enabling retired Agreement needs to be considered as an exceptional case used mostly for fixing disabling by mistake or with incorrect retirement timestamp specified.
+ 
+It is possible to delete retirement timestamp of agreement by sending a `TRANSACTION_AUTHOR_AGREEMENT` transaction without a retirement timestamp or retirement timestamp set to `None`.
+This will either cancel retirement (if it hasn't occurred yet), or disable retirement of already retired transaction (re-enable the Agreement).
+Re-enabling retired Agreement needs to be considered as an exceptional case used mostly for fixing disabling by mistake or with incorrect retirement timestamp specified.
+
+Latest transaction author agreement cannot be disabled using this transaction.
+ 
+It is possible to disable all currently active transaction author agreements (including latest) using separate transaction [TRANSACTION_AUTHOR_AGREEMENT_DISABLE](#transaction_author_agreement_disable).
+This will immediately set current timestamp as retirement one for all not yet retired Transaction Author Agreements.
+
+It's not possible to re-enable an Agreement right after disabling all agreements because there is no active latest Agreement at this point.
+A new Agreement needs to be sent instead.
 
 At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_aml) must be set on the ledger before submitting TRANSACTION_AUTHOR_AGREEMENT txn.
 
@@ -1729,41 +2670,56 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
 
     Unique version of the transaction author agreement
 
+- `text` (string; optional):
 
-- `text` (string):
+    Transaction author agreement's text. Must be specified when creating a new Agreement.
+    Should be either omitted or equal to existing value in case of updating an existing Agreement (setting `retirement_ts`) .
 
-    Transaction author agreement's text
+- `ratification_ts` (integer as POSIX timestamp; optional):
 
-*Request Example*:
+    Timestamp of Transaction Author Agreement ratification date as POSIX timestamp. May have any precision up to seconds.
+    Must be specified when creating a new Agreement.
+    Should be either omitted or equal to existing value in case of updating an existing Agreement (setting `retirement_ts`).
+
+- `retirement_ts` (integer as POSIX timestamp; optional):
+
+    Timestamp of Transaction Author Agreement retirement date as POSIX timestamp. May have any precision up to seconds.
+    Can be any timestamp either in future or in the past (the Agreement will be retired immediately in the latter case).
+    Must be omitted when creating a new (latest) Agreement.
+    Should be used for updating (deactivating) non-latest Agreement on the ledger.
+    
+*New Agreement Request Example*:
 ```
 {
-    'operation': {
-        'type': '4'
-        'version': '1.0',
-        'text': 'Please read carefully before writing anything to the ledger',
+    "operation": {
+        "type": "4"
+        "version": "1.0",
+        "text": "Please read carefully before writing anything to the ledger",
+        "ratification_ts": 1514304094738044
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 2,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
 }
 ```
 
-*Reply Example*:
+*New Agreement Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver":1,
         "txn": {
             "type":4,
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
-                'version': '1.0',
-                'text': 'Please read carefully before writing anything to the ledger',
+                "version": "1.0",
+                "text": "Please read carefully before writing anything to the ledger",
+                "ratification_ts": 1514304094738044
             },
             
             "metadata": {
@@ -1785,8 +2741,66 @@ At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_am
             }]
         },
         
-        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
-        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
+        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
+    }
+}
+```
+
+
+*Retire Agreement Request Example*:
+```
+{
+    "operation": {
+        "type": "4"
+        "version": "1.0",
+        "retirement_ts": 1515415195838044
+    },
+    
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738066,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
+}
+```
+
+*Retire Agreement Reply Example*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "ver":1,
+        "txn": {
+            "type":4,
+            "protocolVersion":2,
+            "ver": 1,
+            
+            "data": {
+                "version": "1.0",
+                "retirement_ts": 1515415195838044
+            },
+            
+            "metadata": {
+                "reqId":1514304094738066,
+                "from":"21BPzYYrFzbuECcBV3M1FH",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "21BPzYYrFzbuECcBV3M1FH",
+                "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
+            }]
+        },
+        
+        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
+        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
     }
 }
 ```
@@ -1816,8 +2830,8 @@ Each acceptance mechanisms list has a unique version.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '5'
+    "operation": {
+        "type": "5"
         "version": "1.0",
         "aml": {
             "EULA": "Included in the EULA for the product being used",
@@ -1828,25 +2842,25 @@ Each acceptance mechanisms list has a unique version.
         "amlContext": "http://aml-context-descr"
     },
     
-    'identifier': '21BPzYYrFzbuECcBV3M1FH',
-    'reqId': 1514304094738044,
-    'protocolVersion': 2,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
+    "op": "REPLY", 
+    "result": {
         "ver":1,
         "txn": {
             "type":5,
             "protocolVersion":2,
+            "ver": 1,
             
             "data": {
-                "ver":1,
                 "version": "1.0",
                 "aml": {
                     "EULA": "Included in the EULA for the product being used",
@@ -1876,11 +2890,69 @@ Each acceptance mechanisms list has a unique version.
             }]
         },
         
-        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
-        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
+        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
     }
 }
 ```
+
+### TRANSACTION_AUTHOR_AGREEMENT_DISABLE
+Immediately retires all active Transaction Author Agreements at once by setting current timestamp as a retirement one.
+
+It's not possible to re-enable an Agreement right after disabling all agreements because there is no active latest Agreement at this point.
+A new Agreement needs to be sent instead.
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "8"
+    },
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 1514304094738044,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
+}
+```
+
+*Reply Example*:
+```
+{
+    "op": "REPLY",
+    "result": {
+        "ver":1,
+        "txn": {
+            "type":8,
+            "protocolVersion":2,
+            "ver": 1,
+            
+            "data": {},
+            
+            "metadata": {
+                "reqId":1514304094738044,
+                "from":"21BPzYYrFzbuECcBV3M1FH",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "21BPzYYrFzbuECcBV3M1FH",
+                "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
+            }]
+        },
+        
+        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
+        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
+    }
+}
+```
+
 
 
 ## Read Requests
@@ -1898,48 +2970,48 @@ Gets information about a DID (NYM).
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '105'
-        'dest': '2VkbBskPNNyWrLrZq7DBhk'
+    "operation": {
+        "type": "105"
+        "dest": "2VkbBskPNNyWrLrZq7DBhk"
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '105',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "105",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
-        'data': '{"dest":"2VkbBskPNNyWrLrZq7DBhk","identifier":"L5AD5g65TDQr1PPHHRoiGf","role":null,"seqNo":10,"txnTime":1514308168,"verkey":"~6hAzy6ubo3qutnnw5A12RF"}',
+        "data": "{"dest":"2VkbBskPNNyWrLrZq7DBhk","identifier":"L5AD5g65TDQr1PPHHRoiGf","role":null,"seqNo":10,"txnTime":1514308168,"verkey":"~6hAzy6ubo3qutnnw5A12RF"}",
         
-        'dest': '2VkbBskPNNyWrLrZq7DBhk'
+        "dest": "2VkbBskPNNyWrLrZq7DBhk"
     }
 }
 ```
@@ -1972,50 +3044,50 @@ i.e. reply data contains requested value only.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '104'
-        'dest': 'AH4RRiPR78DUrCWatnCW2w',
-        'raw': 'dateOfBirth'
+    "operation": {
+        "type": "104"
+        "dest": "AH4RRiPR78DUrCWatnCW2w",
+        "raw": "dateOfBirth"
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '104',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "104",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
-        'data': '{"dateOfBirth":{"dayOfMonth":23,"month":5,"year":1984}}',
+        "data": "{"dateOfBirth":{"dayOfMonth":23,"month":5,"year":1984}}",
         
-        'dest': 'AH4RRiPR78DUrCWatnCW2w',
-        'raw': 'dateOfBirth'
+        "dest": "AH4RRiPR78DUrCWatnCW2w",
+        "raw": "dateOfBirth"
     }
 }
 ```
@@ -2041,56 +3113,56 @@ Gets Claim's Schema.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '107'
-        'dest': '2VkbBskPNNyWrLrZq7DBhk',
-        'data': {
-            'name': 'Degree',
-             'version': '1.0'
+    "operation": {
+        "type": "107"
+        "dest": "2VkbBskPNNyWrLrZq7DBhk",
+        "data": {
+            "name": "Degree",
+             "version": "1.0"
         },
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '107',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "107",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
-        'data': {
-            'name': 'Degree',
-            'version': '1.0',
-            'attr_names': ['attrib1', 'attrib2', 'attrib3']
+        "data": {
+            "name": "Degree",
+            "version": "1.0",
+            "attr_names": ["attrib1", "attrib2", "attrib3"]
         }, 
         
-        'dest': '2VkbBskPNNyWrLrZq7DBhk'
+        "dest": "2VkbBskPNNyWrLrZq7DBhk"
     }
 }
 ```
@@ -2119,57 +3191,57 @@ Gets Claim Definition.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '108'
-        'signature_type': 'CL',
-        'origin': '2VkbBskPNNyWrLrZq7DBhk',
-        'ref': 10,
-        'tag': 'some_tag',
+    "operation": {
+        "type": "108"
+        "signature_type": "CL",
+        "origin": "2VkbBskPNNyWrLrZq7DBhk",
+        "ref": 10,
+        "tag": "some_tag",
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '108',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "108",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
-        'data': {
-            'primary': ...,
-            'revocation': ...
+        "data": {
+            "primary": ...,
+            "revocation": ...
         },
         
-        'signature_type': 'CL',
-        'origin': '2VkbBskPNNyWrLrZq7DBhk',
-        'ref': 10,
-        'tag': 'some_tag'
+        "signature_type": "CL",
+        "origin": "2VkbBskPNNyWrLrZq7DBhk",
+        "ref": 10,
+        "tag": "some_tag"
     }
 }
 ```
@@ -2183,59 +3255,59 @@ Gets a Revocation Registry Definition, that Issuer creates and publishes for a p
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '115'
-        'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+    "operation": {
+        "type": "115"
+        "id": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
     },
     
-    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '115',
-        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "115",
+        "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        "id": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
         
-        'data': {
-            'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-            'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
-            'revocDefType': 'CL_ACCUM',
-            'tag': 'tag1',
-            'value': {
-                'maxCredNum': 1000000,
-                'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
-                'tailsLocation': 'http://tails.location.com',
-                'issuanceType': 'ISSUANCE_BY_DEFAULT',
-                'publicKeys': {},
+        "data": {
+            "id": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+            "credDefId": "FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag"
+            "revocDefType": "CL_ACCUM",
+            "tag": "tag1",
+            "value": {
+                "maxCredNum": 1000000,
+                "tailsHash": "6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297",
+                "tailsLocation": "http://tails.location.com",
+                "issuanceType": "ISSUANCE_BY_DEFAULT",
+                "publicKeys": {},
             },
         },
         
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
@@ -2257,56 +3329,56 @@ Gets a Revocation Registry Accumulator.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '116'
-        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-        'timestamp': 1514214800
+    "operation": {
+        "type": "116"
+        "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        "timestamp": 1514214800
     },
     
-    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '116',
-        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "116",
+        "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-        'timestamp': 1514214800
+        "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        "timestamp": 1514214800
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
         
-        'data': {
-            'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
-            'revocDefType': 'CL_ACCUM',
-            'value': {
-                'accum': 'accum_value',
+        "data": {
+            "id": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+            "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1"
+            "revocDefType": "CL_ACCUM",
+            "value": {
+                "accum": "accum_value",
             },
         },
         
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
@@ -2340,91 +3412,91 @@ If `from` is not set, then there is just one state proof (as usual) for both `ac
 *Request Example when both `from` and `to` present*:
 ```
 {
-    'operation': {
-        'type': '117'
-        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-        'from': 1514214100
-        'to': 1514214900
+    "operation": {
+        "type": "117"
+        "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        "from": 1514214100
+        "to": 1514214900
     },
     
-    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example when both `from` and `to` present*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '117',
-        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "117",
+        "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-        'from': 1514214100
-        'to': 1514214900
+        "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        "from": 1514214100
+        "to": 1514214900
         
-        'seqNo': 18,
-        'txnTime': 1514214795,
+        "seqNo": 18,
+        "txnTime": 1514214795,
         
-        'data': {
-            'revocDefType': 'CL_ACCUM',
-            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-            'value': {
-               'accum_to': {
-                   'revocDefType': 'CL_ACCUM', 
-                   'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1', 
-                   'txnTime': 1514214795, 
-                   'seqNo': 18,
-                   'value': {
-                      'accum': '9a512a7624'
+        "data": {
+            "revocDefType": "CL_ACCUM",
+            "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+            "value": {
+               "accum_to": {
+                   "revocDefType": "CL_ACCUM", 
+                   "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1", 
+                   "txnTime": 1514214795, 
+                   "seqNo": 18,
+                   "value": {
+                      "accum": "9a512a7624"
                    }
                 },
-                'revoked': [10, 11],
-                'issued': [1, 2, 3], 
-                'accum_from': {
-                    'revocDefType': 'CL_ACCUM',
-                    'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1', 
-                    'txnTime': 1514214105, 
-                    'seqNo': 16, 
-                    'value': {
-                       'accum': 'be080bd74b'
+                "revoked": [10, 11],
+                "issued": [1, 2, 3], 
+                "accum_from": {
+                    "revocDefType": "CL_ACCUM",
+                    "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1", 
+                    "txnTime": 1514214105, 
+                    "seqNo": 16, 
+                    "value": {
+                       "accum": "be080bd74b"
                     }
                  }
             },
-            'stateProofFrom': {
-                'multi_signature': {
-                     'participants': ['Delta', 'Gamma', 'Alpha'],
-                     'signature': 'QpP4oVm2MLQ7SzLVZknuFjneXfqYj6UStn3oQtCdSiKiYuS4n1kxRphKRDMwmS7LGeXgUmy3C8GtcVM5X9SN9qLr2MBApjpPtKE9DkBTwyieh3vN1UMq1Kwx2Jkz7vcSJNH2WzjEKSUnpFLEJk4mpFaibqd1xX2hrwruxzSDUi2uCT', 
-                     'value': {
-                         'state_root_hash': '2sfnQcEKkjw78KYnGJyk5Gw9gtwESvX6NdFFPEiQYQsz', 
-                         'ledger_id': 1,
-                         'pool_state_root_hash': 'JDt3NNrZenx3x41oxsvhWeuSFFerdyqEvQUWyGdHX7gx',
-                         'timestamp': 1514214105, 
-                         'txn_root_hash': 'FCkntnPqfaGx4fCX5tTdWeLr1mXdFuZnTNuEehiet32z'
+            "stateProofFrom": {
+                "multi_signature": {
+                     "participants": ["Delta", "Gamma", "Alpha"],
+                     "signature": "QpP4oVm2MLQ7SzLVZknuFjneXfqYj6UStn3oQtCdSiKiYuS4n1kxRphKRDMwmS7LGeXgUmy3C8GtcVM5X9SN9qLr2MBApjpPtKE9DkBTwyieh3vN1UMq1Kwx2Jkz7vcSJNH2WzjEKSUnpFLEJk4mpFaibqd1xX2hrwruxzSDUi2uCT", 
+                     "value": {
+                         "state_root_hash": "2sfnQcEKkjw78KYnGJyk5Gw9gtwESvX6NdFFPEiQYQsz", 
+                         "ledger_id": 1,
+                         "pool_state_root_hash": "JDt3NNrZenx3x41oxsvhWeuSFFerdyqEvQUWyGdHX7gx",
+                         "timestamp": 1514214105, 
+                         "txn_root_hash": "FCkntnPqfaGx4fCX5tTdWeLr1mXdFuZnTNuEehiet32z"
                      }
                 },
-                'root_hash': '2sfnQcEKkjw78KYnGJyk5Gw9gtwESvX6NdFFPEiQYQsz',
-                'proof_nodes': '+QLB+QE3uFEgOk1TaktUV2tQTHRZb1BFYVRGMVRVRGI6NDpNU2pLVFdrUEx0WW9QRWFURjFUVURiOjM6Q0w6MTM6c29tZV90YWc6Q0xfQUNDVU06YTk4ZWO44vjguN57ImxzbiI6MTYsImx1dCI6MTU1ODUyNDEzMSwidmFsIjp7InJldm9jRGVmVHlwZSI6IkNMX0FDQ1VNIiwicmV2b2NSZWdEZWZJZCI6Ik1TaktUV2tQTHRZb1BFYVRGMVRVRGI6NDpNU2pLVFdrUEx0WW9QRWFURjFUVURiOjM6Q0w6MTM6c29tZV90YWc6Q0xfQUNDVU06YTk4ZWMiLCJzZXFObyI6MTYsInR4blRpbWUiOjE1NTg1MjQxMzEsInZhbHVlIjp7ImFjY3VtIjoiYmUwODBiZDc0YiJ9fX34UYCAgICAoAgDh8v1CXNEJGFl302RO98x8R6Ozscy0ZFdRpiCobh3oCnaxHyPnZq6E+mbnfU6oC994Wv1nh7sf0pQOp5g93tbgICAgICAgICAgPkBMYCAgKBmZE7e2jSrhTw9usjxZcAb25uSisJV+TzkbXNUypyJvaA/KAFG4RQqB9dAGRfTgly2XjXvPCeVr7vBn6FSkN7sH4CAoBGxQDip9XfEC/CkgimSkkhCeMm9XnkxxwWiMJwzuhAjgKAmh0g8FUI60e7NBwTu7ukdfz6kaON6u9U87kTeTlPcXICgsk2X2G6MlVhEqMEzthWAT4ey6qRaKXpOuMZOA1kMODagQdHobiexMaAwqtI7P5bbfqNkQEoZD79m6z43DEGQGL6gXQfLXgd+xWWXypr1pDxPvjSU8UtHjfWhJ58aiuqAzmKgyee3YL7GFFd+5oxG9b/q4od/mRjFpLdXKR3YG2o/hAygRIVVdoVD0dpqktsN8kSc03UhYiI76nxdCejX+CV4OX6A'
+                "root_hash": "2sfnQcEKkjw78KYnGJyk5Gw9gtwESvX6NdFFPEiQYQsz",
+                "proof_nodes": "+QLB+QE3uFEgOk1TaktUV2tQTHRZb1BFYVRGMVRVRGI6NDpNU2pLVFdrUEx0WW9QRWFURjFUVURiOjM6Q0w6MTM6c29tZV90YWc6Q0xfQUNDVU06YTk4ZWO44vjguN57ImxzbiI6MTYsImx1dCI6MTU1ODUyNDEzMSwidmFsIjp7InJldm9jRGVmVHlwZSI6IkNMX0FDQ1VNIiwicmV2b2NSZWdEZWZJZCI6Ik1TaktUV2tQTHRZb1BFYVRGMVRVRGI6NDpNU2pLVFdrUEx0WW9QRWFURjFUVURiOjM6Q0w6MTM6c29tZV90YWc6Q0xfQUNDVU06YTk4ZWMiLCJzZXFObyI6MTYsInR4blRpbWUiOjE1NTg1MjQxMzEsInZhbHVlIjp7ImFjY3VtIjoiYmUwODBiZDc0YiJ9fX34UYCAgICAoAgDh8v1CXNEJGFl302RO98x8R6Ozscy0ZFdRpiCobh3oCnaxHyPnZq6E+mbnfU6oC994Wv1nh7sf0pQOp5g93tbgICAgICAgICAgPkBMYCAgKBmZE7e2jSrhTw9usjxZcAb25uSisJV+TzkbXNUypyJvaA/KAFG4RQqB9dAGRfTgly2XjXvPCeVr7vBn6FSkN7sH4CAoBGxQDip9XfEC/CkgimSkkhCeMm9XnkxxwWiMJwzuhAjgKAmh0g8FUI60e7NBwTu7ukdfz6kaON6u9U87kTeTlPcXICgsk2X2G6MlVhEqMEzthWAT4ey6qRaKXpOuMZOA1kMODagQdHobiexMaAwqtI7P5bbfqNkQEoZD79m6z43DEGQGL6gXQfLXgd+xWWXypr1pDxPvjSU8UtHjfWhJ58aiuqAzmKgyee3YL7GFFd+5oxG9b/q4od/mRjFpLdXKR3YG2o/hAygRIVVdoVD0dpqktsN8kSc03UhYiI76nxdCejX+CV4OX6A"
             }
         },
         
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
@@ -2438,64 +3510,64 @@ If `from` is not set, then there is just one state proof (as usual) for both `ac
 *Request Example when there is only `to` present*:
 ```
 {
-    'operation': {
-        'type': '117'
-        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-        'to': 1514214900
+    "operation": {
+        "type": "117"
+        "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        "to": 1514214900
     },
     
-    'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example when there is only `to` present*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '117',
-        'identifier': 'T6AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "117",
+        "identifier": "T6AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-        'to': 1514214900
+        "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        "to": 1514214900
         
-        'seqNo': 18,
-        'txnTime': 1514214795,
+        "seqNo": 18,
+        "txnTime": 1514214795,
         
-        'data': {
-            'revocDefType': 'CL_ACCUM',
-            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
-            'value': {
-               'accum_to': {
-                   'revocDefType': 'CL_ACCUM', 
-                   'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1', 
-                   'txnTime': 1514214795, 
-                   'seqNo': 18,
-                   'value': {
-                      'accum': '9a512a7624'
+        "data": {
+            "revocDefType": "CL_ACCUM",
+            "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+            "value": {
+               "accum_to": {
+                   "revocDefType": "CL_ACCUM", 
+                   "revocRegDefId": "L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1", 
+                   "txnTime": 1514214795, 
+                   "seqNo": 18,
+                   "value": {
+                      "accum": "9a512a7624"
                    }
                 },
-                'issued': [],
-                'revoked': [1, 2, 3, 4, 5]
+                "issued": [],
+                "revoked": [1, 2, 3, 4, 5]
         },
         
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 1, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
@@ -2503,6 +3575,181 @@ If `from` is not set, then there is just one state proof (as usual) for both `ac
     }
 }
 ```
+
+### GET_RICH_SCHEMA_OBJECT_BY_ID
+
+Gets a Rich Schema object (of any type) by its unique `id`.
+
+- `id` (string):
+
+     A unique ID (for example a DID with a id-string being base58 representation of the SHA2-256 hash of the `content` field)
+     
+    
+
+ 
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "300"
+        "id": "did:sov:GGAD5g65TDQr1PPHHRoiGf",
+    },
+    
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
+}
+```
+
+*Reply Example (for an Encoding object)*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "type": "300",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
+        
+        "seqNo": 10,
+        "txnTime": 1514214795,
+
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
+                },
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
+            }
+        },
+        
+        "data": {
+            "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+            "content":"{
+                "input": {
+                    "id": "DateRFC3339",
+                    "type": "string"
+                },
+                "output": {
+                    "id": "UnixTime",
+                    "type": "256-bit integer"
+                },
+                "algorithm": {
+                    "description": "This encoding transforms an
+                        RFC3339-formatted datetime object into the number
+                        of seconds since January 1, 1970 (the Unix epoch).",
+                    "documentation": URL to specific github commit,
+                    "implementation": URL to implementation
+                },
+                "test_vectors": URL to specific github commit
+            }",
+            "rsName":"SimpleEncoding",
+            "rsVersion":"1.0",
+            "rsType": "enc",
+            "from": "89kbBskPNNyWrLrZq7DBhk",
+            "endorser": "45kbBskPNNyWrLrZq7DBhk",
+            "ver": "1"
+        },
+        
+        "dest": "2VkbBskPNNyWrLrZq7DBhk"
+    }
+}
+```
+
+### GET_RICH_SCHEMA_OBJECT_BY_METADATA
+
+Gets a Rich Schema object (of any type) by its unique `rsName`, `rsVersion` and `rsType`.
+
+- `rsType` (string):
+
+    Requested rich schema object's type. 
+    
+- `rsName` (string):
+
+    Requested rich schema object's  name
+    
+- `rsVersion` (string):
+
+    Requested rich schema object's  version
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "301"
+        "rsName":"SimpleEncoding",
+        "rsVersion":"1.0",
+        "rsType": "enc"
+    },
+    
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
+}
+```
+*Reply Example (for an Encoding object)*:
+```
+{
+    "op": "REPLY", 
+    "result": {
+        "type": "301",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
+        "seqNo": 10,
+        "txnTime": 1514214795,
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 1, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
+                },
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
+            }
+        }, 
+        "data": {
+            "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
+            "content":"{
+                "input": {
+                    "id": "DateRFC3339",
+                    "type": "string"
+                },
+                "output": {
+                    "id": "UnixTime",
+                    "type": "256-bit integer"
+                },
+                "algorithm": {
+                    "description": "This encoding transforms an
+                        RFC3339-formatted datetime object into the number
+                        of seconds since January 1, 1970 (the Unix epoch).",
+                    "documentation": URL to specific github commit,
+                    "implementation": URL to implementation
+                },
+                "test_vectors": URL to specific github commit
+            }",
+            "rsName":"SimpleEncoding",
+            "rsVersion":"1.0",
+            "rsType": "enc",
+            "from": "89kbBskPNNyWrLrZq7DBhk",
+            "endorser": "45kbBskPNNyWrLrZq7DBhk",
+            "ver": "1"
+        },
+        "dest": "2VkbBskPNNyWrLrZq7DBhk"
+    }
+}
+```
+
 
 ### GET_AUTH_RULE
 
@@ -2542,76 +3789,76 @@ Each output list element is equal to the input of [AUTH_RULE](#auth_rule), so li
 *Request Example (for getting one rule)*:
 ```
   {  
-      'reqId':572495653,
-      'signature':'366f89ehxLuxPySGcHppxbURWRcmXVdkHeHrjtPKNYSRKnvaxzUXF8CEUWy9KU251u5bmnRL3TKvQiZgjwouTJYH',
-      'identifier':'M9BJDuS24bqbJNvBRsoGg3',
-      'operation':{  
-            'auth_type': '0', 
-            'auth_action': 'EDIT',
-            'field' :'services',
-            'old_value': [VALIDATOR],
-            'new_value': []
+      "reqId":572495653,
+      "signature":"366f89ehxLuxPySGcHppxbURWRcmXVdkHeHrjtPKNYSRKnvaxzUXF8CEUWy9KU251u5bmnRL3TKvQiZgjwouTJYH",
+      "identifier":"M9BJDuS24bqbJNvBRsoGg3",
+      "operation":{  
+            "auth_type": "0", 
+            "auth_action": "EDIT",
+            "field" :"services",
+            "old_value": [VALIDATOR],
+            "new_value": []
       },
-      'protocolVersion':2
+      "protocolVersion":2
    }
 ```
 
 *Reply Example (for getting one rule)*:
 ```
 {  
-      'op':'REPLY',
-      'result':{  
-         'type':'121',
-         'auth_type': '0', 
-         'auth_action': 'EDIT',
-         'field' :'services',
-         'old_value': [VALIDATOR],
-         'new_value': []
+      "op":"REPLY",
+      "result":{  
+         "type":"121",
+         "auth_type": "0", 
+         "auth_action": "EDIT",
+         "field" :"services",
+         "old_value": [VALIDATOR],
+         "new_value": []
          
-         'reqId':441933878,
-         'identifier':'M9BJDuS24bqbJNvBRsoGg3',
+         "reqId":441933878,
+         "identifier":"M9BJDuS24bqbJNvBRsoGg3",
          
-         'data':[  
+         "data":[  
               {
-                'auth_type': '0', 
-                'auth_action': 'EDIT',
-                'field' :'services',
-                'old_value': [VALIDATOR],
-                'new_value': []
-                'constraint':{
-                      'constraint_id': 'OR',
-                      'auth_constraints': [{'constraint_id': 'ROLE', 
-                                            'role': '0',
-                                            'sig_count': 2, 
-                                            'need_to_be_owner': False, 
-                                            'metadata': {}}, 
+                "auth_type": "0", 
+                "auth_action": "EDIT",
+                "field" :"services",
+                "old_value": [VALIDATOR],
+                "new_value": []
+                "constraint":{
+                      "constraint_id": "OR",
+                      "auth_constraints": [{"constraint_id": "ROLE", 
+                                            "role": "0",
+                                            "sig_count": 2, 
+                                            "need_to_be_owner": False, 
+                                            "metadata": {}}, 
                                            
-                                           {'constraint_id': 'ROLE', 
-                                            'role': '2',
-                                            'sig_count': 1, 
-                                            'need_to_be_owner': True, 
-                                            'metadata': {}}
+                                           {"constraint_id": "ROLE", 
+                                            "role": "2",
+                                            "sig_count": 1, 
+                                            "need_to_be_owner": True, 
+                                            "metadata": {}}
                                            ]
                 }, 
               }
          ],
 
-         'state_proof':{  
-            'proof_nodes':'+Pz4+pUgQURELS0xLS1yb2xlLS0qLS0xMDG44vjguN57ImF1dGhfY29uc3RyYWludHMiOlt7ImNvbnN0cmFpbnRfaWQiOiJST0xFIiwibWV0YWRhdGEiOnt9LCJuZWVkX3RvX2JlX293bmVyIjpmYWxzZSwicm9sZSI6IjAiLCJzaWdfY291bnQiOjF9LHsiY29uc3RyYWludF9pZCI6IlJPTEUiLCJtZXRhZGF0YSI6e30sIm5lZWRfdG9fYmVfb3duZXIiOmZhbHNlLCJyb2xlIjoiMiIsInNpZ19jb3VudCI6MX1dLCJjb25zdHJhaW50X2lkIjoiQU5EIn0=',
-            'root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
-            'multi_signature':{  
-               'signature':'RNsPhUuPwwtA7NEf4VySCg1Fb2NpwapXrY8d64TLsRHR9rQ5ecGhRd89NTHabh8qEQ8Fs1XWawHjbSZ95RUYsJwx8PEXQcFEDGN3jc5VY31Q5rGg3aeBdFFxgYo11cZjrk6H7Md7N8fjHrKRdxo6TzDKSszJTNM1EAPLzyC6kKCnF9',
-               'value':{  
-                  'state_root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
-                  'pool_state_root_hash':'9L5CbxzhsNrZeGSJGVVpsC56JpuS5DGdUqfsFsR1RsFQ',
-                  'timestamp':1552395470,
-                  'txn_root_hash':'4CowHvnk2Axy2HWcYmT8b88A1Sgk45x7yHAzNnxowN9h',
-                  'ledger_id':2
+         "state_proof":{  
+            "proof_nodes":"+Pz4+pUgQURELS0xLS1yb2xlLS0qLS0xMDG44vjguN57ImF1dGhfY29uc3RyYWludHMiOlt7ImNvbnN0cmFpbnRfaWQiOiJST0xFIiwibWV0YWRhdGEiOnt9LCJuZWVkX3RvX2JlX293bmVyIjpmYWxzZSwicm9sZSI6IjAiLCJzaWdfY291bnQiOjF9LHsiY29uc3RyYWludF9pZCI6IlJPTEUiLCJtZXRhZGF0YSI6e30sIm5lZWRfdG9fYmVfb3duZXIiOmZhbHNlLCJyb2xlIjoiMiIsInNpZ19jb3VudCI6MX1dLCJjb25zdHJhaW50X2lkIjoiQU5EIn0=",
+            "root_hash":"DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF",
+            "multi_signature":{  
+               "signature":"RNsPhUuPwwtA7NEf4VySCg1Fb2NpwapXrY8d64TLsRHR9rQ5ecGhRd89NTHabh8qEQ8Fs1XWawHjbSZ95RUYsJwx8PEXQcFEDGN3jc5VY31Q5rGg3aeBdFFxgYo11cZjrk6H7Md7N8fjHrKRdxo6TzDKSszJTNM1EAPLzyC6kKCnF9",
+               "value":{  
+                  "state_root_hash":"DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF",
+                  "pool_state_root_hash":"9L5CbxzhsNrZeGSJGVVpsC56JpuS5DGdUqfsFsR1RsFQ",
+                  "timestamp":1552395470,
+                  "txn_root_hash":"4CowHvnk2Axy2HWcYmT8b88A1Sgk45x7yHAzNnxowN9h",
+                  "ledger_id":2
                },
-               'participants':[  
-                  'Beta',
-                  'Gamma',
-                  'Delta'
+               "participants":[  
+                  "Beta",
+                  "Gamma",
+                  "Delta"
                ]
             }
          },
@@ -2622,60 +3869,60 @@ Each output list element is equal to the input of [AUTH_RULE](#auth_rule), so li
 *Request Example (for getting all rules)*:
 ```
   {  
-      'reqId':575407732,
-      'signature':'4AheMmtrfoHuAEtg5VsFPGe1j2w1UYxAvShRmfsCTSHnBDoA5EbmCa2xZzZVQjQGUFbYr65uznu1iUQhW22RNb1X',
-      'identifier':'M9BJDuS24bqbJNvBRsoGg3',
-      'operation':{  
-         'type':'121'
+      "reqId":575407732,
+      "signature":"4AheMmtrfoHuAEtg5VsFPGe1j2w1UYxAvShRmfsCTSHnBDoA5EbmCa2xZzZVQjQGUFbYr65uznu1iUQhW22RNb1X",
+      "identifier":"M9BJDuS24bqbJNvBRsoGg3",
+      "operation":{  
+         "type":"121"
       },
-      'protocolVersion':2
+      "protocolVersion":2
   }
 ```
 
 *Reply Example (for getting all rules)*:
 ```
 {  
-      'op':'REPLY',
-      'result':{
-         'type':'121',
+      "op":"REPLY",
+      "result":{
+         "type":"121",
            
-         'reqId':575407732,
-         'identifier':'M9BJDuS24bqbJNvBRsoGg3'
+         "reqId":575407732,
+         "identifier":"M9BJDuS24bqbJNvBRsoGg3"
 
-         'data':[  
+         "data":[  
               {
-                'auth_type': '0', 
-                'auth_action': 'EDIT',
-                'field' :'services',
-                'old_value': [VALIDATOR],
-                'new_value': []
-                'constraint':{
-                      'constraint_id': 'OR',
-                      'auth_constraints': [{'constraint_id': 'ROLE', 
-                                            'role': '0',
-                                            'sig_count': 2, 
-                                            'need_to_be_owner': False, 
-                                            'metadata': {}}, 
+                "auth_type": "0", 
+                "auth_action": "EDIT",
+                "field" :"services",
+                "old_value": [VALIDATOR],
+                "new_value": []
+                "constraint":{
+                      "constraint_id": "OR",
+                      "auth_constraints": [{"constraint_id": "ROLE", 
+                                            "role": "0",
+                                            "sig_count": 2, 
+                                            "need_to_be_owner": False, 
+                                            "metadata": {}}, 
                                            
-                                           {'constraint_id': 'ROLE', 
-                                            'role': '2',
-                                            'sig_count': 1, 
-                                            'need_to_be_owner': True, 
-                                            'metadata': {}}
+                                           {"constraint_id": "ROLE", 
+                                            "role": "2",
+                                            "sig_count": 1, 
+                                            "need_to_be_owner": True, 
+                                            "metadata": {}}
                                            ]
                 }, 
               },
               {
-                'auth_type': '102', 
-                'auth_action': 'ADD',
-                'field' :'*',
-                'new_value': '*'
-                'constraint':{
-                    'constraint_id': 'ROLE', 
-                    'role': '2',
-                    'sig_count': 1, 
-                    'need_to_be_owner': False, 
-                    'metadata': {}
+                "auth_type": "102", 
+                "auth_action": "ADD",
+                "field" :"*",
+                "new_value": "*"
+                "constraint":{
+                    "constraint_id": "ROLE", 
+                    "role": "2",
+                    "sig_count": 1, 
+                    "need_to_be_owner": False, 
+                    "metadata": {}
                 }, 
               },
               ........
@@ -2693,6 +3940,8 @@ Gets a transaction author agreement.
 - Gets a transaction author agreement by its digest if `digest` is set. The digest is calculated from concatenation of [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)'s `version` and `text`.
 - Gets a transaction author agreement by its version if `version` is set.
 - Gets the latest (current) transaction author agreement at the given time (from ledger point of view) if `timestamp` is set.
+
+The result contains Agreement's version, text, digest, ratification timestamp and retirement timestamp if it's set.
 
 All input parameters are optional and mutually exclusive. 
 
@@ -2712,49 +3961,52 @@ All input parameters are optional and mutually exclusive.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '6'
-        'version': '1.0',
+    "operation": {
+        "type": "6"
+        "version": "1.0",
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '6',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "6",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'version': '1.0',
+        "version": "1.0",
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'data': {
+        "data": {
             "version": "1.0",
             "text": "Please read carefully before writing anything to the ledger",
+            "digest": "ca11c39b44ce4ec8666a8f63efd5bacf98a8e26c4f8890c87f629f126a3b74f3"
+            "ratification_ts": 1514304094738044,
+            "retirement_ts": 1515415195838044
         },
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 2, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 2, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
@@ -2786,32 +4038,32 @@ All input parameters are optional and mutually exclusive.
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '7'
-        'version': '1.0',
+    "operation": {
+        "type": "7"
+        "version": "1.0",
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514308188474704,
-    'protocolVersion': 2
+    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+    "reqId": 1514308188474704,
+    "protocolVersion": 2
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '7',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514308188474704,
+    "op": "REPLY", 
+    "result": {
+        "type": "7",
+        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
+        "reqId": 1514308188474704,
         
-        'version': '1.0',
+        "version": "1.0",
         
-        'seqNo': 10,
-        'txnTime': 1514214795,
+        "seqNo": 10,
+        "txnTime": 1514214795,
 
-        'data': {
+        "data": {
             "version": "1.0",
             "aml": {
                 "EULA": "Included in the EULA for the product being used",
@@ -2822,19 +4074,19 @@ All input parameters are optional and mutually exclusive.
             "amlContext": "http://aml-context-descr"
         },
 
-        'state_proof': {
-            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514308168,
-                    'ledger_id': 2, 
-                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
-                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
-                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+        "state_proof": {
+            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
+            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
+            "multi_signature": {
+                "value": {
+                    "timestamp": 1514308168,
+                    "ledger_id": 2, 
+                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
+                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
+                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
                 },
-                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
-                'participants': ['Delta', 'Gamma', 'Alpha']
+                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
+                "participants": ["Delta", "Gamma", "Alpha"]
             }
         },
         
@@ -2842,6 +4094,7 @@ All input parameters are optional and mutually exclusive.
     }
 }
 ```
+
 
 ### GET_TXN
 
@@ -2858,15 +4111,15 @@ A generic request to get a transaction from Ledger by its sequence number.
 *Request Example (requests a NYM txn with seqNo=9)*:
 ```
 {
-    'operation': {
-        'type': '3',
-        'ledgerId': 1,
-        'data': 9
+    "operation": {
+        "type": "3",
+        "ledgerId": 1,
+        "data": 9
     },
     
-    'identifier': 'MSjKTWkPLtYoPEaTF1TUDb',
-    'reqId': 1514311281279625,
-    'protocolVersion': 2
+    "identifier": "MSjKTWkPLtYoPEaTF1TUDb",
+    "reqId": 1514311281279625,
+    "protocolVersion": 2
 }
 ```
 
@@ -2982,11 +4235,11 @@ Command provide info from all the connected nodes without need of consensus.
 *Request Example*:
 ```
 {
-    'protocolVersion': 2,
-    'reqId': 83193,
-    'identifier': 'M9BJDuS24bqbJNvBRsoGg3',
-    'operation': {
-                'type': '119'
+    "protocolVersion": 2,
+    "reqId": 83193,
+    "identifier": "M9BJDuS24bqbJNvBRsoGg3",
+    "operation": {
+                "type": "119"
     }
 }
 ```
@@ -2994,12 +4247,12 @@ Command provide info from all the connected nodes without need of consensus.
 *Reply Example*:
 ```
 {
-    'op': 'REPLY',
-    'result': {
-            'reqId': 83193,
-            'data': { <Json with node info> },
-            'type': '119',
-            'identifier': 'M9BJDuS24bqbJNvBRsoGg3'
+    "op": "REPLY",
+    "result": {
+            "reqId": 83193,
+            "data": { <Json with node info> },
+            "type": "119",
+            "identifier": "M9BJDuS24bqbJNvBRsoGg3"
     }
 }
 ```

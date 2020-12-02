@@ -3,7 +3,7 @@ from copy import deepcopy
 from hashlib import sha256
 
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
-    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, SCHEMA_IS_STRICT
+    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, OP_VER
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.fields import ConstantField, IdentifierField, \
@@ -34,11 +34,17 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
     REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
     GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
-    GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
+    GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, \
+    SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, AUTH_RULES, CONSTRAINT, AUTH_ACTION, \
     AUTH_TYPE, \
-    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
+    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, RULES, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, RS_TYPE, \
+    TAG_LIMIT_SIZE, JSON_LD_CONTEXT, RS_VERSION, \
+    RS_NAME, RS_ID, RS_CONTENT, RS_CONTEXT_TYPE_VALUE, RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, \
+    RICH_SCHEMA_ENCODING, RS_MAPPING_TYPE_VALUE, RICH_SCHEMA_MAPPING, RS_CRED_DEF_TYPE_VALUE, \
+    RICH_SCHEMA_CRED_DEF, GET_RICH_SCHEMA_OBJECT_BY_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
+    RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
 from indy_common.version import SchemaVersion
 
 
@@ -115,8 +121,8 @@ class ClientRevocDefSubmitField(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(REVOC_REG_DEF)),
         (ID, NonEmptyStringField()),
-        (REVOC_TYPE, NonEmptyStringField()),
-        (TAG, NonEmptyStringField()),
+        (REVOC_TYPE, LimitedLengthStringField()),
+        (TAG, LimitedLengthStringField(max_length=TAG_LIMIT_SIZE)),
         (CRED_DEF_ID, NonEmptyStringField()),
         (VALUE, RevocDefValueField())
     )
@@ -135,7 +141,7 @@ class ClientRevocRegEntrySubmitField(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(REVOC_REG_ENTRY)),
         (REVOC_REG_DEF_ID, NonEmptyStringField()),
-        (REVOC_TYPE, NonEmptyStringField()),
+        (REVOC_TYPE, LimitedLengthStringField()),
         (VALUE, RevocRegEntryValueField())
     )
 
@@ -196,6 +202,9 @@ class ClientAttribOperation(MessageValidator):
     def __validate_endpoint_ha_field(self, endpoint):
         if endpoint is None:
             return  # remove the attribute, valid case
+        if not isinstance(endpoint, dict):
+            self._raise_invalid_fields(ENDPOINT, endpoint,
+                                       'should be a dict')
         HA_NAME = 'ha'
         ha = endpoint.get(HA_NAME)
         if ha is None:
@@ -406,6 +415,58 @@ class ClientGetAuthRuleOperation(MessageValidator):
     )
 
 
+def rich_schema_objects_schema(txn_type, rs_type):
+    return (
+        (TXN_TYPE, ConstantField(txn_type)),
+        (RS_ID, NonEmptyStringField()),
+        (RS_TYPE, ConstantField(rs_type)),
+        (RS_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_VERSION, VersionField(version_cls=SchemaVersion)),
+        (RS_CONTENT, NonEmptyStringField()),
+        (OP_VER, LimitedLengthStringField(optional=True))
+    )
+
+
+class ClientJsonLdContextOperation(MessageValidator):
+    schema = rich_schema_objects_schema(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE)
+
+
+class ClientRichSchemaOperation(MessageValidator):
+    schema = rich_schema_objects_schema(RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE)
+
+
+class ClientRichSchemaEncodingOperation(MessageValidator):
+    schema = rich_schema_objects_schema(RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE)
+
+
+class ClientRichSchemaMappingOperation(MessageValidator):
+    schema = rich_schema_objects_schema(RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE)
+
+
+class ClientRichSchemaCredDefOperation(MessageValidator):
+    schema = rich_schema_objects_schema(RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE)
+
+
+class ClientRichSchemaPresDefOperation(MessageValidator):
+    schema = rich_schema_objects_schema(RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE)
+
+
+class ClientGetRichSchemaObjectByIdOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(GET_RICH_SCHEMA_OBJECT_BY_ID)),
+        (RS_ID, NonEmptyStringField()),
+    )
+
+
+class ClientGetRichSchemaObjectByMetadataOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(GET_RICH_SCHEMA_OBJECT_BY_METADATA)),
+        (RS_TYPE, NonEmptyStringField()),
+        (RS_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (RS_VERSION, VersionField(version_cls=SchemaVersion)),
+    )
+
+
 class ClientOperationField(PClientOperationField):
     _specific_operations = {
         SCHEMA: ClientSchemaOperation(),
@@ -428,6 +489,14 @@ class ClientOperationField(PClientOperationField):
         GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
         GET_REVOC_REG: ClientGetRevocRegField(),
         GET_REVOC_REG_DELTA: ClientGetRevocRegDeltaField(),
+        JSON_LD_CONTEXT: ClientJsonLdContextOperation(),
+        RICH_SCHEMA: ClientRichSchemaOperation(),
+        RICH_SCHEMA_ENCODING: ClientRichSchemaEncodingOperation(),
+        RICH_SCHEMA_MAPPING: ClientRichSchemaMappingOperation(),
+        RICH_SCHEMA_CRED_DEF: ClientRichSchemaCredDefOperation(),
+        RICH_SCHEMA_PRES_DEF: ClientRichSchemaPresDefOperation(),
+        GET_RICH_SCHEMA_OBJECT_BY_ID: ClientGetRichSchemaObjectByIdOperation(),
+        GET_RICH_SCHEMA_OBJECT_BY_METADATA: ClientGetRichSchemaObjectByMetadataOperation(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class

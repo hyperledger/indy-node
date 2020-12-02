@@ -9,6 +9,7 @@ from plenum.common.txn_util import get_payload_data
 
 # TODO: use data classes instead
 
+
 # SCHEMA
 
 def get_write_schema_name(req):

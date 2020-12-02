@@ -77,7 +77,7 @@ def test_plugin_or_error_msg_not_enough_amount(write_auth_req_validator):
         "Constraint: 1 TRUSTEE signature is required, Error: Not enough TRUSTEE signatures",
         "Constraint: 1 STEWARD signature is required with additional metadata new_field 10, Error: not enough amount in plugin field"
     ])
-    assert expected in str(excinfo.value.args[0])
+    assert expected in str(excinfo.value.reason)
 
 
 def test_plugin_or_error_msg_not_enough_amount_multiple_metadata_fields(write_auth_req_validator):
@@ -104,4 +104,4 @@ def test_plugin_or_error_msg_not_enough_amount_multiple_metadata_fields(write_au
         "Constraint: 1 TRUSTEE signature is required, Error: Not enough TRUSTEE signatures",
         "Constraint: 1 STEWARD signature is required with additional metadata new_field 10 aaa bbb, Error: not enough amount in plugin field"
     ])
-    assert expected in str(excinfo.value.args[0])
+    assert expected in str(excinfo.value.reason)

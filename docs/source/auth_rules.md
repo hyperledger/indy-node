@@ -286,6 +286,42 @@
     <td><sub>Editing a Schema</sub></td>
   </tr>
   <tr>
+    <td><sub>SET_CONTEXT</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 ENDORSER</sub></td>
+    <td><sub>Adding a new Context</sub></td>
+  </tr>
+  <tr>
+    <td><sub>SET_CONTEXT</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>No one can edit existing Context</sub></td>
+    <td><sub>Editing a Context</sub></td>
+  </tr>
+    <tr>
+    <td><sub>SET_RICH_SCHEMA</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 ENDORSER</sub></td>
+    <td><sub>Adding a new Rich Schema</sub></td>
+  </tr>
+  <tr>
+    <td><sub>SET_RICH_SCHEMA</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>No one can edit existing Context</sub></td>
+    <td><sub>Editing a Rich Schema</sub></td>
+  </tr>
+  <tr>
     <td><sub>CLAIM_DEF</sub></td>
     <td><sub>ADD</sub></td>
     <td><sub><code>*</code></sub></td>
@@ -548,7 +584,31 @@
     <td><sub>EDIT</sub></td>
     <td><sub>The DID used to create the SCHEMA</sub></td>
   </tr>    
+  
+  <tr>
+    <td><sub>SET_CONTEXT</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>    
 
+  <tr>
+    <td><sub>SET_CONTEXT</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>The DID used to create the CONTEXT</sub></td>
+  </tr>  
+
+  <tr>
+    <td><sub>SET_RICH_SCHEMA</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>    
+
+  <tr>
+    <td><sub>SET_RICH_SCHEMA</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>The DID used to create the RICH_SCHEMA</sub></td>
+  </tr>  
+  
   <tr>
     <td><sub>CLAIM_DEF</sub></td>
     <td><sub>ADD</sub></td>
@@ -670,4 +730,12 @@
   </tr>    
 
         
-</table>  
+</table>
+
+### Endorser using
+
+- Endorser is required only when the transaction is endorsed, that is signed by someone else besides the author.
+- If transaction is endorsed, Endorser must sign the transaction.
+- If author of txn has role `ENDORSER`, then no multi-sig is required, since he's already signed the txn.
+- Endorser is required for unprivileged roles only.
+- Unprivileged users cannot submit any transaction (including administrative transactions like pool upgrade or restart) without a signature from a DID with the endorser role that is specified in the endorser field.

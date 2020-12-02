@@ -120,9 +120,9 @@ class AuthConstraint(AbstractAuthConstraint):
         error_msg = ""
 
         if self.off_ledger_signature and self.sig_count > 1:
-            error_msg = "{} signatures of any role (off-ledger included) are required".format(self.sig_count, role)
+            error_msg = "{} signatures of any role (off-ledger included) are required".format(self.sig_count)
         elif self.off_ledger_signature and self.sig_count == 1:
-            error_msg = "1 signature of any role (off-ledger included) is required".format(self.sig_count, role)
+            error_msg = "1 signature of any role (off-ledger included) is required"
 
         elif role != 'ALL' and self.need_to_be_owner and self.sig_count > 1:
             error_msg = "{} {} signatures are required and needs to be owner".format(self.sig_count, role)

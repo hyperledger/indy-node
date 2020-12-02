@@ -10,6 +10,8 @@ Environment = NamedTuple("Environment", [
     ("domainLedger", str)
 ])
 
+DOMAIN_LEDGER_ID = 1
+
 # SCHEMA
 SCHEMA_NAME = "name"
 SCHEMA_VERSION = "version"
@@ -170,10 +172,66 @@ AUTH_RULE = IndyTransactions.AUTH_RULE.value
 AUTH_RULES = IndyTransactions.AUTH_RULES.value
 GET_AUTH_RULE = IndyTransactions.GET_AUTH_RULE.value
 
+# client Rich Schema transaction types
+JSON_LD_CONTEXT = IndyTransactions.JSON_LD_CONTEXT.value
+RICH_SCHEMA = IndyTransactions.RICH_SCHEMA.value
+RICH_SCHEMA_ENCODING = IndyTransactions.RICH_SCHEMA_ENCODING.value
+RICH_SCHEMA_MAPPING = IndyTransactions.RICH_SCHEMA_MAPPING.value
+RICH_SCHEMA_CRED_DEF = IndyTransactions.RICH_SCHEMA_CRED_DEF.value
+RICH_SCHEMA_PRES_DEF = IndyTransactions.RICH_SCHEMA_PRES_DEF.value
+GET_RICH_SCHEMA_OBJECT_BY_ID = IndyTransactions.GET_RICH_SCHEMA_OBJECT_BY_ID.value
+GET_RICH_SCHEMA_OBJECT_BY_METADATA = IndyTransactions.GET_RICH_SCHEMA_OBJECT_BY_METADATA.value
+
 CONFIG_LEDGER_ID = 2
 JUSTIFICATION_MAX_SIZE = 1000
 
 LOCAL_AUTH_POLICY = 1
 CONFIG_LEDGER_AUTH_POLICY = 2
 
+TAG_LIMIT_SIZE = 256
+
 APP_NAME = "indy-node"
+
+# RICH SCHEMA
+RS_ID = 'id'
+RS_TYPE = 'rsType'
+RS_NAME = 'rsName'
+RS_VERSION = 'rsVersion'
+RS_CONTENT = 'content'
+RS_FROM = 'from'
+RS_ENDORSER = 'endorser'
+
+JSON_LD_CONTEXT_FIELD = "@context"
+JSON_LD_ID_FIELD = "@id"
+JSON_LD_TYPE_FIELD = "@type"
+
+# RICH SCHEMA type names
+RS_CONTEXT_TYPE_VALUE = 'ctx'
+RS_SCHEMA_TYPE_VALUE = 'sch'
+RS_ENCODING_TYPE_VALUE = 'enc'
+RS_MAPPING_TYPE_VALUE = 'map'
+RS_CRED_DEF_TYPE_VALUE = 'cdf'
+RS_PRES_DEF_TYPE_VALUE = 'pdf'
+
+# Specific Rich Schema Object's content fields:
+RS_CRED_DEF_SIG_TYPE = "signatureType"
+RS_CRED_DEF_MAPPING = "mapping"
+RS_CRED_DEF_SCHEMA = "schema"
+RS_CRED_DEF_PUB_KEY = "publicKey"
+
+RS_ENC_INPUT = "input"
+RS_ENC_OUTPUT = "output"
+RS_ENC_ALGORITHM = "algorithm"
+RS_ENC_TEST_VECS = "testVectors"
+RS_ENC_ID = "id"
+RS_ENC_TYPE = "type"
+RS_ENC_ALG_DESC = "description"
+RS_ENC_ALG_DOC = "documentation"
+RS_ENC_ALG_IMPL = "implementation"
+
+RS_MAPPING_ATTRIBUTES = "attributes"
+RS_MAPPING_ISSUER = "issuer"
+RS_MAPPING_ISSUANCE_DATE = "issuanceDate"
+RS_MAPPING_SCHEMA = "schema"
+RS_MAPPING_ENC = "enc"
+RS_MAPPING_RANK = "rank"
