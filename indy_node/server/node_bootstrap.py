@@ -49,9 +49,9 @@ from indy_node.server.request_handlers.read_req_handlers.get_nym_handler import 
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_def_handler import GetRevocRegDefHandler
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_delta_handler import GetRevocRegDeltaHandler
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_handler import GetRevocRegHandler
-from indy_node.server.request_handlers.read_req_handlers.get_rich_schema_object_by_id_handler import \
+from indy_node.server.request_handlers.read_req_handlers.rich_schema.get_rich_schema_object_by_id_handler import \
     GetRichSchemaObjectByIdHandler
-from indy_node.server.request_handlers.read_req_handlers.get_rich_schema_object_by_metadata_handler import \
+from indy_node.server.request_handlers.read_req_handlers.rich_schema.get_rich_schema_object_by_metadata_handler import \
     GetRichSchemaObjectByMetadataHandler
 from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
 from indy_node.server.restarter import Restarter

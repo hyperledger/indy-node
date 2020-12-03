@@ -1,6 +1,7 @@
 import json
-import base58
+from contextlib import contextmanager
 
+import base58
 from indy.did import replace_keys_start, replace_keys_apply
 from indy.ledger import (
     build_attrib_request, build_get_attrib_request,
@@ -13,22 +14,20 @@ from indy_common.authorize.auth_constraints import ROLE, CONSTRAINT_ID, Constrai
     METADATA, OFF_LEDGER_SIGNATURE
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.constants import NYM, ENDORSER, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, OLD_VALUE
+from indy_common.test.helper import TempStorage
+from indy_node.server.node import Node
 from indy_node.server.node_bootstrap import NodeBootstrap
+from indy_node.server.upgrader import Upgrader
 from plenum.common.constants import TRUSTEE
 from plenum.common.signer_did import DidSigner
 from plenum.common.signer_simple import SimpleSigner
-from plenum.common.types import OPERATION
 from plenum.common.util import rawToFriendly
-from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request, sdk_add_new_nym
-from stp_core.common.log import getlogger
 from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_and_submit_req
+from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.test_node import TestNodeCore
 from plenum.test.testable import spyable
-from indy_common.test.helper import TempStorage
-from indy_node.server.node import Node
-from indy_node.server.upgrader import Upgrader
+from stp_core.common.log import getlogger
 from stp_core.types import HA
-
 
 logger = getlogger()
 
@@ -326,22 +325,9 @@ def createUuidIdentifierAndFullVerkey(seed=None):
     return didSigner.identifier, didSigner.verkey
 
 
-# Sets the named attribute on the given object to the specified value inside the scope.
-class ModifiedAttributeScope:
-    def __init__(self, obj, attr, new_value):
-        self._obj = obj
-        self._attr = attr
-        self._new_value = new_value
-
-    def __enter__(self):
-        self._old_value = getattr(self._obj, self._attr)
-        setattr(self._obj, self._attr, self._new_value)
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        setattr(self._obj, self._attr, self._old_value)
-
-
-# Returns context with RichSchemas feature enabled.
+@contextmanager
 def rich_schemas_enabled_scope(tconf):
-    return ModifiedAttributeScope(tconf, "ENABLE_RICH_SCHEMAS", True)
+    old_value = tconf.ENABLE_RICH_SCHEMAS
+    tconf.ENABLE_RICH_SCHEMAS = True
+    yield tconf
+    tconf.ENABLE_RICH_SCHEMAS = old_value

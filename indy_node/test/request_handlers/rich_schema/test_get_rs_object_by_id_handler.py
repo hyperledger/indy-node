@@ -2,7 +2,7 @@ import pytest
 
 from indy_common.constants import RS_ID, GET_RICH_SCHEMA_OBJECT_BY_ID, RS_VERSION, RS_NAME, RS_CONTENT, RS_TYPE
 from indy_common.types import Request
-from indy_node.server.request_handlers.read_req_handlers.get_rich_schema_object_by_id_handler import \
+from indy_node.server.request_handlers.read_req_handlers.rich_schema.get_rich_schema_object_by_id_handler import \
     GetRichSchemaObjectByIdHandler
 from indy_node.test.state_proof.helper import check_valid_proof
 from indy_node.test.state_proof.test_state_multi_proofs_for_get_requests import is_proof_verified, save_multi_sig

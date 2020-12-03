@@ -23,6 +23,14 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler, metaclass=ABCMeta):
                  write_req_validator: WriteRequestValidator):
         super().__init__(database_manager, txn_type, DOMAIN_LEDGER_ID)
         self.write_req_validator = write_req_validator
+        self.config = getConfig()
+
+    def _enabled(self) -> bool:
+        return self.config.ENABLE_RICH_SCHEMAS
+
+    def _validate_enabled(self, request: Request):
+        if not self._enabled():
+            raise InvalidClientRequest(request.identifier, request.reqId, "RichSchema transactions are disabled")
 
     @abstractmethod
     def is_json_ld_content(self):
@@ -38,9 +46,7 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler, metaclass=ABCMeta):
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
-
-        if not getConfig().ENABLE_RICH_SCHEMAS:
-            raise InvalidClientRequest(request.identifier, request.reqId, "RichSchema transactions are disabled")
+        self._validate_enabled(request)
 
         try:
             content_as_dict = JsonSerializer.loads(request.operation[RS_CONTENT])
