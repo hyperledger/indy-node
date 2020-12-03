@@ -8,6 +8,7 @@ from indy_common.constants import DOMAIN_LEDGER_ID, RS_ID, RS_TYPE, RS_VERSION, 
     JSON_LD_TYPE_FIELD
 from indy_common.state.domain import encode_state_value
 from indy_common.types import Request
+from indy_common.config_util import getConfig
 from plenum.common.constants import TXN_PAYLOAD_METADATA_ENDORSER, TXN_PAYLOAD_METADATA_FROM, TXN_PAYLOAD_VERSION
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.txn_util import get_payload_data, get_seq_no, get_txn_time, get_from, get_endorser, \
@@ -22,6 +23,14 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler, metaclass=ABCMeta):
                  write_req_validator: WriteRequestValidator):
         super().__init__(database_manager, txn_type, DOMAIN_LEDGER_ID)
         self.write_req_validator = write_req_validator
+        self.config = getConfig()
+
+    def _enabled(self) -> bool:
+        return self.config.ENABLE_RICH_SCHEMAS
+
+    def _validate_enabled(self, request: Request):
+        if not self._enabled():
+            raise InvalidClientRequest(request.identifier, request.reqId, "RichSchema transactions are disabled")
 
     @abstractmethod
     def is_json_ld_content(self):
@@ -37,6 +46,8 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler, metaclass=ABCMeta):
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
+        self._validate_enabled(request)
+
         try:
             content_as_dict = JsonSerializer.loads(request.operation[RS_CONTENT])
         except ValueError:
