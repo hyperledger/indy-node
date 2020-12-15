@@ -17,10 +17,12 @@ RUN pip3 install -U \
 	setuptools
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BD33704C
+RUN echo "deb http://us.archive.ubuntu.com/ubuntu xenial main universe" >> /etc/apt/sources.list
 RUN echo "deb https://repo.sovrin.org/deb xenial master" >> /etc/apt/sources.list
 RUN echo "deb https://repo.sovrin.org/sdk/deb xenial master" >> /etc/apt/sources.list
+RUN apt-get update -y
 RUN useradd -ms /bin/bash -l -u $uid indy
-RUN apt-get update -y && apt-get install -y indy-node libindy
+RUN apt-get install -y ursa indy-node libindy
 RUN pip3 install python3-indy
 USER indy
 WORKDIR /home/indy
