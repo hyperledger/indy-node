@@ -1,4 +1,5 @@
 ![logo](collateral/logos/indy-logo.png)
+
 # Indy Node
 * [About Indy Node](#about-indy-node)
 * [Technical Overview of Indy Blockchain](#technical-overview-of-indy-blockchain)
