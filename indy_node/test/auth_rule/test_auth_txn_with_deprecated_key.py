@@ -9,8 +9,8 @@ from plenum.test.node_catchup.helper import ensure_all_nodes_have_same_data
 from plenum.test.test_node import ensureElectionsDone, ensure_node_disconnected, checkNodesConnected
 from indy_node.test.auth_rule.helper import sdk_send_and_check_auth_rule_request, sdk_send_and_check_get_auth_rule_request
 from indy_common.authorize.auth_actions import ADD_PREFIX, AuthActionAdd
-from indy_common.authorize.auth_constraints import AuthConstraint
-from indy_common.constants import CONSTRAINT, AUTH_TYPE, CONFIG_LEDGER_ID
+from indy_common.authorize.auth_constraints import AuthConstraint, ROLE
+from indy_common.constants import CONSTRAINT, AUTH_TYPE, CONFIG_LEDGER_ID, NYM
 from indy_common.authorize.auth_map import one_trustee_constraint
 from plenum.common.constants import STEWARD, DATA
 from plenum.common.exceptions import RequestNackedException
@@ -44,7 +44,7 @@ def test_auth_txn_with_deprecated_key(tconf, tdir, allPluginsPath,
     Remove the fake auth rule from the map
     Check that we can't get the fake auth rule
     Restart the last node with its state regeneration
-    Check that nodes data is equal (restarted node regenerate config state)
+    Check that nodes data is equal after changing the existing auth rule (restarted node regenerate config state)
     """
 
     fake_txn_type = "100002"
@@ -137,4 +137,14 @@ def test_auth_txn_with_deprecated_key(tconf, tdir, allPluginsPath,
     # Check that nodes data is equal (restarted node regenerate config state)
     looper.run(checkNodesConnected(txnPoolNodeSet))
     ensureElectionsDone(looper, txnPoolNodeSet, customTimeout=30)
+    sdk_send_and_check_auth_rule_request(looper,
+                                         sdk_pool_handle,
+                                         sdk_wallet_trustee,
+                                         auth_action=ADD_PREFIX,
+                                         auth_type=NYM,
+                                         field=ROLE,
+                                         new_value=STEWARD,
+                                         constraint=AuthConstraint(role=STEWARD, sig_count=2,
+                                                                   need_to_be_owner=False).as_dict)
     ensure_all_nodes_have_same_data(looper, txnPoolNodeSet, custom_timeout=20)
+
