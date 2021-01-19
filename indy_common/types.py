@@ -44,7 +44,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     RS_NAME, RS_ID, RS_CONTENT, RS_CONTEXT_TYPE_VALUE, RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, \
     RICH_SCHEMA_ENCODING, RS_MAPPING_TYPE_VALUE, RICH_SCHEMA_MAPPING, RS_CRED_DEF_TYPE_VALUE, \
     RICH_SCHEMA_CRED_DEF, GET_RICH_SCHEMA_OBJECT_BY_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
-    RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
+    RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, GET_FROZEN_LEDGERS, LEDGERS_FREEZE, LEDGERS_IDS
 from indy_common.version import SchemaVersion
 
 
@@ -415,6 +415,20 @@ class ClientGetAuthRuleOperation(MessageValidator):
     )
 
 
+class ClientLedgersFreezeOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(LEDGERS_FREEZE)),
+        # Not LedgerIdField because the ledger may be already removed
+        (LEDGERS_IDS, IterableField(inner_field_type=IntegerField()))
+    )
+
+
+class ClientGetFrozenLedgersOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(GET_FROZEN_LEDGERS))
+    )
+
+
 def rich_schema_objects_schema(txn_type, rs_type):
     return (
         (TXN_TYPE, ConstantField(txn_type)),
@@ -497,6 +511,8 @@ class ClientOperationField(PClientOperationField):
         RICH_SCHEMA_PRES_DEF: ClientRichSchemaPresDefOperation(),
         GET_RICH_SCHEMA_OBJECT_BY_ID: ClientGetRichSchemaObjectByIdOperation(),
         GET_RICH_SCHEMA_OBJECT_BY_METADATA: ClientGetRichSchemaObjectByMetadataOperation(),
+        LEDGERS_FREEZE: ClientLedgersFreezeOperation(),
+        GET_FROZEN_LEDGERS: ClientGetFrozenLedgersOperation()
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class
