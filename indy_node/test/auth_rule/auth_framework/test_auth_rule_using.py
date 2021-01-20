@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from collections import OrderedDict
 
 from indy_node.test.auth_rule.auth_framework.disable_taa import TAADisableTest
+from indy_node.test.auth_rule.auth_framework.edit_frozen_ledgers import EditFrozenLedgersTest
 from plenum.common.constants import STEWARD, TRUSTEE, IDENTITY_OWNER
 
 from indy_common.constants import (
@@ -123,6 +124,7 @@ class TestAuthRuleUsing():
         auth_map.change_client_port.get_action_id(): EditNodeClientPortTest,
         auth_map.change_bls_key.get_action_id(): EditNodeBlsTest,
         auth_map.disable_txn_author_agreement.get_action_id(): TAADisableTest,
+        auth_map.edit_frozen_ledgers.get_action_id(): EditFrozenLedgersTest,
     })
 
     # TODO a workaround until sdk aceepts empty TAA to make possible its deactivation

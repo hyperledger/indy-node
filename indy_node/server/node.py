@@ -20,7 +20,7 @@ from state.pruning_state import PruningState
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, POOL_UPGRADE, POOL_CONFIG, \
-    IN_PROGRESS, AUTH_RULE, AUTH_RULES
+    IN_PROGRESS, AUTH_RULE, AUTH_RULES, LEDGERS_FREEZE
 from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
 from indy_node.server.client_authn import LedgerBasedAuthNr
@@ -238,7 +238,8 @@ class Node(PlenumNode):
         return self.poolCfg.isWritable() or txn_type in [POOL_UPGRADE,
                                                          POOL_CONFIG,
                                                          AUTH_RULE,
-                                                         AUTH_RULES]
+                                                         AUTH_RULES,
+                                                         LEDGERS_FREEZE]
 
     def execute_domain_txns(self, three_pc_batch) -> List:
         """

@@ -39,7 +39,7 @@ FIELD = "field"
 RULES = "rules"
 
 # LEDGERS_FREEZE
-LEDGERS_IDS = "ledger_ids"
+LEDGERS_IDS = "ledgers_ids"
 
 ROLE = 'role'
 NONCE = 'nonce'

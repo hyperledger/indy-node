@@ -39,7 +39,7 @@ class IndyTransactions(Transactions):
     AUTH_RULES = "122"
 
     LEDGERS_FREEZE = "123"
-    GET_FROZEN_LEDGERS = "123"
+    GET_FROZEN_LEDGERS = "124"
 
     # Rich Schema
     JSON_LD_CONTEXT = "200"

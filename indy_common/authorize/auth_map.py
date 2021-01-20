@@ -236,6 +236,11 @@ edit_revoc_reg_entry = AuthActionEdit(txn_type=REVOC_REG_ENTRY,
                                       old_value='*',
                                       new_value='*')
 
+edit_frozen_ledgers = AuthActionEdit(txn_type=REVOC_REG_ENTRY,
+                                     field='*',
+                                     old_value='*',
+                                     new_value='*')
+
 # Anyone constraint
 anyone_constraint = AuthConstraint(role='*',
                                    sig_count=1)
@@ -324,6 +329,7 @@ auth_map = OrderedDict([
     (add_revoc_reg_entry.get_action_id(), endorser_or_steward_or_trustee_owner_constraint),
     (edit_revoc_reg_def.get_action_id(), owner_constraint),
     (edit_revoc_reg_entry.get_action_id(), owner_constraint),
+    (edit_frozen_ledgers.get_action_id(), one_trustee_constraint),
 ])
 
 # Edit Trustee:
