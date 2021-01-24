@@ -259,6 +259,9 @@ steward_owner_constraint = AuthConstraint(STEWARD, 1, need_to_be_owner=True)
 # One Trustee constraint
 one_trustee_constraint = AuthConstraint(TRUSTEE, 1)
 
+# Three Trustee constraint
+three_trustee_constraint = AuthConstraint(TRUSTEE, 3)
+
 # Steward or Trustee constraint
 steward_or_trustee_constraint = AuthConstraintOr([AuthConstraint(STEWARD, 1),
                                                   AuthConstraint(TRUSTEE, 1)])
@@ -329,7 +332,7 @@ auth_map = OrderedDict([
     (add_revoc_reg_entry.get_action_id(), endorser_or_steward_or_trustee_owner_constraint),
     (edit_revoc_reg_def.get_action_id(), owner_constraint),
     (edit_revoc_reg_entry.get_action_id(), owner_constraint),
-    (edit_frozen_ledgers.get_action_id(), one_trustee_constraint),
+    (edit_frozen_ledgers.get_action_id(), three_trustee_constraint),
 ])
 
 # Edit Trustee:

@@ -238,8 +238,7 @@ class Node(PlenumNode):
         return self.poolCfg.isWritable() or txn_type in [POOL_UPGRADE,
                                                          POOL_CONFIG,
                                                          AUTH_RULE,
-                                                         AUTH_RULES,
-                                                         LEDGERS_FREEZE]
+                                                         AUTH_RULES]
 
     def execute_domain_txns(self, three_pc_batch) -> List:
         """
