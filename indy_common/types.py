@@ -425,7 +425,7 @@ class ClientLedgersFreezeOperation(MessageValidator):
 
 class ClientGetFrozenLedgersOperation(MessageValidator):
     schema = (
-        (TXN_TYPE, ConstantField(GET_FROZEN_LEDGERS))
+        (TXN_TYPE, ConstantField(GET_FROZEN_LEDGERS)),
     )
 
 

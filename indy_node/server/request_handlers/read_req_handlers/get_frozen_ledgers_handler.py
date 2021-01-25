@@ -6,7 +6,7 @@ from indy_common.types import ClientGetAuthRuleOperation
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.abstract_auth_rule_handler import \
     AbstractAuthRuleHandler
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.static_auth_rule_helper import StaticAuthRuleHelper
-from indy_node.server.request_handlers.config_req_handlers.ledger_freeze_handler import LedgerFreezeHandler
+from indy_node.server.request_handlers.config_req_handlers.ledgers_freeze_handler import LedgersFreezeHandler
 from plenum.common.txn_util import get_request_data
 from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
 
@@ -28,7 +28,7 @@ class GetFrozenLedgersHandler(ReadRequestHandler):
 
     def get_result(self, request: Request):
         self._validate_request_type(request)
-        state_path = LedgerFreezeHandler.make_state_path_for_frozen_ledgers()
+        state_path = LedgersFreezeHandler.make_state_path_for_frozen_ledgers()
         try:
             data, last_seq_no, last_update_time, proof = self.lookup(state_path, is_committed=True, with_proof=True)
         except KeyError:

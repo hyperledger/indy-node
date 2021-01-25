@@ -7,7 +7,7 @@ from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstrain
 from indy_common.constants import ENDORSER, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
     CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, \
     REVOC_REG_DEF, ATTRIB, AUTH_RULES, JSON_LD_CONTEXT, RICH_SCHEMA, RICH_SCHEMA_MAPPING, \
-    RICH_SCHEMA_ENCODING, RICH_SCHEMA_CRED_DEF, RICH_SCHEMA_PRES_DEF
+    RICH_SCHEMA_ENCODING, RICH_SCHEMA_CRED_DEF, RICH_SCHEMA_PRES_DEF, LEDGERS_FREEZE
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML, \
     TXN_AUTHOR_AGREEMENT_DISABLE
 
@@ -236,7 +236,7 @@ edit_revoc_reg_entry = AuthActionEdit(txn_type=REVOC_REG_ENTRY,
                                       old_value='*',
                                       new_value='*')
 
-edit_frozen_ledgers = AuthActionEdit(txn_type=REVOC_REG_ENTRY,
+edit_frozen_ledgers = AuthActionEdit(txn_type=LEDGERS_FREEZE,
                                      field='*',
                                      old_value='*',
                                      new_value='*')

@@ -6,7 +6,8 @@ from indy_common.constants import CONFIG_LEDGER_ID, LEDGERS_FREEZE, LEDGERS_IDS
 
 from common.serializers.serialization import config_state_serializer
 from indy_common.state.config import MARKER_FROZEN_LEDGERS
-from plenum.common.constants import CONFIG_LEDGER_ID
+from plenum.common.constants import CONFIG_LEDGER_ID, AUDIT_LEDGER_ID, AUDIT_TXN_NODE_REG, AUDIT_TXN_LEDGER_ROOT, \
+    AUDIT_TXN_STATE_ROOT, AUDIT_TXN_LEDGERS_SIZE
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import get_payload_data, get_seq_no, get_txn_time
@@ -15,7 +16,7 @@ from plenum.server.request_handlers.handler_interfaces.write_request_handler imp
 from plenum.server.request_handlers.utils import encode_state_value
 
 
-class LedgerFreezeHandler(WriteRequestHandler):
+class LedgersFreezeHandler(WriteRequestHandler):
     state_serializer = config_state_serializer
 
     LEDGER = "ledger"
@@ -29,6 +30,7 @@ class LedgerFreezeHandler(WriteRequestHandler):
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
+        # TODO: add a check that ledgers_ids doesn't contains base ledgers
 
     def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
@@ -55,6 +57,29 @@ class LedgerFreezeHandler(WriteRequestHandler):
 
 # TODO: add getting root hashes from audit
     def make_frozen_ledgers_list(self, ledgers_ids):
-        return {ledger_id: {LedgerFreezeHandler.LEDGER: 0,
-                            LedgerFreezeHandler.STATE: 0,
-                            LedgerFreezeHandler.SEQ_NO: 0} for ledger_id in ledgers_ids}
+        ledger_root, state_root, seq_no = self.__load_hash_roots_from_audit_ledger()
+        return {ledger_id: {LedgersFreezeHandler.LEDGER: ledger_root,
+                            LedgersFreezeHandler.STATE: state_root,
+                            LedgersFreezeHandler.SEQ_NO: seq_no} for ledger_id in ledgers_ids}
+
+    def __load_hash_roots_from_audit_ledger(self):
+        audit_ledger = self.database_manager.get_ledger(AUDIT_LEDGER_ID)
+        if not audit_ledger:
+            return None, None, None
+
+        last_txn = audit_ledger.get_last_committed_txn()
+        last_txn_ledger_root = get_payload_data(last_txn).get(AUDIT_TXN_LEDGER_ROOT, None)
+        last_txn_state_root = get_payload_data(last_txn).get(AUDIT_TXN_STATE_ROOT, None)
+        last_txn_seq_no = get_payload_data(last_txn).get(AUDIT_TXN_LEDGERS_SIZE, None)
+
+        if isinstance(last_txn_ledger_root, int):
+            seq_no = get_seq_no(last_txn) - last_txn_ledger_root
+            audit_txn_for_seq_no = audit_ledger.getBySeqNo(seq_no)
+            last_txn_ledger_root = get_payload_data(audit_txn_for_seq_no).get(AUDIT_TXN_LEDGER_ROOT)
+
+        if isinstance(last_txn_state_root, int):
+            seq_no = get_seq_no(last_txn) - last_txn_ledger_root
+            audit_txn_for_seq_no = audit_ledger.getBySeqNo(seq_no)
+            last_txn_state_root = get_payload_data(audit_txn_for_seq_no).get(AUDIT_TXN_STATE_ROOT)
+
+        return last_txn_ledger_root, last_txn_state_root, last_txn_seq_no
