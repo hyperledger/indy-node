@@ -1,5 +1,4 @@
 MARKER_AUTH_RULE = "1"
-MARKER_FROZEN_LEDGERS = "2"
 
 
 def make_state_path_for_auth_rule(action_id) -> bytes:

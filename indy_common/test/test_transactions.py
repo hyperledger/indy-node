@@ -39,9 +39,6 @@ def test_transactions_are_encoded():
     assert GET_AUTH_RULE == "121"
     assert AUTH_RULES == "122"
 
-    assert LEDGERS_FREEZE == "123"
-    assert GET_FROZEN_LEDGERS == "124"
-
     assert JSON_LD_CONTEXT == "200"
     assert RICH_SCHEMA == "201"
     assert RICH_SCHEMA_ENCODING == "202"

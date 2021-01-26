@@ -38,9 +38,6 @@ AUTH_TYPE = "auth_type"
 FIELD = "field"
 RULES = "rules"
 
-# LEDGERS_FREEZE
-LEDGERS_IDS = "ledgers_ids"
-
 ROLE = 'role'
 NONCE = 'nonce'
 ATTRIBUTES = "attributes"
@@ -174,9 +171,6 @@ POOL_CONFIG = IndyTransactions.POOL_CONFIG.value
 AUTH_RULE = IndyTransactions.AUTH_RULE.value
 AUTH_RULES = IndyTransactions.AUTH_RULES.value
 GET_AUTH_RULE = IndyTransactions.GET_AUTH_RULE.value
-
-LEDGERS_FREEZE = IndyTransactions.LEDGERS_FREEZE.value
-GET_FROZEN_LEDGERS = IndyTransactions.GET_FROZEN_LEDGERS.value
 
 # client Rich Schema transaction types
 JSON_LD_CONTEXT = IndyTransactions.JSON_LD_CONTEXT.value
