@@ -15,10 +15,12 @@ class LedgersFreezeHandler(PLedgersFreezeHandler):
         super().__init__(database_manager)
         self.write_req_validator = write_req_validator
 
-    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
-        super().dynamic_validation(request, req_pp_time)
+    def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+        pass
+
+    def authorize(self, request):
         self.write_req_validator.validate(request,
-                                              [AuthActionEdit(txn_type=LEDGERS_FREEZE,
-                                                              field='*',
-                                                              old_value='*',
-                                                              new_value='*')])
+                                          [AuthActionEdit(txn_type=LEDGERS_FREEZE,
+                                                          field='*',
+                                                          old_value='*',
+                                                          new_value='*')])

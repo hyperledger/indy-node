@@ -28,7 +28,7 @@ class RevocRegEntryHandler(WriteRequestHandler):
     def static_validation(self, request: Request):
         pass
 
-    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+    def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
         rev_reg_tags = request.operation[REVOC_REG_DEF_ID]
         author_did, req_id, operation = get_request_data(request)

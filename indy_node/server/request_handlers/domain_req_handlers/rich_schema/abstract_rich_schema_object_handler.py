@@ -33,7 +33,7 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler):
     def do_static_validation_content(self, content_as_dict, request):
         pass
 
-    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+    def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
 
         rs_id = request.operation[RS_ID]
