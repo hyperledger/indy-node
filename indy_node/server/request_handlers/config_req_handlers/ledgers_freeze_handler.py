@@ -5,7 +5,7 @@ from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from plenum.common.constants import LEDGERS_FREEZE
 from plenum.common.request import Request
 from plenum.server.database_manager import DatabaseManager
-from plenum.server.request_handlers.ledgers_freeze_handler import LedgersFreezeHandler as PLedgersFreezeHandler
+from plenum.server.request_handlers.ledgers_freeze.ledgers_freeze_handler import LedgersFreezeHandler as PLedgersFreezeHandler
 
 
 class LedgersFreezeHandler(PLedgersFreezeHandler):
