@@ -30,6 +30,10 @@ sudo apt-get install -y libbz2-dev \
 echo 'Installed RocksDB'
 
 
-echo 'Installing Libindy and Libindy Crypto...'
-sudo apt-get install -y libindy libindy-crypto
-echo 'Installed Libindy and Libindy Crypto'
+echo 'Installing Ursa...'
+sudo apt-get install -y ursa
+echo 'Installed Ursa'
+
+echo 'Installing Libindy...'
+sudo apt-get install -y libindy
+echo 'Installed Libindy'
