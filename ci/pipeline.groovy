@@ -32,7 +32,6 @@ def systemTests(Closure body) {
 
     Map indyPlenumVersions = [:]
     Map indySDKVersions = [:]
-    Map indyCryptoVersions = [:]
 
     def dockerClean = {
         sh "./system/docker/clean.sh $systemTestsNetwork"
@@ -66,7 +65,6 @@ def systemTests(Closure body) {
                 sh """
                     sed -i 's/python3-indy.*/python3-indy==${indySDKVersions.pypi}/g' ./system/requirements.txt
                     #sed -i 's/indy-plenum.*/indy-plenum==${indyPlenumVersions.pypi}/g' ./system/requirements.txt
-                    #sed -i 's/indy-crypto.*/indy-crypto==${indyCryptoVersions.pypi}/g' ./system/requirements.txt
                 """
             }
 
@@ -77,8 +75,6 @@ def systemTests(Closure body) {
             stage("[${testGroup}] Prepare docker env") {
                 withEnv([
                     "INDY_NODE_REPO_COMPONENT=${config.repoChannel}",
-                    "LIBINDY_CRYPTO_VERSION=${indyCryptoVersions.debian}",
-                    "PYTHON3_LIBINDY_CRYPTO_VERSION=${indyCryptoVersions.debian}",
                     "INDY_PLENUM_VERSION=${indyPlenumVersions.debian}",
                     "INDY_NODE_VERSION=${config.pkgVersion}",
                     "LIBINDY_REPO_COMPONENT=${indySDKVersions.debian == indySDKVersions.pypi ? 'stable' : 'master'}",
@@ -166,16 +162,10 @@ def systemTests(Closure body) {
                 """).trim()
                 indySDKVersions.debian = indySDKVersions.pypi.replaceAll(/-(dev|rc)-(.*)/, "~\$2")
                 echo "indy-sdk version: ${indySDKVersions}"
-
-                indyCryptoVersions.pypi = sh(returnStdout: true, script: """
-                    grep "^Collecting indy-crypto==" $pipLogName | awk '{print \$2}' | awk -F'==' '{print \$2}'
-                """).trim()
-                indyCryptoVersions.debian = indyCryptoVersions.pypi.replaceAll(/-(dev|rc)-(.*)/, "~\$2")
-                echo "indy-crypto version: ${indyCryptoVersions}"
             }
 
-            if (!(indyPlenumVersions.debian && indySDKVersions.debian && indyCryptoVersions.debian)) {
-                error "Failed to get versions for indy-plenum or indy-crypto or indy-sdk"
+            if (!(indyPlenumVersions.debian && indySDKVersions.debian)) {
+                error "Failed to get versions for indy-plenum or indy-sdk"
             }
         }
     }

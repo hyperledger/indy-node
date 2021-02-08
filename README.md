@@ -75,9 +75,8 @@ Indy Node repo consists of the following parts:
     - An official SDK for Indy.
     - It contains client and anoncreds implementation
     - You don't need it to contribute to Indy-Node. But please use indy-sdk for your own applications dealing with Indy ecosystem.
-- [indy-crypto](https://github.com/hyperledger/indy-crypto)
-    - A shared crypto library
-    - It's based on [AMCL](https://github.com/milagro-crypto/amcl)
+- [ursa](https://github.com/hyperledger/ursa)
+    - Hyperledger's shared crypto library
     - In particular, it contains BLS multi-signature crypto needed for state proofs support in Indy.
 
 ## Contact us

@@ -3,7 +3,7 @@ import pytest
 from indy_common.constants import RS_ID, RS_VERSION, RS_NAME, RS_CONTENT, RS_TYPE, \
     GET_RICH_SCHEMA_OBJECT_BY_METADATA
 from indy_common.types import Request
-from indy_node.server.request_handlers.read_req_handlers.get_rich_schema_object_by_metadata_handler import \
+from indy_node.server.request_handlers.read_req_handlers.rich_schema.get_rich_schema_object_by_metadata_handler import \
     GetRichSchemaObjectByMetadataHandler
 from indy_node.test.state_proof.helper import check_valid_proof
 from indy_node.test.state_proof.test_state_multi_proofs_for_get_requests import is_proof_verified, save_multi_sig

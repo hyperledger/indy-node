@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 
 if [ "$#" -ne 2 ]; then
- echo "Please specify indy-sdk and indy-crypto version tags"
- echo "e.g ./setup-dev-dependencies.sh 1.6.7 0.4.2"
+ echo "Please specify indy-sdk version tag"
+ echo "e.g ./setup-dev-dependencies.sh 1.6.7"
  exit 1
 fi
 
 indy_sdk_version=$1
-indy_crypto_version=$2
 
 brew update
 
@@ -43,16 +42,3 @@ popd
 rm -rf indy-sdk
 popd
 echo 'Installed libindy'
-
-echo 'Installing libcrypto...'
-pushd /tmp
-git clone https://github.com/hyperledger/indy-crypto.git
-pushd indy-crypto/libindy-crypto
-git fetch --all --tags --prune
-git checkout tags/v"${indy_crypto_version}"
-cargo build --release
-cp target/release/libindy_crypto.dylib /usr/local/lib/
-popd
-rm -rf indy-crypto
-popd
-echo 'Installed libcrypto'

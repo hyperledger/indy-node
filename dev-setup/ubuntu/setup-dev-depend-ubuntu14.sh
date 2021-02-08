@@ -23,6 +23,6 @@ echo 'Installing libsodium...'
 sudo apt-get install -y libsodium13
 echo 'Installed libsodium'
 
-echo 'Installing Libindy and Libindy Crypto...'
-sudo apt-get install -y libindy libindy-crypto
-echo 'Installed Libindy and Libindy Crypto'
+echo 'Installing Libindy...'
+sudo apt-get install -y libindy
+echo 'Installed Libindy'

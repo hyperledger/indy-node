@@ -18,7 +18,8 @@ from indy_common.serialization import attrib_raw_data_serializer
 from indy_node.test.anon_creds.helper import get_revoc_reg_def_id
 from indy_node.test.api.helper import sdk_write_rich_schema_object_and_check
 from indy_node.test.auth_rule.helper import sdk_send_and_check_get_auth_rule_request, generate_key
-from indy_node.test.rich_schema.templates import W3C_BASE_CONTEXT, RICH_SCHEMA_EX1
+from indy_node.test.rich_schema.templates import W3C_BASE_CONTEXT, RICH_SCHEMA_EX1, RICH_SCHEMA_ENCODING_EX1, \
+    RICH_SCHEMA_MAPPING_EX1, RICH_SCHEMA_CRED_DEF_EX1, RICH_SCHEMA_PRES_DEF_EX1
 from indy_node.test.state_proof.helper import check_valid_proof, \
     sdk_submit_operation_and_get_result
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, \
@@ -152,38 +153,64 @@ def test_state_proof_returned_for_get_schema(looper,
     check_valid_proof(result)
 
 
+# The order of creation is essential as some rich schema object reference others by ID
+# Encoding's id must be equal to the one used in RICH_SCHEMA_MAPPING_EX1
+
+# txn_type, rs_type, content, rs_id, rs_name, rs_version:
+PARAMS = [
+    (
+        JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT, randomString(), randomString(), '1.0'
+    ),
+    (
+        RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1, RICH_SCHEMA_EX1['@id'], randomString(), '2.0'
+    ),
+    (
+        RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, RICH_SCHEMA_ENCODING_EX1,
+        "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD", randomString(), '1.1'
+    ),
+    (
+        RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, RICH_SCHEMA_MAPPING_EX1, RICH_SCHEMA_MAPPING_EX1['@id'],
+        randomString(),
+        '10.0'
+    ),
+    (
+        RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, RICH_SCHEMA_CRED_DEF_EX1, randomString(),
+        randomString(), '1000.0'
+    ),
+    (
+        RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, RICH_SCHEMA_PRES_DEF_EX1, RICH_SCHEMA_PRES_DEF_EX1['@id'],
+        randomString(), '1.1000.1'
+    )
+]
+
+
+@pytest.fixture(scope='module')
+def write_rich_schema(looper, sdk_pool_handle, sdk_wallet_endorser):
+    for txn_type, rs_type, content, rs_id, rs_name, rs_version in PARAMS:
+        sdk_write_rich_schema_object_and_check(looper, sdk_wallet_endorser, sdk_pool_handle,
+                                               txn_type=txn_type, rs_id=rs_id, rs_name=rs_name,
+                                               rs_version=rs_version, rs_type=rs_type, rs_content=content)
+
+
 @pytest.mark.skip
 # TODO fix this test so it does not rely on Indy-SDK,
-# or, fix this test once GET_CONTEXT is part of Indy-SDK
-@pytest.mark.parametrize('txn_type, rs_type, content',
-                         [(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
-                          (RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
-                          (RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
-                          (RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
-                          (RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
-                          (RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
-def test_state_proof_returned_for_get_rich_schema_obj_by_id(looper,
-                                                            nodeSetWithOneNodeResponding,
-                                                            sdk_wallet_endorser,
-                                                            sdk_pool_handle,
-                                                            sdk_wallet_client,
-                                                            txn_type, rs_type, content):
+# or, fix this test once Rich Schema requests are part of Indy-SDK
+@pytest.mark.parametrize('txn_type, rs_type, content, rs_id, rs_name, rs_version', PARAMS)
+def test_state_proof_returned_for_get_rich_schema(looper,
+                                                  nodeSetWithOneNodeResponding,
+                                                  sdk_wallet_endorser,
+                                                  sdk_pool_handle,
+                                                  sdk_wallet_client,
+                                                  write_rich_schema,
+                                                  txn_type, rs_type, content, rs_id, rs_name, rs_version):
     """
     Tests that state proof is returned in the reply for GET_RICH_SCHEMA_OBJECT_BY_ID.
     Use different submitter and reader!
     """
-    rs_id = randomString()
-    rs_name = randomString()
-    rs_version = '1.0'
-    sdk_write_rich_schema_object_and_check(looper, sdk_wallet_endorser, sdk_pool_handle,
-                                           txn_type=txn_type, rs_id=rs_id, rs_name=rs_name,
-                                           rs_version=rs_version, rs_type=rs_type, rs_content=content)
-
     get_rich_schema_by_id_operation = {
         TXN_TYPE: GET_RICH_SCHEMA_OBJECT_BY_ID,
         RS_ID: rs_id,
     }
-
     result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
                                                  sdk_wallet_client,
                                                  get_rich_schema_by_id_operation)
@@ -204,30 +231,20 @@ def test_state_proof_returned_for_get_rich_schema_obj_by_id(looper,
 
 @pytest.mark.skip
 # TODO fix this test so it does not rely on Indy-SDK,
-# or, fix this test once GET_CONTEXT is part of Indy-SDK
-@pytest.mark.parametrize('txn_type, rs_type, content',
-                         [(JSON_LD_CONTEXT, RS_CONTEXT_TYPE_VALUE, W3C_BASE_CONTEXT),
-                          (RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RICH_SCHEMA_EX1),
-                          (RICH_SCHEMA_ENCODING, RS_ENCODING_TYPE_VALUE, randomString()),
-                          (RICH_SCHEMA_MAPPING, RS_MAPPING_TYPE_VALUE, randomString()),
-                          (RICH_SCHEMA_CRED_DEF, RS_CRED_DEF_TYPE_VALUE, randomString()),
-                          (RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, randomString())])
+# or, fix this test once Rich Schema objects are part of Indy-SDK
+@pytest.mark.parametrize('txn_type, rs_type, content, rs_id, rs_name, rs_version', PARAMS)
 def test_state_proof_returned_for_get_rich_schema_obj_by_metadata(looper,
                                                                   nodeSetWithOneNodeResponding,
                                                                   sdk_wallet_endorser,
                                                                   sdk_pool_handle,
                                                                   sdk_wallet_client,
-                                                                  txn_type, rs_type, content):
+                                                                  write_rich_schema,
+                                                                  txn_type, rs_type, content, rs_id, rs_name,
+                                                                  rs_version):
     """
     Tests that state proof is returned in the reply for GET_RICH_SCHEMA_OBJECT_BY_METADATA.
     Use different submitter and reader!
     """
-    rs_id = randomString()
-    rs_name = randomString()
-    rs_version = '1.0'
-    sdk_write_rich_schema_object_and_check(looper, sdk_wallet_endorser, sdk_pool_handle,
-                                           txn_type=txn_type, rs_id=rs_id, rs_name=rs_name,
-                                           rs_version=rs_version, rs_type=rs_type, rs_content=content)
 
     get_rich_schema_by_metadata_operation = {
         TXN_TYPE: GET_RICH_SCHEMA_OBJECT_BY_METADATA,

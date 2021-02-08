@@ -888,6 +888,20 @@ If the Encoding needs to be evolved, a new Encoding with a new id and name-versi
 - `content` (json-serialized string): 
 
     Encoding object as JSON serialized in canonical form.
+    
+    - `input`: a description of the input value
+    - `output`: a description of the output value
+    - `algorithm`:
+      - `documentation`: a URL which references a specific github commit of
+        the documentation that fully describes the transformation algorithm.
+      - `implementation`: a URL that links to a reference implementation of the
+         transformation algorithm. It is not necessary to use the implementation
+         linked to here, as long as the implementation used implements the same
+         transformation algorithm.
+      - `description`: a brief description of the transformation algorithm.
+    - `testVectors`: a URL which references a specific github commit of a
+selection of test vectors that may be used to provide assurance that a
+transformation algorithm implementation is correct. 
 
 - `rsType` (string):
 
@@ -981,6 +995,28 @@ If the Mapping needs to be evolved, a new Mapping with a new id and name-version
 - `content` (json-serialized string): 
 
     Mapping object as JSON serialized in canonical form.
+    This value must be a json-ld object. json-ld supports many parameters that are optional for a rich schema txn.
+    However, the following parameters must be there:
+    
+    - `@id`:  The value of this property must be (or map to, via a context object) a URI.
+    - `@type`: The value of this property must be (or map to, via a context object) a URI.
+    - `@context`(optional): If present, the value of this property must be a context object or a URI which can be dereferenced to obtain a context object.
+    - `schema`:  An `id` of the corresponding Rich Schema
+    - `attributes` (dict): A dict of all the schema attributes the Mapping object is going to map to encodings and use in credentials.
+                    An attribute may have nested attributes matching the schema structure. 
+                    It must also contain the following default attributes required by any W3C compatible
+                    verifiable credential (plus any additional attributes that may have been included from the
+                    W3C verifiable credentials data model):
+                    
+        - `issuer`
+        - `issuanceDate`
+        - any additional attributes
+                        
+         Every leaf attribute's value is an array of the following pairs:
+
+        - `enc` (string): Encoding object (referenced by its `id`) to be used for representation of the attribute as an integer. 
+        - `rank` (int): Rank of the attribute to define the order in which the attribute is signed by the Issuer. It is important that no two `rank` values may be identical.
+    
 
 - `rsType` (string):
 
@@ -1009,7 +1045,60 @@ If the Mapping needs to be evolved, a new Mapping with a new id and name-version
         "data": {
             "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
             "content":"{
-                "attr1": "UnixTime",
+                '@id': "did:sov:5e9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                '@context': "did:sov:2f9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                '@type': "rdfs:Class",
+                "schema": "did:sov:4e9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                "attribuites" : {
+                    "issuer": [{
+                        "enc": "did:sov:9x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 1
+                    }],
+                    "issuanceDate": [{
+                        "enc": "did:sov:119F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 2
+                    }],    
+                    "expirationDate": [{
+                        "enc": "did:sov:119F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 11
+                    }],           
+                    "driver": [{
+                        "enc": "did:sov:1x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 5
+                    }],
+                    "dateOfIssue": [{
+                        "enc": "did:sov:2x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 4
+                    }],
+                    "issuingAuthority": [{
+                        "enc": "did:sov:3x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 3
+                    }],
+                    "licenseNumber": [
+                        {
+                            "enc": "did:sov:4x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 9
+                        },
+                        {
+                            "enc": "did:sov:5x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 10
+                        },
+                    ],
+                    "categoriesOfVehicles": {
+                        "vehicleType": [{
+                            "enc": "did:sov:6x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 6
+                        }],
+                        "dateOfIssue": [{
+                         "enc": "did:sov:7x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                            "rank": 7
+                        }],
+                    },
+                    "administrativeNumber": [{
+                        "enc": "did:sov:8x9F8ZmxuvDqRiqqY29x6dx9oU4qwFTkPbDpWtwGbdUsrCD",
+                        "rank": 8
+                    }]
+                 }
             }",
             "rsName":"SimpleMapping",
             "rsVersion":"1.0",
@@ -1059,6 +1148,13 @@ credentials issued for this key.
 - `content` (json-serialized string): 
 
     Credential Definition object as JSON serialized in canonical form.
+   
+    - `signatureType` (string):  Type of the ZKP signature. `CL` (Camenisch-Lysyanskaya) is the only supported type now.
+    - `mapping` (string):  An `id` of the corresponding Mapping
+    - `schema` (string): An `id` of the corresponding Rich Schema. The `mapping` must reference the same Schema.
+    - `publicKey` (dict): Issuer's public keys. Consists ot primary and revocation keys.
+        - `primary` (dict): primary key
+        - `revocation` (dict, optional): revocation key
 
 - `rsType` (string):
 
@@ -1087,8 +1183,13 @@ credentials issued for this key.
         "data": {
             "id": "did:sov:HGAD5g65TDQr1PPHHRoiGf",
             "content":"{
-                "publicKey": "aaaaaa",
-                "mapping": did:sov:RGAD5g65TDQr1PPHHRoiGf"
+                "signatureType": "CL",
+                "mapping": "did:sov:UVj5w8DRzcmPVDpUMr4AZhJ",
+                "schema": "did:sov:U5x5w8DRzcmPVDpUMr4AZhJ",
+                "publicKey": {
+                    "primary": "...",
+                    "revocation": "..."
+                }
             }",
             "rsName":"SimpleCredDef",
             "rsVersion":"1.0",
