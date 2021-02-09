@@ -1,10 +1,10 @@
 from indy_common.config_util import getConfig
-from plenum.common.constants import TRUSTEE, STEWARD, NODE
+from plenum.common.constants import TRUSTEE, STEWARD, NODE, LEDGERS_FREEZE
 from stp_core.common.log import getlogger
 
 from indy_common.constants import OWNER, POOL_UPGRADE, ENDORSER, NYM, \
     POOL_CONFIG, SCHEMA, CLAIM_DEF, \
-    POOL_RESTART, VALIDATOR_INFO, NETWORK_MONITOR, LEDGERS_FREEZE
+    POOL_RESTART, VALIDATOR_INFO, NETWORK_MONITOR
 from indy_common.roles import Roles
 
 logger = getlogger()

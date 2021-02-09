@@ -1,14 +1,13 @@
 import pytest
-from plenum.common.constants import STEWARD, TRUSTEE_STRING
+from plenum.common.constants import STEWARD, TRUSTEE_STRING, LEDGERS_FREEZE
 
 from indy_node.server.request_handlers.action_req_handlers.pool_restart_handler import PoolRestartHandler
-from indy_node.test.freeze_ledgers.helper import sdk_send_freeze_ledgers
 
 from indy_common.authorize.auth_actions import EDIT_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint
-from indy_common.constants import LEDGERS_FREEZE
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
 from plenum.common.exceptions import RequestRejectedException
+from plenum.test.freeze_ledgers.helper import sdk_send_freeze_ledgers
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 from indy_node.test.helper import build_auth_rule_request_json, sdk_send_and_check_req_json
