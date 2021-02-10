@@ -63,7 +63,7 @@ def generate_auth_map(valid_roles):
         '{}_<any>_<any>_<any>'.format(VALIDATOR_INFO):
             {TRUSTEE: [], STEWARD: []},
         '{}_<any>_<any>_<any>'.format(LEDGERS_FREEZE):
-            {TRUSTEE: [], TRUSTEE: [], TRUSTEE: []},
+            {TRUSTEE: []},
     }
     return auth_map
 
