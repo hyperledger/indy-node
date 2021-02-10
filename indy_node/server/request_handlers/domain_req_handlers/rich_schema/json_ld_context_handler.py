@@ -17,12 +17,18 @@ class JsonLdContextHandler(AbstractRichSchemaObjectHandler):
                  write_req_validator: WriteRequestValidator):
         super().__init__(JSON_LD_CONTEXT, database_manager, write_req_validator)
 
+    def is_json_ld_content(self):
+        return False
+
     def do_static_validation_content(self, content_as_dict, request: Request):
         if JSON_LD_CONTEXT_FIELD not in content_as_dict:
             raise InvalidClientRequest(request.identifier, request.reqId,
                                        "'{}' must contain a {} field".format(RS_CONTENT, JSON_LD_CONTEXT_FIELD))
 
         self._validate_context(content_as_dict[JSON_LD_CONTEXT_FIELD], request.identifier, request.reqId)
+
+    def do_dynamic_validation_content(self, request):
+        pass
 
     def _validate_context(self, context, id, reqId):
         if isinstance(context, list):

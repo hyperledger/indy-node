@@ -16,8 +16,8 @@ Here you can find the requirements and design for Anoncreds workflow (including 
 
 Anoncreds protocol links:
 - [Anoncreds Sequence Diagram](https://github.com/hyperledger/indy-sdk/blob/master/doc/libindy-anoncreds.svg)
-- [Anoncreds Protocol Math](https://github.com/hyperledger/indy-crypto/blob/master/libindy-crypto/docs/AnonCred.pdf)
-- [Anoncreds Protocol Crypto API](https://github.com/hyperledger/indy-crypto/blob/master/libindy-crypto/docs/anoncreds-design.md)
+- [Anoncreds Protocol Math](https://github.com/hyperledger/ursa-docs/tree/master/specs/anoncreds1)
+- [Anoncreds Protocol Crypto API](https://github.com/hyperledger/ursa/blob/master/libursa/docs/anoncreds-design.md)
 
 ## Requirements
 1. Creation of Schemas:

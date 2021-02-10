@@ -83,7 +83,7 @@ def test_reject_with_empty_rules_list(looper,
                                       sdk_wallet_trustee,
                                       sdk_pool_handle):
     with pytest.raises(RequestNackedException,
-                       match="client request invalid.*length should be at least 1"):
+                       match="client request invalid.*InvalidClientRequest.*length should be at least 1"):
         sdk_send_and_check_auth_rules_request_invalid(looper,
                                                       sdk_pool_handle,
                                                       sdk_wallet_trustee,
@@ -101,6 +101,7 @@ def test_reject_with_unacceptable_role_in_constraint(looper,
                                               sdk_pool_handle,
                                               sdk_wallet_trustee,
                                               rules=[rule])
+    e.match('InvalidClientRequest')
     e.match('client request invalid')
     e.match('Role {} is not acceptable'.format(unacceptable_role))
 
@@ -123,6 +124,7 @@ def test_reqnack_auth_rules_transaction_with_wrong_key(looper,
                                               sdk_pool_handle,
                                               sdk_wallet_trustee,
                                               [generate_auth_rule(auth_type="*")])
+    e.match('InvalidClientRequest')
     e.match("client request invalid")
     e.match("is not found in authorization map")
 
@@ -137,6 +139,7 @@ def test_reqnack_auth_rules_edit_transaction_with_wrong_format(looper,
                                                       sdk_pool_handle,
                                                       sdk_wallet_trustee,
                                                       rules=[rule])
+    e.match('InvalidClientRequest')
     e.match("client request invalid")
     e.match("Transaction for change authentication "
             "rule for {}={} must contain field {}".
@@ -151,6 +154,7 @@ def test_reqnack_auth_rules_add_transaction_with_wrong_format(looper,
                                                       sdk_pool_handle,
                                                       sdk_wallet_trustee,
                                                       [generate_auth_rule(old_value="*")])
+    e.match('InvalidClientRequest')
     e.match("client request invalid")
     e.match("Transaction for change authentication "
             "rule for {}={} must not contain field {}".
