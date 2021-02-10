@@ -1,7 +1,7 @@
 import json
 import os
 import argparse
-from collections import Sequence
+from collections.abc import Sequence
 from typing import Dict, List
 from queue import Queue, Empty
 

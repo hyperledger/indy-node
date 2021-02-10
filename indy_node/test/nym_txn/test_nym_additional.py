@@ -25,7 +25,7 @@ def set_verkey(looper, sdk_pool_handle, sdk_wallet_sender, dest, verkey):
     return wh, new_did
 
 
-@pytest.fixture("module")
+@pytest.fixture(scope="module")
 def endorser_did_verkey(looper, sdk_wallet_client):
     wh, _ = sdk_wallet_client
     named_did, verkey = looper.loop.run_until_complete(

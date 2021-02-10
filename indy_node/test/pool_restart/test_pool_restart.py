@@ -94,6 +94,7 @@ def test_pool_restart_now_without_datetime(
                      tdir, tconf, START)
 
 
+# FIXME -> RTM: pool_restart failures
 def test_pool_restart_in_view_change(sdk_pool_handle, sdk_wallet_trustee, looper,
                                      tdir, tconf, txnPoolNodeSet):
 

@@ -1,4 +1,4 @@
-from collections import Callable
+from collections.abc import Callable
 
 from indy_common.constants import FROM, TO, REVOC_REG_DEF_ID, ISSUANCE_TYPE, REVOKED, ISSUED, VALUE, REVOC_TYPE, \
     ACCUM_TO, STATE_PROOF_FROM, ACCUM_FROM, GET_REVOC_REG_DELTA
