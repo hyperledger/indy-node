@@ -83,7 +83,7 @@ jobs:
     strategy:
       matrix:
         module: [indy_node, indy_common]
-        slice: [1, 2, 3, 4 ,5, 6, 7,8, 9, 10, 11]
+        slice: [10, 11]
       fail-fast: false
     steps:
       - name: Check out code
@@ -94,14 +94,32 @@ jobs:
         continue-on-error: true
 
       - name: Run Indy Node ${{ matrix.module }} test slice ${{ matrix.slice }}/${{ strategy.job-total }}
-        run: RUSTPYTHONASYNCIODEBUG=0 python3 runner.py --pytest "python3 -m pytest -l -vv --junitxml=test-result-indy-node-${{ matrix.module }}-${{ matrix.slice }}.xml" --dir "${{ matrix.module }}" --output "test-result-indy-node-${{ matrix.slice }}.txt" --test-only-slice "${{ matrix.slice }}/${{ strategy.job-total }}"
+        run: RUSTPYTHONASYNCIODEBUG=0 python3 runner.py --pytest "python3 -m pytest -l -vv --junitxml=test-result.xml" --dir "${{ matrix.module }}" --output "test-result-indy-node-${{ matrix.slice }}.txt" --test-only-slice "${{ matrix.slice }}/${{ strategy.job-total }}"
 
       - name: Publish Test Report
-        uses: scacap/action-surefire-report@v1
+        if: always()
+        uses: actions/upload-artifact@v2
         with:
-          check_name: Indy Node ${{ matrix.module }} ${{ matrix.slice }}/${{ strategy.job-total }} Test Report
+          name: test-result-indy-node-${{ matrix.module }}-${{ matrix.slice }}
+          path: test-result.xml
+
+
+  publish-test-results:
+    name: "Publish J-Unit Results"
+    needs: indy_node
+    runs-on: ubuntu-latest
+    if: success() || failure()
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        with:
+          check_name: Unit Test Results
+          files: test-result.xml
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          report_paths: test-result-indy-node-${{ matrix.module }}-${{ matrix.slice }}.xml
 
   lint:
     name: Lint
