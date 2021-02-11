@@ -34,7 +34,7 @@ class EditFrozenLedgersTest(AuthTest):
                     h.restarter.handleRestartRequest = lambda *args, **kwargs: True
 
     def run(self):
-        frozen_ledgers_ids = [10001]
+        frozen_ledgers_ids = []
 
         # Step 1. Check default auth rule
         sdk_send_freeze_ledgers(self.looper, self.sdk_pool_handle, self.trustee_wallets, frozen_ledgers_ids)
