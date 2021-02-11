@@ -3,12 +3,9 @@
 from pathlib import Path
 import shutil
 from sys import argv
-script, ledger_name = argv
 from indy_common.config_util import getConfig
 from indy_common.config_helper import ConfigHelper
 
-config = getConfig()
-config_helper = ConfigHelper(config)
 
 def remove(ledger_name):
     exceptions = ["domen", "config", "pool", "audit"]
@@ -19,5 +16,9 @@ def remove(ledger_name):
     else:
         print('Can`t delete built in ledger: ' + ledger_name)
 
+
 if __name__ == '__main__':
+    config = getConfig()
+    config_helper = ConfigHelper(config)
+    script, ledger_name = argv
     remove(ledger_name)
