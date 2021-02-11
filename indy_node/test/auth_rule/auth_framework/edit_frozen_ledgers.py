@@ -39,18 +39,18 @@ class EditFrozenLedgersTest(AuthTest):
         # Step 1. Check default auth rule
         sdk_send_freeze_ledgers(self.looper, self.sdk_pool_handle, self.trustee_wallets, frozen_ledgers_ids)
         with pytest.raises(RequestRejectedException):
-            sdk_send_freeze_ledgers(self.looper, self.sdk_pool_handle, self.new_default_wallet, frozen_ledgers_ids)
+            sdk_send_freeze_ledgers(self.looper, self.sdk_pool_handle, [self.new_default_wallet], frozen_ledgers_ids)
 
         # Step 2. Change auth rule
         self.send_and_check(self.changed_auth_rule, wallet=self.trustee_wallet)
 
         # Step 3. Check, that we cannot send txn the old way
-        sdk_send_freeze_ledgers(self.looper, self.sdk_pool_handle, self.new_default_wallet, frozen_ledgers_ids)
+        sdk_send_freeze_ledgers(self.looper, self.sdk_pool_handle, [self.new_default_wallet], frozen_ledgers_ids)
         with pytest.raises(RequestRejectedException):
             sdk_send_freeze_ledgers(self.looper, self.sdk_pool_handle, self.trustee_wallets, frozen_ledgers_ids)
 
         # Step 4. Check, that we can send restart action in changed way
-        sdk_send_freeze_ledgers(self.looper, self.sdk_pool_handle, self.new_default_wallet,frozen_ledgers_ids)
+        sdk_send_freeze_ledgers(self.looper, self.sdk_pool_handle, [self.new_default_wallet], frozen_ledgers_ids)
 
         # Step 5. Return default auth rule
         self.send_and_check(self.default_auth_rule, self.trustee_wallet)
@@ -58,7 +58,7 @@ class EditFrozenLedgersTest(AuthTest):
         # Step 6. Check, that default auth rule works
         sdk_send_freeze_ledgers(self.looper, self.sdk_pool_handle, self.trustee_wallets, frozen_ledgers_ids)
         with pytest.raises(RequestRejectedException):
-            sdk_send_freeze_ledgers(self.looper, self.sdk_pool_handle, self.new_default_wallet, frozen_ledgers_ids)
+            sdk_send_freeze_ledgers(self.looper, self.sdk_pool_handle, [self.new_default_wallet], frozen_ledgers_ids)
 
     def result(self):
         pass
