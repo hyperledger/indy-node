@@ -73,6 +73,7 @@ class EditFrozenLedgersTest(AuthTest):
             auth_action=EDIT_PREFIX,
             auth_type=LEDGERS_FREEZE,
             field='*',
+            old_value='*',
             new_value='*',
             constraint=constraint.as_dict
         )
