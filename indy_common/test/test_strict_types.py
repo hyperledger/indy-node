@@ -34,7 +34,6 @@ def testValidInputAndReturn():
     takesStr('1')
 
 
-# FIXME -> RTM: TypeError: Subscripted generics cannot be used with class and instance checks
 def testWorksWithComplexTypes():
     takesUnion('1')
 
