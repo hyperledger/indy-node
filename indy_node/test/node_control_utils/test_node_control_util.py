@@ -127,7 +127,7 @@ def test_get_latest_pkg_version_invalid_args():
         (APP_NAME, None, 'Version: 1.2.3\nVersion: 1.2.4\nVersion: 1.2.5~rc1\nVersion: 1.2.5~dev1\nVersion: 1.2.3.4.5', '1.2.5rc1'),
         (APP_NAME, '1.2.5', 'Version: 1.2.3\nVersion: 1.2.4\nVersion: 1.2.5~rc1\nVersion: 1.2.5~dev1\nVersion: 1.2.3.4.5', None),
     ],
-    ids=lambda s: s.replace('\n', '_').replace(' ', '_')
+    ids=lambda s: s.replace('\n', '_').replace(' ', '_') if s else None
 )
 def test_get_latest_pkg_version(
         monkeypatch, pkg_name, upstream, output, expected):
