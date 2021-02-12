@@ -7,12 +7,37 @@ from indy_common.config_util import getConfig
 from indy_common.config_helper import ConfigHelper
 
 
+def warn(ledger_name, directories_path):
+    print('The follow directories will be delete:')
+    
+    for path in directories_path:
+        print(str(path))
+    
+    print('Delete ledger is irrevocable operation.\nProceed only if you know consequences.')
+    answer = input('Do you want to delete ledger ' + ledger_name + '?\n Press [y/N]')
+    
+    if answer.lower() == 'yes' or answer.lower() == 'y':
+        return True
+    
+    return False
+
+
 def remove(ledger_name):
-    exceptions = ["domen", "config", "pool", "audit"]
+    exceptions = ["domain", "config", "pool", "audit"]
     if ledger_name not in exceptions:
+        directories_path = []
+
         for path in Path(config_helper.ledger_data_dir).rglob(ledger_name + "_*"):
-            shutil.rmtree(str(path))
-            print('The follow directory was deleted: ' + path.name)
+            directories_path.append(path)
+        
+        if not len(directories_path):
+            print('Doesn`t exist ledger: ' + ledger_name)
+        
+        elif warn(ledger_name, directories_path):
+            for path in directories_path:
+                shutil.rmtree(str(path))
+            print('Ledger removed successfully!')
+        
     else:
         print('Can`t delete built in ledger: ' + ledger_name)
 
