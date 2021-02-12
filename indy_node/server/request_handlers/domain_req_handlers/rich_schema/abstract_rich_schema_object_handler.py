@@ -72,7 +72,7 @@ class AbstractRichSchemaObjectHandler(WriteRequestHandler, metaclass=ABCMeta):
             raise InvalidClientRequest(request.identifier, request.reqId,
                                        "content's @id must be equal to id={}".format(request.operation[RS_ID]))
 
-    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+    def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
 
         rs_id = request.operation[RS_ID]

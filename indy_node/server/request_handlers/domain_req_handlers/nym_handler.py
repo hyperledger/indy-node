@@ -42,7 +42,7 @@ class NymHandler(PNymHandler):
                                        "{} not a valid role".
                                        format(role))
 
-    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+    def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
         operation = request.operation
 
