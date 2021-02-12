@@ -8,12 +8,12 @@ from indy_common.config_helper import ConfigHelper
 
 
 def warn(ledger_name, directories_path):
-    print('The follow directories will be delete:')
+    print('The follow directories will be deleted:')
     
     for path in directories_path:
         print(str(path))
     
-    print('Delete ledger is irrevocable operation.\nProceed only if you know consequences.')
+    print('Deleting a ledger is an irrevocable operation.\nProceed only if you know the consequences.')
     answer = input('Do you want to delete ledger ' + ledger_name + '?\n Press [y/N]')
     
     if answer.lower() == 'yes' or answer.lower() == 'y':
