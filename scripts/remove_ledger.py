@@ -8,7 +8,7 @@ from indy_common.config_helper import ConfigHelper
 
 
 def warn(ledger_name, directories_path):
-    print('The follow directories will be deleted:')
+    print('The following directories will be deleted:')
     
     for path in directories_path:
         print(str(path))
@@ -31,7 +31,7 @@ def remove(ledger_name):
             directories_path.append(path)
         
         if not len(directories_path):
-            print('Doesn`t exist ledger: ' + ledger_name)
+            print('Ledger doesn`t exist: ' + ledger_name)
         
         elif warn(ledger_name, directories_path):
             for path in directories_path:
