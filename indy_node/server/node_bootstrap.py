@@ -13,6 +13,7 @@ from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rule_h
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rule_handler_1_9_1 import AuthRuleHandler191
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rules_handler import AuthRulesHandler
 from indy_node.server.request_handlers.config_req_handlers.ledgers_freeze_handler import LedgersFreezeHandler
+from indy_node.server.request_handlers.config_req_handlers.fees.set_fees_handler import SetFeesHandler
 from indy_node.server.request_handlers.config_req_handlers.node_upgrade_handler import NodeUpgradeHandler
 from indy_node.server.request_handlers.config_req_handlers.pool_config_handler import PoolConfigHandler
 from indy_node.server.request_handlers.config_req_handlers.pool_upgrade_handler import PoolUpgradeHandler
@@ -142,6 +143,9 @@ class NodeBootstrap(PNodeBootstrap):
         get_rich_schema_obj_by_metadata_handler = GetRichSchemaObjectByMetadataHandler(
             database_manager=self.node.db_manager)
 
+        set_fees_handler = SetFeesHandler(database_manager=self.node.db_manager,
+                                          write_req_validator=self.node.write_req_validator)
+
         # Register write handlers
         self.node.write_manager.register_req_handler(nym_handler)
         self.node.write_manager.register_req_handler(attrib_handler)
@@ -155,6 +159,10 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.write_manager.register_req_handler(rich_schema_mapping_handler)
         self.node.write_manager.register_req_handler(rich_schema_cred_def_handler)
         self.node.write_manager.register_req_handler(rich_schema_pres_def_handler)
+        self.node.write_manager.register_req_handler(set_fees_handler)
+        self.node.write_manager.register_req_handler_with_version(SetFeesHandler093(node.db_manager,
+                                                                               node.write_req_validator),
+                                                             "0.9.3")
         # Additional handler for idCache
         self.register_idr_cache_nym_handler()
         # Register read handlers

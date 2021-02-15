@@ -172,6 +172,10 @@ AUTH_RULE = IndyTransactions.AUTH_RULE.value
 AUTH_RULES = IndyTransactions.AUTH_RULES.value
 GET_AUTH_RULE = IndyTransactions.GET_AUTH_RULE.value
 
+SET_FEES = IndyTransactions.SET_FEES.value
+GET_FEES = IndyTransactions.GET_FEES.value
+GET_FEE = IndyTransactions.GET_FEE.value
+
 # client Rich Schema transaction types
 JSON_LD_CONTEXT = IndyTransactions.JSON_LD_CONTEXT.value
 RICH_SCHEMA = IndyTransactions.RICH_SCHEMA.value
