@@ -12,6 +12,7 @@ from indy_node.server.request_handlers.config_batch_handler import ConfigBatchHa
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rule_handler import AuthRuleHandler
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rule_handler_1_9_1 import AuthRuleHandler191
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rules_handler import AuthRulesHandler
+from indy_node.server.request_handlers.config_req_handlers.ledgers_freeze_handler import LedgersFreezeHandler
 from indy_node.server.request_handlers.config_req_handlers.node_upgrade_handler import NodeUpgradeHandler
 from indy_node.server.request_handlers.config_req_handlers.pool_config_handler import PoolConfigHandler
 from indy_node.server.request_handlers.config_req_handlers.pool_upgrade_handler import PoolUpgradeHandler
@@ -45,6 +46,7 @@ from indy_node.server.request_handlers.pool_req_handlers.node_handler import Nod
 from indy_node.server.request_handlers.read_req_handlers.get_attribute_handler import GetAttributeHandler
 from indy_node.server.request_handlers.read_req_handlers.get_auth_rule_handler import GetAuthRuleHandler
 from indy_node.server.request_handlers.read_req_handlers.get_claim_def_handler import GetClaimDefHandler
+from plenum.server.request_handlers.ledgers_freeze.get_frozen_ledgers_handler import GetFrozenLedgersHandler
 from indy_node.server.request_handlers.read_req_handlers.get_nym_handler import GetNymHandler
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_def_handler import GetRevocRegDefHandler
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_delta_handler import GetRevocRegDeltaHandler
@@ -197,6 +199,9 @@ class NodeBootstrap(PNodeBootstrap):
         get_taa_aml_handler = GetTxnAuthorAgreementAmlHandler(database_manager=self.node.db_manager)
         get_taa_handler = GetTxnAuthorAgreementHandler(database_manager=self.node.db_manager)
         node_upgrade_handler = NodeUpgradeHandler(database_manager=self.node.db_manager)
+        ledgers_freeze_handler = LedgersFreezeHandler(database_manager=self.node.db_manager,
+                                                      write_req_validator=self.node.write_req_validator)
+        get_frozen_ledgers_handler = GetFrozenLedgersHandler(database_manager=self.node.db_manager)
         # Register write handlers
         self.node.write_manager.register_req_handler(auth_rule_handler)
         self.node.write_manager.register_req_handler(auth_rules_handler)
@@ -206,10 +211,12 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.write_manager.register_req_handler(taa_handler)
         self.node.write_manager.register_req_handler(taa_disable_handler)
         self.node.write_manager.register_req_handler(node_upgrade_handler)
+        self.node.write_manager.register_req_handler(ledgers_freeze_handler)
         # Register read handlers
         self.node.read_manager.register_req_handler(get_auth_rule_handler)
         self.node.read_manager.register_req_handler(get_taa_aml_handler)
         self.node.read_manager.register_req_handler(get_taa_handler)
+        self.node.read_manager.register_req_handler(get_frozen_ledgers_handler)
         # Register write handlers for a version
         self.node.write_manager.register_req_handler_with_version(auth_rule_handler_1_9_1,
                                                                   version="1.9.1")
