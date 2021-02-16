@@ -36,7 +36,7 @@ class IdrCacheNymHandler(WriteRequestHandler):
     def static_validation(self, request):
         pass
 
-    def dynamic_validation(self, request, req_pp_time: Optional[int]):
+    def additional_dynamic_validation(self, request, req_pp_time: Optional[int]):
         pass
 
     def gen_state_key(self, txn):

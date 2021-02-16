@@ -40,7 +40,7 @@ class RevocRegDefHandler(WriteRequestHandler):
                                        "Expected: 'did:marker:signature_type:schema_ref' or "
                                        "'did:marker:signature_type:schema_ref:tag'".format(CRED_DEF_ID))
 
-    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+    def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
         operation = request.operation
         cred_def_id = operation.get(CRED_DEF_ID)

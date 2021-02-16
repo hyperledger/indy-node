@@ -16,7 +16,7 @@ class NodeUpgradeHandler(WriteRequestHandler):
     def update_state(self, txn, prev_result, request, is_committed=False):
         pass
 
-    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+    def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         pass
 
     def static_validation(self, request: Request):
