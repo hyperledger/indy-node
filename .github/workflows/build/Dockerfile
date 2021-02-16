@@ -4,7 +4,7 @@ LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 RUN apt-get update -y && apt-get install -y \
     python3-nacl \
     libindy-crypto=0.4.5 \
-    libindy=1.13.0~1420 \
+    libindy=1.15.0~1618-xenial \
 # rocksdb python wrapper
     libbz2-dev \
     zlib1g-dev \

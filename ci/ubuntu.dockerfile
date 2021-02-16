@@ -8,7 +8,7 @@ ARG venv=venv
 RUN apt-get update -y && apt-get install -y \
     python3-nacl \
     ursa=0.3.2-2 \
-    libindy=1.13.0~1420 \
+    libindy=1.15.0~1618-xenial \
 # rocksdb python wrapper
     libbz2-dev \
     zlib1g-dev \
