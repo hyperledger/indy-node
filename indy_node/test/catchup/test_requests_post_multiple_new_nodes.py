@@ -5,6 +5,7 @@ from indy_common.config_helper import NodeConfigHelper
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
+#FIXME -> RTM: Failing tests in 'catchup'
 def test_requests_post_multiple_new_nodes(
         looper,
         nodeSet,
