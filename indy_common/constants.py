@@ -239,3 +239,10 @@ RS_MAPPING_ISSUANCE_DATE = "issuanceDate"
 RS_MAPPING_SCHEMA = "schema"
 RS_MAPPING_ENC = "enc"
 RS_MAPPING_RANK = "rank"
+
+# FEES
+FEES = "fees"
+FEES_ALIAS = "alias"
+FEES_VALUE = "value"
+FEE_ALIAS_LENGTH = 128
+FEES_FIELD_NAME = "fees"

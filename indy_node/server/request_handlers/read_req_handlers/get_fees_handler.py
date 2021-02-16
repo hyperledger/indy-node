@@ -1,4 +1,4 @@
-from indy_common.constants import GET_FEES
+from indy_common.constants import GET_FEES, FEES
 from indy_node.server.request_handlers.config_req_handlers.fees.fees_static_helper import FeesStaticHelper
 from plenum.common.constants import STATE_PROOF, CONFIG_LEDGER_ID, BLS_LABEL
 from plenum.common.request import Request
@@ -16,7 +16,7 @@ class GetFeesHandler(ReadRequestHandler):
 
         result = {f.IDENTIFIER.nm: request.identifier,
                   f.REQ_ID.nm: request.reqId,
-                  f.FEES.nm: fees}
+                  FEES: fees}
         if proof:
             result[STATE_PROOF] = proof
         result.update(request.operation)

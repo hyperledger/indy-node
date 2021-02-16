@@ -12,6 +12,7 @@ from indy_node.server.request_handlers.config_batch_handler import ConfigBatchHa
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rule_handler import AuthRuleHandler
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rule_handler_1_9_1 import AuthRuleHandler191
 from indy_node.server.request_handlers.config_req_handlers.auth_rule.auth_rules_handler import AuthRulesHandler
+from indy_node.server.request_handlers.config_req_handlers.fees.set_fees_handler_0_9_3 import SetFeesHandler093
 from indy_node.server.request_handlers.config_req_handlers.ledgers_freeze_handler import LedgersFreezeHandler
 from indy_node.server.request_handlers.config_req_handlers.fees.set_fees_handler import SetFeesHandler
 from indy_node.server.request_handlers.config_req_handlers.node_upgrade_handler import NodeUpgradeHandler
@@ -47,6 +48,8 @@ from indy_node.server.request_handlers.pool_req_handlers.node_handler import Nod
 from indy_node.server.request_handlers.read_req_handlers.get_attribute_handler import GetAttributeHandler
 from indy_node.server.request_handlers.read_req_handlers.get_auth_rule_handler import GetAuthRuleHandler
 from indy_node.server.request_handlers.read_req_handlers.get_claim_def_handler import GetClaimDefHandler
+from indy_node.server.request_handlers.read_req_handlers.get_fee_handler import GetFeeHandler
+from indy_node.server.request_handlers.read_req_handlers.get_fees_handler import GetFeesHandler
 from plenum.server.request_handlers.ledgers_freeze.get_frozen_ledgers_handler import GetFrozenLedgersHandler
 from indy_node.server.request_handlers.read_req_handlers.get_nym_handler import GetNymHandler
 from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_def_handler import GetRevocRegDefHandler
@@ -143,9 +146,6 @@ class NodeBootstrap(PNodeBootstrap):
         get_rich_schema_obj_by_metadata_handler = GetRichSchemaObjectByMetadataHandler(
             database_manager=self.node.db_manager)
 
-        set_fees_handler = SetFeesHandler(database_manager=self.node.db_manager,
-                                          write_req_validator=self.node.write_req_validator)
-
         # Register write handlers
         self.node.write_manager.register_req_handler(nym_handler)
         self.node.write_manager.register_req_handler(attrib_handler)
@@ -159,10 +159,6 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.write_manager.register_req_handler(rich_schema_mapping_handler)
         self.node.write_manager.register_req_handler(rich_schema_cred_def_handler)
         self.node.write_manager.register_req_handler(rich_schema_pres_def_handler)
-        self.node.write_manager.register_req_handler(set_fees_handler)
-        self.node.write_manager.register_req_handler_with_version(SetFeesHandler093(node.db_manager,
-                                                                               node.write_req_validator),
-                                                             "0.9.3")
         # Additional handler for idCache
         self.register_idr_cache_nym_handler()
         # Register read handlers
@@ -210,6 +206,13 @@ class NodeBootstrap(PNodeBootstrap):
         ledgers_freeze_handler = LedgersFreezeHandler(database_manager=self.node.db_manager,
                                                       write_req_validator=self.node.write_req_validator)
         get_frozen_ledgers_handler = GetFrozenLedgersHandler(database_manager=self.node.db_manager)
+
+        set_fees_handler = SetFeesHandler(db_manager=self.node.db_manager,
+                                          write_req_validator=self.node.write_req_validator)
+        set_fees_handler_093 = SetFeesHandler093(db_manager=self.node.db_manager,
+                                                 write_req_validator=self.node.write_req_validator)
+        get_fee_handler = GetFeeHandler(database_manager=self.node.db_manager)
+        get_fees_handler = GetFeesHandler(db_manager=self.node.db_manager)
         # Register write handlers
         self.node.write_manager.register_req_handler(auth_rule_handler)
         self.node.write_manager.register_req_handler(auth_rules_handler)
@@ -220,6 +223,8 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.write_manager.register_req_handler(taa_disable_handler)
         self.node.write_manager.register_req_handler(node_upgrade_handler)
         self.node.write_manager.register_req_handler(ledgers_freeze_handler)
+        self.node.write_manager.register_req_handler(set_fees_handler)
+        self.node.write_manager.register_req_handler_with_version(set_fees_handler_093, "0.9.3")
         # Register read handlers
         self.node.read_manager.register_req_handler(get_auth_rule_handler)
         self.node.read_manager.register_req_handler(get_taa_aml_handler)
@@ -230,6 +235,8 @@ class NodeBootstrap(PNodeBootstrap):
                                                                   version="1.9.1")
         self.node.write_manager.register_req_handler_with_version(taa_handler_v1,
                                                                   version="1")
+        self.node.read_manager.register_req_handler(get_fee_handler)
+        self.node.read_manager.register_req_handler(get_fees_handler)
 
     def _register_action_req_handlers(self):
         # Action handlers
