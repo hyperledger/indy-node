@@ -22,7 +22,7 @@ class PoolConfigHandler(WriteRequestHandler):
     def static_validation(self, request: Request):
         self._validate_request_type(request)
 
-    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+    def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
         action = '*'
         status = '*'
