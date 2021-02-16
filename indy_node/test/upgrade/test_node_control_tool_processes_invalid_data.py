@@ -18,6 +18,7 @@ def tconf(tconf, tdir):
     yield tconf
 
 
+# FIXME -> RTM: Test Failed
 def test_node_control_tool_processes_invalid_json(
     monkeypatch, tdir, tconf
 ):
@@ -39,6 +40,7 @@ def test_node_control_tool_processes_invalid_json(
         (APP_NAME, '1.2.3.4.5'),
     ]
 )
+# FIXME -> RTM: Test Failed
 def test_node_control_tool_processes_invalid_version(
     monkeypatch, tdir, tconf, pkg_name, version
 ):
