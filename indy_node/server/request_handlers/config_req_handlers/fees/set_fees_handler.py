@@ -23,7 +23,7 @@ class SetFeesHandler(WriteRequestHandler):
                                    request.reqId,
                                    "SET_FEES transactions are forbidden now.")
 
-    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+    def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         raise InvalidClientRequest(request.identifier,
                                    request.reqId,
                                    "SET_FEES transactions are forbidden now.")

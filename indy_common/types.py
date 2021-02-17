@@ -467,14 +467,14 @@ class ClientGetRichSchemaObjectByMetadataOperation(MessageValidator):
     )
 
 
-class ClientGetFeeMsgOperation(MessageBase):
+class ClientGetFeeMsgOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(GET_FEE)),
         (FEES_ALIAS, LimitedLengthStringField(max_length=FEE_ALIAS_LENGTH)),
     )
 
 
-class ClientGetFeesMsgOperation(MessageBase):
+class ClientGetFeesMsgOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(GET_FEES)),
     )
@@ -491,7 +491,7 @@ class SetFeesField(MapField):
             return "set_fees -- " + error
 
 
-class ClientSetFeesMsgOperation(MessageBase):
+class ClientSetFeesMsgOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(SET_FEES)),
         (FEES, SetFeesField()),
@@ -528,9 +528,9 @@ class ClientOperationField(PClientOperationField):
         RICH_SCHEMA_PRES_DEF: ClientRichSchemaPresDefOperation(),
         GET_RICH_SCHEMA_OBJECT_BY_ID: ClientGetRichSchemaObjectByIdOperation(),
         GET_RICH_SCHEMA_OBJECT_BY_METADATA: ClientGetRichSchemaObjectByMetadataOperation(),
-        SET_FEES: ClientSetFeesMsgOperation(),
         GET_FEE: ClientGetFeeMsgOperation(),
         GET_FEES: ClientGetFeesMsgOperation(),
+        SET_FEES: ClientSetFeesMsgOperation(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class

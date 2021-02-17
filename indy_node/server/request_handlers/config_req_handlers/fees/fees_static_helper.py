@@ -62,5 +62,3 @@ class FeesStaticHelper:
         if alias:
             return FeesStaticHelper.FEES_KEY_DELIMITER.join([FeesStaticHelper.FEES_STATE_PREFIX, alias])
         return FeesStaticHelper.FEES_KEY_DELIMITER.join([FeesStaticHelper.FEES_STATE_PREFIX, FeesStaticHelper.FEES_KEY_FOR_ALL])
-
-

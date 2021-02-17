@@ -24,11 +24,3 @@ class GetFeeHandler(ReadRequestHandler):
             result[STATE_PROOF] = proof
         result.update(request.operation)
         return result
-
-    def static_validation(self, request: Request):
-        try:
-            self.get_fee_validator_cls(**request.operation)
-        except TypeError as exc:
-            raise InvalidClientRequest(request.identifier,
-                                       request.reqId,
-                                       exc)
