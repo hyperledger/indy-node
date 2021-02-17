@@ -11,7 +11,7 @@ from indy_node.test.helper import TestNode, sdk_add_raw_attribute, \
 from indy_common.config_helper import NodeConfigHelper
 
 
-#FIXME -> RTM: Failing tests in 'catchup'
+#FIXME -> RTM: Failing tests in 'catchup' (passes individually)
 def test_new_node_catchup_update_projection(looper,
                                             nodeSet, tconf, tdir,
                                             sdk_pool_handle,
