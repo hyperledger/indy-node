@@ -241,6 +241,7 @@ RS_MAPPING_ENC = "enc"
 RS_MAPPING_RANK = "rank"
 
 # FEES
+FEE = "fee"
 FEES = "fees"
 FEES_ALIAS = "alias"
 FEES_VALUE = "value"

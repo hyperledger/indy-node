@@ -1,4 +1,4 @@
-from indy_common.constants import GET_FEE
+from indy_common.constants import GET_FEE, FEE
 from indy_node.server.request_handlers.config_req_handlers.fees.fees_static_helper import FeesStaticHelper
 from plenum.common.constants import ALIAS, STATE_PROOF, CONFIG_LEDGER_ID, BLS_LABEL
 from plenum.common.exceptions import InvalidClientRequest
@@ -19,7 +19,7 @@ class GetFeeHandler(ReadRequestHandler):
                                                          with_proof=True,
                                                          bls_store=self.database_manager.get_store(BLS_LABEL))
         result = {f.IDENTIFIER.nm: request.identifier,
-                  f.REQ_ID.nm: request.reqId, f.FEE.nm: fee}
+                  f.REQ_ID.nm: request.reqId, FEE: fee}
         if proof:
             result[STATE_PROOF] = proof
         result.update(request.operation)

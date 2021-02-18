@@ -1,7 +1,6 @@
 import pytest
 
-from indy_node.server.request_handlers.config_req_handlers.fees.fees_static_helper import FeesStaticHelper
-from indy_node.test.request_handlers.set_fees.conftest import txn_alias, fees_value
+from indy_common.constants import FEE
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.txn_util import reqToTxn
 
@@ -22,9 +21,12 @@ def test_dynamic_validation_invalid_signee(set_fees_request, set_fees_handler):
             set_fees_handler.dynamic_validation(set_fees_request, None)
 
 
-def test_update_state(set_fees_request, set_fees_handler):
+def test_update_state(set_fees_handler, get_fees_handler, get_fee_handler,
+                      set_fees_request, get_fees_request, get_fee_request,
+                      fee_value, valid_fees):
     txn = reqToTxn(set_fees_request)
-    path = FeesStaticHelper.build_path_for_set_fees(txn_alias)
 
-    set_fees_handler.update_state(txn, None, set_fees_request)
-    assert set_fees_handler.get_from_state(path) == fees_value
+    set_fees_handler.update_state(txn, None, set_fees_request, is_committed=True)
+    fees_map = get_fees_handler.get_fees(get_fees_request)
+
+    assert fees_map == valid_fees
