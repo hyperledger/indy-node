@@ -16,18 +16,16 @@ TEST_NODE_NAME = 'Alpha'
 STATUS_FILENAME = '{}_info.json'.format(TEST_NODE_NAME.lower())
 INFO_FILENAME = '{}_info.json'.format(TEST_NODE_NAME.lower())
 
-# FIXME -> RTM: Failing test
+
 def test_validator_info_file_schema_is_valid(info):
     assert isinstance(info, dict)
     assert 'config' in info['Node_info']['Metrics']['transaction-count']
 
 
-# FIXME -> RTM: Failing test
 def test_validator_info_file_metrics_count_ledger_field_valid(info):
     assert info['Node_info']['Metrics']['transaction-count']['config'] == 0
 
 
-# FIXME -> RTM: Failing test
 def test_validator_info_bls_key_field_valid(node, info):
     assert info['Node_info']['BLS_key']
 

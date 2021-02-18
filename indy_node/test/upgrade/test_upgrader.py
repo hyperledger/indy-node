@@ -61,7 +61,7 @@ def node_control_util_patched(monkeypatch, request):
             )
         )
 
-# FIXME -> RTM: Test Failed
+
 @pytest.mark.parametrize(
     'lower_version,higher_version',
     [

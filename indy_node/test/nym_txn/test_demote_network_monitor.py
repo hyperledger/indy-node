@@ -9,7 +9,7 @@ from plenum.test.helper import sdk_sign_and_submit_op, sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
-#FIXME -> RTM: Failing Test
+#FIXME -> (needs looking at) RTM: Failing Test
 def test_network_monitor_suspension_by_another_steward(looper,
                                                        sdk_pool_handle,
                                                        sdk_wallet_steward,
@@ -33,7 +33,6 @@ def test_network_monitor_suspension_by_another_steward(looper,
     req = sdk_sign_and_submit_op(looper, sdk_pool_handle, (sdk_wallet_handle, new_steward_did), op)
     sdk_get_and_check_replies(looper, [req])
 
-#Fixme -> RTM: Go from here
     """Check that get_validator_info command works for NETWORK_MONITOR role"""
     sdk_get_validator_info(looper, (sdk_wallet_handle, new_network_monitor_did), sdk_pool_handle)
 
