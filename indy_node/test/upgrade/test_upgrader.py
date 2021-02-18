@@ -38,7 +38,7 @@ def node_control_util_patched(monkeypatch, request):
             return pkg_version(pkg_name, version)
         return wrapped
 
-    marker = request.node.get_marker('pkg_info')
+    marker = request.node.get_closest_marker('pkg_info')
     if marker:
         assert len(marker.args) > 1
         monkeypatch.setattr(
@@ -50,7 +50,7 @@ def node_control_util_patched(monkeypatch, request):
             )
         )
 
-    marker = request.node.get_marker('latest_pkg_ver')
+    marker = request.node.get_closest_marker('latest_pkg_ver')
     if marker:
         assert len(marker.args) > 0
         monkeypatch.setattr(
