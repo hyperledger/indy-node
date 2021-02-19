@@ -40,46 +40,46 @@ jobs:
           # TODO: Cache the image, optimize scripts, remove default versions
           ./build-indy-node-docker.sh "${PWD}/../.." 1.0.0
            ls
-#       - name: Archive package
-#         uses: actions/upload-artifact@v2
-#         with:
-#            name: indy-node-build-cd
-#            path: build-scripts/ubuntu-1604/indy-node-deb-u1604/${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_amd64.deb
+      - name: Archive package
+        uses: actions/upload-artifact@v2
+        with:
+           name: indy-node-build-cd
+           path: build-scripts/ubuntu-1604/indy-node-deb-u1604/indy-node_1.0.0_amd64.deb
           
-#   publish-to-github:
-#     needs: [setup-workflow, build-package]
-#     runs-on: ubuntu-latest
-#     env:
-#        BRANCH_NAME: ${{ needs.setup-workflow.outputs.BRANCH_NAME }}
-#        PACKAGE_NAME: ${{ needs.setup-workflow.outputs.PACKAGE_NAME }}
-#        PACKAGE_VERSION: ${{ needs.setup-workflow.outputs.PACKAGE_VERSION }}
-#     outputs:
-#        PACKAGE_URL: ${{ steps.upload-release-asset.outputs.browser_download_url }}
-#     steps:
-#        - name: Restore package
-#          uses: actions/download-artifact@v2
-#          with:
-#            name: indy-node-build-cd
-#        - name: Create Release
-#          id: create_release
-#          uses: actions/create-release@v1
-#          env:
-#            GITHUB_TOKEN: ${{ secrets.CR_PAT }}
-#          with:
-#            # TODO: Better naming
-#            tag_name: ${{ env.PACKAGE_VERSION }}-${{ github.run_number }}
-#            release_name: ${{ env.PACKAGE_VERSION }}-${{ github.run_number }}
-#            body: new version ${{ env.PACKAGE_VERSION }}-${{ env.GITHUB_RUN_NUMBER }} release
-#            draft: false
-#            prerelease: false
-#        - name: Upload Release Asset
-#          id: upload-release-asset
-#          uses: actions/upload-release-asset@v1
-#          env:
-#            GITHUB_TOKEN: ${{ secrets.CR_PAT }}
-#          with:
-#            upload_url: ${{ steps.create_release.outputs.upload_url }}
-#            asset_path: ./${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_amd64.deb
-#            asset_name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_amd64.deb
-#            asset_content_type: application/vnd.debian.binary-package
+  publish-to-github:
+    needs: [setup-workflow, build-package]
+    runs-on: ubuntu-latest
+    env:
+       BRANCH_NAME: ${{ needs.setup-workflow.outputs.BRANCH_NAME }}
+       PACKAGE_NAME: ${{ needs.setup-workflow.outputs.PACKAGE_NAME }}
+       PACKAGE_VERSION: ${{ needs.setup-workflow.outputs.PACKAGE_VERSION }}
+    outputs:
+       PACKAGE_URL: ${{ steps.upload-release-asset.outputs.browser_download_url }}
+    steps:
+       - name: Restore package
+         uses: actions/download-artifact@v2
+         with:
+           name: indy-node-build-cd
+       - name: Create Release
+         id: create_release
+         uses: actions/create-release@v1
+         env:
+           GITHUB_TOKEN: ${{ secrets.CR_PAT }}
+         with:
+           # TODO: Better naming
+           tag_name: ${{ env.PACKAGE_VERSION }}-${{ github.run_number }}
+           release_name: ${{ env.PACKAGE_VERSION }}-${{ github.run_number }}
+           body: new version ${{ env.PACKAGE_VERSION }}-${{ env.GITHUB_RUN_NUMBER }} release
+           draft: false
+           prerelease: false
+       - name: Upload Release Asset
+         id: upload-release-asset
+         uses: actions/upload-release-asset@v1
+         env:
+           GITHUB_TOKEN: ${{ secrets.CR_PAT }}
+         with:
+           upload_url: ${{ steps.create_release.outputs.upload_url }}
+           asset_path: ./${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_amd64.deb
+           asset_name: ${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_amd64.deb
+           asset_content_type: application/vnd.debian.binary-package
           
