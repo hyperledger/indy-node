@@ -22,7 +22,7 @@ jobs:
         run: |
           echo "::set-output name=CACHE_KEY_LINT::${{ hashFiles('.github/workflows/lint/Dockerfile') }}"
           echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile') }}"
-          echo "::set-output name=GITHUB_REPOSITORY_NAME::$(echo ${GITHUB_REPOSITORY,,})"
+          echo "::set-output name=GITHUB_REPOSITORY_NAME::$(echo ${GITHUB_REPOSITORY})"
   build-package:
     needs: setup-workflow
     runs-on: ubuntu-latest
@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
            name: indy-node-build-cd
-           path: build-scripts/ubuntu-1604/${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_amd64.deb
+           path: build-scripts/ubuntu-1604/indy-node-deb-u1604/${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_amd64.deb
           
   publish-to-github:
     needs: [setup-workflow, build-package]
