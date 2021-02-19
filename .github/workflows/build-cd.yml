@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
            name: indy-node-build-cd
-           path: build-scripts/ubuntu-1604/indy-node-deb-u1604/${{ env.PACKAGE_NAME }}_${{ env.PACKAGE_VERSION }}_amd64.deb
+           path: build-scripts/ubuntu-1604/indy-node-deb-u1604/${{ PACKAGE_NAME }}_${{ PACKAGE_VERSION }}_amd64.deb
           
   publish-to-github:
     needs: [setup-workflow, build-package]
