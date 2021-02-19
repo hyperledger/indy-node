@@ -44,7 +44,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
            name: indy-node-build-cd
-           path: build-scripts/ubuntu-1604/indy-node-deb-u1604/output/indy-node_1.0.0_amd64.deb
+           path: build-scripts/ubuntu-1604/output/indy-node_1.0.0_amd64.deb
           
   publish-to-github:
     needs: [setup-workflow, build-package]
