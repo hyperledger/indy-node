@@ -17,7 +17,6 @@ def nodeTestUbuntu = {
 
         testEnv.inside('--network host') {
             echo 'Ubuntu Test: Install dependencies'
-            sh 'pip install pip==10.0.0'
             testHelpers.install()
 
             echo 'Ubuntu Test: Test'
