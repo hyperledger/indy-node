@@ -19,7 +19,7 @@ RUN apt-get update -y && apt-get install -y \
 # issues with pip>=10:
 # https://github.com/pypa/pip/issues/5240
 # https://github.com/pypa/pip/issues/5221
-RUN python3 -m pip install -U pip==10.0.0 setuptools \
+RUN python3 -m pip install -U pip==10.0.0 setuptools==21.0.1 \
     && pip3 list
 
 # install fpm
