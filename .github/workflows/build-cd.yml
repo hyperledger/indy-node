@@ -36,7 +36,7 @@ jobs:
         run: |
           cd build-scripts/ubuntu-1604
           # TODO: Cache the image, optimize scripts, remove default versions
-          ./build-indy-node-docker.sh "" ${{ env.PACKAGE_VERSION }}
+          ./build-indy-node-docker.sh "" 1.0.0
           ls
 #       - name: Archive package
 #         uses: actions/upload-artifact@v2
