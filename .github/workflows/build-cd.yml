@@ -38,13 +38,13 @@ jobs:
         run: |
           cd build-scripts/ubuntu-1604
           # TODO: Cache the image, optimize scripts, remove default versions
-          ./build-indy-node-docker.sh "${PWD}/../.." 1.0.0
+          ./build-indy-node-docker.sh "${PWD}/../.." 1.0.0 "${PWD}"
            ls
       - name: Archive package
         uses: actions/upload-artifact@v2
         with:
            name: indy-node-build-cd
-           path: output/indy-node_1.0.0_amd64.deb
+           path: build-scripts/ubuntu-1604/indy-node_1.0.0_amd64.deb
           
   publish-to-github:
     needs: [setup-workflow, build-package]
