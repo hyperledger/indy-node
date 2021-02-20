@@ -7,8 +7,8 @@ jobs:
   setup-workflow:
     runs-on: ubuntu-latest
     outputs:
-      CACHE_KEY_LINT: ${{ steps.cache.outputs.CACHE_KEY_LINT }}
-      CACHE_KEY_BUILD: ${{ steps.cache.outputs.CACHE_KEY_BUILD }}
+      CACHE_KEY_LINT: ${{ steps.init.outputs.CACHE_KEY_LINT }}
+      CACHE_KEY_BUILD: ${{ steps.init.outputs.CACHE_KEY_BUILD }}
       # Expose the lowercase version of the GitHub repository name
       # to all subsequent jobs that reference image repositories
       # as the push and pull operations require the URL of the repository 
@@ -20,7 +20,7 @@ jobs:
       - name: Git checkout
         uses: actions/checkout@v2
       - name: Set outputs
-        id: cache
+        id: init
         run: |
           echo "::set-output name=CACHE_KEY_LINT::${{ hashFiles('.github/workflows/lint/Dockerfile') }}"
           echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile') }}"
