@@ -2,7 +2,6 @@ name: indy-node-build-cd
 
 on: [push, workflow_dispatch]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   setup-workflow:
     runs-on: ubuntu-latest
@@ -35,6 +34,11 @@ jobs:
       PACKAGE_NAME: ${{ needs.setup-workflow.outputs.PACKAGE_NAME }}
       PACKAGE_VERSION: ${{ needs.setup-workflow.outputs.PACKAGE_VERSION }}
     steps:
+      - name: Crash
+        run: |
+          echo ${{ env.PACKAGE_NAME }}
+          echo ${{ env.PACKAGE_VERSION }}
+          exit 0 asdasd
       - name: Check out code
         uses: actions/checkout@v2
       - name: Build package
@@ -72,7 +76,7 @@ jobs:
            # TODO: Better naming
            tag_name: ${{ env.PACKAGE_VERSION }}-${{ github.run_number }}
            release_name: ${{ env.PACKAGE_VERSION }}-${{ github.run_number }}
-           body: new version ${{ env.PACKAGE_VERSION }}-${{ env.GITHUB_RUN_NUMBER }} release
+           body: new version ${{ env.PACKAGE_VERSION }}-${{ github.run_number }} release
            draft: false
            prerelease: false
        - name: Upload Release Asset
