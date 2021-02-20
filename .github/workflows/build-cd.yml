@@ -38,7 +38,7 @@ jobs:
         run: |
           echo ${{ env.PACKAGE_NAME }}
           echo ${{ env.PACKAGE_VERSION }}
-          exit 0 asdasd
+          exit 0 asdasds
       - name: Check out code
         uses: actions/checkout@v2
       - name: Build package
