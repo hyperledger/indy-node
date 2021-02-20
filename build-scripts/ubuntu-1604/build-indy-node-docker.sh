@@ -19,7 +19,7 @@ else
 fi
 
 docker build -t "${IMAGE_NAME}" -f Dockerfile .
-docker volume create --name "${OUTPUT_VOLUME_NAME}"
+# docker volume create --name "${OUTPUT_VOLUME_NAME}"
 
 docker run \
     -i \
