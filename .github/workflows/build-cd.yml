@@ -34,11 +34,6 @@ jobs:
       PACKAGE_NAME: ${{ needs.setup-workflow.outputs.PACKAGE_NAME }}
       PACKAGE_VERSION: ${{ needs.setup-workflow.outputs.PACKAGE_VERSION }}
     steps:
-      - name: Crash
-        run: |
-          echo ${{ env.PACKAGE_NAME }}
-          echo ${{ env.PACKAGE_VERSION }}
-          exit 0 asdasds
       - name: Check out code
         uses: actions/checkout@v2
       - name: Build package
