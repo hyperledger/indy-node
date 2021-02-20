@@ -12,7 +12,7 @@ jobs:
       # to all subsequent jobs that reference image repositories
       # as the push and pull operations require the URL of the repository 
       # to be in lowercase.
-      GITHUB_REPOSITORY_NAME: ${{ steps.cache.outputs.GITHUB_REPOSITORY_NAME }}
+      GITHUB_REPOSITORY_NAME: ${{ steps.init.outputs.GITHUB_REPOSITORY_NAME }}
       PACKAGE_NAME: ${{ steps.init.outputs.PACKAGE_NAME }}
       PACKAGE_VERSION: ${{ steps.init.outputs.PACKAGE_VERSION }}
     steps:
@@ -24,8 +24,8 @@ jobs:
           echo "::set-output name=CACHE_KEY_LINT::${{ hashFiles('.github/workflows/lint/Dockerfile') }}"
           echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile') }}"
           echo "::set-output name=GITHUB_REPOSITORY_NAME::$(echo ${GITHUB_REPOSITORY,,})"
-          echo "::set-output name=PACKAGE_VERSION::1.0.0
-          echo "::set-output name=PACKAGE_NAME::indy-node
+          echo "::set-output name=PACKAGE_VERSION::1.0.0"
+          echo "::set-output name=PACKAGE_NAME::indy-node"
 
   build-package:
     needs: setup-workflow
