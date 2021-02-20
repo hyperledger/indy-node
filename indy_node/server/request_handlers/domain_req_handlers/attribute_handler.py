@@ -55,7 +55,7 @@ class AttributeHandler(WriteRequestHandler):
                                            'Attribute field must be dict while adding it as a row field'.
                                            format(TARGET_NYM))
 
-    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+    def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
 
         identifier, req_id, operation = get_request_data(request)
