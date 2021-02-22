@@ -2957,7 +2957,9 @@ A new Agreement needs to be sent instead.
 
 ### LEDGERS_FREEZE
 
-Disable specific legders. System completely ignore frozen ledgers. After freeze you can delete frozen ledger via [remove_ledger.py] (https://github.com/hyperledger/indy-node/blob/master/scripts/remove_ledger.py).
+Freeze deprecated ledgers (base ledgers POOL, CONFIG, AUDIT and DOMAIN can't be frozen). System completely ignore frozen ledgers. Frozen ledgers can't be unfreeze. After freeze you can delete frozen ledger via [remove_ledger.py] (https://github.com/hyperledger/indy-node/blob/master/scripts/remove_ledger.py).
+
+The request has static and dynamic validations. Static validation check for base ledgers (pool, audit, domain and config) than doesn't freeze them. Dynamic validation check existence of ledgers before freeze. Authorize check permission for freeze request (only trustee can freeze ledgers).
 
 *Request Example*:
 ```
@@ -2967,7 +2969,7 @@ Disable specific legders. System completely ignore frozen ledgers. After freeze 
         "ledgers_ids": [1,2,3,4]
     },
     "identifier": "21BPzYYrFzbuECcBV3M1FH",
-    "reqId": 1514304094738044,
+    "reqId": 311348486,
     "protocolVersion": 2,
     "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
 }
@@ -2976,38 +2978,39 @@ Disable specific legders. System completely ignore frozen ledgers. After freeze 
 *Reply Example*:
 ```
 {
-    "op": "REPLY",
-    "result": {
-        "ver":1,
-        "txn": {
-            "type":9,
-            "protocolVersion":2,
-            "ver": 1,
-            
-            "data": {},
-            
-            "metadata": {
-                "reqId":1514304094738044,
-                "from":"21BPzYYrFzbuECcBV3M1FH",
-                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
-                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
-            },
-        },
-        "txnMetadata": {
-            "txnTime":1513945121,
-            "seqNo": 10,  
-        },
-        "reqSignature": {
-            "type": "ED25519",
-            "values": [{
-                "from": "21BPzYYrFzbuECcBV3M1FH",
-                "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
-            }]
-        },
-        
-        "rootHash": "DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV",
-        "auditPath": ["6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6"],
-    }
+   "op":"REPLY",
+   "result":{
+      "txn":{
+         "type":"9",
+         "data":{
+            "ledgers_ids":[ ]
+         },
+         "protocolVersion":2,
+         "metadata":{
+            "reqId":311348486,
+            "payloadDigest":"09a3ccedf806e224beb56b547e967b442f3ee3181d5c87623f063742df7a692e",
+            "from":"M9BJDuS24bqbJNvBRsoGg3",
+            "digest":"dfdc6c5b77181953b4e32f975b0c5e64b25dc3e3061716aca1baae4cbe0ce494"
+         }
+      },
+      "ver":"1",
+      "auditPath":[
+         "DDwrSsKwpFkfGVqp7AxzRMusUuT9D5RmidCmnr8phTWD"
+      ],
+      "txnMetadata":{
+         "txnTime":1613735420,
+         "seqNo":3
+      },
+      "reqSignature":{
+         "type":"ED25519",
+         "values":[
+            {               "value":"bSMfwJraLXzBAmdZKQUC1XfoVb3YWygc6UCQAmrTNKDr9beXta7MFyNZnQtbmNoRurjicSHLo3sW7qv7ZTWcZJa",
+               "from":"M9BJDuS24bqbJNvBRsoGg3"
+            }
+         ]
+      },
+      "rootHash":"E27ssC3LK8azpgxxtBY4ETLXvDLGtfmeSjngc6jrV1Qt"
+   }
 }
 ```
 
@@ -4242,62 +4245,65 @@ A generic request to get a transaction from Ledger by its sequence number.
 
 ### GET_FROZEN_LEDGERS
 
-Get whole list of frozen ledgers. Reply has follow format data: `<ledger_id>: {ledger: <ledger_root_hash>, state: <state_root_hash>, seq_no: <last_seq_no>}`.
+Get whole list of frozen ledgers. Reply has follow state format data:
+
+```
+<ledger_id>: {
+    ledger: <ledger_root_hash>,
+    state: <state_root_hash>,
+    seq_no: <last_seq_no>
+}
+```
 
 *Request Example*:
 ```
 {
-    "operation": {
-        "type": "10"
-        "id": "did:sov:GGAD5g65TDQr1PPHHRoiGf",
-    },
-    
-    "identifier": "L5AD5g65TDQr1PPHHRoiGf",
-    "reqId": 1514308188474704,
-    "protocolVersion": 2
+   "operation":{
+      "type":"10"
+   },
+   "reqId":783857061,
+   "protocolVersion":2,
+   "identifier":"M9BJDuS24bqbJNvBRsoGg3"
 }
 ```
 
 *Reply Example*:
 ```
 {
-    "op": "REPLY", 
-    "result": {
-        "type": "10",
-        "identifier": "L5AD5g65TDQr1PPHHRoiGf",
-        "reqId": 1514308188474704,
-        
-        "version": "1.0",
-        
-        "seqNo": 10,
-        "txnTime": 1514214795,
-
-        "data": {
-            1: {
-                ledger: "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
-                state: "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
-                seq_no: 10
-            }
-        },
-
-        "state_proof": {
-            "root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH",
-            "proof_nodes": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
-            "multi_signature": {
-                "value": {
-                    "timestamp": 1514308168,
-                    "ledger_id": 2, 
-                    "txn_root_hash": "4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y",
-                    "pool_state_root_hash": "9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK",
-                    "state_root_hash": "81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH"
-                },
-                "signature": "REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3",
-                "participants": ["Delta", "Gamma", "Alpha"]
-            }
-        },
-        
-       
-    }
+   "result":{
+      "seqNo":3,
+      "type":"10",
+      "state_proof":{
+         "root_hash":"HUv35b31eqncHZ1R8xMQW9pJnCBqAaUVrfCA8AeTtx6u",
+         "multi_signature":{
+            "value":{
+               "pool_state_root_hash":"4bCEk76QsB6p3yCiDntMedpeZmiQtdH9NRpcFyvaLHhc",
+               "state_root_hash":"HUv35b31eqncHZ1R8xMQW9pJnCBqAaUVrfCA8AeTtx6u",
+               "timestamp":1613736202,
+               "ledger_id":2,
+               "txn_root_hash":"BY6PV9SrV1dgQgxy2kpeTLESQfazTYoLdLZfjzVmcLeV"
+            },
+            "signature":"R8FRHVg51YiY5nS8Hh8iXNa1ZPKjrQMmurnrGek2A7QMKq79Pws4DLhgcVgf66PSJGEPjmyASYxFziEnubY1RFHQiE7ZToLZqW4oJt11hhL1XgXwrdswyqTQjuyxx5nzjyE4AzyTvs3BywD54s3w3mUhLG3QWwBp1uTX8agLEKZDkK",
+            "participants":[
+               "Gamma",
+               "Delta",
+               "Beta"
+            ]
+         },
+         "proof_nodes":"+L74vJEgNDpGUk9aRU5fTEVER0VSU7io+Ka4pHsibHNuIjozLCJsdXQiOjE2MTM3MzYyMDIsInZhbCI6eyI5MDkiOnsibGVkZ2VyIjoiR0tvdDVoQnNkODFrTXVwTkNYSGFxYmh2M2h1RWJ4QUZNTG5wY1gyaG5pd24iLCJzZXFfbm8iOjAsInN0YXRlIjoiRGZOTG1INERBSFRLdjYzWVBGSnp1UmRlRXRWd0Y1UnRWbnZLWUhkOGlMRUEifX19"
+      },
+      "txnTime":1613736202,
+      "reqId":666493618,
+      "data":{
+         "909":{
+            "seq_no":0,
+            "state":"DfNLmH4DAHTKv63YPFJzuRdeEtVwF5RtVnvKYHd8iLEA",
+            "ledger":"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"
+         }
+      },
+      "identifier":"M9BJDuS24bqbJNvBRsoGg3"
+   },
+   "op":"REPLY"
 }
 ```
 
