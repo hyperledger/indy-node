@@ -94,6 +94,12 @@ jobs:
 #       PACKAGE_URL: ${{ needs.publish-to-github.outputs.PACKAGE_URL }}
       PACKAGE_URL: https://github.com/askolesov/sovrin/releases/download/1.0.0-386/sovrin_1.0.0_amd64.deb
       
+      
+      # Client image
+#       LIBINDY_REPO_COMPONENT: master
+#       LIBINDY_VERSION: 1.10.0~1171
+      
+      
       INDY_NODE_DEB_URL: https://github.com/askolesov/indy-node/releases/download/1.0.0-17/indy-node_1.0.0_amd64.deb
 #       INDY_NODE_REPO_COMPONENT: master
 #       LIBINDY_CRYPTO_VERSION: 0.4.5
