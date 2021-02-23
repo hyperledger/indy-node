@@ -16,8 +16,6 @@ jobs:
       PACKAGE_NAME: ${{ steps.init.outputs.PACKAGE_NAME }}
       PACKAGE_VERSION: ${{ steps.init.outputs.PACKAGE_VERSION }}
     steps:
-      - name: Git checkout
-        uses: actions/checkout@v2
       - name: Set outputs
         id: init
         run: |
