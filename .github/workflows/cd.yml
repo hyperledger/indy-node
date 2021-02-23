@@ -99,7 +99,7 @@ jobs:
       
       
       # Client image
-      CLIENT_REPO_COMPONENT: master
+#       CLIENT_REPO_COMPONENT: master
       LIBINDY_VERSION: 1.10.0~1171
       
       INDY_NODE_DEB_URL: https://github.com/askolesov/indy-node/releases/download/1.0.0-17/indy-node_1.0.0_amd64.deb
