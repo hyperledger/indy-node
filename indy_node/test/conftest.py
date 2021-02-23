@@ -109,7 +109,7 @@ def sdk_node_theta_added_fixture(looper,
                          testNodeClass,
                          name=None,
                          services=[VALIDATOR]):
-    return sdk_node_theta_added(looper, nodeSet, tdir, tconf, sdk_pool_handle, sdk_wallet_trustee, allPluginsPath, node_config_helper_class, testNodeClass, name)
+    return sdk_node_theta_added(looper, txnPoolNodeSet, tdir, tconf, sdk_pool_handle, sdk_wallet_trustee, allPluginsPath, node_config_helper_class, testNodeClass, name)
 
 
 def sdk_node_theta_added(looper,
