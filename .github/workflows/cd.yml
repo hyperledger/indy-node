@@ -88,6 +88,10 @@ jobs:
   run-system-tests:
     needs: [setup-workflow]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test: ['test_ledger.py', 'TestViewChangeSuite.py', 'TestConsensusSuite.py', 'test_state_proof.py']
+      fail-fast: false
     env:
       PACKAGE_NAME: ${{ needs.setup-workflow.outputs.PACKAGE_NAME }}
       PACKAGE_VERSION: ${{ needs.setup-workflow.outputs.PACKAGE_VERSION }}
@@ -98,7 +102,6 @@ jobs:
       # Client image
 #       LIBINDY_REPO_COMPONENT: master
 #       LIBINDY_VERSION: 1.10.0~1171
-      
       
       INDY_NODE_DEB_URL: https://github.com/askolesov/indy-node/releases/download/1.0.0-17/indy-node_1.0.0_amd64.deb
 #       INDY_NODE_REPO_COMPONENT: master
@@ -128,7 +131,7 @@ jobs:
           ./system/docker/prepare.sh indy-test-automation-network
       - name: Run
         run: |          
-          bash -c " set -o pipefail; ./system/docker/run.sh \"system/indy-node-tests/test_ledger.py\" \" --payments -l -vv --junit-xml=system_tests_9_report.master.xml --gatherlogs --logsdir=_build/logs\" \"indy-test-automation-network\" 2>&1 | tee system_tests_9_report.master.txt; "
+          bash -c " set -o pipefail; ./system/docker/run.sh \"system/indy-node-tests/${{ matrix.test }}\" \" --payments -l -vv --junit-xml=system_tests_9_report.master.xml --gatherlogs --logsdir=_build/logs\" 2>&1 | tee system_tests_9_report.master.txt; "
 #       - name: Archive package
 #         uses: actions/upload-artifact@v2
 #         with:
