@@ -34,7 +34,7 @@ def testValidInputAndReturn():
     takesStr('1')
 
 
-# FIXME -> (needs looking at) RTM: Failing Test
+# FIXME -> RTM: Failing Test
 def testWorksWithComplexTypes():
     takesUnion('1')
 
