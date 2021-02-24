@@ -13,7 +13,6 @@ from plenum.test.pool_transactions.helper import demote_node, promote_node
 nodeCount = 7
 
 
-# FIXME -> RTM: Failing test (passes individually)
 def test_suspend_node(looper, sdk_pool_handle, sdk_wallet_trustee, nodeSet,
                     tdir, tconf, allPluginsPath):
     """
