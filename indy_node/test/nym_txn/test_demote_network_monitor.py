@@ -9,7 +9,6 @@ from plenum.test.helper import sdk_sign_and_submit_op, sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
-#FIXME -> RTM: Failing Test
 def test_network_monitor_suspension_by_another_steward(looper,
                                                        sdk_pool_handle,
                                                        sdk_wallet_steward,
