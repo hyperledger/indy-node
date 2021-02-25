@@ -1,25 +1,25 @@
 ---
 scenario:
-  name: cleanup
+  name: default
 
 provisioner:
   name: ansible
   lint:
     name: ansible-lint
-  inventory:
-    links:
-      group_vars: ${MOLECULE_INVENTORY_GROUP_VARS:-../resources/group_vars}
 
 platforms:
   - name: instance
+    box: ubuntu/xenial64
 
 driver:
-  name: delegated
+  name: vagrant
+  provider:
+    name: virtualbox
 
 lint:
   name: yamllint
   options:
-    config-file: ../../yamllint
+    config-file: yamllint
 
 verifier:
   name: testinfra
