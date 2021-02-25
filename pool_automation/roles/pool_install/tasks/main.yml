@@ -1,0 +1,49 @@
+---
+- name: Gather sorted node data
+  set_fact:
+    sorted_nodes: "{{ groups['nodes'] | map('extract', hostvars) | sort(attribute='tag_id') }}"
+
+- name: Define pool facts
+  set_fact:
+    pool_size: "{{ sorted_nodes | count }}"
+    node_ips: "{{ sorted_nodes | map(attribute='ansible_host') | join(',') }}"
+
+- name: Set indy environment parameters
+  template:
+    src: indy_env.j2
+    dest: /etc/indy/indy.env
+    owner: indy
+    group: indy
+  become: true
+
+- name: Upload default config
+  template:
+    src: indy_config.j2
+    dest: /etc/indy/indy_config.py
+    owner: indy
+    group: indy
+  become: true
+
+- name: Ensure data and log directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: indy
+    group: indy
+  become: true
+  with_items:
+    - "/var/lib/indy/{{ network_name }}"
+    - "/var/log/indy/{{ network_name }}"
+
+- name: Generate indy pool transactions
+  command: "generate_indy_pool_transactions --nodes {{ pool_size }} --clients 1 --nodeNum {{ tag_id }} --ips '{{ node_ips }}'"
+  args:
+    creates: "/var/lib/indy/{{ network_name }}/pool_transactions_genesis"
+  become: true
+  become_user: indy
+
+- name: Start indy service
+  service:
+    name: indy-node
+    state: started
+  become: true

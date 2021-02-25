@@ -4,8 +4,8 @@ import subprocess
 
 from stp_core.common.log import getlogger
 
-from indy_common.util import compose_cmd
-from indy_node.utils.node_control_tool import TIMEOUT
+from sovrin_common.util import compose_cmd
+from sovrin_node.utils.node_control_tool import NodeControlTool, TIMEOUT
 
 logger = getlogger()
 
@@ -13,7 +13,7 @@ migration_script_path = \
     os.path.normpath(
         os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
-            'helper_1_0_96_to_1_0_97.py'))
+            'helper_1_1_37_to_1_1_38.py'))
 
 logger.info('script path {}'.format(migration_script_path))
 ret = subprocess.run(
