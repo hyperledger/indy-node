@@ -96,26 +96,20 @@ jobs:
       PACKAGE_VERSION: ${{ needs.setup-workflow.outputs.PACKAGE_VERSION }}
 #       PACKAGE_URL: ${{ needs.publish-to-github.outputs.PACKAGE_URL }}
       PACKAGE_URL: https://github.com/askolesov/sovrin/releases/download/1.0.0-386/sovrin_1.0.0_amd64.deb
-      
+      INDY_NODE_DEB_URL: https://github.com/askolesov/indy-node/releases/download/1.0.0-17/indy-node_1.0.0_amd64.deb
       
       # Client image
       CLIENT_REPO_COMPONENT: master
       LIBINDY_VERSION: 1.10.0~1171
       
-      INDY_NODE_DEB_URL: https://github.com/askolesov/indy-node/releases/download/1.0.0-17/indy-node_1.0.0_amd64.deb
-#       INDY_NODE_REPO_COMPONENT: master
-#       LIBINDY_CRYPTO_VERSION: 0.4.5
-#       PYTHON3_LIBINDY_CRYPTO_VERSION: 0.4.5
-#       INDY_PLENUM_VERSION: 1.13.0~dev1021
-#       INDY_NODE_VERSION: 1.13.0~dev1210
-#       TOKEN_PLUGINS_INSTALL: yes
-#       SOVRIN_VERSION: 1.1.210
-#       SOVTOKEN_VERSION: 1.0.8~dev151
-#       SOVTOKENFEES_VERSION: 1.0.8~dev151
-#       LIBINDY_REPO_COMPONENT: master
-#       LIBINDY_VERSION: 1.13.0~1420
-#       LIBSOVTOKEN_INSTALL: yes
-#       LIBSOVTOKEN_VERSION: 1.0.2~92
+      # Node image
+      NODE_REPO_COMPONENT: rc
+      LIBINDY_CRYPTO_VERSION: 0.4.5
+      PYTHON3_LIBINDY_CRYPTO_VERSION: 0.4.5
+      PYTHON3_PYZMQ_VERSION: 18.1.0
+      INDY_PLENUM_VERSION: 1.12.2
+      INDY_NODE_VERSION: 1.12.2~rc1
+      
     steps:
       - name: Check out test automation
         uses: actions/checkout@v2
