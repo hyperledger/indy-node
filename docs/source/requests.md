@@ -2957,9 +2957,9 @@ A new Agreement needs to be sent instead.
 
 ### LEDGERS_FREEZE
 
-Freeze deprecated ledgers (default ledgers such as the domain, config, pool, and audit ledgers cannot be frozen). If a ledger is frozen it can be used neither for reading not for writing. It will not be caught up by new nodes and can be safely removed (frozen ledgers can't be unfreeze). After freeze you can delete frozen ledger via [remove_ledger.py] (https://github.com/hyperledger/indy-node/blob/master/scripts/remove_ledger.py).
+Freeze deprecated ledgers (default ledgers such as the domain, config, pool, and audit ledgers cannot be frozen). If a ledger is frozen it can be used for reading but not for writing. It will not be caught up by new nodes and can be safely removed (frozen ledgers can't be unfreeze). After freeze you can delete frozen ledger via [remove_ledger.py] (https://github.com/hyperledger/indy-node/blob/master/scripts/remove_ledger.py), but reeding from the ledger will become impossible.
 
-The request has static and dynamic validations. Static validation check for base ledgers (pool, audit, domain and config) than doesn't freeze them. Dynamic validation check existence of ledgers before freeze. Authorize check permission for freeze request (only trustee can freeze ledgers).
+The request has static and dynamic validations. Static validation check for base ledgers (pool, audit, domain and config) than doesn't freeze them. Dynamic validation check existence of ledgers before freeze. Authorize check permission for freeze request (3 trustee signatures are needed).
 
 *Request Example*:
 ```
