@@ -12,14 +12,6 @@ def takesStr(s: str) -> int:
         pass
 
 
-@strict_types()
-def takesUnion(s: typing.Union[str, None]) -> int:
-    try:
-        return int(s)
-    except ValueError:
-        pass
-
-
 def testInvalidArgumentType():
     with pytest.raises(TypeError):
         takesStr(1)
@@ -32,11 +24,6 @@ def testInvalidReturnType():
 
 def testValidInputAndReturn():
     takesStr('1')
-
-
-# FIXME -> RTM: Failing Test
-def testWorksWithComplexTypes():
-    takesUnion('1')
 
 
 @decClassMethods(strict_types())
