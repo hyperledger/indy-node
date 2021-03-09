@@ -30,6 +30,7 @@
     * [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)
     * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)
     * [TRANSACTION_AUTHOR_AGREEMENT_DISABLE](#transaction_author_agreement_disable)
+    * [LEDGERS_FREEZE](#ledgers_freeze)
     
 
 ## General Information
@@ -2093,3 +2094,40 @@ A new Agreement needs to be sent instead.
 }
 ```
 
+#### LEDGERS_FREEZE
+
+Freeze deprecated ledgers (default ledgers such as the domain, config, pool, and audit ledgers cannot be frozen). If a ledger is frozen it can be used for reading but not for writing. Frozen ledgers will not be caught up by new nodes and they can't be unfrozen. Frozen ledgers can be removed without breaking consensus, but this would prevent third parties from auditing the ledger history. [More information is in the Indy Plenum documenation](https://hyperledger/indy-plenum/tree/master/docs/source/transaction_freeze_ledgers.md).
+
+**Example:**
+```
+{
+    "ver": 1,
+    "txn": {
+        "type":9,
+        "protocolVersion":2,
+
+        "data": {
+            "ver": 1,
+            "ledgers_ids": [1,2,3,4],
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+            "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1577836799,
+        "seqNo": 10,
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
