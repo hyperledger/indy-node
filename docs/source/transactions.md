@@ -2096,7 +2096,7 @@ A new Agreement needs to be sent instead.
 
 #### LEDGERS_FREEZE
 
-Freeze deprecated ledgers (default ledgers such as the domain, config, pool, and audit ledgers cannot be frozen). If a ledger is frozen it can be used for reading but not for writing. It will not be caught up by new nodes and can be safely removed (frozen ledgers can't be unfreeze). After freeze you can delete frozen ledger via [remove_ledger.py] (https://github.com/hyperledger/indy-node/blob/master/scripts/remove_ledger.py), but reeding from the ledger will become impossible.
+Freeze deprecated ledgers (default ledgers such as the domain, config, pool, and audit ledgers cannot be frozen). If a ledger is frozen it can be used for reading but not for writing. Frozen ledgers will not be caught up by new nodes and they can't be unfrozen. Frozen ledgers can be removed without breaking consensus, but this would prevent third parties from auditing the ledger history. [More information is in the Indy Plenum documenation](https://hyperledger/indy-plenum/tree/master/docs/source/transaction_freeze_ledgers.md).
 
 **Example:**
 ```
