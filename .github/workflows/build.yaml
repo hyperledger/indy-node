@@ -98,6 +98,7 @@ jobs:
 
       - name: Publish Test Report
         uses: scacap/action-surefire-report@v1
+        continue-on-error: true
         with:
           check_name: Indy Node ${{ matrix.module }} ${{ matrix.slice }}/${{ strategy.job-total }} Test Report
           github_token: ${{ secrets.GITHUB_TOKEN }}
