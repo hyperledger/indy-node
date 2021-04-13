@@ -537,6 +537,15 @@
     <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 NETWORK_MONITOR</sub></td>
     <td><sub>Getting validator_info from pool</sub></td>
   </tr>
+    <tr>
+    <td><sub>LEDGERS_FREEZE</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>3 TRUSTEE</sub></td>
+    <td><sub>Freeze specific ledgers</sub></td>
+  </tr>
 </table>
 
 
@@ -729,6 +738,11 @@
     <td><sub>N/A</sub></td>
   </tr>    
 
+  <tr>
+    <td><sub>LEDGERS_FREEZE</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>   
         
 </table>
 
