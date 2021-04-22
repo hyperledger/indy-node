@@ -13,7 +13,7 @@ from plenum.test.pool_transactions.helper import demote_node, promote_node
 nodeCount = 7
 
 
-def testSuspendNode(looper, sdk_pool_handle, sdk_wallet_trustee, nodeSet,
+def test_suspend_node(looper, sdk_pool_handle, sdk_wallet_trustee, nodeSet,
                     tdir, tconf, allPluginsPath):
     """
     Suspend a node and then cancel suspension. Suspend while suspended

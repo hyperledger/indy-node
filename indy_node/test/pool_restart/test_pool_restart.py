@@ -11,7 +11,6 @@ from indy_node.server.restarter import Restarter
 from indy_node.test.pool_restart.helper import _createServer, _stopServer, sdk_send_restart
 from plenum.common.constants import REPLY, TXN_TYPE
 from plenum.common.types import f
-from plenum.test.testing_utils import FakeSomething
 
 
 def test_pool_restart(
@@ -89,9 +88,9 @@ def test_pool_restart_cancel(
 
 
 def test_pool_restart_now_without_datetime(
-        sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf):
+        sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf, txnPoolNodeSet):
     pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper,
-                     tdir, tconf, START)
+                     tdir, tconf, START, txnPoolNodeSet)
 
 
 def test_pool_restart_in_view_change(sdk_pool_handle, sdk_wallet_trustee, looper,
@@ -101,11 +100,11 @@ def test_pool_restart_in_view_change(sdk_pool_handle, sdk_wallet_trustee, looper
         node.master_replica._consensus_data.waiting_for_new_view = True
 
     pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper,
-                     tdir, tconf, START)
+                     tdir, tconf, START, txnPoolNodeSet)
 
 
 def pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf,
-                     action, datetime=None):
+                     action, txnPoolNodeSet, use_time=True):
     server, indicator = looper.loop.run_until_complete(
         _createServer(
             host=tconf.controlServiceHost,
@@ -113,11 +112,15 @@ def pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf,
         )
     )
 
+    time = None
+    if use_time:
+        unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+        time = str(datetime.isoformat(unow + timedelta(seconds=1000)))
     req_obj, resp = sdk_send_restart(looper,
                                      sdk_wallet_trustee,
                                      sdk_pool_handle,
                                      action=action,
-                                     datetime=datetime)
+                                     datetime=time)
     _stopServer(server)
     _comparison_reply(resp, req_obj)
 

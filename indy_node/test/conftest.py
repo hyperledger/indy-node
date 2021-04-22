@@ -97,7 +97,21 @@ def warnfilters():
     return _
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='module', name="sdk_node_theta_added")
+def sdk_node_theta_added_fixture(looper,
+                         txnPoolNodeSet,
+                         tdir,
+                         tconf,
+                         sdk_pool_handle,
+                         sdk_wallet_trustee,
+                         allPluginsPath,
+                         node_config_helper_class,
+                         testNodeClass,
+                         name=None,
+                         services=[VALIDATOR]):
+    return sdk_node_theta_added(looper, txnPoolNodeSet, tdir, tconf, sdk_pool_handle, sdk_wallet_trustee, allPluginsPath, node_config_helper_class, testNodeClass, name)
+
+
 def sdk_node_theta_added(looper,
                          txnPoolNodeSet,
                          tdir,
@@ -244,21 +258,21 @@ def nodeIds(nodeSet):
 
 @pytest.fixture(scope="module")
 def pool_ledger(tconf, tmpdir_factory):
-    tdir = tmpdir_factory.mktemp('').strpath
+    tdir = tmpdir_factory.mktemp('tmp').strpath
     return Ledger(CompactMerkleTree(),
                   dataDir=tdir)
 
 
 @pytest.fixture(scope="module")
 def domain_ledger(tconf, tmpdir_factory):
-    tdir = tmpdir_factory.mktemp('').strpath
+    tdir = tmpdir_factory.mktemp('tmp').strpath
     return Ledger(CompactMerkleTree(),
                   dataDir=tdir)
 
 
 @pytest.fixture(scope="module")
 def config_ledger(tconf, tmpdir_factory):
-    tdir = tmpdir_factory.mktemp('').strpath
+    tdir = tmpdir_factory.mktemp('tmp').strpath
     return Ledger(CompactMerkleTree(),
                   dataDir=tdir)
 

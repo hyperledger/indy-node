@@ -78,7 +78,7 @@ def tconf(tconf):
     return tconf
 
 
-@pytest.yield_fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def warncheck(warnfilters):
     pass
 
