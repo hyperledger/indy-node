@@ -1,6 +1,6 @@
 # Development
 FROM ubuntu:18.04
-LABEL maintainer="Kevin Griffin <griffin.kev@gmail.com>"
+LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
 RUN apt-get update && apt-get dist-upgrade -y
 
