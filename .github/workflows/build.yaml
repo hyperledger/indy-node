@@ -219,9 +219,9 @@ jobs:
           # pip cache on the node-build image is not in the default location.
           # path: ~/.cache/pip
           path: /root/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/setup.py') }}
+          key: ${{ runner.os }}-indy-node-pip-${{ hashFiles('**/requirements.txt', '**/setup.py') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-indy-node-pip-
 
       - name: Install dependencies
         run: |
