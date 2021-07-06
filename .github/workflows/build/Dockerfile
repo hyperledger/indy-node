@@ -1,7 +1,7 @@
 FROM hyperledger/indy-core-baseci:0.0.3-master
 LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88 \
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 97080EBDA5D46DAF \
     && apt-get update -y \
     apt-get install -y \
     python3-nacl \
