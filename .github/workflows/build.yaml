@@ -213,15 +213,21 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Cache pip
-        uses: actions/cache@v2
-        with:
-          # pip cache on the node-build image is not in the default location.
-          # path: ~/.cache/pip
-          path: /root/.cache/pip
-          key: ${{ runner.os }}-indy-node-pip-${{ hashFiles('**/requirements.txt', '**/setup.py') }}
-          restore-keys: |
-            ${{ runner.os }}-indy-node-pip-
+      # ===============================================
+      # Caching cannot be used.
+      #  - For some reason as soon as it is enabled
+      #    the test start complaining about zmq missing
+      #    for the plenum install.
+      # -----------------------------------------------
+      # - name: Cache pip
+      #   uses: actions/cache@v2
+      #   with:
+      #     # pip cache on the node-build image is not in the default location.
+      #     # path: ~/.cache/pip
+      #     path: /root/.cache/pip
+      #     key: ${{ runner.os }}-indy-node-pip-${{ hashFiles('**/requirements.txt', '**/setup.py') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-indy-node-pip-
 
       - name: Install dependencies
         run: |
