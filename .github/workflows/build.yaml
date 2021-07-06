@@ -325,53 +325,53 @@ jobs:
           ./build-scripts/ubuntu-1604/build-3rd-parties.sh ./cache/3rd-party-dependencies
           mv ./build-scripts/ubuntu-1604/cache/* /tmp/third-party-dependencies
 
-  # publish_artifacts:
-  #   name: Publish Artifacts
-  #   runs-on: ubuntu-20.04
-  #   needs: [workflow-setup, build_release, build_3rd_party_dependencies]
-  #   if: needs.workflow-setup.outputs.publish == 'true'
-  #   env:
-  #     GITHUB_REF: ${{ needs.workflow-setup.outputs.GITHUB_REF }}
-  #   steps:
-  #     - name: Check out code
-  #       uses: actions/checkout@v1
+  publish_artifacts:
+    name: Publish Artifacts
+    runs-on: ubuntu-20.04
+    needs: [workflow-setup, build_release, build_3rd_party_dependencies]
+    if: needs.workflow-setup.outputs.publish == 'true'
+    env:
+      GITHUB_REF: ${{ needs.workflow-setup.outputs.GITHUB_REF }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v1
 
-  #     - name: Setup JFrog CLI
-  #       uses: jfrog/setup-jfrog-cli@v1
-  #       env:
-  #         JF_ARTIFACTORY_1: ${{ secrets.INDY_ARTIFACTORY_REPO_CONFIG }}
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v1
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.INDY_ARTIFACTORY_REPO_CONFIG }}
 
-  #     - name: Ping Artifactory
-  #       run: |
-  #         # Test the connection to Ping the Hyperledger Artifactory server
-  #         # to ensure everything has been setup correctly.
-  #         jfrog rt ping
+      - name: Ping Artifactory
+        run: |
+          # Test the connection to Ping the Hyperledger Artifactory server
+          # to ensure everything has been setup correctly.
+          jfrog rt ping
 
-  #     - name: Download Node Artifacts from Pipeline Artifacts
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: node-deb
-  #         path: to_publish
+      - name: Download Node Artifacts from Pipeline Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: node-deb
+          path: to_publish
 
-  #     - name: Publish Node Artifacts
-  #       uses: ./.github/actions/publish-deb
-  #       with:
-  #         sourceDirectory: /home/runner/work/indy-node/indy-node/to_publish
-  #         distribution: xenial
-  #         component: ${{ env.GITHUB_REF }}
+      - name: Publish Node Artifacts
+        uses: ./.github/actions/publish-deb
+        with:
+          sourceDirectory: /home/runner/work/indy-node/indy-node/to_publish
+          distribution: xenial
+          component: ${{ env.GITHUB_REF }}
 
-  #     - name: Download 3rd Party Artifacts Dependencies from Cache
-  #       id: third-party-dependencies
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: /tmp/third-party-dependencies
-  #         key: third-party-dependencies-${{ hashFiles('./build-scripts/ubuntu-1604/build-3rd-parties.sh') }}
-  #         restore-keys: |
-  #           third-party-dependencies-
+      - name: Download 3rd Party Artifacts Dependencies from Cache
+        id: third-party-dependencies
+        uses: actions/cache@v2
+        with:
+          path: /tmp/third-party-dependencies
+          key: third-party-dependencies-${{ hashFiles('./build-scripts/ubuntu-1604/build-3rd-parties.sh') }}
+          restore-keys: |
+            third-party-dependencies-
 
-  #     - name: Publish 3rd Party Dependencies
-  #       uses: ./.github/actions/publish-deb
-  #       with:
-  #         sourceDirectory: /home/runner/tmp/third-party-dependencies
-  #         distribution: xenial
-  #         component: ${{ env.GITHUB_REF }}
+      - name: Publish 3rd Party Dependencies
+        uses: ./.github/actions/publish-deb
+        with:
+          sourceDirectory: /home/runner/tmp/third-party-dependencies
+          distribution: xenial
+          component: ${{ env.GITHUB_REF }}

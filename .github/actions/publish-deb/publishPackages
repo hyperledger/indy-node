@@ -1,0 +1,33 @@
+#!/bin/bash
+SCRIPT_HOME="$( cd "$( dirname "$0" )" && pwd )"
+
+sourceDirectory=${1}
+distribution=${2}
+component=${3}
+uploadSpec=${UPLOAD_SPEC:-${4:-"${SCRIPT_HOME}/upload-spec.json"}}
+
+export CI=true
+
+fileList=$(find "${sourceDirectory}" -type f -name '*.deb' -mindepth 1 -maxdepth 1 -printf "%f\n" 2>/dev/null)
+for name in ${fileList}; do
+  shortName=$(echo "${name}" | sed -rn 's~^(python3-)?([^.]*)_.*.deb~\2~p')
+  architecture=$(echo "${name}" | sed -rn 's~^.*_(.*).deb~\1~p')
+  startingLetter=$(echo "${shortName}" | sed -rn 's~^(.).*~\1~p')
+
+  echo "====================================================================================================================="
+  echo "name: ${name}"
+  echo "shortName: ${shortName}"
+  echo "architecture: ${architecture}"
+  echo "startingLetter: ${startingLetter}"
+  echo "distribution: ${distribution}"
+  echo "component: ${component}"
+  echo "uploadSpec: ${uploadSpec}"
+  echo "---------------------------------------------------------------------------------------------------------------------"
+  jfrog rt u \
+    --deb ${distribution}/${component}/${architecture} \
+    --spec ${uploadSpec}\
+    --spec-vars "SOURCE_DIR=${sourceDirectory};PACKAGE_NAME=${name};COMPONENT=${component};PACKAGE_STARTING_LETTER=${startingLetter};PACKAGE_SHORT_NAME=${shortName}" \
+    --detailed-summary
+  echo "====================================================================================================================="
+  echo
+done
