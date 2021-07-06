@@ -1,0 +1,63 @@
+name: "Set Version"
+description: "Sets version parameters and makes them available as outputs for subsequent processes."
+
+inputs:
+  moduleName: 
+    description: "The name of the module containing the version management APIs for the project; i.e. load_version and set_version"
+    required: true
+    default: "plenum"
+  isDev: 
+    description: "A flag indicating whether or not this is a dev build; set to either 'true' or 'false'."
+    required: true
+    default: false
+  isRC: 
+    description: "A flag indicating whether or not this is a release candidate build; set to either 'true' or 'false'."
+    required: true
+    default: false
+
+outputs:
+  targetReleaseVer:
+    description: "The target release version."
+    value: ${{ steps.versions.outputs.targetReleaseVer }}
+  upstreamVer:
+    description: "The version number to use with Python packages."
+    value: ${{ steps.versions.outputs.upstreamVer }}
+  pkgVer:
+    description: "The version number to use with Debian packages."
+    value: ${{ steps.versions.outputs.pkgVer }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set Versions
+      id: versions
+      shell: bash
+      run: |
+        fullVersion=$(python3 -c "from ${{ inputs.moduleName }} import load_version; print(load_version().full)")
+        release=$(python3 -c "from ${{ inputs.moduleName }} import load_version; print(load_version().release)")
+        pre=$(python3 -c "from ${{ inputs.moduleName }} import load_version; pre = load_version().parts[-2]; print('' if pre is None else pre)")
+        revision=$(python3 -c "from ${{ inputs.moduleName }} import load_version; rev = load_version().parts[-1]; print('' if rev is None else rev)")
+
+        targetReleaseVer=${release}
+        upstreamVer=${targetReleaseVer}
+        pkgVer=${upstreamVer}
+
+        if [ ${{ inputs.isDev }} == "true" ] || [ ${{ inputs.isRC }} == "true" ]; then
+          if [ ${{ inputs.isDev }} == "true" ]; then
+            rev=${{ github.run_number }}
+          else
+            rev=${revision}
+          fi
+
+          upstreamVer+=".${pre}${rev}"
+          pkgVer+="~${pre}${rev}"
+        fi
+
+        # Set Outputs ...
+        echo "::set-output name=targetReleaseVer::${targetReleaseVer}"
+        echo "::set-output name=upstreamVer::${upstreamVer}"
+        echo "::set-output name=pkgVer::${pkgVer}"
+
+        echo "Target Release version: ${targetReleaseVer}"
+        echo "PyPI Release version: ${upstreamVer}"
+        echo "Debian Release version: ${pkgVer}"

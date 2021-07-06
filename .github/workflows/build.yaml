@@ -270,58 +270,58 @@ jobs:
       - name: flake8
         run: python3 -m flake8
 
-  # build_release:
-  #   name: Build Release
-  #   needs: [workflow-setup, indy_node_tests, lint]
-  #   runs-on: ubuntu-20.04
-  #   container:
-  #     image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:ubuntu-16-04
-  #   steps:
-  #     - name: Check out code
-  #       uses: actions/checkout@v1
+  build_release:
+    name: Build Release
+    needs: [workflow-setup, indy_node_tests, lint]
+    runs-on: ubuntu-20.04
+    container:
+      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:ubuntu-16-04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v1
 
-  #     - name: Set Build Version
-  #       id: version
-  #       uses: ./.github/actions/set-version
-  #       with:
-  #         moduleName: node
-  #         isDev: ${{ needs.workflow-setup.outputs.isDev }}
-  #         isRC: ${{ needs.workflow-setup.outputs.isRC }}
+      - name: Set Build Version
+        id: version
+        uses: ./.github/actions/set-version
+        with:
+          moduleName: indy_node
+          isDev: ${{ needs.workflow-setup.outputs.isDev }}
+          isRC: ${{ needs.workflow-setup.outputs.isRC }}
 
-  #     - name: Build Deployment Package
-  #       run: |
-  #         mkdir -p /tmp/node-build
-  #         ./build-scripts/ubuntu-1604/build-indy-node.sh "/__w/indy-node/indy-node" "${{ steps.version.outputs.upstreamVer }}" "/tmp/node-build" "${{ steps.version.outputs.pkgVer }}"
+      - name: Build Deployment Package
+        run: |
+          mkdir -p /tmp/node-build
+          ./build-scripts/ubuntu-1604/build-indy-node.sh "/__w/indy-node/indy-node" "${{ steps.version.outputs.upstreamVer }}" "/tmp/node-build" "${{ steps.version.outputs.pkgVer }}"
 
-  #     - uses: actions/upload-artifact@v2
-  #       with:
-  #         name: node-deb
-  #         path: /tmp/node-build
-  #         retention-days: 5
+      - uses: actions/upload-artifact@v2
+        with:
+          name: node-deb
+          path: /tmp/node-build
+          retention-days: 5
 
-  # build_3rd_party_dependencies:
-  #   name: Build 3rd Party Dependencies
-  #   needs: [workflow-setup, indy_node_tests, lint]
-  #   runs-on: ubuntu-20.04
-  #   container:
-  #     image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:ubuntu-16-04
-  #   steps:
-  #     - name: Check out code
-  #       uses: actions/checkout@v1
+  build_3rd_party_dependencies:
+    name: Build 3rd Party Dependencies
+    needs: [workflow-setup, indy_node_tests, lint]
+    runs-on: ubuntu-20.04
+    container:
+      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:ubuntu-16-04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v1
 
-  #     - name: Try load from cache.
-  #       id: third-party-dependencies
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: /tmp/third-party-dependencies
-  #         key: third-party-dependencies-${{ hashFiles('./build-scripts/ubuntu-1604/build-3rd-parties.sh') }}
+      - name: Try load from cache.
+        id: third-party-dependencies
+        uses: actions/cache@v2
+        with:
+          path: /tmp/third-party-dependencies
+          key: third-party-dependencies-${{ hashFiles('./build-scripts/ubuntu-1604/build-3rd-parties.sh') }}
 
-  #     - name: Build 3rd party deployment packages
-  #       if: steps.third-party-dependencies.outputs.cache-hit != 'true'
-  #       run: |
-  #         mkdir -p ./build-scripts/ubuntu-1604/cache/3rd-party-dependencies/
-  #         ./build-scripts/ubuntu-1604/build-3rd-parties.sh ./cache/3rd-party-dependencies
-  #         mv ./build-scripts/ubuntu-1604/cache/* /tmp/third-party-dependencies
+      - name: Build 3rd party deployment packages
+        if: steps.third-party-dependencies.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ./build-scripts/ubuntu-1604/cache/3rd-party-dependencies/
+          ./build-scripts/ubuntu-1604/build-3rd-parties.sh ./cache/3rd-party-dependencies
+          mv ./build-scripts/ubuntu-1604/cache/* /tmp/third-party-dependencies
 
   # publish_artifacts:
   #   name: Publish Artifacts
