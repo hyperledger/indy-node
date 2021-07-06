@@ -213,15 +213,15 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Cache pip
-        uses: actions/cache@v2
-        with:
-          # pip cache on the node-build image is not in the default location.
-          # path: ~/.cache/pip
-          path: /root/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/setup.py') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+      # - name: Cache pip
+      #   uses: actions/cache@v2
+      #   with:
+      #     # pip cache on the node-build image is not in the default location.
+      #     # path: ~/.cache/pip
+      #     path: /root/.cache/pip
+      #     key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/setup.py') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: |
