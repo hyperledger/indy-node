@@ -47,7 +47,7 @@ def load_manifest(manifest_file: str = MANIFEST_FILE) -> Any:
 
 def set_manifest(manifest: Any, manifest_file: str = MANIFEST_FILE):
     with open(manifest_file, 'w') as _f:
-        json.dump(manifest, _f)
+        json.dump(manifest, _f, sort_keys=True)
         _f.write('\n')
 
 
