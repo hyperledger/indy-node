@@ -12,6 +12,16 @@ RUN apt-get update -y && apt-get install -y \
     libsnappy-dev \
     rocksdb=5.8.8 \
     ursa=0.3.2-2 \
-    jq
+# Build dependencies
+    ruby \
+    ruby-dev \
+    rubygems \
+    gcc \
+    make \
+# zstd is needed for caching in github actions pipeline
+    zstd
+
+# install fpm
+RUN gem install --no-ri --no-rdoc rake fpm
 
 RUN indy_image_clean
