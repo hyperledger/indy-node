@@ -272,7 +272,7 @@ jobs:
 
   build_release:
     name: Build Release
-    needs: [workflow-setup]
+    needs: [workflow-setup, build-image]
     # needs: [workflow-setup, indy_node_tests, lint]
     runs-on: ubuntu-20.04
     container:
@@ -302,7 +302,7 @@ jobs:
 
   build_3rd_party_dependencies:
     name: Build 3rd Party Dependencies
-    needs: [workflow-setup]
+    needs: [workflow-setup, build-image]
     # needs: [workflow-setup, indy_node_tests, lint]
     runs-on: ubuntu-20.04
     container:
