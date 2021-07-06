@@ -45,7 +45,8 @@ def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
         first_level_tests.add(p)
     first_level_tests = sorted(list(first_level_tests))
     test_list_sliced = first_level_tests[test_slice[0] - 1::test_slice[1]]
-    log("Found {} tests in {} modules, sliced {} test modules".format(len(testList), len(first_level_tests), len(test_list_sliced)))
+    log("Found {} tests in {} modules, sliced {} test modules".
+        format(len(testList), len(first_level_tests), len(test_list_sliced)))
     if not testList:
         m = re.search("errors during collection", collectedData)
         if m:
@@ -69,9 +70,9 @@ def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
     errorTestPat = re.compile('____ (ERROR.+) ____')
     while True:
         for i, tests in enumerate(test_list_sliced):
-            # testRep = '{}.rep'.format(test.split("/")[-1])
+            testResults = '--junitxml={}-test-results.xml'.format(tests.split("/")[-1])
             testStartTime = time.time()
-            pytest_cmd = '{} {} > {}'.format(pytest, tests, testRep)
+            pytest_cmd = '{} {} {} > {}'.format(pytest, testResults, tests, testRep)
             log(pytest_cmd)
             r = os.system(pytest_cmd)
             testExecutionTime = time.time() - testStartTime
