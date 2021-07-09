@@ -1,0 +1,14 @@
+git clone https://github.com/facebook/rocksdb.git /tmp/rocksdb
+
+cd /tmp/rocksdb
+
+git checkout v6.14.6
+
+sed -i 's/-m rocksdb@fb.com/-m "Hyperledger <hyperledger-indy@lists.hyperledger.org>"/g' ./build_tools/make_package.sh
+
+PORTABLE=1 EXTRA_CFLAGS="-fPIC" EXTRA_CXXFLAGS="-fPIC" make static_lib
+PORTABLE=1 EXTRA_CFLAGS="-fPIC" EXTRA_CXXFLAGS="-fPIC" DEBUG_LEVEL=0 make static_lib package
+
+
+dpkg -i /plenum-deb/*
+dpkg -i /indy-deb/*
