@@ -1,0 +1,390 @@
+name: indy-node-build
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  workflow-setup:
+    name: Initialize Workflow
+    runs-on: ubuntu-latest
+    outputs:
+      CACHE_KEY_BUILD: ${{ steps.cache.outputs.CACHE_KEY_BUILD }}
+      CACHE_KEY_LINT: ${{ steps.cache.outputs.CACHE_KEY_LINT }}
+      UBUNTU_VERSION: ${{ steps.cache.outputs.UBUNTU_VERSION }}
+      # Expose the lowercase version of the GitHub repository name
+      # to all subsequent jobs that reference image repositories
+      # as the push and pull operations require the URL of the repository
+      # to be in lowercase.
+      GITHUB_REPOSITORY_NAME: ${{ steps.repository-name.outputs.lowercase }}
+      GITHUB_REF: ${{ steps.cache.outputs.GITHUB_REF }}
+      isDev: ${{ steps.build-flags.outputs.isDev }}
+      isRC: ${{ steps.build-flags.outputs.isRC }}
+      publish: ${{ steps.build-flags.outputs.publish }}
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+
+      - name: Convert the GitHub repository name to lowercase
+        id: repository-name
+        uses: ASzc/change-string-case-action@v1
+        with:
+          string: ${{ github.repository }}
+
+      - name: Set outputs
+        id: cache
+        run: |
+          # Set variables according to version of ubuntu
+          if [[ "${{github.base_ref}}" == "master" || "${{github.ref}}" == "refs/heads/master" ]]; then
+            echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile.ubuntu-1604') }}"
+            echo "::set-output name=CACHE_KEY_LINT::${{ hashFiles('.github/workflows/lint/Dockerfile.ubuntu-1604') }}"
+            echo "::set-output name=UBUNTU_VERSION::ubuntu-1604"
+          fi
+          if [[ "${{github.base_ref}}" == "ubuntu-20.04-upgrade" || "${{github.ref}}" == "refs/heads/ubuntu-20.04-upgrade" || "${{github.base_ref}}" == "ci-cd-ubuntu-20.04" || "${{github.ref}}" == "ci-cd-ubuntu-20.04" ]]; then
+            echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile.ubuntu-2004') }}"
+            echo "::set-output name=CACHE_KEY_LINT::${{ hashFiles('.github/workflows/lint/Dockerfile.ubuntu-2004') }}"
+            echo "::set-output name=UBUNTU_VERSION::ubuntu-2004"
+          fi
+          
+
+          if [[ "${{github.base_ref}}" == 'master' || "${{github.ref}}" == 'refs/heads/master' || "${{github.base_ref}}" == 'main' || "${{github.ref}}" == 'refs/heads/main' ]]; then
+            echo "::set-output name=GITHUB_REF::main"
+          elif [[ "${{github.base_ref}}" == 'release*' || "${{github.ref}}" == 'refs/heads/release*' ]]; then
+            echo "::set-output name=GITHUB_REF::rc"
+          elif [[ "${{github.base_ref}}" == 'stable' || "${{github.ref}}" == 'refs/heads/stable' ]]; then
+            echo "::set-output name=GITHUB_REF::stable"
+          else
+            echo "::set-output name=GITHUB_REF::dev"
+          fi
+
+      - name: Set build flags
+        id: build-flags
+        run: |
+
+          if [[ "${{steps.cache.outputs.GITHUB_REF}}" == 'dev' || "${{steps.cache.outputs.GITHUB_REF}}" == 'main' ]]; then
+            echo "::set-output name=isDev::true"
+          else
+            echo "::set-output name=isDev::false"
+          fi
+
+          if [[ "${{steps.cache.outputs.GITHUB_REF}}" == 'rc' ]]; then
+            echo "::set-output name=isRC::true"
+          else
+            echo "::set-output name=isRC::false"
+          fi
+
+          # Ensure publishing is only performed when the build is executed from the main (hyperledger/indy-node) repository.
+          # if [[ ${{github.event.repository.full_name}} == 'hyperledger/indy-node' && ${{github.event_name}} == 'push' && ( ${{steps.cache.outputs.GITHUB_REF}} == 'main' || ${{steps.cache.outputs.GITHUB_REF}} == 'rc' || ${{steps.cache.outputs.GITHUB_REF}} == 'stable' ) ]]; then
+          
+          # ToDo: This is for testing only replace with the above when complete
+          if [[ ${{github.event_name}} == 'push' && ( "${{github.ref}}" == 'refs/heads/publishing-artifacts' || ${{steps.cache.outputs.GITHUB_REF}} == 'main' || ${{steps.cache.outputs.GITHUB_REF}} == 'rc' || ${{steps.cache.outputs.GITHUB_REF}} == 'stable' ) ]]; then
+            echo "::set-output name=publish::true"
+          else
+            echo "::set-output name=publish::false"
+          fi
+
+  build-image:
+    name: Create Builder Image
+    # Reference to workflow-setup job is required to access its various outputs.
+    needs: workflow-setup
+    runs-on: ubuntu-latest
+    env:
+      CACHE_KEY_BUILD: ${{ needs.workflow-setup.outputs.CACHE_KEY_BUILD }}
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
+      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+
+      - name: Try load from cache
+        id: cache-image
+        uses: actions/cache@v2
+        with:
+          path: ${GITHUB_WORKSPACE}/cache
+          key: ${{ env.CACHE_KEY_BUILD}}
+
+      - name: Prepare image labels and tags
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        id: prep
+        shell: bash
+        run: |
+          DOCKER_IMAGE=ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/node-build
+          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:${{ env.UBUNTU_VERSION }}""
+          echo ::set-output name=tags::${TAGS}
+          echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+      - name: Log into the GitHub Container Registry
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and push image
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: .github/workflows/build/Dockerfile.${{ env.UBUNTU_VERSION }}
+          no-cache: true
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.prep.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Touch Cache
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ${GITHUB_WORKSPACE}/cache
+          touch ${GITHUB_WORKSPACE}/cache/${{ env.CACHE_KEY_BUILD }}
+
+  lint-image:
+    name: Create Linter Image
+    # Reference to workflow-setup job is required to access its various outputs.
+    needs: workflow-setup
+    runs-on: ubuntu-latest
+    env:
+      CACHE_KEY_LINT: ${{ needs.workflow-setup.outputs.CACHE_KEY_LINT }}
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
+      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+
+      - name: Try load from cache
+        id: cache-image
+        uses: actions/cache@v2
+        with:
+          path: ${GITHUB_WORKSPACE}/cache
+          key: ${{ env.CACHE_KEY_LINT }}
+
+      - name: Prepare image labels and tags
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        id: prep
+        shell: bash
+        run: |
+          DOCKER_IMAGE=ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/node-lint
+          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:${{ env.UBUNTU_VERSION }}"
+          echo ::set-output name=tags::${TAGS}
+          echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+      - name: Log into the GitHub Container Registry
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and push image
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: .github/workflows/lint/Dockerfile.${{ env.UBUNTU_VERSION }}"
+          no-cache: true
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.prep.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Touch Cache
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ${GITHUB_WORKSPACE}/cache
+          touch ${GITHUB_WORKSPACE}/cache/${{ env.CACHE_KEY_LINT }}
+
+  indy_node_tests:
+    name: Sliced Module Tests
+    # Reference to workflow-setup job is required to access the GITHUB_REPOSITORY_NAME output.
+    needs: [workflow-setup, build-image]
+    runs-on: ubuntu-20.04
+    # Fix for scacap/action-surefire-report out of memory error:
+    # - https://github.com/ScaCap/action-surefire-report/issues/17
+    env:
+      NODE_OPTIONS: '--max_old_space_size=4096'
+    container:
+      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+    strategy:
+      matrix:
+        module: [indy_node, indy_common]
+        slice: [1, 2, 3, 4 ,5, 6, 7, 8, 9, 10, 11]
+      fail-fast: false
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      # ===============================================
+      # Caching cannot be used.
+      #  - For some reason as soon as it is enabled
+      #    the test start complaining about zmq missing
+      #    for the plenum install.
+      # -----------------------------------------------
+      # - name: Cache pip
+      #   uses: actions/cache@v2
+      #   with:
+      #     # pip cache on the node-build image is not in the default location.
+      #     # path: ~/.cache/pip
+      #     path: /root/.cache/pip
+      #     key: ${{ runner.os }}-indy-node-pip-${{ hashFiles('**/requirements.txt', '**/setup.py') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-indy-node-pip-
+
+      - name: Install dependencies
+        run: |
+          # Explicitly use the existing pip cache location in the node-build image.
+          pip --cache-dir /root/.cache/pip install .[tests]
+
+      - name: Run Indy Node ${{ matrix.module }} test slice ${{ matrix.slice }}/${{ strategy.job-total }}
+        id: node-test
+        run: RUSTPYTHONASYNCIODEBUG=0 python3 runner.py --pytest "python3 -m pytest -l -vv" --dir "${{ matrix.module }}" --output "test-result-node-${{ matrix.slice }}.txt" --test-only-slice "${{ matrix.slice }}/${{ strategy.job-total }}"
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: Indy Node ${{ matrix.module }} Test Report for slice ${{ matrix.slice }}/${{ strategy.job-total }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-test-results.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.node-test.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-slice-${{ matrix.slice }}
+          path: test-result-node-${{ matrix.slice }}.txt
+          retention-days: 5
+
+  lint:
+    name: Lint
+    # Reference to workflow-setup job is required to access the GITHUB_REPOSITORY_NAME output.
+    needs: [workflow-setup, lint-image]
+    runs-on: ubuntu-20.04
+    container:
+      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-lint:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: flake8
+        run: python3 -m flake8
+
+  build_release:
+    name: Build Release
+    # needs: [workflow-setup, build-image]
+    needs: [workflow-setup, indy_node_tests, lint]
+    runs-on: ubuntu-20.04
+    container:
+      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v1
+
+      - name: Set Build Version
+        id: version
+        uses: ./.github/actions/set-version
+        with:
+          moduleName: indy_node
+          isDev: ${{ needs.workflow-setup.outputs.isDev }}
+          isRC: ${{ needs.workflow-setup.outputs.isRC }}
+
+      - name: Build Deployment Package
+        run: |
+          mkdir -p /tmp/node-build
+          ./build-scripts/${{ env.UBUNTU_VERSION }}/build-indy-node.sh "/__w/indy-node/indy-node" "${{ steps.version.outputs.upstreamVer }}" "/tmp/node-build" "${{ steps.version.outputs.pkgVer }}"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: node-deb
+          path: /tmp/node-build
+          retention-days: 5
+
+  build_3rd_party_dependencies:
+    name: Build 3rd Party Dependencies
+    # needs: [workflow-setup, build-image]
+    needs: [workflow-setup, indy_node_tests, lint]
+    runs-on: ubuntu-20.04
+    env:
+      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+    container:
+      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v1
+
+      - name: Try load from cache.
+        id: third-party-dependencies
+        uses: actions/cache@v2
+        with:
+          path: /tmp/third-party-dependencies
+          key: third-party-dependencies-${{ hashFiles('./build-scripts/${{ env.UBUNTU_VERSION }}/build-3rd-parties.sh') }}
+
+      - name: Build 3rd party deployment packages
+        if: steps.third-party-dependencies.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ./build-scripts/${{ env.UBUNTU_VERSION }}/cache/3rd-party-dependencies/
+          ./build-scripts/${{ env.UBUNTU_VERSION }}/build-3rd-parties.sh ./cache/3rd-party-dependencies
+          mv ./build-scripts/${{ env.UBUNTU_VERSION }}/cache/* /tmp/third-party-dependencies
+
+  # publish_artifacts:
+  #   name: Publish Artifacts
+  #   runs-on: ubuntu-20.04
+  #   needs: [workflow-setup, build_release, build_3rd_party_dependencies]
+  #   if: needs.workflow-setup.outputs.publish == 'true'
+  #   env:
+  #     GITHUB_REF: ${{ needs.workflow-setup.outputs.GITHUB_REF }}
+  #   steps:
+  #     - name: Check out code
+  #       uses: actions/checkout@v1
+
+  #     - name: Setup JFrog CLI
+  #       uses: jfrog/setup-jfrog-cli@v1
+  #       env:
+  #         JF_ARTIFACTORY_1: ${{ secrets.INDY_ARTIFACTORY_REPO_CONFIG }}
+
+  #     - name: Ping Artifactory
+  #       run: |
+  #         # Test the connection to Ping the Hyperledger Artifactory server
+  #         # to ensure everything has been setup correctly.
+  #         jfrog rt ping
+
+  #     - name: Download Node Artifacts from Pipeline Artifacts
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: node-deb
+  #         path: to_publish
+
+  #     - name: Publish Node Artifacts
+  #       uses: ./.github/actions/publish-deb
+  #       with:
+  #         sourceDirectory: /home/runner/work/indy-node/indy-node/to_publish
+  #         distribution: xenial
+  #         component: ${{ env.GITHUB_REF }}
+
+  #     - name: Download 3rd Party Artifacts Dependencies from Cache
+  #       id: third-party-dependencies
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: /tmp/third-party-dependencies
+  #         key: third-party-dependencies-${{ hashFiles('./build-scripts/ubuntu-1604/build-3rd-parties.sh') }}
+  #         restore-keys: |
+  #           third-party-dependencies-
+
+  #     - name: Publish 3rd Party Dependencies
+  #       uses: ./.github/actions/publish-deb
+  #       with:
+  #         sourceDirectory: /home/runner/tmp/third-party-dependencies
+  #         distribution: xenial
+  #         component: ${{ env.GITHUB_REF }}

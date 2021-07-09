@@ -43,12 +43,16 @@ def test_catching_up_auth_rule_txn(looper,
                                              auth_type=action.txn_type, field=action.field,
                                              new_value=action.value, old_value=None,
                                              constraint=changed_constraint.as_dict)
+        sdk_add_new_nym(looper,
+                        sdk_pool_handle,
+                        sdk_wallet_trustee,
+                        'newSteward2')
         delayed_node.start_catchup()
         looper.run(eventually(lambda: assertExp(delayed_node.mode == Mode.participating)))
     sdk_add_new_nym(looper,
                     sdk_pool_handle,
                     sdk_wallet_steward,
-                    'newSteward2',
+                    'newSteward3',
                     STEWARD_STRING,
                     dest=new_steward_did, verkey=new_steward_verkey)
     ensure_all_nodes_have_same_data(looper, txnPoolNodeSet)

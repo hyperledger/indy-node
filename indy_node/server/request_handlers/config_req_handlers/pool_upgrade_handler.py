@@ -48,7 +48,7 @@ class PoolUpgradeHandler(WriteRequestHandler):
                                            "{} not a valid schedule since {}".
                                            format(schedule, msg))
 
-    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+    def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
         status = '*'

@@ -1,0 +1,23 @@
+name: "Publish Debian Packages"
+description: >
+  Publish debian packages to artifactory using the jfrog cli.
+  This action wraps a script that performs organized publishing of debian packages.
+
+inputs:
+  sourceDirectory:
+    description: "The directory containing the packages to be published."
+    required: true
+  distribution:
+    description: "The distribution supported by the package. i.e xenial, focal, etc."
+    required: true
+  component:
+    description: "The component type.  i.e. stable, rc, dev, etc."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Publish
+      shell: bash
+      run: |
+        ${{ github.action_path }}/publishPackages "${{ inputs.sourceDirectory }}" "${{ inputs.distribution }}" "${{ inputs.component }}"

@@ -73,6 +73,7 @@ def withTestEnv(body) {
 
         buildDocker("hyperledger/indy-node-ci", "ci/ubuntu.dockerfile ci").inside {
             echo 'Test: Install dependencies'
+            sh "pip install pip==10.0.0"
             install()
             body.call('python')
         }
