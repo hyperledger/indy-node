@@ -98,7 +98,7 @@ def test(options=[:]) {
 
     try {
         if (options.useRunner) {
-            sh "PYTHONASYNCIODEBUG='0' $options.python runner.py --pytest \"$options.python -m pytest -l -vv\" --dir $options.testDir --output \"$options.resFile\" --test-only-slice \"$options.testOnlySlice\""
+            sh "PYTHONASYNCIODEBUG='0' $options.python runner.py --pytest \"$options.python -m pytest -l -vv\" --dir $options.testDir --output \"$options.resFile\" --test-only-slice \"$options.testOnlySlice\" --nojunitxml"
         } else {
             sh "$options.python -m pytest -l -vv --junitxml=$options.resFile $options.testDir"
         }
@@ -152,7 +152,6 @@ def tests = [
         )
     },
 ].collect {k, v -> [k, v]}
-
 
 def builds = [:]
 def _labels = labels.collect {k, v -> v}

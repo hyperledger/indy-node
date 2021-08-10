@@ -5,6 +5,9 @@ ARG uid=1000
 ARG user=indy
 ARG venv=venv
 
+# Update Sovrin signing key
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88 
+
 RUN apt-get update -y && apt-get install -y \
     python3-nacl \
     ursa=0.3.2-2 \
