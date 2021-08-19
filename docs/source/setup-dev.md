@@ -23,7 +23,7 @@ You can also have a look at the scripts mentioned below to follow them and perfo
 1. Go to the destination folder for the project
 1. Run `init-dev-project.sh <github-name> <new-virtualenv-name>` to clone indy-plenum and indy-node projects and
 create a virtualenv to work in
-1. Activate new virtualenv `workon <new-virtualenv-name>`
+1. Activate new virtualenv `workon <new-virtualenv-name>` if not activated
 1. [Optionally] Install Pycharm
 1. [Optionally] Open and configure projects in Pycharm:
     - Open both indy-plenum and indy-node in one window
@@ -57,11 +57,10 @@ and virtual environment on Ubuntu, or follow the detailed instructions below.
 
 ##### Ubuntu
 
-1. Run ```sudo add-apt-repository ppa:deadsnakes/ppa```
 
-2. Run ```sudo apt-get update```
+1. Run ```sudo apt-get update```
 
-3. On Ubuntu 14, run ```sudo apt-get install python3.5``` (python3.5 is pre-installed on most Ubuntu 16 systems; if not, do it there as well.)
+2. On Ubuntu 14, run ```sudo apt-get install python3.5``` (python3.5 is pre-installed on most Ubuntu 16 systems; if not, do it there as well.)
 
 ##### CentOS/Redhat
 
@@ -172,6 +171,7 @@ source <name of virtual environment>/bin/activate
 
 Optionally, you can install virtual environment wrapper as follows:
 ```
+apt install virtualenvwrapper
 pip3 install virtualenvwrapper
 echo '' >> ~/.bashrc
 echo '# Python virtual environment wrapper' >> ~/.bashrc
@@ -195,6 +195,13 @@ Navigate to the root directory of the source (for each project) and install requ
 ```
 pip install -e .[tests]
 ```
+If pip is complaining about not finding a distribution for indy and missmatching metadata, try ```pip install --use-deprecated legacy-resolver -e .[tests]```.
+
+```
+https://files.pythonhosted.org/packages/61/8c/91a004be0934f4cb3dd9a6a0cc91d46046e67ddb678e440562b26040230e/python3-indy-1.15.0-dev-1618.tar.gz#sha256=eb61e5aa1f64c299dadd74bcf7f30e2bcde6df18aa51491f5a8d4530d64b4b53 (from indy-node==1.13.0.dev0) has different version in metadata: '1.15.0'
+ERROR: Could not find a version that satisfies the requirement python3-indy==1.15.0-dev-1618 (from indy-node[tests])
+ERROR: No matching distribution found for python3-indy==1.15.0-dev-1618
+```
 If you are working with both indy-plenum and indy-node, then please make sure that both projects are installed with -e option,
 and not from pypi (have a look at the sequence at `init-dev-project.sh`). 
 
@@ -203,3 +210,6 @@ and run tests
 ```
 pytest .
 ```
+
+The test may file with a too many open files error. 
+If that happens check and set your limits with```ulimit```.

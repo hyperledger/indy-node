@@ -4,12 +4,11 @@ set -e
 echo 'Installing python 3.5 and pip...'
 sudo apt-get update
 sudo apt-get install -y software-properties-common python-software-properties
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt-get update
-sudo apt-get install -y python3.5 python3-pip python3.5-dev
+sudo apt-get install -y python3.5 python3-pip python3.5-dev virtualenvwrapper
 echo 'Installed python 3.5 and pip...'
 
 echo 'Installing virtualenvwrapper'
+sudo -H pip3 install pbr importlib-metadata==1.7.0 
 sudo -H pip3 install virtualenvwrapper
 echo '' >> ~/.bashrc
 echo '# Python virtual environment wrapper' >> ~/.bashrc
