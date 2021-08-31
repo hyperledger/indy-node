@@ -1,14 +1,14 @@
-### Build indy-plenum using docker
+### Build indy-node using docker
 
 ```
-./build-indy-plenum-docker.sh <path-to-sources> <version>
+./build-indy-node-docker.sh <path-to-sources> <version>
 ```
-Built package is placed in a docker volume `indy-plenum-deb-u1604`. 
+Built package is placed in a docker volume `indy-node-deb-u1604`. 
 
-### Build indy-plenum
+### Build indy-node
 
 ```
-./build-indy-plenum.sh <path to sources> <version> <output-path: default='.'>
+./build-indy-node.sh <path to sources> <version> <output-path: default='.'>
 ```
 
 Built package is placed in the `output-path` folder.
@@ -19,7 +19,7 @@ Built package is placed in the `output-path` folder.
 ./build-3rd-parties-docker.sh
 ```
 
-Built packages are placed in a docker volume `indy-plenum-deb-u1604`.
+Built packages are placed in a docker volume `indy-node-deb-u1604`.
 
 ### Build 3rd-party dependencies
 

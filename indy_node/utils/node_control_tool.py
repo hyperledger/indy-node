@@ -216,7 +216,7 @@ class NodeControlTool:
                 .format(curr_pkg_ver, new_pkg_ver, ex)
             )
             if rollback:
-                logger.error("Trying to rollback to the previous version {}"
+                logger.error("Trying to rollback to the previous version {} {}"
                              .format(ex, curr_pkg_ver))
                 self._do_upgrade(
                     pkg_name, new_pkg_ver, curr_pkg_ver, rollback=False)

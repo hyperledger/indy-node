@@ -2,7 +2,7 @@
 
 PKG_SOURCE_PATH="$1"
 VERSION="$2"
-PKG_NAME=indy-plenum
+PKG_NAME=indy-node
 IMAGE_NAME="${PKG_NAME}-build-u2004"
 OUTPUT_VOLUME_NAME="${3:-"${PKG_NAME}-deb-u2004"}"
 PACKAGE_VERSION="${4:-$VERSION}"

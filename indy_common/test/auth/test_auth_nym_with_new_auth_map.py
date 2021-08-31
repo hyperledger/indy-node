@@ -306,6 +306,6 @@ def test_change_verkey(write_request_validation, req, is_owner):
     assert authorized == write_request_validation(req,
                                                   [AuthActionEdit(txn_type=NYM,
                                                                   field=VERKEY,
-                                                                  old_value="_verkey".format(req.identifier),
+                                                                  old_value="_verkey {}".format(req.identifier),
                                                                   new_value='new_value',
                                                                   is_owner=is_owner)])

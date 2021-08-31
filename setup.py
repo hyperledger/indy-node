@@ -31,6 +31,7 @@ tests_require = ['attrs>=20.3.0', 'pytest>=6.2.2', 'pytest-xdist>=2.2.1', 'pytes
                  'python3-indy==1.13.0-dev-1420', 'pytest-asyncio>=0.14.0']
 
 
+
 setup(
     name=metadata['__title__'],
     version=metadata['__version__'],
@@ -56,8 +57,10 @@ setup(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
 
-    install_requires=['indy-plenum==1.13.0.dev1034', 'timeout-decorator>=0.5.0', 'distro>=1.5.0'],
-
+    # install_requires=['indy-plenum==1.13.0.dev1034', 'timeout-decorator>=0.5.0', 'distro>=1.5.0'],
+    ### Based on PyPI package from ubuntu20.04 feature branch of Plenum
+    install_requires=['indy-plenum==1.13.0.dev135', 'timeout-decorator>=0.5.0', 'distro>=1.5.0'],
+    
     setup_requires=['pytest-runner'],
     extras_require={
         'tests': tests_require

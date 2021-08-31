@@ -15,6 +15,7 @@ jobs:
       # to be in lowercase.
       GITHUB_REPOSITORY_NAME: ${{ steps.repository-name.outputs.lowercase }}
       GITHUB_REF: ${{ steps.cache.outputs.GITHUB_REF }}
+      distribution: ${{ steps.cache.outputs.distribution }}
       isDev: ${{ steps.build-flags.outputs.isDev }}
       isRC: ${{ steps.build-flags.outputs.isRC }}
       publish: ${{ steps.build-flags.outputs.publish }}
@@ -36,13 +37,15 @@ jobs:
             echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile.ubuntu-1604') }}"
             echo "::set-output name=CACHE_KEY_LINT::${{ hashFiles('.github/workflows/lint/Dockerfile.ubuntu-1604') }}"
             echo "::set-output name=UBUNTU_VERSION::ubuntu-1604"
+            echo "::set-output name=distribution::xenial"
           fi
-          if [[ "${{github.base_ref}}" == "ubuntu-20.04-upgrade" || "${{github.ref}}" == "refs/heads/ubuntu-20.04-upgrade" || "${{github.base_ref}}" == "ci-cd-ubuntu-20.04" || "${{github.ref}}" == "ci-cd-ubuntu-20.04" ]]; then
+          if [[ "${{github.base_ref}}" == "ubuntu-20.04-upgrade" || "${{github.ref}}" == "refs/heads/ubuntu-20.04-upgrade" || "${{github.base_ref}}" == "ci-cd-ubuntu-20.04" || "${{github.ref}}" == "refs/heads/ci-cd-ubuntu-20.04" ]]; then
             echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile.ubuntu-2004') }}"
             echo "::set-output name=CACHE_KEY_LINT::${{ hashFiles('.github/workflows/lint/Dockerfile.ubuntu-2004') }}"
             echo "::set-output name=UBUNTU_VERSION::ubuntu-2004"
+            echo "::set-output name=distribution::focal"
           fi
-          
+     
 
           if [[ "${{github.base_ref}}" == 'master' || "${{github.ref}}" == 'refs/heads/master' || "${{github.base_ref}}" == 'main' || "${{github.ref}}" == 'refs/heads/main' ]]; then
             echo "::set-output name=GITHUB_REF::main"
@@ -106,7 +109,7 @@ jobs:
         shell: bash
         run: |
           DOCKER_IMAGE=ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/node-build
-          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:${{ env.UBUNTU_VERSION }}""
+          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:${{ env.UBUNTU_VERSION }}"
           echo ::set-output name=tags::${TAGS}
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
@@ -189,7 +192,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: .github/workflows/lint/Dockerfile.${{ env.UBUNTU_VERSION }}"
+          file: .github/workflows/lint/Dockerfile.${{ env.UBUNTU_VERSION }}
           no-cache: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.prep.outputs.tags }}
@@ -286,6 +289,8 @@ jobs:
     # needs: [workflow-setup, build-image]
     needs: [workflow-setup, indy_node_tests, lint]
     runs-on: ubuntu-20.04
+    env:
+      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     container:
       image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     steps:
@@ -329,7 +334,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/third-party-dependencies
-          key: third-party-dependencies-${{ hashFiles('./build-scripts/${{ env.UBUNTU_VERSION }}/build-3rd-parties.sh') }}
+          key: ${{ format('third-party-dependencies-{0}', hashFiles(format('./build-scripts/{0}/build-3rd-parties.sh', needs.workflow-setup.outputs.UBUNTU_VERSION ))) }}           
 
       - name: Build 3rd party deployment packages
         if: steps.third-party-dependencies.outputs.cache-hit != 'true'
@@ -338,53 +343,103 @@ jobs:
           ./build-scripts/${{ env.UBUNTU_VERSION }}/build-3rd-parties.sh ./cache/3rd-party-dependencies
           mv ./build-scripts/${{ env.UBUNTU_VERSION }}/cache/* /tmp/third-party-dependencies
 
-  # publish_artifacts:
-  #   name: Publish Artifacts
-  #   runs-on: ubuntu-20.04
-  #   needs: [workflow-setup, build_release, build_3rd_party_dependencies]
-  #   if: needs.workflow-setup.outputs.publish == 'true'
-  #   env:
-  #     GITHUB_REF: ${{ needs.workflow-setup.outputs.GITHUB_REF }}
-  #   steps:
-  #     - name: Check out code
-  #       uses: actions/checkout@v1
+  build-python-packages:
+    name: Build Python Packages
+    runs-on: ubuntu-20.04
+    needs: [workflow-setup, indy_node_tests, lint]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v1
 
-  #     - name: Setup JFrog CLI
-  #       uses: jfrog/setup-jfrog-cli@v1
-  #       env:
-  #         JF_ARTIFACTORY_1: ${{ secrets.INDY_ARTIFACTORY_REPO_CONFIG }}
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
 
-  #     - name: Ping Artifactory
-  #       run: |
-  #         # Test the connection to Ping the Hyperledger Artifactory server
-  #         # to ensure everything has been setup correctly.
-  #         jfrog rt ping
+      - name: Install required packages via pip
+        run: |
+          python3 -m pip install pytest-runner wheel
 
-  #     - name: Download Node Artifacts from Pipeline Artifacts
-  #       uses: actions/download-artifact@v2
-  #       with:
-  #         name: node-deb
-  #         path: to_publish
+      - name: Set Build Version
+        id: version
+        uses: ./.github/actions/set-version
+        with:
+          moduleName: indy_node
+          isDev: ${{ needs.workflow-setup.outputs.isDev }}
+          isRC: ${{ needs.workflow-setup.outputs.isRC }}
 
-  #     - name: Publish Node Artifacts
-  #       uses: ./.github/actions/publish-deb
-  #       with:
-  #         sourceDirectory: /home/runner/work/indy-node/indy-node/to_publish
-  #         distribution: xenial
-  #         component: ${{ env.GITHUB_REF }}
+      - name: Prepare package and set version
+        run: |
+          ./build-scripts/${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}/prepare-package.sh . indy_node "${{ steps.version.outputs.upstreamVer }}" python-packages
 
-  #     - name: Download 3rd Party Artifacts Dependencies from Cache
-  #       id: third-party-dependencies
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: /tmp/third-party-dependencies
-  #         key: third-party-dependencies-${{ hashFiles('./build-scripts/ubuntu-1604/build-3rd-parties.sh') }}
-  #         restore-keys: |
-  #           third-party-dependencies-
+      - name: Building python package
+        run: |
+          python3 setup.py sdist --dist-dir /tmp/dist bdist_wheel --dist-dir /tmp/dist
 
-  #     - name: Publish 3rd Party Dependencies
-  #       uses: ./.github/actions/publish-deb
-  #       with:
-  #         sourceDirectory: /home/runner/tmp/third-party-dependencies
-  #         distribution: xenial
-  #         component: ${{ env.GITHUB_REF }}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: plenum-python
+          path: /tmp/dist
+          retention-days: 5
+
+  publish_artifacts:
+    name: Publish Artifacts
+    runs-on: ubuntu-20.04
+    needs: [workflow-setup, build_release, build_3rd_party_dependencies, build-python-packages]
+    if: needs.workflow-setup.outputs.publish == 'true'
+    env:
+      GITHUB_REF: ${{ needs.workflow-setup.outputs.GITHUB_REF }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v1
+
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v1
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.INDY_ARTIFACTORY_REPO_CONFIG }}
+
+      - name: Ping Artifactory
+        run: |
+          # Test the connection to Ping the Hyperledger Artifactory server
+          # to ensure everything has been setup correctly.
+          jfrog rt ping
+
+      - name: Download Node Artifacts from Pipeline Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: node-deb
+          path: to_publish
+
+      - name: Publish Node Artifacts
+        uses: ./.github/actions/publish-deb
+        with:
+          sourceDirectory: /home/runner/work/indy-node/indy-node/to_publish
+          distribution: ${{ env.distribution }}
+          component: ${{ env.GITHUB_REF }}
+
+      - name: Download 3rd Party Artifacts Dependencies from Cache
+        id: third-party-dependencies
+        uses: actions/cache@v2
+        with:
+          path: /tmp/third-party-dependencies
+          key: ${{ format('third-party-dependencies-{0}', hashFiles(format('./build-scripts/{0}/build-3rd-parties.sh', needs.workflow-setup.outputs.UBUNTU_VERSION ))) }}
+
+      - name: Publish 3rd Party Dependencies
+        uses: ./.github/actions/publish-deb
+        with:
+          sourceDirectory: /home/runner/tmp/third-party-dependencies
+          distribution: ${{ env.distribution }}
+          component: ${{ env.GITHUB_REF }}
+
+      - name: Download Python Packages from Pipeline Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: plenum-python
+          path: dist
+
+      - name: Publish Python Package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          skip_existing: true

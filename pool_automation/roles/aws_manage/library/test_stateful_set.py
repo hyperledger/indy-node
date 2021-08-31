@@ -189,7 +189,7 @@ def on_demand_prices(request, pricing_client, ec2_prices,
 
 @pytest.fixture
 def ec2ctxs(regions, ec2, ec2cl, on_demand_prices, ec2_prices):
-    assert len(set([len(l) for l in (regions, ec2, ec2cl)])) == 1
+    assert len(set([len(j) for j in (regions, ec2, ec2cl)])) == 1
     return [EC2TestCtx(r, rc, cl, ec2_prices[r]) for r, rc, cl
             in zip(regions, ec2, ec2cl)]
 
