@@ -20,7 +20,7 @@ def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
         log("Is going to repeat the test suite until failure")
     log("Preparing test suite with {}".format(pytest))
     testListFile = "test_list.txt"
-    collect_status = os.system('{} --collect-only {} > {}'.format(pytest, testDir, testListFile))
+    collect_status = os.system('python3 -m pytest -q --collect-only {} > {}'.format(testDir, testListFile))
 
     if collect_status != 0:
         log("Test suit preparation error {}".format(collect_status))
@@ -37,7 +37,7 @@ def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
         log(collectedData)
         return -1
 
-    testList = re.findall("<Module '(.+)'>", collectedData)
+    testList = re.findall('({}.*?)::'.format(testDir), collectedData)
     # testList = list(set(os.path.dirname(t) for t in testList))
     first_level_tests = set()
     for path in testList:

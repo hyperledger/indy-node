@@ -50,9 +50,9 @@ def migrate_nodes_data():
     except FileNotFoundError:
         visit_dirs = []
     for node_name in visit_dirs:
-            move_path = os.path.join(old_nodes_data_dir, node_name)
-            to_path = os.path.join(new_node_data_dir, node_name)
-            ext_copytree(move_path, to_path)
+        move_path = os.path.join(old_nodes_data_dir, node_name)
+        to_path = os.path.join(new_node_data_dir, node_name)
+        ext_copytree(move_path, to_path)
     shutil.rmtree(old_nodes_data_dir)
     set_own_perm("indy", [new_node_data_dir])
 

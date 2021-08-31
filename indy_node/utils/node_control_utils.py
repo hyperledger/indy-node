@@ -298,7 +298,7 @@ class NodeControlUtil:
                 ['apt-cache', 'show', pkg_name, '|', 'grep', '-E', "'^Version: '"]
             )
             output = cls.run_shell_script_extended(cmd).strip()
-        except ShellError as exc:
+        except ShellError:
             # will fail if either package not found or grep returns nothing
             # the latter is unexpected and treated as no-data as well
             logger.info(

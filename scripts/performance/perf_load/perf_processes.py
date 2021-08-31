@@ -371,7 +371,7 @@ class LoadRunner:
         self._loop.call_later(self._refresh_rate, self.screen_stat)
 
     def schedule_stop(self):
-        self._logger.debug("schedule_stop _stop_sec".format(self._stop_sec))
+        self._logger.debug("schedule_stop _stop_sec {}".format(self._stop_sec))
         if self._stop_sec > 0:
             self._loop.call_later(self._stop_sec, self.sig_handler, signal.SIGINT)
 

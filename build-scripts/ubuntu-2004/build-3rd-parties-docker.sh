@@ -9,7 +9,7 @@ else
     CMD="$2"
 fi
 
-PKG_NAME=indy-plenum
+PKG_NAME=indy-node
 IMAGE_NAME="${PKG_NAME}-build-u2004"
 OUTPUT_VOLUME_NAME="${1:-"${PKG_NAME}-deb-u2004"}"
 

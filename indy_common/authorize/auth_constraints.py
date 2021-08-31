@@ -136,7 +136,7 @@ class AuthConstraint(AbstractAuthConstraint):
         elif role == "ALL" and self.need_to_be_owner and self.sig_count == 1:
             error_msg = "1 signature of any role is required and needs to be owner"
         elif role == 'ALL' and not self.need_to_be_owner and self.sig_count == 1:
-            error_msg = "1 signature of any role is required".format(role)
+            error_msg = "1 signature of any role is required {}".format(role)
         elif role == 'ALL' and not self.need_to_be_owner and self.sig_count > 1:
             error_msg = "{} signatures of any role are required".format(self.sig_count)
         elif role == "ALL" and self.need_to_be_owner and self.sig_count > 1:

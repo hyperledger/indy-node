@@ -27,8 +27,7 @@ def test_correct_python_packages_are_installed_inside_venv(host, ansible_vars, v
 
     # TODO python3-indy's package metadata doesn't match package version
     # for non-stable packages, thus the check will fail for them
-    if (ansible_vars['perf_scripts_python3_indy_ver'] is not None and
-            'dev' not in ansible_vars['perf_scripts_python3_indy_ver']):
+    if (ansible_vars['perf_scripts_python3_indy_ver'] is not None and 'dev' not in ansible_vars['perf_scripts_python3_indy_ver']):
         assert pip_packages['python3-indy']['version'] == ansible_vars['perf_scripts_python3_indy_ver']
 
 
