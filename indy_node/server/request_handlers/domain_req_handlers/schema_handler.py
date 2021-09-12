@@ -27,7 +27,7 @@ class SchemaHandler(WriteRequestHandler):
     def static_validation(self, request: Request):
         pass
 
-    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+    def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         # we can not add a Schema with already existent NAME and VERSION
         # sine a Schema needs to be identified by seqNo
         self._validate_request_type(request)

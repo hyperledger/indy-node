@@ -496,7 +496,7 @@ class ClientOperationField(PClientOperationField):
         RICH_SCHEMA_CRED_DEF: ClientRichSchemaCredDefOperation(),
         RICH_SCHEMA_PRES_DEF: ClientRichSchemaPresDefOperation(),
         GET_RICH_SCHEMA_OBJECT_BY_ID: ClientGetRichSchemaObjectByIdOperation(),
-        GET_RICH_SCHEMA_OBJECT_BY_METADATA: ClientGetRichSchemaObjectByMetadataOperation(),
+        GET_RICH_SCHEMA_OBJECT_BY_METADATA: ClientGetRichSchemaObjectByMetadataOperation()
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class

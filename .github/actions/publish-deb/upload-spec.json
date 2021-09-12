@@ -1,0 +1,8 @@
+{
+  "files": [
+    {
+      "pattern": "${SOURCE_DIR}/${PACKAGE_NAME}",
+      "target": "indy/pool/${COMPONENT}/${PACKAGE_STARTING_LETTER}/${PACKAGE_SHORT_NAME}/"
+    }
+  ]
+}
