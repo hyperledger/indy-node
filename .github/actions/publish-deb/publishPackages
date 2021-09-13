@@ -26,7 +26,7 @@ for name in ${fileList}; do
   jfrog rt u \
     --deb ${distribution}/${component}/${architecture} \
     --spec ${uploadSpec}\
-    --spec-vars "SOURCE_DIR=${sourceDirectory};PACKAGE_NAME=${name};COMPONENT=${component};PACKAGE_STARTING_LETTER=${startingLetter};PACKAGE_SHORT_NAME=${shortName}" \
+    --spec-vars "SOURCE_DIR=${sourceDirectory};PACKAGE_NAME=${name};COMPONENT=${component};PACKAGE_STARTING_LETTER=${startingLetter};PACKAGE_SHORT_NAME=${shortName};DISTRIBUTION=${distribution}" \
     --detailed-summary
   echo "====================================================================================================================="
   echo
