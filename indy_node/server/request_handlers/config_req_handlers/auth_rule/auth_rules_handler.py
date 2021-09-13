@@ -22,7 +22,7 @@ class AuthRulesHandler(AbstractAuthRuleHandler):
         for rule in operation.get(RULES):
             self._static_validation_for_rule(rule, identifier, req_id)
 
-    def dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+    def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
         self._validate_request_type(request)
         self.write_req_validator.validate(request,
                                           [AuthActionEdit(txn_type=AUTH_RULES,

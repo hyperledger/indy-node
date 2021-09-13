@@ -24,6 +24,9 @@ var/
 *.egg
 *.eggs
 
+# Needed for GitHub Actions
+!.github/workflows/build
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
@@ -72,8 +75,15 @@ include/
 # generated doc files
 docs/source/api_docs/
 
-# hidden files
-.*
+# IntelliJ specific config
+*.idea
+*.iml
+
+#vscode
+.vscode
 
 # Vagrant files
 .vagrant
+
+# test output from working with GitHub actions
+test-result-node.xml

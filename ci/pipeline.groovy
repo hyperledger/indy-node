@@ -148,6 +148,7 @@ def systemTests(Closure body) {
             def uid = sh(returnStdout: true, script: 'id -u').trim()
             docker.build("hyperledger/indy-node-ci", "--build-arg uid=$uid -f ci/ubuntu.dockerfile ci").inside {
                 sh """
+                    pip install pip==10.0.0
                     pip install .[tests] >$pipLogName
                 """
 
@@ -160,7 +161,7 @@ def systemTests(Closure body) {
                 indySDKVersions.pypi = sh(returnStdout: true, script: """
                     grep "^Collecting python3-indy==" $pipLogName | awk '{print \$2}' | awk -F'==' '{print \$2}'
                 """).trim()
-                indySDKVersions.debian = indySDKVersions.pypi.replaceAll(/-(dev|rc)-(.*)/, "~\$2")
+                indySDKVersions.debian = indySDKVersions.pypi.replaceAll(/-(dev|rc)-(.*)/, "~\$2-xenial")
                 echo "indy-sdk version: ${indySDKVersions}"
             }
 

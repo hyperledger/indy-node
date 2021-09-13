@@ -19,7 +19,7 @@ try {
     nodeWrapper('ubuntu') {
         stage('Resolve version to build') {
             docker.image('hyperledger/indy-core-baseci:0.0.3-master').inside('-u 0') {
-                sh "apt-get update && apt-get install -y $pkgName"
+                sh "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88 && apt-get update && apt-get install -y $pkgName"
                 releaseVersion = getReleaseVersion(mainModuleName, false)
                 buildPkgVersion = "${releaseVersion.release}~${releaseVersion.pre}${releaseVersion.revision}"
                 buildSrcVersion = sh(returnStdout: true, script: """
@@ -66,7 +66,7 @@ try {
             ['TestAdHocSuite.py'],
             ['TestProductionSuite.py']
         ]
-        testVersion = 'v0.8.40'
+        testVersion = 'v0.8.43'
         testVersionByTag = true
         delegate.gatherLogs = gatherLogs
     }
