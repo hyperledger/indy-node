@@ -21,7 +21,8 @@ echo "Created virtual environment"
 
 echo "Installing indy-node..."
 pushd indy-node
-pip install -e .[tests]
+pip install pyzmq
+pip install  --use-deprecated legacy-resolver -e .[tests]
 popd
 echo "Installed indy-node..."
 
