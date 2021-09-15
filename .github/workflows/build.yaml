@@ -391,6 +391,7 @@ jobs:
     if: needs.workflow-setup.outputs.publish == 'true'
     env:
       GITHUB_REF: ${{ needs.workflow-setup.outputs.GITHUB_REF }}
+      distribution: ${{ needs.workflow-setup.outputs.distribution }}
     steps:
       - name: Check out code
         uses: actions/checkout@v1
