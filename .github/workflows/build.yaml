@@ -81,7 +81,7 @@ jobs:
           fi
 
           # Ensure publishing is only performed when the build is executed from the main (hyperledger/indy-node) repository.
-          if [[ ${{github.event.repository.full_name}} == 'hyperledger/indy-node' && ${{github.event_name}} == 'push' && ( ${{steps.cache.outputs.GITHUB_REF}} == 'main' || ${{steps.cache.outputs.GITHUB_REF}} == 'rc' || ${{steps.cache.outputs.GITHUB_REF}} == 'stable' ) ]]; then
+          if [[ ${{github.event.repository.full_name}} == 'hyperledger/indy-node' && ${{github.event_name}} == 'push' && ( ${{steps.cache.outputs.GITHUB_REF}} == 'main' || ${{steps.cache.outputs.GITHUB_REF}} == 'rc' || ${{steps.cache.outputs.GITHUB_REF}} == 'stable' || ${{steps.cache.outputs.GITHUB_REF}} == 'dev' ) ]]; then
             echo "::set-output name=publish::true"
           else
             echo "::set-output name=publish::false"
