@@ -62,7 +62,7 @@ def test_str_any_1_sig_not_owner():
     constraint = AuthConstraint(role='*',
                                 sig_count=1,
                                 need_to_be_owner=False)
-    assert str(constraint) == '1 signature of any role is required'
+    assert str(constraint) == '1 signature of any role is required ALL'
 
 
 def test_str_any_several_sig_not_owner():

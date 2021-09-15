@@ -1,6 +1,13 @@
 name: indy-node-build
-on: [ push, pull_request, workflow_dispatch ]
+on:
+  push:
+    branches:
+      - ubuntu-20.04-upgrade
 
+  pull_request:
+    branches:
+      - ubuntu-20.04-upgrade
+      
 jobs:
   workflow-setup:
     name: Initialize Workflow
@@ -8,12 +15,14 @@ jobs:
     outputs:
       CACHE_KEY_BUILD: ${{ steps.cache.outputs.CACHE_KEY_BUILD }}
       CACHE_KEY_LINT: ${{ steps.cache.outputs.CACHE_KEY_LINT }}
+      UBUNTU_VERSION: ${{ steps.cache.outputs.UBUNTU_VERSION }}
       # Expose the lowercase version of the GitHub repository name
       # to all subsequent jobs that reference image repositories
       # as the push and pull operations require the URL of the repository
       # to be in lowercase.
       GITHUB_REPOSITORY_NAME: ${{ steps.repository-name.outputs.lowercase }}
       GITHUB_REF: ${{ steps.cache.outputs.GITHUB_REF }}
+      distribution: ${{ steps.cache.outputs.distribution }}
       isDev: ${{ steps.build-flags.outputs.isDev }}
       isRC: ${{ steps.build-flags.outputs.isRC }}
       publish: ${{ steps.build-flags.outputs.publish }}
@@ -30,8 +39,20 @@ jobs:
       - name: Set outputs
         id: cache
         run: |
-          echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile') }}"
-          echo "::set-output name=CACHE_KEY_LINT::${{ hashFiles('.github/workflows/lint/Dockerfile') }}"
+          # Set variables according to version of ubuntu
+          if [[ "${{github.base_ref}}" == "master" || "${{github.ref}}" == "refs/heads/master" ]]; then
+            echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile.ubuntu-1604') }}"
+            echo "::set-output name=CACHE_KEY_LINT::${{ hashFiles('.github/workflows/lint/Dockerfile.ubuntu-1604') }}"
+            echo "::set-output name=UBUNTU_VERSION::ubuntu-1604"
+            echo "::set-output name=distribution::xenial"
+          fi
+          if [[ "${{github.base_ref}}" == "ubuntu-20.04-upgrade" || "${{github.ref}}" == "refs/heads/ubuntu-20.04-upgrade" ]]; then
+            echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile.ubuntu-2004') }}"
+            echo "::set-output name=CACHE_KEY_LINT::${{ hashFiles('.github/workflows/lint/Dockerfile.ubuntu-2004') }}"
+            echo "::set-output name=UBUNTU_VERSION::ubuntu-2004"
+            echo "::set-output name=distribution::focal"
+          fi
+     
 
           if [[ "${{github.base_ref}}" == 'master' || "${{github.ref}}" == 'refs/heads/master' || "${{github.base_ref}}" == 'main' || "${{github.ref}}" == 'refs/heads/main' ]]; then
             echo "::set-output name=GITHUB_REF::main"
@@ -74,6 +95,7 @@ jobs:
     env:
       CACHE_KEY_BUILD: ${{ needs.workflow-setup.outputs.CACHE_KEY_BUILD }}
       GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
+      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v2
@@ -91,8 +113,7 @@ jobs:
         shell: bash
         run: |
           DOCKER_IMAGE=ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/node-build
-          # ToDo - Update hard coded 'ubuntu-16-04' tag when integrating these flows with the ubuntu-20.04-upgrade branch.
-          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:ubuntu-16-04"
+          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:${{ env.UBUNTU_VERSION }}"
           echo ::set-output name=tags::${TAGS}
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
@@ -113,7 +134,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: .github/workflows/build/Dockerfile
+          file: .github/workflows/build/Dockerfile.${{ env.UBUNTU_VERSION }}
           no-cache: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.prep.outputs.tags }}
@@ -136,6 +157,7 @@ jobs:
     env:
       CACHE_KEY_LINT: ${{ needs.workflow-setup.outputs.CACHE_KEY_LINT }}
       GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
+      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v2
@@ -153,8 +175,7 @@ jobs:
         shell: bash
         run: |
           DOCKER_IMAGE=ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/node-lint
-          # ToDo - Update hard coded 'ubuntu-18-04' tag when integrating these flows with the ubuntu-20.04-upgrade branch.
-          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:ubuntu-18-04"
+          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:${{ env.UBUNTU_VERSION }}"
           echo ::set-output name=tags::${TAGS}
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
@@ -175,7 +196,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: .github/workflows/lint/Dockerfile
+          file: .github/workflows/lint/Dockerfile.${{ env.UBUNTU_VERSION }}
           no-cache: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.prep.outputs.tags }}
@@ -200,7 +221,7 @@ jobs:
     env:
       NODE_OPTIONS: '--max_old_space_size=4096'
     container:
-      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:ubuntu-16-04
+      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     strategy:
       matrix:
         module: [indy_node, indy_common]
@@ -213,7 +234,7 @@ jobs:
       # ===============================================
       # Caching cannot be used.
       #  - For some reason as soon as it is enabled
-      #    the tests start complaining about zmq missing
+      #    the test start complaining about zmq missing
       #    for the plenum install.
       # -----------------------------------------------
       # - name: Cache pip
@@ -259,7 +280,7 @@ jobs:
     needs: [workflow-setup, lint-image]
     runs-on: ubuntu-20.04
     container:
-      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-lint
+      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-lint:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -271,8 +292,10 @@ jobs:
     name: Build Release
     needs: [workflow-setup, indy_node_tests, lint]
     runs-on: ubuntu-20.04
+    env:
+      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     container:
-      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:ubuntu-16-04
+      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     steps:
       - name: Check out code
         uses: actions/checkout@v1
@@ -288,7 +311,7 @@ jobs:
       - name: Build Deployment Package
         run: |
           mkdir -p /tmp/node-build
-          ./build-scripts/ubuntu-1604/build-indy-node.sh "/__w/indy-node/indy-node" "${{ steps.version.outputs.upstreamVer }}" "/tmp/node-build" "${{ steps.version.outputs.pkgVer }}"
+          ./build-scripts/${{ env.UBUNTU_VERSION }}/build-indy-node.sh "/__w/indy-node/indy-node" "${{ steps.version.outputs.upstreamVer }}" "/tmp/node-build" "${{ steps.version.outputs.pkgVer }}"
 
       - uses: actions/upload-artifact@v2
         with:
@@ -300,8 +323,10 @@ jobs:
     name: Build 3rd Party Dependencies
     needs: [workflow-setup, indy_node_tests, lint]
     runs-on: ubuntu-20.04
+    env:
+      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     container:
-      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:ubuntu-16-04
+      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     steps:
       - name: Check out code
         uses: actions/checkout@v1
@@ -311,14 +336,14 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/third-party-dependencies
-          key: third-party-dependencies-${{ hashFiles('./build-scripts/ubuntu-1604/build-3rd-parties.sh') }}
+          key: ${{ format('third-party-dependencies-{0}', hashFiles(format('./build-scripts/{0}/build-3rd-parties.sh', needs.workflow-setup.outputs.UBUNTU_VERSION ))) }}           
 
       - name: Build 3rd party deployment packages
         if: steps.third-party-dependencies.outputs.cache-hit != 'true'
         run: |
-          mkdir -p ./build-scripts/ubuntu-1604/cache/3rd-party-dependencies/
-          ./build-scripts/ubuntu-1604/build-3rd-parties.sh ./cache/3rd-party-dependencies
-          mv ./build-scripts/ubuntu-1604/cache/* /tmp/third-party-dependencies
+          mkdir -p ./build-scripts/${{ env.UBUNTU_VERSION }}/cache/3rd-party-dependencies/
+          ./build-scripts/${{ env.UBUNTU_VERSION }}/build-3rd-parties.sh ./cache/3rd-party-dependencies
+          mv ./build-scripts/${{ env.UBUNTU_VERSION }}/cache/* /tmp/third-party-dependencies
 
   build-python-packages:
     name: Build Python Packages
@@ -347,8 +372,7 @@ jobs:
 
       - name: Prepare package and set version
         run: |
-          # ToDo - Update hard coded 'ubuntu-16-04' tag when integrating these flows with the ubuntu-20.04-upgrade branch.
-          ./build-scripts/ubuntu-1604/prepare-package.sh . indy_node "${{ steps.version.outputs.upstreamVer }}" python-packages
+          ./build-scripts/${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}/prepare-package.sh . indy_node "${{ steps.version.outputs.upstreamVer }}" python-packages
 
       - name: Building python package
         run: |
@@ -392,7 +416,7 @@ jobs:
         uses: ./.github/actions/publish-deb
         with:
           sourceDirectory: /home/runner/work/indy-node/indy-node/to_publish
-          distribution: xenial
+          distribution: ${{ env.distribution }}
           component: ${{ env.GITHUB_REF }}
 
       - name: Download 3rd Party Artifacts Dependencies from Cache
@@ -400,13 +424,13 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/third-party-dependencies
-          key: third-party-dependencies-${{ hashFiles('./build-scripts/ubuntu-1604/build-3rd-parties.sh') }}
+          key: ${{ format('third-party-dependencies-{0}', hashFiles(format('./build-scripts/{0}/build-3rd-parties.sh', needs.workflow-setup.outputs.UBUNTU_VERSION ))) }}
 
       - name: Publish 3rd Party Dependencies
         uses: ./.github/actions/publish-deb
         with:
           sourceDirectory: /home/runner/tmp/third-party-dependencies
-          distribution: xenial
+          distribution: ${{ env.distribution }}
           component: ${{ env.GITHUB_REF }}
 
       - name: Download Python Packages from Pipeline Artifacts

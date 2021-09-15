@@ -6,8 +6,8 @@ import sys
 from setuptools import setup, find_packages
 
 v = sys.version_info
-if sys.version_info < (3, 5):
-    msg = "FAIL: Requires Python 3.5 or later, " \
+if sys.version_info < (3, 8):
+    msg = "FAIL: Requires Python 3.8 or later, " \
           "but setup.py was run using {}.{}.{}"
     v = sys.version_info
     print(msg.format(v.major, v.minor, v.micro))
@@ -28,7 +28,7 @@ with open(metadata['__file__'], 'r') as f:
 BASE_DIR = os.path.join(os.path.expanduser("~"), ".indy")
 
 tests_require = ['attrs>=20.3.0', 'pytest>=6.2.2', 'pytest-xdist>=2.2.1', 'pytest-forked>=1.3.0',
-                 'python3-indy==1.15.0-dev-1618', 'pytest-asyncio>=0.14.0']
+                 'python3-indy==1.15.0-dev-1625', 'pytest-asyncio>=0.14.0']
 
 setup(
     name=metadata['__title__'],
@@ -54,7 +54,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum==1.13.0.dev1034',
+    install_requires=['indy-plenum==1.13.0.dev135',
                       'timeout-decorator>=0.5.0',
                       'distro>=1.5.0'],
     setup_requires=['pytest-runner'],

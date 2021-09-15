@@ -13,7 +13,7 @@ class NotFound(RuntimeError):
 class ConnectionNotFound(NotFound):
     def __init__(self, name: str = None):
         if name:
-            self.reason = "Connection with name not found".format(name)
+            self.reason = "Connection with name not found {}".format(name)
 
 
 class VerkeyNotFound(NotFound):
