@@ -16,6 +16,7 @@
     * [NODE](#node)
     * [POOL_UPGRADE](#pool_upgrade)
     * [POOL_CONFIG](#pool_config)
+    * [LEDGERS_FREEZE](#ledgers_freeze)
 
 * [Read Requests](#read-requests)
 
@@ -24,6 +25,7 @@
     * [GET_SCHEMA](#get_schema)
     * [GET_CLAIM_DEF](#get_claim_def)
     * [GET_TXN](#get_txn)
+    * [GET_FROZEN_LEDGERS](#get_frozen_ledgers)
     
 This doc is about supported client"s Request (both write and read ones).
 If you are interested in transactions and their representation on the Ledger (that is internal one),
@@ -1386,6 +1388,66 @@ Command to change Pool's configuration
 }
 ```
 
+### LEDGERS_FREEZE
+
+Freeze deprecated ledgers (default ledgers such as the domain, config, pool, and audit ledgers cannot be frozen). If a ledger is frozen it can be used for reading but not for writing. Frozen ledgers will not be caught up by new nodes and they can't be unfrozen. Frozen ledgers can be removed without breaking consensus, but this would prevent third parties from auditing the ledger history. [More information is in the Indy Plenum documenation](https://hyperledger/indy-plenum/tree/master/docs/source/transaction_freeze_ledgers.md).
+
+The request has static and dynamic validations. Static validation checks to avoid freezing base ledgers (pool, audit, domain and config). Dynamic validation checks the existence of ledgers before freezing. Authorize checks the permissions for the freeze request (3 trustee signatures are needed by default).
+
+*Request Example*:
+```
+{
+    "operation": {
+        "type": "9",
+        "ledgers_ids": [1,2,3,4]
+    },
+    "identifier": "21BPzYYrFzbuECcBV3M1FH",
+    "reqId": 311348486,
+    "protocolVersion": 2,
+    "signature": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj",
+}
+```
+
+*Reply Example*:
+```
+{
+   "op":"REPLY",
+   "result":{
+      "txn":{
+         "type":"9",
+         "data":{
+            "ledgers_ids":[1,2,3,4]
+         },
+         "protocolVersion":2,
+         "metadata":{
+            "reqId":311348486,
+            "payloadDigest":"09a3ccedf806e224beb56b547e967b442f3ee3181d5c87623f063742df7a692e",
+            "from":"M9BJDuS24bqbJNvBRsoGg3",
+            "digest":"dfdc6c5b77181953b4e32f975b0c5e64b25dc3e3061716aca1baae4cbe0ce494"
+         }
+      },
+      "ver":"1",
+      "auditPath":[
+         "DDwrSsKwpFkfGVqp7AxzRMusUuT9D5RmidCmnr8phTWD"
+      ],
+      "txnMetadata":{
+         "txnTime":1613735420,
+         "seqNo":3
+      },
+      "reqSignature":{
+         "type":"ED25519",
+         "values":[
+            {
+                "value":"bSMfwJraLXzBAmdZKQUC1XfoVb3YWygc6UCQAmrTNKDr9beXta7MFyNZnQtbmNoRurjicSHLo3sW7qv7ZTWcZJa",
+                "from":"M9BJDuS24bqbJNvBRsoGg3"
+            }
+         ]
+      },
+      "rootHash":"E27ssC3LK8azpgxxtBY4ETLXvDLGtfmeSjngc6jrV1Qt"
+   }
+}
+```
+
 ## Read Requests
 
 ### GET_NYM
@@ -1898,3 +1960,67 @@ A generic request to get a transaction from Ledger by its sequence number.
 }
 ```
 
+
+### GET_FROZEN_LEDGERS
+
+Get whole list of frozen ledgers. Reply has follow state format data:
+
+```
+<ledger_id>: {
+    ledger: <ledger_root_hash>,
+    state: <state_root_hash>,
+    seq_no: <last_seq_no>
+}
+```
+
+*Request Example*:
+```
+{
+   "operation":{
+      "type":"10"
+   },
+   "reqId":783857061,
+   "protocolVersion":2,
+   "identifier":"M9BJDuS24bqbJNvBRsoGg3"
+}
+```
+
+*Reply Example*:
+```
+{
+   "result":{
+      "seqNo":3,
+      "type":"10",
+      "state_proof":{
+         "root_hash":"HUv35b31eqncHZ1R8xMQW9pJnCBqAaUVrfCA8AeTtx6u",
+         "multi_signature":{
+            "value":{
+               "pool_state_root_hash":"4bCEk76QsB6p3yCiDntMedpeZmiQtdH9NRpcFyvaLHhc",
+               "state_root_hash":"HUv35b31eqncHZ1R8xMQW9pJnCBqAaUVrfCA8AeTtx6u",
+               "timestamp":1613736202,
+               "ledger_id":2,
+               "txn_root_hash":"BY6PV9SrV1dgQgxy2kpeTLESQfazTYoLdLZfjzVmcLeV"
+            },
+            "signature":"R8FRHVg51YiY5nS8Hh8iXNa1ZPKjrQMmurnrGek2A7QMKq79Pws4DLhgcVgf66PSJGEPjmyASYxFziEnubY1RFHQiE7ZToLZqW4oJt11hhL1XgXwrdswyqTQjuyxx5nzjyE4AzyTvs3BywD54s3w3mUhLG3QWwBp1uTX8agLEKZDkK",
+            "participants":[
+               "Gamma",
+               "Delta",
+               "Beta"
+            ]
+         },
+         "proof_nodes":"+L74vJEgNDpGUk9aRU5fTEVER0VSU7io+Ka4pHsibHNuIjozLCJsdXQiOjE2MTM3MzYyMDIsInZhbCI6eyI5MDkiOnsibGVkZ2VyIjoiR0tvdDVoQnNkODFrTXVwTkNYSGFxYmh2M2h1RWJ4QUZNTG5wY1gyaG5pd24iLCJzZXFfbm8iOjAsInN0YXRlIjoiRGZOTG1INERBSFRLdjYzWVBGSnp1UmRlRXRWd0Y1UnRWbnZLWUhkOGlMRUEifX19"
+      },
+      "txnTime":1613736202,
+      "reqId":666493618,
+      "data":{
+         "909":{
+            "seq_no":0,
+            "state":"DfNLmH4DAHTKv63YPFJzuRdeEtVwF5RtVnvKYHd8iLEA",
+            "ledger":"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"
+         }
+      },
+      "identifier":"M9BJDuS24bqbJNvBRsoGg3"
+   },
+   "op":"REPLY"
+}
+```

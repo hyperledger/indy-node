@@ -13,7 +13,7 @@ cp -r "${INPUT_PATH}/." "${TMP_DIR}"
 
 # prepare the sources
 cd "${TMP_DIR}/build-scripts/ubuntu-1604"
-./prepare-package.sh "${TMP_DIR}" "${VERSION}"
+./prepare-package.sh "${TMP_DIR}" indy_node "${VERSION}" debian-packages
 
 
 sed -i "s/{package_name}/${PACKAGE_NAME}/" "prerm"

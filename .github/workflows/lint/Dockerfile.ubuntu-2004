@@ -1,0 +1,19 @@
+# Development
+FROM ubuntu:20.04
+LABEL maintainer="Robin Klemens <r.klemens@yahoo.de>"
+
+RUN apt-get update && apt-get dist-upgrade -y
+
+# Install environment
+RUN apt-get install -y \
+	git \
+	wget \
+	python3-pip \
+	python3-nacl
+
+RUN pip3 install -U \
+	'pip<10.0.0' \
+	setuptools==50.3.2 \
+	pep8==1.7.1 \
+	pep8-naming==0.6.1 \
+	flake8==3.8.4

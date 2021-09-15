@@ -1,5 +1,7 @@
-# indy-admin
-*	@esplinr @dhh1128 @nage
+# SPDX-License-Identifier: Apache-2.0
+
+# Indy Admin
+*       @hyperledger/indy-admin
 
 # Indy Common
-*	@anikitinDSR @ashcherbakov @skhoroshavin @Toktar @donqui @ken-ebert
+*       @hyperledger/indy-common

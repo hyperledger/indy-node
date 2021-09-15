@@ -14,13 +14,13 @@ def get_first_level_path(path):
     return "/".join(parts[:3])  # <package-name>/test/<dir>
 
 
-def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
+def run(pytest, output_file, repeatUntilFailure, testDir, test_slice, test_results):
     if repeatUntilFailure:
         log("'repeatUntilFailure' is set")
         log("Is going to repeat the test suite until failure")
-    log("Preparing test suite with {}".format(pytest))
+    log("Preparing test suite with python3 -m pytest -q")
     testListFile = "test_list.txt"
-    collect_status = os.system('{} --collect-only {} > {}'.format(pytest, testDir, testListFile))
+    collect_status = os.system('python3 -m pytest -q --collect-only {} > {}'.format(testDir, testListFile))
 
     if collect_status != 0:
         log("Test suit preparation error {}".format(collect_status))
@@ -37,7 +37,7 @@ def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
         log(collectedData)
         return -1
 
-    testList = re.findall("<Module '(.+)'>", collectedData)
+    testList = re.findall('({}.*?)::'.format(testDir), collectedData)
     # testList = list(set(os.path.dirname(t) for t in testList))
     first_level_tests = set()
     for path in testList:
@@ -45,7 +45,8 @@ def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
         first_level_tests.add(p)
     first_level_tests = sorted(list(first_level_tests))
     test_list_sliced = first_level_tests[test_slice[0] - 1::test_slice[1]]
-    log("Found {} tests in {} modules, sliced {} test modules".format(len(testList), len(first_level_tests), len(test_list_sliced)))
+    log("Found {} tests in {} modules, sliced {} test modules".
+        format(len(testList), len(first_level_tests), len(test_list_sliced)))
     if not testList:
         m = re.search("errors during collection", collectedData)
         if m:
@@ -69,9 +70,12 @@ def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
     errorTestPat = re.compile('____ (ERROR.+) ____')
     while True:
         for i, tests in enumerate(test_list_sliced):
-            # testRep = '{}.rep'.format(test.split("/")[-1])
+            if test_results:
+                testResults = '--junitxml={}-test-results.xml'.format(tests.split("/")[-1])
+                pytest_cmd = '{} {} {} > {}'.format(pytest, testResults, tests, testRep)
+            else:
+                pytest_cmd = '{} {} > {}'.format(pytest, tests, testRep)
             testStartTime = time.time()
-            pytest_cmd = '{} {} > {}'.format(pytest, tests, testRep)
             log(pytest_cmd)
             r = os.system(pytest_cmd)
             testExecutionTime = time.time() - testStartTime
@@ -207,12 +211,16 @@ if __name__ == "__main__":
                         default=(1, 1),
                         help='example: `1/3` -- run only first third part of the tests, \
                         it is needed only for parallel testing')
+    parser.add_argument('--nojunitxml',
+                        help='do not record junitxml test results', default=False, action="store_true")
+
     args = parser.parse_args()
     r = run(
         pytest=args.pytest,
         output_file=args.output if not args.nooutput else None,
         repeatUntilFailure=args.repeatUntilFailure,
         testDir=args.dir,
-        test_slice=args.test_slice
+        test_slice=args.test_slice,
+        test_results=not args.nojunitxml
     )
     sys.exit(0 if r == 0 else 1)

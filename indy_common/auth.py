@@ -1,5 +1,5 @@
 from indy_common.config_util import getConfig
-from plenum.common.constants import TRUSTEE, STEWARD, NODE
+from plenum.common.constants import TRUSTEE, STEWARD, NODE, LEDGERS_FREEZE
 from stp_core.common.log import getlogger
 
 from indy_common.constants import OWNER, POOL_UPGRADE, ENDORSER, NYM, \
@@ -62,6 +62,8 @@ def generate_auth_map(valid_roles):
             {TRUSTEE: []},
         '{}_<any>_<any>_<any>'.format(VALIDATOR_INFO):
             {TRUSTEE: [], STEWARD: []},
+        '{}_<any>_<any>_<any>'.format(LEDGERS_FREEZE):
+            {TRUSTEE: []},
     }
     return auth_map
 

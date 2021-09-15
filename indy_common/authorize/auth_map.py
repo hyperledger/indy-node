@@ -9,7 +9,7 @@ from indy_common.constants import ENDORSER, POOL_CONFIG, VALIDATOR_INFO, POOL_UP
     REVOC_REG_DEF, ATTRIB, AUTH_RULES, JSON_LD_CONTEXT, RICH_SCHEMA, RICH_SCHEMA_MAPPING, \
     RICH_SCHEMA_ENCODING, RICH_SCHEMA_CRED_DEF, RICH_SCHEMA_PRES_DEF
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML, \
-    TXN_AUTHOR_AGREEMENT_DISABLE
+    TXN_AUTHOR_AGREEMENT_DISABLE, LEDGERS_FREEZE
 
 edit_role_actions = {}  # type: Dict[str, Dict[str, AuthActionEdit]]
 for role_from in accepted_roles:
@@ -236,6 +236,11 @@ edit_revoc_reg_entry = AuthActionEdit(txn_type=REVOC_REG_ENTRY,
                                       old_value='*',
                                       new_value='*')
 
+edit_frozen_ledgers = AuthActionEdit(txn_type=LEDGERS_FREEZE,
+                                     field='*',
+                                     old_value='*',
+                                     new_value='*')
+
 # Anyone constraint
 anyone_constraint = AuthConstraint(role='*',
                                    sig_count=1)
@@ -253,6 +258,9 @@ steward_owner_constraint = AuthConstraint(STEWARD, 1, need_to_be_owner=True)
 
 # One Trustee constraint
 one_trustee_constraint = AuthConstraint(TRUSTEE, 1)
+
+# Three Trustee constraint
+three_trustee_constraint = AuthConstraint(TRUSTEE, 3)
 
 # Steward or Trustee constraint
 steward_or_trustee_constraint = AuthConstraintOr([AuthConstraint(STEWARD, 1),
@@ -324,6 +332,7 @@ auth_map = OrderedDict([
     (add_revoc_reg_entry.get_action_id(), endorser_or_steward_or_trustee_owner_constraint),
     (edit_revoc_reg_def.get_action_id(), owner_constraint),
     (edit_revoc_reg_entry.get_action_id(), owner_constraint),
+    (edit_frozen_ledgers.get_action_id(), three_trustee_constraint),
 ])
 
 # Edit Trustee:
