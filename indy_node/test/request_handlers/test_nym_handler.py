@@ -1,7 +1,9 @@
+import json
 import pytest
+
 from indy_common.auth import Authoriser
 
-from indy_common.constants import NYM, ROLE
+from indy_common.constants import NYM, ROLE, DIDDOC_CONTENT
 
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.test.request_handlers.helper import add_to_idr, get_exception
@@ -21,12 +23,31 @@ def nym_handler(db_manager, tconf, write_auth_req_validator):
 
 @pytest.fixture(scope="function")
 def nym_request(creator):
-    return Request(identifier=creator,
-                   reqId=5,
-                   operation={'type': NYM,
-                              'dest': randomString(),
-                              'role': None,
-                              'verkey': randomString()})
+    return Request(
+        identifier=creator,
+        reqId=5,
+        operation={
+            "type": NYM,
+            "dest": "X3XUxYQM2cfkSMzfMNma73",
+            "role": None,
+            "diddoc_content": {
+                "@context": [
+                    "https://www.w3.org/ns/did/v1",
+                    "https://identity.foundation/didcomm-messaging/service-endpoint/v1",
+                ],
+                "serviceEndpoint": [
+                    {
+                        "id": "did:indy:sovrin:123456#didcomm",
+                        "type": "didcomm-messaging",
+                        "serviceEndpoint": "https://example.com",
+                        "recipientKeys": ["#verkey"],
+                        "routingKeys": [],
+                    }
+                ],
+            },
+            "verkey": "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYx",
+        },
+    )
 
 
 @pytest.fixture(scope="module")
@@ -41,43 +62,96 @@ def test_nym_static_validation_passes(nym_request, nym_handler: NymHandler):
     nym_handler.static_validation(nym_request)
 
 
-def test_nym_static_validation_failed_without_dest(nym_request, nym_handler: NymHandler):
-    del nym_request.operation['dest']
+def test_nym_static_validation_failed_without_dest(
+    nym_request, nym_handler: NymHandler
+):
+    del nym_request.operation["dest"]
     with pytest.raises(InvalidClientRequest):
         nym_handler.static_validation(nym_request)
 
 
-def test_nym_static_validation_failed_with_none_dest(nym_request, nym_handler: NymHandler):
-    nym_request.operation['dest'] = None
+def test_nym_static_validation_failed_with_none_dest(
+    nym_request, nym_handler: NymHandler
+):
+    nym_request.operation["dest"] = None
     with pytest.raises(InvalidClientRequest):
         nym_handler.static_validation(nym_request)
 
 
-def test_nym_static_validation_failed_with_empty_dest(nym_request, nym_handler: NymHandler):
-    nym_request.operation['dest'] = ''
+def test_nym_static_validation_failed_with_empty_dest(
+    nym_request, nym_handler: NymHandler
+):
+    nym_request.operation["dest"] = ""
     with pytest.raises(InvalidClientRequest):
         nym_handler.static_validation(nym_request)
 
 
-def test_nym_static_validation_failed_with_spaced_dest(nym_request, nym_handler: NymHandler):
-    nym_request.operation['dest'] = ' ' * 5
+def test_nym_static_validation_failed_with_spaced_dest(
+    nym_request, nym_handler: NymHandler
+):
+    nym_request.operation["dest"] = " " * 5
     with pytest.raises(InvalidClientRequest):
         nym_handler.static_validation(nym_request)
 
 
 def test_nym_static_validation_authorized(nym_request, nym_handler: NymHandler):
     for role in Authoriser.ValidRoles:
-        nym_request.operation['role'] = role
+        nym_request.operation["role"] = role
         nym_handler.static_validation(nym_request)
 
 
-def test_nym_static_validation_not_authorized_random(nym_request, nym_handler: NymHandler):
-    nym_request.operation['role'] = randomString()
+def test_nym_static_validation_not_authorized_random(
+    nym_request, nym_handler: NymHandler
+):
+    nym_request.operation["role"] = randomString()
     with pytest.raises(InvalidClientRequest):
         nym_handler.static_validation(nym_request)
 
 
-def test_nym_dynamic_validation_for_new_nym(nym_request, nym_handler: NymHandler, creator):
+def test_nym_static_validation_fails_diddoc_content_with_id(
+    nym_request, nym_handler: NymHandler
+):
+    nym_request.operation["diddoc_content"]["id"] = randomString()
+    with pytest.raises(InvalidClientRequest):
+        nym_handler.static_validation(nym_request)
+
+
+def test_nym_static_validation_fails_diddoc_content_with_context_is_not_did_context(
+    nym_request, nym_handler: NymHandler
+):
+    nym_request.operation["diddoc_content"]["@context"] = randomString()
+    with pytest.raises(InvalidClientRequest):
+        nym_handler.static_validation(nym_request)
+
+
+def test_nym_static_validation_diddoc_content_with_did_context(
+    nym_request, nym_handler: NymHandler
+):
+    nym_request.operation["diddoc_content"]["@context"] = "https://www.w3.org/ns/did/v1"
+    nym_handler.static_validation(nym_request)
+
+
+def test_nym_static_validation_diddoc_content_without_context(
+    nym_request, nym_handler: NymHandler
+):
+    del nym_request.operation["diddoc_content"]["@context"]
+    nym_handler.static_validation(nym_request)
+
+
+def test_nym_static_validation_diddoc_content_fails_with_same_id(
+    nym_request, nym_handler: NymHandler
+):
+    nym_request.operation["diddoc_content"]["authentication"] = [{
+        "id": "did:indy:sovrin:123456#verkey"
+    }]
+    print(json.dumps(nym_request.operation["diddoc_content"], indent=4))
+    with pytest.raises(InvalidClientRequest):
+        nym_handler.static_validation(nym_request)
+
+
+def test_nym_dynamic_validation_for_new_nym(
+    nym_request, nym_handler: NymHandler, creator
+):
     nym_handler.write_req_validator.validate = get_exception(False)
     add_to_idr(nym_handler.database_manager.idr_cache, creator, STEWARD)
     nym_handler.dynamic_validation(nym_request, 0)
@@ -87,8 +161,20 @@ def test_nym_dynamic_validation_for_new_nym(nym_request, nym_handler: NymHandler
         nym_handler.dynamic_validation(nym_request, 0)
 
 
-def test_nym_dynamic_validation_for_existing_nym(nym_request: Request, nym_handler: NymHandler, creator):
-    add_to_idr(nym_handler.database_manager.idr_cache, nym_request.operation['dest'], None)
+def test_nym_dynamic_validation_for_new_nym_fails_not_self_certifying(
+    nym_request, nym_handler: NymHandler
+):
+    nym_request.operation["dest"] = "V4SGRU86Z58d6TV7PBUe6f"
+    with pytest.raises(InvalidClientRequest):
+        nym_handler.additional_dynamic_validation(nym_request, None)
+
+
+def test_nym_dynamic_validation_for_existing_nym(
+    nym_request: Request, nym_handler: NymHandler, creator
+):
+    add_to_idr(
+        nym_handler.database_manager.idr_cache, nym_request.operation["dest"], None
+    )
     nym_handler.write_req_validator.validate = get_exception(False)
     add_to_idr(nym_handler.database_manager.idr_cache, creator, STEWARD)
     nym_handler.dynamic_validation(nym_request, 0)
@@ -98,13 +184,15 @@ def test_nym_dynamic_validation_for_existing_nym(nym_request: Request, nym_handl
         nym_handler.dynamic_validation(nym_request, 0)
 
 
-def test_nym_dynamic_validation_for_existing_nym_fails_with_no_changes(nym_handler: NymHandler,
-                                                                       creator):
-    nym_request = Request(identifier=creator,
-                          reqId=5,
-                          operation={'type': NYM,
-                                     'dest': randomString()})
-    add_to_idr(nym_handler.database_manager.idr_cache, nym_request.operation['dest'], None)
+def test_nym_dynamic_validation_for_existing_nym_fails_with_no_changes(
+    nym_handler: NymHandler, creator
+):
+    nym_request = Request(
+        identifier=creator, reqId=5, operation={"type": NYM, "dest": randomString()}
+    )
+    add_to_idr(
+        nym_handler.database_manager.idr_cache, nym_request.operation["dest"], None
+    )
     add_to_idr(nym_handler.database_manager.idr_cache, creator, STEWARD)
 
     nym_handler.write_req_validator.validate = get_exception(True)
@@ -127,3 +215,4 @@ def test_update_state(nym_request: Request, nym_handler: NymHandler):
     assert state_value[F.seqNo.name] == seq_no
     assert state_value[ROLE] == nym_request.operation.get(ROLE)
     assert state_value[VERKEY] == nym_request.operation.get(VERKEY)
+    assert state_value[DIDDOC_CONTENT] == nym_request.operation.get(DIDDOC_CONTENT)

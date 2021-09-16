@@ -6,6 +6,10 @@ class InvalidConnectionException(Exception):
     pass
 
 
+class InvalidDIDDocException(Exception):
+    pass
+
+
 class NotFound(RuntimeError):
     pass
 

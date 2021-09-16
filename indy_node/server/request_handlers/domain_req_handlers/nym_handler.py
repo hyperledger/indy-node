@@ -1,21 +1,37 @@
 from binascii import hexlify
 from typing import Optional
 
+import base58
 from common.serializers.serialization import domain_state_serializer
+from indy_common.auth import Authoriser
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.constants import NYM
-from indy_common.auth import Authoriser
+from indy_common.base_diddoc_template import BaseDIDDoc
+from indy_common.config_util import getConfig
+# TODO - Import DIDDOC_CONTENT from plenum?
+from indy_common.constants import NYM, DIDDOC_CONTENT
+# TODO - Improve exception with reason
+from indy_common.exceptions import InvalidDIDDocException
 from ledger.util import F
-
-from plenum.common.constants import ROLE, TARGET_NYM, VERKEY, TXN_TIME
+from plenum.common.constants import ROLE, TARGET_NYM, TXN_TIME, VERKEY
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
-from plenum.common.txn_util import get_payload_data, get_seq_no, get_txn_time, get_request_data, get_from
+from plenum.common.txn_util import (
+    get_from,
+    get_payload_data,
+    get_request_data,
+    get_seq_no,
+    get_txn_time,
+)
 from plenum.common.types import f
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.nym_handler import NymHandler as PNymHandler
-from plenum.server.request_handlers.utils import nym_to_state_key, get_nym_details
+from plenum.server.request_handlers.utils import get_nym_details, nym_to_state_key
+
+config = getConfig()
+NAMESPACE = config.NETWORK_NAME
+# TODO - Clean up
+DID_CONTEXT = "https://www.w3.org/ns/did/v1"
 
 
 class NymHandler(PNymHandler):
@@ -42,7 +58,20 @@ class NymHandler(PNymHandler):
                                        "{} not a valid role".
                                        format(role))
 
-    def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):
+        diddoc_content = operation.get(DIDDOC_CONTENT, None)
+        if diddoc_content:
+            try:
+                self._validate_diddoc_content(diddoc_content)
+            except InvalidDIDDocException:
+                raise InvalidClientRequest(
+                    identifier,
+                    req_id,
+                    "Invalid DIDDOC_Content",
+                )
+
+    def additional_dynamic_validation(
+        self, request: Request, req_pp_time: Optional[int]
+    ):
         self._validate_request_type(request)
         operation = request.operation
 
@@ -52,6 +81,7 @@ class NymHandler(PNymHandler):
             self._validate_new_nym(request, operation)
         else:
             self._validate_existing_nym(request, operation, nym_data)
+            # diddoc = self._make_base_diddoc(request)
 
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
@@ -75,6 +105,8 @@ class NymHandler(PNymHandler):
             new_data[ROLE] = txn_data[ROLE]
         if VERKEY in txn_data:
             new_data[VERKEY] = txn_data[VERKEY]
+        if DIDDOC_CONTENT in txn_data:
+            new_data[DIDDOC_CONTENT] = txn_data[DIDDOC_CONTENT]
         new_data[F.seqNo.name] = get_seq_no(txn)
         new_data[TXN_TIME] = get_txn_time(txn)
         existing_data.update(new_data)
@@ -96,12 +128,24 @@ class NymHandler(PNymHandler):
                                                                "send nym txn only if appropriate auth_rules set "
                                                                "and sender did equal to destination nym")
             if not request.operation.get(VERKEY):
-                raise InvalidClientRequest(identifier, req_id, "Non-ledger nym txn must contain verkey for new did")
+                raise InvalidClientRequest(
+                    identifier,
+                    req_id,
+                    "Non-ledger nym txn must contain verkey for new did",
+                )
 
-        self.write_req_validator.validate(request,
-                                          [AuthActionAdd(txn_type=NYM,
-                                                         field=ROLE,
-                                                         value=role)])
+        if not self._is_self_certifying(
+            request.operation.get(TARGET_NYM), request.operation.get(VERKEY)
+        ):
+            raise InvalidClientRequest(
+                identifier,
+                req_id,
+                "DID must be self-certifying",
+            )
+
+        self.write_req_validator.validate(
+            request, [AuthActionAdd(txn_type=NYM, field=ROLE, value=role)]
+        )
 
     def _validate_existing_nym(self, request, operation, nym_data):
         origin = request.identifier
@@ -128,3 +172,54 @@ class NymHandler(PNymHandler):
         if encoded:
             return domain_state_serializer.deserialize(encoded)
         return None, None, None
+
+    def _is_self_certifying(self, did, verkey):
+        # DID must be the base58 encoded first 16 bytes of the 32 bytes verkey
+        # See https://hyperledger.github.io/indy-did-method/#creation
+
+        if self._is_abbrev_verkey(verkey):
+            return True
+
+        # Full verkey
+        return did == base58.b58encode(base58.b58decode(verkey)[:16]).decode("utf-8")
+
+    def _is_abbrev_verkey(self, verkey):
+        return verkey.startswith("~") and verkey.len() == 16
+
+    def _validate_diddoc_content(self, diddoc):
+
+        # Must not have an id property
+        if diddoc.get("id", None):
+            raise InvalidDIDDocException
+
+        context = diddoc.get("@context", None)
+        if context:
+            # Must be string or array and contain DID_CONTEXT
+            if not isinstance(context, (list, str)):
+                raise InvalidDIDDocException
+            if isinstance(context, str) and not context == DID_CONTEXT:
+                raise InvalidDIDDocException
+            elif isinstance(context, list) and DID_CONTEXT not in context:
+                raise InvalidDIDDocException
+
+        # No element in diddoc is allowed to have same id as verkey in base diddoc
+        # Alernative would be to merge with base did doc and perform generic did doc validation,
+        # e.g. using pyDID
+        for el in diddoc.values():
+            if isinstance(el, list):
+                for item in el:
+                    if (
+                        isinstance(item, dict)
+                        and "id" in item
+                        and item["id"].partition("#")[2] == "verkey"
+                    ):
+                        raise InvalidDIDDocException
+
+    def _make_base_diddoc(self, request: Request):
+
+        dest = request.operation.get(TARGET_NYM)
+        verkey = request.operation.get(VERKEY)
+
+        diddoc = BaseDIDDoc(NAMESPACE, dest, verkey)
+
+        return diddoc

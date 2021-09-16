@@ -68,6 +68,7 @@ class ClientGetNymOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(GET_NYM)),
         (TARGET_NYM, IdentifierField()),
+        (TIMESTAMP, IntegerField(optional=True)),
     )
 
 

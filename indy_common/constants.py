@@ -12,6 +12,10 @@ Environment = NamedTuple("Environment", [
 
 DOMAIN_LEDGER_ID = 1
 
+# NYM
+# TODO: Will be defined in plenum
+DIDDOC_CONTENT = "diddoc_content"
+
 # SCHEMA
 SCHEMA_NAME = "name"
 SCHEMA_VERSION = "version"
