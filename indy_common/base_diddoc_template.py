@@ -1,7 +1,10 @@
 class BaseDIDDoc:
     def __init__(self, namespace: str, dest: str, verkey: str):
 
-        self._id = f"did:indy:{namespace}:{dest}"
+        # Not supported for Python < 3.6
+        # self._id = f"did:indy:{namespace}:{dest}"
+
+        self._id = "did:indy:{namespace}:{dest}".format(namespace=namespace, dest=dest)
 
         self._did_doc = {
             "id": self._id,
