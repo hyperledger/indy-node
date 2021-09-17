@@ -30,6 +30,7 @@ def set_verkey(looper, sdk_pool_handle, sdk_wallet_sender, dest, verkey):
             False if verkey else True,
         )
     )
+    print(nym_request)
     request_couple = sdk_sign_and_send_prepared_request(
         looper, sdk_wallet_sender, sdk_pool_handle, nym_request
     )

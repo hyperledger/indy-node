@@ -25,17 +25,19 @@ class GetNymHandler(ReadRequestHandler):
         if timestamp:
             nym_state_value = self._get_nym_by_timestamp(timestamp, path)
             if nym_state_value:
-                nym_data = nym_state_value.value[VALUE]
-                # nym_data[TARGET_NYM] = nym
-                data = data = domain_state_serializer.serialize(nym_data)
-                seq_no = nym_data[TXN_METADATA_SEQ_NO]
-                update_time = nym_data[TXN_TIME]
+                nym_data = nym_state_value.value
+                nym_data[TARGET_NYM] = nym
+                data = domain_state_serializer.serialize(nym_data)
+                seq_no = nym_state_value.seq_no
+                update_time = nym_state_value.update_time
+                proof = nym_state_value.proof
             # Can't find state for timestamp
             else:
                 data = None
                 seq_no = None,
                 update_time = None
         else:
+            # Get current state
             nym_data, proof = self._get_value_from_state(path, with_proof=True)
             if nym_data:
                 nym_data = domain_state_serializer.deserialize(nym_data)
@@ -48,12 +50,13 @@ class GetNymHandler(ReadRequestHandler):
                 seq_no = None
                 update_time = None
 
-        # TODO: add update time here!
-        result = self.make_result(request=request,
-                                  data=data,
-                                  last_seq_no=seq_no,
-                                  update_time=update_time,
-                                  proof=proof)
+        result = self.make_result(
+            request=request,
+            data=data,
+            last_seq_no=seq_no,
+            update_time=update_time,
+            proof=proof,
+        )
 
         result.update(request.operation)
         return result
@@ -65,13 +68,20 @@ class GetNymHandler(ReadRequestHandler):
         nym_data_proof = None
         past_root = self.database_manager.ts_store.get_equal_or_prev(timestamp)
         if past_root:
-            encoded_entry, reg_data_proof = self._get_value_from_state(path_to_nym,
-                                                                        head_hash=past_root,
-                                                                        with_proof=True)
-            if encoded_entry:
-                nym_data, seq_no, last_update_time = decode_state_value(encoded_entry)
-        return StateValue(root_hash=past_root,
-                          value=nym_data,
-                          seq_no=seq_no,
-                          update_time=last_update_time,
-                          proof=nym_data_proof)
+            encoded_nym, nym_data_proof = self._get_value_from_state(
+                path_to_nym, head_hash=past_root, with_proof=True
+            )
+            if encoded_nym:
+                nym_data = domain_state_serializer.deserialize(encoded_nym)
+                seq_no = nym_data[TXN_METADATA_SEQ_NO]
+                last_update_time = nym_data[TXN_TIME]
+                del nym_data[TXN_METADATA_SEQ_NO]
+                del nym_data[TXN_TIME]
+                del nym_data["identifier"]
+        return StateValue(
+            root_hash=past_root,
+            value=nym_data,
+            seq_no=seq_no,
+            update_time=last_update_time,
+            proof=nym_data_proof,
+        )
