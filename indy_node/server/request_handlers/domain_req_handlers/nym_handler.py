@@ -8,8 +8,10 @@ from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.base_diddoc_template import BaseDIDDoc
 from indy_common.config_util import getConfig
+
 # TODO - Import DIDDOC_CONTENT from plenum?
 from indy_common.constants import NYM, DIDDOC_CONTENT
+
 # TODO - Improve exception with reason
 from indy_common.exceptions import InvalidDIDDocException
 from ledger.util import F
@@ -208,12 +210,14 @@ class NymHandler(PNymHandler):
         for el in diddoc.values():
             if isinstance(el, list):
                 for item in el:
-                    if (
-                        isinstance(item, dict)
-                        and "id" in item
-                        and item["id"].partition("#")[2] == "verkey"
-                    ):
+                    if self._has_same_id_fragment(item, "verkey"):
                         raise InvalidDIDDocException
+
+    def _has_same_id_fragment(self, item, fragment):
+
+        return (
+            isinstance(item, dict) and "id" in item and item["id"].partition("#")[2] == fragment
+        )
 
     def _make_base_diddoc(self, request: Request):
 
