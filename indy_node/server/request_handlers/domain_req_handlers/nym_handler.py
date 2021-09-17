@@ -83,7 +83,6 @@ class NymHandler(PNymHandler):
             self._validate_new_nym(request, operation)
         else:
             self._validate_existing_nym(request, operation, nym_data)
-            # diddoc = self._make_base_diddoc(request)
 
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
@@ -219,6 +218,7 @@ class NymHandler(PNymHandler):
             isinstance(item, dict) and "id" in item and item["id"].partition("#")[2] == fragment
         )
 
+    # Currently not used
     def _make_base_diddoc(self, request: Request):
 
         dest = request.operation.get(TARGET_NYM)
