@@ -36,6 +36,7 @@ class GetNymHandler(ReadRequestHandler):
                 data = None
                 seq_no = None,
                 update_time = None
+                proof = None
         else:
             # Get current state
             nym_data, proof = self._get_value_from_state(path, with_proof=True)
