@@ -1,14 +1,16 @@
 from indy_common.constants import GET_NYM, TIMESTAMP, VALUE
 
 from common.serializers.serialization import domain_state_serializer
+from indy_common.constants import GET_NYM, TIMESTAMP
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.server.request_handlers.utils import StateValue
 from plenum.common.constants import TARGET_NYM, TXN_TIME, DOMAIN_LEDGER_ID, TXN_METADATA_SEQ_NO
 from plenum.common.request import Request
 from plenum.common.types import f
 from plenum.server.database_manager import DatabaseManager
-from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
-from plenum.server.request_handlers.utils import decode_state_value
+from plenum.server.request_handlers.handler_interfaces.read_request_handler import (
+    ReadRequestHandler,
+)
 
 
 class GetNymHandler(ReadRequestHandler):

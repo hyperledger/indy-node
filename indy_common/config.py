@@ -115,25 +115,7 @@ CONTEXT_SIZE_LIMIT = 131072
 JSON_LD_LIMIT = CONTEXT_SIZE_LIMIT
 
 ENABLE_RICH_SCHEMAS = False
-
-NETWORK_NAME = 'idunion'
-# Directory to store ledger.
-LEDGER_DIR = '/var/lib/indy'
-
-# Directory to store logs.
-LOG_DIR = '/var/log/indy'
-
-# Directory to store keys.
-KEYS_DIR = '/var/lib/indy'
-
-# Directory to store genesis transactions files.
-GENESIS_DIR = '/var/lib/indy'
-
-# Directory to store backups.
-BACKUP_DIR = '/var/lib/indy/backup'
-
-# Directory to store plugins.
-PLUGINS_DIR = '/var/lib/indy/plugins'
-
-# Directory to store node info.
-NODE_INFO_DIR = '/var/lib/indy'
+# Enable enforcing self-certifying identifiers
+# This breaks a lot of tests because identifiers
+# without verkeys are registered
+ENABLE_DID_INDY = False
