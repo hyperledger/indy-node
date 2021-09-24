@@ -2,7 +2,7 @@ import json
 import pytest
 
 from indy_common.auth import Authoriser
-
+from indy_common.config_util import getConfig
 from indy_common.constants import NYM, ROLE, DIDDOC_CONTENT
 
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
@@ -14,6 +14,9 @@ from plenum.common.request import Request
 from plenum.common.txn_util import reqToTxn, append_txn_metadata
 from plenum.common.util import randomString
 from plenum.server.request_handlers.utils import nym_to_state_key
+
+config = getConfig()
+ENABLE_DID_INDY = config.ENABLE_DID_INDY
 
 
 @pytest.fixture(scope="module")
@@ -161,6 +164,7 @@ def test_nym_dynamic_validation_for_new_nym(
         nym_handler.dynamic_validation(nym_request, 0)
 
 
+@pytest.mark.skipif(not ENABLE_DID_INDY, reason="DID Indy")
 def test_nym_dynamic_validation_for_new_nym_fails_not_self_certifying(
     nym_request, nym_handler: NymHandler
 ):
