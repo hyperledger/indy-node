@@ -42,7 +42,7 @@ class GetNymHandler(ReadRequestHandler):
                 proof = None
         if timestamp:
             nym_state_value = self._get_nym_by_timestamp(timestamp, path)
-            if nym_state_value:
+            if nym_state_value and nym_state_value.value:
                 nym_data = nym_state_value.value
                 nym_data[TARGET_NYM] = nym
                 data = domain_state_serializer.serialize(nym_data)
