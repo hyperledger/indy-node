@@ -29,7 +29,7 @@ def build_nym_request(identifier, dest, verkey, diddoc_content, role):
 
 
 def build_get_nym_request(
-    identifier, dest, timestamp
+    identifier, dest, timestamp, seq_no
 ):
     request = {
         "identifier": identifier,
@@ -44,6 +44,9 @@ def build_get_nym_request(
 
     if timestamp:
         operation["timestamp"] = timestamp
+
+    if seq_no:
+        operation["seqNo"] = seq_no
 
     request["operation"] = operation
     return json.dumps(request)

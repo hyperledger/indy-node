@@ -103,7 +103,7 @@ class NodeBootstrap(PNodeBootstrap):
 
     def _register_domain_req_handlers(self):
         # Read handlers
-        get_nym_handler = GetNymHandler(database_manager=self.node.db_manager)
+        get_nym_handler = GetNymHandler(node=self.node, database_manager=self.node.db_manager)
         get_attribute_handler = GetAttributeHandler(database_manager=self.node.db_manager)
         get_schema_handler = GetSchemaHandler(database_manager=self.node.db_manager)
         get_claim_def_handler = GetClaimDefHandler(database_manager=self.node.db_manager)

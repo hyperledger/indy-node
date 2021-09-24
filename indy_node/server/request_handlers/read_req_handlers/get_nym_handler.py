@@ -7,6 +7,7 @@ from indy_node.server.request_handlers.utils import StateValue
 from plenum.common.constants import TARGET_NYM, TXN_TIME, DOMAIN_LEDGER_ID, TXN_METADATA_SEQ_NO
 from plenum.common.request import Request
 from plenum.common.types import f
+from plenum.common.txn_util import get_txn_time
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.read_request_handler import (
     ReadRequestHandler,
@@ -14,16 +15,31 @@ from plenum.server.request_handlers.handler_interfaces.read_request_handler impo
 
 
 class GetNymHandler(ReadRequestHandler):
-
-    def __init__(self, database_manager: DatabaseManager):
+    def __init__(self, node, database_manager: DatabaseManager):
         super().__init__(database_manager, GET_NYM, DOMAIN_LEDGER_ID)
+        self.node = node
 
     def get_result(self, request: Request):
+        # Needs validation that timestamp and seqNo are not set together
         self._validate_request_type(request)
         nym = request.operation[TARGET_NYM]
         timestamp = request.operation.get(TIMESTAMP, None)
         path = NymHandler.make_state_path_for_nym(nym)
-        # Get old state based on timestamp. See https://hyperledger.github.io/indy-did-method/#did-versions
+        # Get old state based on seqNo (versionId) or timestamp.
+        # See https://hyperledger.github.io/indy-did-method/#did-versions
+        timestamp = request.operation.get(TIMESTAMP, None)
+        read_seq_no = request.operation.get("seqNo", None)
+        if read_seq_no:
+            # Move to this to init?
+            db = self.database_manager.get_database(DOMAIN_LEDGER_ID)
+            txn = self.node.getReplyFromLedger(db.ledger, read_seq_no, write=False)
+            if txn and "result" in txn:
+                timestamp = get_txn_time(txn.result)
+            if not timestamp:
+                data = None
+                seq_no = None
+                update_time = None
+                proof = None
         if timestamp:
             nym_state_value = self._get_nym_by_timestamp(timestamp, path)
             if nym_state_value:
@@ -39,7 +55,7 @@ class GetNymHandler(ReadRequestHandler):
                 seq_no = None,
                 update_time = None
                 proof = None
-        else:
+        elif not read_seq_no:
             # Get current state
             nym_data, proof = self._get_value_from_state(path, with_proof=True)
             if nym_data:
