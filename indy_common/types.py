@@ -3,7 +3,7 @@ from copy import deepcopy
 from hashlib import sha256
 
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
-    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, OP_VER
+    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, OP_VER, TXN_METADATA_SEQ_NO
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.fields import ConstantField, IdentifierField, \
@@ -69,6 +69,7 @@ class ClientGetNymOperation(MessageValidator):
         (TXN_TYPE, ConstantField(GET_NYM)),
         (TARGET_NYM, IdentifierField()),
         (TIMESTAMP, IntegerField(optional=True)),
+        (TXN_METADATA_SEQ_NO, TxnSeqNoField(optional=True)),
     )
 
 
