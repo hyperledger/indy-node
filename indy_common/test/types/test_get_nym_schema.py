@@ -1,13 +1,14 @@
 import pytest
 from indy_common.types import ClientGetNymOperation
 from collections import OrderedDict
-from plenum.common.messages.fields import ConstantField, IdentifierField, IntegerField
+from plenum.common.messages.fields import ConstantField, IdentifierField, IntegerField, TxnSeqNoField
 
 
 EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("type", ConstantField),
     ("dest", IdentifierField),
-    ("timestamp", IntegerField)
+    ("timestamp", IntegerField),
+    ("seNo", TxnSeqNoField)
 ])
 
 
