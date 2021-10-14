@@ -259,7 +259,7 @@ jobs:
     needs: [workflow-setup, lint-image]
     runs-on: ubuntu-20.04
     container:
-      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-lint
+      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-lint:ubuntu-18-04
     steps:
       - name: Check out code
         uses: actions/checkout@v2
