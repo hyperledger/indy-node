@@ -26,4 +26,10 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88 \
 # install fpm
 RUN gem install --no-ri --no-rdoc rake fpm
 
+
+RUN pip3 install -U \
+    # TODO: Investigate why pyzmq has to be installed additionally
+    # This changed with switching from from 1.13.0.dev1034 (build and published by Jenkins instance of Sovrin) to version 1.13.0.dev143 (GHA)
+    'pyzmq==18.1.0'
+
 RUN indy_image_clean
