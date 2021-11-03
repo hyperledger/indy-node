@@ -32,8 +32,8 @@ if [ "$distro_packages" = "debian-packages" ]; then
   # Update the package names to match the versions that are pre-installed on the os.
   echo -e "\nAdapt the dependencies for the Canonical archive"
   #### ToDo adjust packages for the Cannonical archive for Ubuntu 20.04 (focal)
-  # sed -i "s~timeout-decorator~python3-timeout-decorator~" setup.py
-  # sed -i "s~distro~python3-distro~" setup.py
+  sed -i "s~timeout-decorator~python3-timeout-decorator~" setup.py
+  sed -i "s~distro~python3-distro~" setup.py
 elif [ "$distro_packages" = "python-packages" ]; then
   echo -e "\nNo adaption of dependencies for python packages"
 else
