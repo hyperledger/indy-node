@@ -1,4 +1,4 @@
-FROM __NS__/indy-baseimage:0.0.3-master
+FROM __NS__/indy-baseimage:0.0.4
 LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
 # indy repos

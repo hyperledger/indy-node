@@ -19,10 +19,16 @@ RUN apt-get update && apt-get install -y \
     python-setuptools
     
 # pypi based packages
-RUN pip3 install -U \ 
-    'pip<10.0.0' \
-    setuptools \
-    virtualenv
+RUN pip3 install -U\
+    "pip <10.0.0" \
+    "setuptools<=50.3.2"
+
+# needs to be installed separately and pinned to version 20.0.25 to be compatible with Python3.5 and packages like zipp==1.2.0
+RUN pip3 install -U \
+    'virtualenv==20.0.35'
+
+
+RUN ln -s /usr/bin/pip3 /usr/bin/pip
 
 COPY scripts/clean.sh /usr/local/bin/indy_image_clean
 RUN chmod 755 /usr/local/bin/indy_image_clean
