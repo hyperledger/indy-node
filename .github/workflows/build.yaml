@@ -438,4 +438,4 @@ jobs:
         with:
           workflow: indy-test-automation
           token: ${{ secrets.WORKFLOW_DISPATCH_TOKEN }}
-          inputs: '{ "nodeVersion": "1.12.4", "plenumVersion": "1.12.4", "ubuntuVersion": "ubuntu-1604" }'
+          inputs: '{ "nodeVersion": "1.13.0~dev197", "plenumVersion": "1.13.0~dev169", "ubuntuVersion": "ubuntu-1604" }'

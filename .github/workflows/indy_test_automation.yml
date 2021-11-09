@@ -14,6 +14,8 @@ on:
         default: 'ubuntu-1604'
 
 env:
+  INPUT_NODEVERSION: ${{ github.event.inputs.nodeVersion }}
+  INPUT_PLENUMVERSION: ${{ github.event.inputs.plenumVersion }}
   INPUT_UBUNTUVERSION: ${{ github.event.inputs.ubuntuVersion }}
 
 
@@ -31,7 +33,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: udosson/indy-test-automation
-          ref: indy-node-only
+          ref: test-with-artifactory
           path: indy-test-automation
 
       - name: Git checkout teracyhq/docker-files
@@ -126,7 +128,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: udosson/indy-test-automation
-          ref: indy-node-only
+          ref: test-with-artifactory
 
       - name: Try load from cache
         id: cache-image
@@ -171,11 +173,12 @@ jobs:
             org.opencontainers.image.created=${{ steps.prep.outputs.created }}
             org.opencontainers.image.revision=${{ github.sha }}
           build-args: |
-            NODE_REPO_COMPONENT=stable
+            NODE_REPO_COMPONENT=main
+            SOVRIN_REPO_COMPONENT=stable
             URSA_VERSION=0.3.2-2
             PYTHON3_PYZMQ_VERSION=18.1.0
-            INDY_PLENUM_VERSION=1.12.4
-            INDY_NODE_VERSION=1.12.4
+            INDY_PLENUM_VERSION=${{ env.INPUT_PLENUMVERSION }}
+            INDY_NODE_VERSION=${{ env.INPUT_NODEVERSION }}
 
       - name: Touch Cache
         if: steps.cache-image.outputs.cache-hit != 'true'
@@ -195,7 +198,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: udosson/indy-test-automation
-          ref: indy-node-only
+          ref: test-with-artifactory
 
       - name: Try load from cache
         id: cache-image
@@ -239,7 +242,7 @@ jobs:
             org.opencontainers.image.created=${{ steps.prep.outputs.created }}
             org.opencontainers.image.revision=${{ github.sha }}
           build-args: |
-            CLIENT_REPO_COMPONENT=stable
+            CLIENT_REPO_COMPONENT=main
             LIBINDY_VERSION=1.13.0~1420
             DIND_CONTAINER_REGISTRY=ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}
             DIND_IMAGE_NAME=dind:${{ env.INPUT_UBUNTUVERSION }}
@@ -263,7 +266,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: udosson/indy-test-automation
-          ref: indy-node-only
+          ref: test-with-artifactory
 
       - name: Create docker network
         run: |
