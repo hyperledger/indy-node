@@ -10,6 +10,10 @@ function build_from_pypi {
 
     if [ -z "$2" ]; then
         PACKAGE_VERSION=""
+        # Get the most recent package version from PyPI to be included in the package name of the Debian artifact
+        curl -X GET "https://pypi.org/pypi/${PACKAGE_NAME}/json" > "${PACKAGE_NAME}.json"
+        PACKAGE_VERSION="==$(cat "${PACKAGE_NAME}.json" | jq --raw-output '.info.version')"
+        rm "${PACKAGE_NAME}.json"
     else
         PACKAGE_VERSION="==$2"
     fi
@@ -45,7 +49,7 @@ function build_from_pypi {
 SCRIPT_PATH="${BASH_SOURCE[0]}"
 pushd `dirname ${SCRIPT_PATH}` >/dev/null
 
-build_from_pypi timeout-decorator 0.4.0
-build_from_pypi distro 1.3.0
+build_from_pypi timeout-decorator 
+build_from_pypi distro
 
 popd >/dev/null

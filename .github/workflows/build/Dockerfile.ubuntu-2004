@@ -10,7 +10,9 @@ RUN apt-get update -y && apt-get install -y \
     gnupg \
     apt-transport-https \
     ca-certificates \
-    apt-utils
+    apt-utils \
+    curl \
+    jq
 
 # ========================================================================================================
 # Update repository signing keys
@@ -69,7 +71,8 @@ RUN pip3 install -U \
 
 
 # install fpm
-RUN gem install --no-document rake fpm
+RUN gem install --no-document rake 
+RUN gem install --no-document fpm -v 1.13.1
 
 RUN apt-get -y autoremove \
     && rm -rf /var/lib/apt/lists/*
