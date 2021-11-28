@@ -12,7 +12,7 @@ Defaults:
 * IP addresses are generated consequently starting from 10.0.0.2
 ** Format: 10.0.0.2,10.0.0.3,10.0.0.4,10.0.0.5
 * Number of clients is 10
-* Ports are generated consequently starting from 9701
+* Ports are generated consecutively starting from 9701
 
 # Stop pool
 ```
