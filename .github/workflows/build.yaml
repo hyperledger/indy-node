@@ -199,6 +199,8 @@ jobs:
     # - https://github.com/ScaCap/action-surefire-report/issues/17
     env:
       NODE_OPTIONS: '--max_old_space_size=4096'
+      #SLICE_TOTAL_SLICES needs to match the total number of slices in the matrix strategy.
+      SLICE_TOTAL_SLICES: 11
     container:
       image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:ubuntu-16-04
     strategy:
@@ -231,9 +233,9 @@ jobs:
           # Explicitly use the existing pip cache location in the node-build image.
           pip --cache-dir /root/.cache/pip install .[tests]
 
-      - name: Run Indy Node ${{ matrix.module }} test slice ${{ matrix.slice }}/${{ strategy.job-total }}
+      - name: Run Indy Node ${{ matrix.module }} test slice ${{ matrix.slice }}/ ${{ env.SLICE_TOTAL_SLICES }}
         id: node-test
-        run: RUSTPYTHONASYNCIODEBUG=0 python3 runner.py --pytest "python3 -m pytest -l -vv" --dir "${{ matrix.module }}" --output "test-result-node-${{ matrix.slice }}.txt" --test-only-slice "${{ matrix.slice }}/${{ strategy.job-total }}"
+        run: RUSTPYTHONASYNCIODEBUG=0 python3 runner.py --pytest "python3 -m pytest -l -vv" --dir "${{ matrix.module }}" --output "test-result-node-${{ matrix.slice }}.txt" --test-only-slice "${{ matrix.slice }}/ ${{ env.SLICE_TOTAL_SLICES }}"
 
       - name: Publish Test Report
         if: success() || failure()
