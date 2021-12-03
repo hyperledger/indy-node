@@ -54,7 +54,7 @@ RUN apt-get update -y && apt-get install -y \
     make \
     # Indy Node and Plenum
     libssl1.0.0 \
-    ursa=0.3.2-1 \
+    ursa=0.3.2-2 \
     # Indy SDK
     libindy=1.15.0~1625-bionic \
     # Need to move libursa.so to parent dir
