@@ -7,7 +7,8 @@ on:
   pull_request:
     branches:
       - ubuntu-20.04-upgrade
-      
+  workflow_dispatch:  
+    
 jobs:
   workflow-setup:
     name: Initialize Workflow
@@ -42,13 +43,11 @@ jobs:
           # Set variables according to version of ubuntu
           if [[ "${{github.base_ref}}" == "master" || "${{github.ref}}" == "refs/heads/master" ]]; then
             echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile.ubuntu-1604') }}"
-            echo "::set-output name=CACHE_KEY_LINT::${{ hashFiles('.github/workflows/lint/Dockerfile.ubuntu-1604') }}"
             echo "::set-output name=UBUNTU_VERSION::ubuntu-1604"
             echo "::set-output name=distribution::xenial"
           fi
           if [[ "${{github.base_ref}}" == "ubuntu-20.04-upgrade" || "${{github.ref}}" == "refs/heads/ubuntu-20.04-upgrade" ]]; then
             echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile.ubuntu-2004') }}"
-            echo "::set-output name=CACHE_KEY_LINT::${{ hashFiles('.github/workflows/lint/Dockerfile.ubuntu-2004') }}"
             echo "::set-output name=UBUNTU_VERSION::ubuntu-2004"
             echo "::set-output name=distribution::focal"
           fi
@@ -149,67 +148,7 @@ jobs:
           mkdir -p ${GITHUB_WORKSPACE}/cache
           touch ${GITHUB_WORKSPACE}/cache/${{ env.CACHE_KEY_BUILD }}
 
-  lint-image:
-    name: Create Linter Image
-    # Reference to workflow-setup job is required to access its various outputs.
-    needs: workflow-setup
-    runs-on: ubuntu-latest
-    env:
-      CACHE_KEY_LINT: ${{ needs.workflow-setup.outputs.CACHE_KEY_LINT }}
-      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
-      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@v2
 
-      - name: Try load from cache
-        id: cache-image
-        uses: actions/cache@v2
-        with:
-          path: ${GITHUB_WORKSPACE}/cache
-          key: ${{ env.CACHE_KEY_LINT }}
-
-      - name: Prepare image labels and tags
-        if: steps.cache-image.outputs.cache-hit != 'true'
-        id: prep
-        shell: bash
-        run: |
-          DOCKER_IMAGE=ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/node-lint
-          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:${{ env.UBUNTU_VERSION }}"
-          echo ::set-output name=tags::${TAGS}
-          echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-
-      - name: Log into the GitHub Container Registry
-        if: steps.cache-image.outputs.cache-hit != 'true'
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        if: steps.cache-image.outputs.cache-hit != 'true'
-        uses: docker/setup-buildx-action@v1
-
-      - name: Build and push image
-        if: steps.cache-image.outputs.cache-hit != 'true'
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: .github/workflows/lint/Dockerfile.${{ env.UBUNTU_VERSION }}
-          no-cache: true
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.prep.outputs.tags }}
-          labels: |
-            org.opencontainers.image.source=${{ github.event.repository.html_url }}
-            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
-            org.opencontainers.image.revision=${{ github.sha }}
-
-      - name: Touch Cache
-        if: steps.cache-image.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p ${GITHUB_WORKSPACE}/cache
-          touch ${GITHUB_WORKSPACE}/cache/${{ env.CACHE_KEY_LINT }}
 
   indy_node_tests:
     name: Sliced Module Tests
@@ -277,16 +216,25 @@ jobs:
   lint:
     name: Lint
     # Reference to workflow-setup job is required to access the GITHUB_REPOSITORY_NAME output.
-    needs: [workflow-setup, lint-image]
+    needs: [workflow-setup]
     runs-on: ubuntu-20.04
-    container:
-      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-lint:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-
-      - name: flake8
-        run: python3 -m flake8
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-lint
+          restore-keys: |
+            ${{ runner.os }}-pip-lint
+      - name: Install flake8
+        run: pip install flake8==3.8.4 pep8==1.7.1 pep8-naming==0.6.1
+      - name: Lint with flake8
+        run: python3 -m flake8 .
 
   build_release:
     name: Build Release
