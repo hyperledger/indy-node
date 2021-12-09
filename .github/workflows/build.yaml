@@ -1,5 +1,6 @@
 name: indy-node-build
 on:
+  workflow_dispatch: 
   push:
     branches:
       - ubuntu-20.04-upgrade
@@ -7,7 +8,7 @@ on:
   pull_request:
     branches:
       - ubuntu-20.04-upgrade
-  workflow_dispatch:  
+   
     
 jobs:
   workflow-setup:
@@ -22,11 +23,13 @@ jobs:
       # as the push and pull operations require the URL of the repository
       # to be in lowercase.
       GITHUB_REPOSITORY_NAME: ${{ steps.repository-name.outputs.lowercase }}
+      GITHUB_REPOSITORY_OWNER: ${{ steps.repository-owner.outputs.lowercase }}
       GITHUB_REF: ${{ steps.cache.outputs.GITHUB_REF }}
       distribution: ${{ steps.cache.outputs.distribution }}
       isDev: ${{ steps.build-flags.outputs.isDev }}
       isRC: ${{ steps.build-flags.outputs.isRC }}
       publish: ${{ steps.build-flags.outputs.publish }}
+      shortSHA: ${{ steps.cache.outputs.shortSHA }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v2
@@ -36,23 +39,20 @@ jobs:
         uses: ASzc/change-string-case-action@v1
         with:
           string: ${{ github.repository }}
+      
+      - name: Convert the GitHub repository Owner name to lowercase
+        id: repository-owner
+        uses: ASzc/change-string-case-action@v1
+        with:
+          string: ${{ github.repository_owner	 }}
 
       - name: Set outputs
         id: cache
         run: |
-          # Set variables according to version of ubuntu
-          if [[ "${{github.base_ref}}" == "master" || "${{github.ref}}" == "refs/heads/master" ]]; then
-            echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile.ubuntu-1604') }}"
-            echo "::set-output name=UBUNTU_VERSION::ubuntu-1604"
-            echo "::set-output name=distribution::xenial"
-          fi
-          if [[ "${{github.base_ref}}" == "ubuntu-20.04-upgrade" || "${{github.ref}}" == "refs/heads/ubuntu-20.04-upgrade" ]]; then
-            echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile.ubuntu-2004') }}"
-            echo "::set-output name=UBUNTU_VERSION::ubuntu-2004"
-            echo "::set-output name=distribution::focal"
-          fi
-     
-
+          echo "::set-output name=UBUNTU_VERSION::ubuntu-2004"
+          echo "::set-output name=distribution::focal"
+          echo "::set-output name=shortSHA::sha-$(git rev-parse --short HEAD)"
+          
           if [[ "${{github.base_ref}}" == 'master' || "${{github.ref}}" == 'refs/heads/master' || "${{github.base_ref}}" == 'main' || "${{github.ref}}" == 'refs/heads/main' ]]; then
             echo "::set-output name=GITHUB_REF::main"
           elif [[ "${{github.base_ref}}" == 'release*' || "${{github.ref}}" == 'refs/heads/release*' ]]; then
@@ -63,10 +63,11 @@ jobs:
             echo "::set-output name=GITHUB_REF::dev"
           fi
 
+          
+
       - name: Set build flags
         id: build-flags
         run: |
-
           if [[ "${{steps.cache.outputs.GITHUB_REF}}" == 'dev' || "${{steps.cache.outputs.GITHUB_REF}}" == 'main' ]]; then
             echo "::set-output name=isDev::true"
           else
@@ -92,32 +93,33 @@ jobs:
     needs: workflow-setup
     runs-on: ubuntu-latest
     env:
-      CACHE_KEY_BUILD: ${{ needs.workflow-setup.outputs.CACHE_KEY_BUILD }}
-      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
+      GITHUB_REPOSITORY_OWNER: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_OWNER}}
       UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v2
 
-      - name: Try load from cache
-        id: cache-image
-        uses: actions/cache@v2
-        with:
-          path: ${GITHUB_WORKSPACE}/cache
-          key: ${{ env.CACHE_KEY_BUILD}}
-
       - name: Prepare image labels and tags
-        if: steps.cache-image.outputs.cache-hit != 'true'
         id: prep
         shell: bash
         run: |
-          DOCKER_IMAGE=ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/node-build
-          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:${{ env.UBUNTU_VERSION }}"
-          echo ::set-output name=tags::${TAGS}
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
+      - name: Set image labels and tags
+        id: dockermetadata
+        uses: docker/metadata-action@v3
+        with: 
+          images: ghcr.io/${{ env.GITHUB_REPOSITORY_OWNER }}/node-build
+          tags: |
+            type=sha
+            type=raw,${{ env.UBUNTU_VERSION }}
+            type=raw,latest
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
+            org.opencontainers.image.revision=${{ github.sha }}
+      
       - name: Log into the GitHub Container Registry
-        if: steps.cache-image.outputs.cache-hit != 'true'
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
@@ -125,30 +127,27 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        if: steps.cache-image.outputs.cache-hit != 'true'
         uses: docker/setup-buildx-action@v1
 
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: Build and push image
-        if: steps.cache-image.outputs.cache-hit != 'true'
         uses: docker/build-push-action@v2
         with:
           context: .
           file: .github/workflows/build/Dockerfile.${{ env.UBUNTU_VERSION }}
-          no-cache: true
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.prep.outputs.tags }}
+          tags: ${{ steps.dockermetadata.outputs.tags }}
           labels: |
-            org.opencontainers.image.source=${{ github.event.repository.html_url }}
-            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
-            org.opencontainers.image.revision=${{ github.sha }}
-
-      - name: Touch Cache
-        if: steps.cache-image.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p ${GITHUB_WORKSPACE}/cache
-          touch ${GITHUB_WORKSPACE}/cache/${{ env.CACHE_KEY_BUILD }}
-
-
+             ${{ steps.dockermetadata.outputs.labels }}
 
   indy_node_tests:
     name: Sliced Module Tests
@@ -159,41 +158,20 @@ jobs:
     # - https://github.com/ScaCap/action-surefire-report/issues/17
     env:
       NODE_OPTIONS: '--max_old_space_size=4096'
+      #SLICE_TOTAL_SLICES needs to match the total number of slices in the matrix strategy.
+      SLICE_TOTAL_SLICES: 11
     container:
-      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_OWNER }}/node-build:${{ needs.workflow-setup.outputs.shortSHA }}
     strategy:
       matrix:
         module: [indy_node, indy_common]
         slice: [1, 2, 3, 4 ,5, 6, 7, 8, 9, 10, 11]
       fail-fast: false
     steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-
-      # ===============================================
-      # Caching cannot be used.
-      #  - For some reason as soon as it is enabled
-      #    the test start complaining about zmq missing
-      #    for the plenum install.
-      # -----------------------------------------------
-      # - name: Cache pip
-      #   uses: actions/cache@v2
-      #   with:
-      #     # pip cache on the node-build image is not in the default location.
-      #     # path: ~/.cache/pip
-      #     path: /root/.cache/pip
-      #     key: ${{ runner.os }}-indy-node-pip-${{ hashFiles('**/requirements.txt', '**/setup.py') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-indy-node-pip-
-
-      - name: Install dependencies
-        run: |
-          # Explicitly use the existing pip cache location in the node-build image.
-          pip --cache-dir /root/.cache/pip install .[tests]
-
-      - name: Run Indy Node ${{ matrix.module }} test slice ${{ matrix.slice }}/${{ strategy.job-total }}
+      - name: Run Indy Node ${{ matrix.module }} test slice ${{ matrix.slice }}/${{ env.SLICE_TOTAL_SLICES }}
         id: node-test
-        run: RUSTPYTHONASYNCIODEBUG=0 python3 runner.py --pytest "python3 -m pytest -l -vv" --dir "${{ matrix.module }}" --output "test-result-node-${{ matrix.slice }}.txt" --test-only-slice "${{ matrix.slice }}/${{ strategy.job-total }}"
+        working-directory: /indy-node
+        run: RUSTPYTHONASYNCIODEBUG=0 python3 runner.py --pytest "python3 -m pytest -l -vv" --dir "${{ matrix.module }}" --output "test-result-node-${{ matrix.slice }}.txt" --test-only-slice "${{ matrix.slice }}/${{ env.SLICE_TOTAL_SLICES }}"
 
       - name: Publish Test Report
         if: success() || failure()
@@ -202,7 +180,7 @@ jobs:
         with:
           check_name: Indy Node ${{ matrix.module }} Test Report for slice ${{ matrix.slice }}/${{ strategy.job-total }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          report_paths: "*-test-results.xml"
+          report_paths: "/indy-node/*-test-results.xml" 
 
       - name: Upload Detailed Test Failure Results
         # The test runner only emits the detailed test results if the tests fail.
@@ -210,8 +188,42 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-slice-${{ matrix.slice }}
-          path: test-result-node-${{ matrix.slice }}.txt
+          path: /indy-node/test-result-node-${{ matrix.slice }}.txt
           retention-days: 5
+
+  remove_test_image:
+    name: Remove Test image from GHCR
+    needs: [workflow-setup, indy_node_tests]
+    if: always()
+    runs-on : ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run a one-line script
+        run: |
+            curl -u pschlarb:${{ secrets.API }} -H "Accept: application/vnd.github.v3+json" \
+            $GITHUB_API_URL/user/packages/container/node-build/versions > apiResponse.json
+      - name: Cat JSON
+        run: |
+            cat apiResponse.json
+      - name: Run Pyhton Script
+        id: pversion
+        env:
+          SHORT_SHA: ${{ needs.workflow-setup.outputs.shortSHA }}
+        run: |
+          echo "::set-output name=packageVersion::$(python .github/workflows/getGHCRPackageID.py $SHORT_SHA)"
+      - name: Remove Docker Container or Package with sha
+        env: 
+          PACKAGE_VERSION: ${{ steps.pversion.outputs.packageVersion }}
+        run: |
+            curl -u pschlarb:${{ secrets.API }} -H "Accept: application/vnd.github.v3+json" -X DELETE $GITHUB_API_URL/user/packages/container/node-build/versions/$PACKAGE_VERSION | grep "last tagged"
+            if [ $? -eq 0 ];
+            then 
+              echo $(curl -u pschlarb:${{ secrets.API }} -X DELETE -H"Accept: applicatiov/vnd.github.vs3+json" $GITHUB_API_URL/user/packages/container/node-build);
+            else 
+              echo done;
+            fi;
 
   lint:
     name: Lint
