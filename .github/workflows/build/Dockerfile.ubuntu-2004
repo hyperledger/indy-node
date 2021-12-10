@@ -78,5 +78,4 @@ RUN apt-get -y autoremove \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . /indy-node
-WORKDIR /indy-node
-RUN pip install .[tests]
+RUN pip install /indy-node[tests]

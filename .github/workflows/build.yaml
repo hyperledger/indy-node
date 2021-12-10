@@ -133,7 +133,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-node-build
           restore-keys: |
             ${{ runner.os }}-buildx-
 
@@ -191,40 +191,7 @@ jobs:
           path: /indy-node/test-result-node-${{ matrix.slice }}.txt
           retention-days: 5
 
-  remove_test_image:
-    name: Remove Test image from GHCR
-    needs: [workflow-setup, indy_node_tests]
-    if: always()
-    runs-on : ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Run a one-line script
-        run: |
-            curl -u pschlarb:${{ secrets.API }} -H "Accept: application/vnd.github.v3+json" \
-            $GITHUB_API_URL/user/packages/container/node-build/versions > apiResponse.json
-      - name: Cat JSON
-        run: |
-            cat apiResponse.json
-      - name: Run Pyhton Script
-        id: pversion
-        env:
-          SHORT_SHA: ${{ needs.workflow-setup.outputs.shortSHA }}
-        run: |
-          echo "::set-output name=packageVersion::$(python .github/workflows/getGHCRPackageID.py $SHORT_SHA)"
-      - name: Remove Docker Container or Package with sha
-        env: 
-          PACKAGE_VERSION: ${{ steps.pversion.outputs.packageVersion }}
-        run: |
-            curl -u pschlarb:${{ secrets.API }} -H "Accept: application/vnd.github.v3+json" -X DELETE $GITHUB_API_URL/user/packages/container/node-build/versions/$PACKAGE_VERSION | grep "last tagged"
-            if [ $? -eq 0 ];
-            then 
-              echo $(curl -u pschlarb:${{ secrets.API }} -X DELETE -H"Accept: applicatiov/vnd.github.vs3+json" $GITHUB_API_URL/user/packages/container/node-build);
-            else 
-              echo done;
-            fi;
-
+  
   lint:
     name: Lint
     # Reference to workflow-setup job is required to access the GITHUB_REPOSITORY_NAME output.
@@ -255,20 +222,19 @@ jobs:
     env:
       UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     container:
-      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_OWNER }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     steps:
-      - name: Check out code
-        uses: actions/checkout@v1
-
       - name: Set Build Version
         id: version
-        uses: ./.github/actions/set-version
+        uses: .github/actions/set-version
+        working-directory: /indy-node
         with:
           moduleName: indy_node
           isDev: ${{ needs.workflow-setup.outputs.isDev }}
           isRC: ${{ needs.workflow-setup.outputs.isRC }}
 
       - name: Build Deployment Package
+        working-directory: /indy-node
         run: |
           mkdir -p /tmp/node-build
           ./build-scripts/${{ env.UBUNTU_VERSION }}/build-indy-node.sh "/__w/indy-node/indy-node" "${{ steps.version.outputs.upstreamVer }}" "/tmp/node-build" "${{ steps.version.outputs.pkgVer }}"
@@ -286,11 +252,8 @@ jobs:
     env:
       UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     container:
-      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+      image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_OWNER }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     steps:
-      - name: Check out code
-        uses: actions/checkout@v1
-
       - name: Try load from cache.
         id: third-party-dependencies
         uses: actions/cache@v2
@@ -300,10 +263,45 @@ jobs:
 
       - name: Build 3rd party deployment packages
         if: steps.third-party-dependencies.outputs.cache-hit != 'true'
+        working-directory: /indy-node
         run: |
           mkdir -p ./build-scripts/${{ env.UBUNTU_VERSION }}/cache/3rd-party-dependencies/
           ./build-scripts/${{ env.UBUNTU_VERSION }}/build-3rd-parties.sh ./cache/3rd-party-dependencies
           mv ./build-scripts/${{ env.UBUNTU_VERSION }}/cache/* /tmp/third-party-dependencies
+  
+  remove_test_image:
+    name: Remove Test image from GHCR
+    needs: [workflow-setup, indy_node_tests, build_3rd_party_dependencies, build_release]
+    if: always()
+    runs-on : ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run a one-line script
+        run: |
+            curl -u pschlarb:${{ secrets.API }} -H "Accept: application/vnd.github.v3+json" \
+            $GITHUB_API_URL/user/packages/container/node-build/versions > apiResponse.json
+      - name: Cat JSON
+        run: |
+            cat apiResponse.json
+      - name: Run Pyhton Script
+        id: pversion
+        env:
+          SHORT_SHA: ${{ needs.workflow-setup.outputs.shortSHA }}
+        run: |
+          echo "::set-output name=packageVersion::$(python .github/workflows/getGHCRPackageID.py $SHORT_SHA)"
+      - name: Remove Docker Container or Package with sha
+        env: 
+          PACKAGE_VERSION: ${{ steps.pversion.outputs.packageVersion }}
+        run: |
+            curl -u pschlarb:${{ secrets.API }} -H "Accept: application/vnd.github.v3+json" -X DELETE $GITHUB_API_URL/user/packages/container/node-build/versions/$PACKAGE_VERSION | grep "last tagged"
+            if [ $? -eq 0 ];
+            then 
+              echo $(curl -u pschlarb:${{ secrets.API }} -X DELETE -H"Accept: applicatiov/vnd.github.vs3+json" $GITHUB_API_URL/user/packages/container/node-build);
+            else 
+              echo done;
+            fi;
 
   build-python-packages:
     name: Build Python Packages
