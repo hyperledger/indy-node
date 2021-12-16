@@ -224,10 +224,12 @@ jobs:
     container:
       image: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_OWNER }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
     steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      
       - name: Set Build Version
         id: version
-        uses: .github/actions/set-version
-        working-directory: /indy-node
+        uses: ./.github/actions/set-version
         with:
           moduleName: indy_node
           isDev: ${{ needs.workflow-setup.outputs.isDev }}
