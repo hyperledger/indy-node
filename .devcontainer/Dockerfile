@@ -2,7 +2,7 @@
 
 # [Choice] Ubuntu version (use hirsuite or bionic on local arm64/Apple Silicon): hirsute, focal, bionic
 ARG VARIANT="focal"
-FROM mcr.microsoft.com/vscode/devcontainers/base:0-${VARIANT}
+FROM mcr.microsoft.com/vscode/devcontainers/base:${VARIANT}
 
 RUN apt-get update -y && apt-get install -y \
     # common stuff
@@ -54,7 +54,7 @@ RUN apt-get update -y && apt-get install -y \
     make \
     # Indy Node and Plenum
     libssl1.0.0 \
-    ursa=0.3.2-2 \
+    ursa=0.3.2-1 \
     # Indy SDK
     libindy=1.15.0~1625-bionic \
     # Need to move libursa.so to parent dir
