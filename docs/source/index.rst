@@ -23,7 +23,12 @@ Welcome to Hyperledger Indy Node's documentation!
    indy-file-structure-guideline.md
    write-code-guideline.md
    setup-dev.md
-
+   installation-and-configuration.md
+   configuring-2nics.md
+   NewNetwork/NewNetwork.md
+   NewNetwork/CLIInstall.md
+   NewNetwork/CreateDID.md
+   NewNetwork/CreateValidatorKeys.md
 
 
 
