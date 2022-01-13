@@ -1,0 +1,1672 @@
+name: indy-test-automation
+on: 
+  workflow_dispatch:
+    inputs:
+      nodeVersion: 
+        description: 'Version of Indy Node'
+        required: true
+      plenumVersion:
+        description: 'Version of Indy Plenum'
+        required: true
+      ursaVersion:
+        description: 'Version of Ursa'
+        required: true
+      pyzmqVersion:
+        description: 'Version of PYZMQ'
+        required: true
+        default: "18.1.0"
+      libIndyVersion: 
+        description: 'Version of Libindy'
+        required: true
+      ubuntuVersion:
+        description: 'Version of Ubuntu base image'
+        required: true
+        default: 'ubuntu-1604'
+      nodeRepoComponent:
+        description: 'Hyperledger Artifactory repository component of Indy-Node'
+        required: true
+        default: 'main'
+      nodeSovrinRepoComponent: 
+        description: 'Sovrin repository component of dependcies of Indy-Node artifacts'
+        required: true
+        default: 'master' 
+      clientSovrinRepoComponent: 
+        description: 'Sovrin repository component of Indy SDK artifacts'
+        required: true
+        default: 'master' 
+   
+
+env:
+  INPUT_NODEVERSION: ${{ github.event.inputs.nodeVersion }}
+  INPUT_PLENUMVERSION: ${{ github.event.inputs.plenumVersion }}
+  INPUT_URSAVERSION: ${{ github.event.inputs.ursaVersion }}
+  INPUT_PYZMQVERSION: ${{ github.event.inputs.pyzmqVersion }}
+  INPUT_LIBINDYVERSION: ${{ github.event.inputs.libIndyVersion}}
+  INPUT_UBUNTUVERSION: ${{ github.event.inputs.ubuntuVersion }}
+  INPUT_NODEREPOCOMPONENT: ${{ github.event.inputs.nodeRepoComponent }}
+  INPUT_NODESOVRINREPOCOMPONENT:  ${{ github.event.inputs.nodeSovrinRepoComponent }}
+  INPUT_CLIENTSOVRINREPOCOMPONENT:  ${{ github.event.inputs.clientSovrinRepoComponent }}
+  TEST_AUTOMATION_BRANCH: "main"
+
+
+jobs:
+  workflow-setup:
+    name: Initialize Workflow
+    runs-on: ubuntu-latest
+    outputs:
+      GITHUB_REPOSITORY_NAME: ${{ steps.repository-name.outputs.lowercase }}
+      DIND_BUILD_ARG: ${{ steps.cache.outputs.DIND_BUILD_ARG}}
+    steps:
+      - name: Convert the GitHub repository name to lowercase
+        id: repository-name
+        uses: ASzc/change-string-case-action@v1
+        with:
+          string: ${{ github.repository }}
+
+      - name: Set outputs
+        id: cache
+        run: |
+          # Set variables according to version of ubuntu
+          if [[ "${{ env.INPUT_UBUNTUVERSION }}" == "ubuntu-1604" ]]; then
+            echo "::set-output name=DIND_BUILD_ARG::16.04"
+            echo "::set-output name=distribution::xenial"
+          fi
+          if [[ "${{ env.INPUT_UBUNTUVERSION }}" == "ubuntu-2004" ]]; then
+            echo "::set-output name=DIND_BUILD_ARG::20.04"
+            echo "::set-output name=distribution::focal"
+          fi
+          
+  dind-image:
+    name: Create DinD Image
+    needs: workflow-setup
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
+      DIND_BUILD_ARG: ${{ needs.workflow-setup.outputs.DIND_BUILD_ARG }}
+    steps:
+      - name: Git checkout teracyhq/docker-files
+        uses: actions/checkout@v2
+        with:
+          repository: teracyhq/docker-files
+            
+      - name: Prepare image labels and tags
+        id: prep
+        shell: bash
+        run: |
+          DOCKER_IMAGE=ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/dind
+          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:${{ env.INPUT_UBUNTUVERSION }}"
+          echo ::set-output name=tags::${TAGS}
+          echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+      - name: Log into the GitHub Container Registry
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx
+
+      - name: Build and push image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./ubuntu/base
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.prep.outputs.tags }}
+          build-args: |
+            UBUNTU_VERSION=${{ env.DIND_BUILD_ARG }}
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+      
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  node-image:
+    name: Create Node Image
+    needs: workflow-setup
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Prepare image labels and tags
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        id: prep
+        shell: bash
+        run: |
+          DOCKER_IMAGE=ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/node-${{ env.INPUT_UBUNTUVERSION }}
+          # TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:${{ env.INPUT_UBUNTUVERSION }}"
+          TAGS="${DOCKER_IMAGE}:latest"
+          echo ::set-output name=tags::${TAGS}
+          echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+      - name: Set up Docker Buildx
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx
+
+      - name: Build and cache image
+        if: steps.cache-image.outputs.cache-hit != 'true'
+        uses: docker/build-push-action@v2
+        with:
+          context: ./system_node_only/docker/node
+          file: ./system_node_only/docker/node/Dockerfile.${{ env.INPUT_UBUNTUVERSION }}
+          push: false
+          tags: ${{ steps.prep.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          build-args: |
+            NODE_REPO_COMPONENT=${{ env.INPUT_NODEREPOCOMPONENT }}
+            NODE_SOVRIN_REPO_COMPONENT=${{ env.INPUT_NODESOVRINREPOCOMPONENT}}
+            INDY_NODE_VERSION=${{ env.INPUT_NODEVERSION }}
+            INDY_PLENUM_VERSION=${{ env.INPUT_PLENUMVERSION }}
+            URSA_VERSION=${{ env.INPUT_URSAVERSION }}
+            PYTHON3_PYZMQ_VERSION=${{ env.INPUT_PYZMQVERSION }}
+
+          outputs: type=docker,dest=/tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Upload node docker image artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: node_image
+          path: /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          retention-days: 1
+      
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  client-image:
+    name: Create Client Image
+    needs: [ workflow-setup, dind-image ]
+    runs-on: ubuntu-latest
+    env: 
+      CACHE_KEY_CLIENT: ${{ needs.workflow-setup.outputs.CACHE_KEY_CLIENT }}
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
+      DIND_BUILD_ARG: ${{ needs.workflow-setup.outputs.DIND_BUILD_ARG }}
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Prepare image labels and tags
+        id: prep
+        shell: bash
+        run: |
+          DOCKER_IMAGE=ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/client
+          TAGS="${DOCKER_IMAGE}:latest,${DOCKER_IMAGE}:${{ env.INPUT_UBUNTUVERSION }}"
+          echo ::set-output name=tags::${TAGS}
+          echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx
+          
+      - name: Build and cache image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./system_node_only/docker/client/
+          file: ./system_node_only/docker/client/Dockerfile.${{ env.INPUT_UBUNTUVERSION }}
+          push: false
+          tags: ${{ steps.prep.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.created=${{ steps.prep.outputs.created }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          build-args: |
+            CLIENT_SOVRIN_REPO_COMPONENT=${{ env.INPUT_CLIENTSOVRINREPOCOMPONENT}}
+            LIBINDY_VERSION=${{ env.INPUT_LIBINDYVERSION}}
+            DIND_CONTAINER_REGISTRY=ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}
+            DIND_IMAGE_NAME=dind:${{ env.INPUT_UBUNTUVERSION }}
+          outputs: type=docker,dest=/tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Upload client docker image artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: client_image
+          path: /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          retention-days: 1
+      
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache                     
+
+  ### 1 step in workflow  per test
+  ### The tests rely on docker in docker with the fixed network name and fixed IP addresses. 
+  ### That's why the tests cannot be run in matrix mode because all tests would share the same host and same docker engine.
+  test_consensus:
+    name: test_consensus
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: test_consensus
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/test_consensus.py "-l -v --junit-xml=test_consensus-report.xml" indy-test-automation-network
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: test_consensus Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.test_consensus.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-test_consensus
+          path: test-result-indy-test-autmation-test_consensus.txt
+          retention-days: 5
+
+  test_freshness:
+    name: test_freshness
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+      
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: test_freshness
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/test_freshness.py "-l -v --junit-xml=test_freshness-report.xml" indy-test-automation-network
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: test_freshness Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.test_freshness.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-test_freshness
+          path: test-result-indy-test-autmation-test_freshness.txt
+          retention-days: 5
+
+  test_ledger:
+    name: test_ledger
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: test_ledger
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/test_ledger.py "-l -v --junit-xml=test_ledger-report.xml" indy-test-automation-network
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: test_ledger Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.test_ledger.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-test_ledger
+          path: test-result-indy-test-autmation-test_ledger.txt
+          retention-days: 5
+
+  test_off_ledger_signature:
+    name: test_off_ledger_signature
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+     GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: test_off_ledger_signature
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/test_off_ledger_signature.py "-l -v --junit-xml=test_off_ledger_signature-report.xml" indy-test-automation-network
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: test_off_ledger_signature Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.test_off_ledger_signature.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-test_off_ledger_signature
+          path: test-result-indy-test-autmation-test_off_ledger_signature.txt
+          retention-days: 5 
+
+  test_roles:
+    name: Test Roles
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: test_roles
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/test_roles.py "-l -v --junit-xml=test_roles-report.xml" indy-test-automation-network 
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: test_roles Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.test_roles.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-test_roles
+          path: test-result-indy-test-autmation-test_roles.txt
+          retention-days: 5
+
+  test_state_proof:
+    name: test_state_proof
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: test_state_proof
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/test_state_proof.py "-l -v --junit-xml=test_state_proof-report.xml" indy-test-automation-network 
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: test_state_proof Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.test_state_proof.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-test_state_proof
+          path: test-result-indy-test-autmation-test_state_proof.txt
+          retention-days: 5
+
+  test_vc:
+    name: test_vc
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: test_vc
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/test_vc.py "-l -v --junit-xml=test_vc-report.xml" indy-test-automation-network
+  
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: test_vc Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.test_vc.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-test_vc
+          path: test-result-indy-test-autmation-test_vc.txt
+          retention-days: 5
+
+  TestAdHocSuite:
+    name: TestAdHocSuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestAdHocSuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestAdHocSuite.py "-l -v --junit-xml=TestAdHocSuite-report.xml" indy-test-automation-network 
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestAdHocSuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestAdHocSuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestAdHocSuite
+          path: test-result-indy-test-autmation-TestAdHocSuite.txt
+          retention-days: 5
+
+  TestAuditSuite:
+    name: TestAuditSuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestAuditSuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestAuditSuite.py "-l -v --junit-xml=TestAuditSuite-report.xml" indy-test-automation-network 
+      
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestAuditSuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestAuditSuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestAuditSuite
+          path: test-result-indy-test-autmation-TestAuditSuite.txt
+          retention-days: 5
+
+  TestAuthMapAttribSuite:
+    name: TestAuthMapAttribSuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestAuthMapAttribSuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestAuthMapAttribSuite.py "-l -v --junit-xml=TestAuthMapAttribSuite-report.xml" indy-test-automation-network 
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestAuthMapAttribSuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestAuthMapAttribSuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestAuthMapAttribSuite
+          path: test-result-indy-test-autmation-TestAuthMapAttribSuite.txt
+          retention-days: 5
+
+  TestAuthMapCredDefSuite:
+    name: TestAuthMapCredDefSuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestAuthMapCredDefSuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestAuthMapCredDefSuite.py "-l -v --junit-xml=TestAuthMapCredDefSuite-report.xml" indy-test-automation-network 
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestAuthMapCredDefSuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestAuthMapCredDefSuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestAuthMapCredDefSuite
+          path: test-result-indy-test-autmation-TestAuthMapCredDefSuite.txt
+          retention-days: 5
+
+  TestAuthMapMiscSuite:
+    name: TestAuthMapMiscSuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestAuthMapMiscSuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestAuthMapMiscSuite.py "-l -v --junit-xml=TestAuthMapMiscSuite-report.xml" indy-test-automation-network
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestAuthMapMiscSuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestAuthMapMiscSuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestAuthMapMiscSuite
+          path: test-result-indy-test-autmation-TestAuthMapMiscSuite.txt
+          retention-days: 5
+
+  TestAuthMapNymSuite:
+    name: TestAuthMapNymSuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestAuthMapNymSuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestAuthMapNymSuite.py "-l -v --junit-xml=TestAuthMapNymSuite-report.xml" indy-test-automation-network
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestAuthMapNymSuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestAuthMapNymSuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestAuthMapNymSuite
+          path: test-result-indy-test-autmation-TestAuthMapNymSuite.txt
+          retention-days: 5
+
+  TestAuthMapRevocRegDefSuite:
+    name: TestAuthMapRevocRegDefSuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestAuthMapRevocRegDefSuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestAuthMapRevocRegDefSuite.py "-l -v --junit-xml=TestAuthMapRevocRegDefSuite-report.xml" indy-test-automation-network
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestAuthMapRevocRegDefSuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestAuthMapRevocRegDefSuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestAuthMapRevocRegDefSuite
+          path: test-result-indy-test-autmation-TestAuthMapRevocRegDefSuite.txt
+          retention-days: 5
+
+  TestAuthMapRevocRegEntrySuite:
+    name: TestAuthMapRevocRegEntrySuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestAuthMapRevocRegEntrySuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestAuthMapRevocRegEntrySuite.py "-l -v --junit-xml=TestAuthMapRevocRegEntrySuite-report.xml" indy-test-automation-network
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestAuthMapRevocRegEntrySuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestAuthMapRevocRegEntrySuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestAuthMapRevocRegEntrySuite
+          path: test-result-indy-test-autmation-TestAuthMapRevocRegEntrySuite.txt
+          retention-days: 5
+
+  TestAuthMapSchemaSuite:
+    name: TestAuthMapSchemaSuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestAuthMapSchemaSuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestAuthMapSchemaSuite.py "-l -v --junit-xml=TestAuthMapSchemaSuite-report.xml" indy-test-automation-network
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestAuthMapSchemaSuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestAuthMapSchemaSuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestAuthMapSchemaSuite
+          path: test-result-indy-test-autmation-TestAuthMapSchemaSuite.txt
+          retention-days: 5
+
+  TestAuthMapUpgradeSuite:
+    name: TestAuthMapUpgradeSuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestAuthMapUpgradeSuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestAuthMapUpgradeSuite.py "-l -v --junit-xml=TestAuthMapUpgradeSuite-report.xml" indy-test-automation-network
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestAuthMapUpgradeSuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestAuthMapUpgradeSuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestAuthMapUpgradeSuite
+          path: test-result-indy-test-autmation-TestAuthMapUpgradeSuite.txt
+          retention-days: 5
+
+  TestCatchUpSuite:
+    name: TestCatchUpSuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestCatchUpSuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestCatchUpSuite.py "-l -v --junit-xml=TestCatchUpSuite-report.xml" indy-test-automation-network
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestCatchUpSuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestCatchUpSuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestCatchUpSuite
+          path: test-result-indy-test-autmation-TestCatchUpSuite.txt
+          retention-days: 5
+
+  TestCatchUpSuiteExtended:
+    name: TestCatchUpSuiteExtended
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+      
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestCatchUpSuiteExtended
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestCatchUpSuiteExtended.py "-l -v --junit-xml=TestCatchUpSuiteExtended-report.xml" indy-test-automation-network
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestCatchUpSuiteExtended Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestCatchUpSuiteExtended.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestCatchUpSuiteExtended
+          path: test-result-indy-test-autmation-TestCatchUpSuiteExtended.txt
+          retention-days: 5
+
+  TestConsensusSuite:
+    name: TestConsensusSuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestConsensusSuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestConsensusSuite.py "-l -v --junit-xml=TestConsensusSuite-report.xml" indy-test-automation-network 
+      
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestConsensusSuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestConsensusSuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestConsensusSuite
+          path: test-result-indy-test-autmation-TestConsensusSuite.txt
+          retention-days: 5
+
+  TestMultiSigSuite:
+    name: TestMultiSigSuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestMultiSigSuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestMultiSigSuite.py "-l -v --junit-xml=TestMultiSigSuite-report.xml" indy-test-automation-network
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestMultiSigSuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestMultiSigSuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestMultiSigSuite
+          path: test-result-indy-test-autmation-TestMultiSigSuite.txt
+          retention-days: 5
+
+  TestProductionSuite:
+    name: TestProductionSuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestProductionSuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestProductionSuite.py "-l -v --junit-xml=TestProductionSuite-report.xml" indy-test-automation-network 
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestProductionSuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestProductionSuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestProductionSuite
+          path: test-result-indy-test-autmation-TestProductionSuite.txt
+          retention-days: 5
+
+  TestTAASuite:
+    name: TestTAASuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestTAASuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestTAASuite.py "-l -v --junit-xml=TestTAASuite-report.xml" indy-test-automation-network 
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestTAASuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestTAASuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestTAASuite
+          path: test-result-indy-test-autmation-TestTAASuite.txt
+          retention-days: 5
+
+  TestViewChangeSuite:
+    name: TestViewChangeSuite
+    needs: [ workflow-setup, node-image, client-image]
+    runs-on: ubuntu-latest
+    env: 
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }} 
+    steps:
+      - name: Git checkout hyperledger/indy-test-automation
+        uses: actions/checkout@v2
+        with:
+          repository: hyperledger/indy-test-automation
+          ref: ${{ env.TEST_AUTOMATION_BRANCH }}
+
+      - name: Create docker network
+        run: |
+          docker network create --subnet="10.0.0.0/24" "indy-test-automation-network"
+
+      - name: Download client artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: client_image
+          path: /tmp
+
+      - name: Download node artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: node_image
+          path: /tmp
+
+      - name: Load client and node image
+        run: |
+          docker load --input /tmp/client_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+          docker load --input /tmp/node_image_${{ env.INPUT_UBUNTUVERSION }}.tar
+
+      - name: test
+        id: TestViewChangeSuite
+        run: |
+          cd ./system_node_only/docker
+          sudo UBUNTU_VERSION="${{ env.INPUT_UBUNTUVERSION }}" IMAGE_REPOSITORY="ghcr.io/${{ env.GITHUB_REPOSITORY_NAME }}/" CLIENT_IMAGE="client:${{ env.INPUT_UBUNTUVERSION }}" NODE_IMAGE="node-${{ env.INPUT_UBUNTUVERSION }}" ./run.sh system_node_only/indy-node-tests/TestViewChangeSuite.py "-l -v --junit-xml=TestViewChangeSuite-report.xml" indy-test-automation-network
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: TestViewChangeSuite Test Report
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-report.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.TestViewChangeSuite.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-TestViewChangeSuite
+          path: test-result-indy-test-autmation-TestViewChangeSuite.txt
+          retention-days: 5
