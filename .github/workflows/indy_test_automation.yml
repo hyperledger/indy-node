@@ -334,7 +334,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-test_consensus
-          path: test-result-indy-test-autmation-test_consensus.txt
+          path: test-result-indy-test-automation-test_consensus.txt
           retention-days: 5
 
   test_freshness:
@@ -392,7 +392,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-test_freshness
-          path: test-result-indy-test-autmation-test_freshness.txt
+          path: test-result-indy-test-automation-test_freshness.txt
           retention-days: 5
 
   test_ledger:
@@ -450,7 +450,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-test_ledger
-          path: test-result-indy-test-autmation-test_ledger.txt
+          path: test-result-indy-test-automation-test_ledger.txt
           retention-days: 5
 
   test_off_ledger_signature:
@@ -508,7 +508,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-test_off_ledger_signature
-          path: test-result-indy-test-autmation-test_off_ledger_signature.txt
+          path: test-result-indy-test-automation-test_off_ledger_signature.txt
           retention-days: 5 
 
   test_roles:
@@ -566,7 +566,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-test_roles
-          path: test-result-indy-test-autmation-test_roles.txt
+          path: test-result-indy-test-automation-test_roles.txt
           retention-days: 5
 
   test_state_proof:
@@ -624,7 +624,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-test_state_proof
-          path: test-result-indy-test-autmation-test_state_proof.txt
+          path: test-result-indy-test-automation-test_state_proof.txt
           retention-days: 5
 
   test_vc:
@@ -682,7 +682,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-test_vc
-          path: test-result-indy-test-autmation-test_vc.txt
+          path: test-result-indy-test-automation-test_vc.txt
           retention-days: 5
 
   TestAdHocSuite:
@@ -740,7 +740,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestAdHocSuite
-          path: test-result-indy-test-autmation-TestAdHocSuite.txt
+          path: test-result-indy-test-automation-TestAdHocSuite.txt
           retention-days: 5
 
   TestAuditSuite:
@@ -798,7 +798,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestAuditSuite
-          path: test-result-indy-test-autmation-TestAuditSuite.txt
+          path: test-result-indy-test-automation-TestAuditSuite.txt
           retention-days: 5
 
   TestAuthMapAttribSuite:
@@ -856,7 +856,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestAuthMapAttribSuite
-          path: test-result-indy-test-autmation-TestAuthMapAttribSuite.txt
+          path: test-result-indy-test-automation-TestAuthMapAttribSuite.txt
           retention-days: 5
 
   TestAuthMapCredDefSuite:
@@ -914,7 +914,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestAuthMapCredDefSuite
-          path: test-result-indy-test-autmation-TestAuthMapCredDefSuite.txt
+          path: test-result-indy-test-automation-TestAuthMapCredDefSuite.txt
           retention-days: 5
 
   TestAuthMapMiscSuite:
@@ -972,7 +972,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestAuthMapMiscSuite
-          path: test-result-indy-test-autmation-TestAuthMapMiscSuite.txt
+          path: test-result-indy-test-automation-TestAuthMapMiscSuite.txt
           retention-days: 5
 
   TestAuthMapNymSuite:
@@ -1030,7 +1030,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestAuthMapNymSuite
-          path: test-result-indy-test-autmation-TestAuthMapNymSuite.txt
+          path: test-result-indy-test-automation-TestAuthMapNymSuite.txt
           retention-days: 5
 
   TestAuthMapRevocRegDefSuite:
@@ -1088,7 +1088,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestAuthMapRevocRegDefSuite
-          path: test-result-indy-test-autmation-TestAuthMapRevocRegDefSuite.txt
+          path: test-result-indy-test-automation-TestAuthMapRevocRegDefSuite.txt
           retention-days: 5
 
   TestAuthMapRevocRegEntrySuite:
@@ -1146,7 +1146,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestAuthMapRevocRegEntrySuite
-          path: test-result-indy-test-autmation-TestAuthMapRevocRegEntrySuite.txt
+          path: test-result-indy-test-automation-TestAuthMapRevocRegEntrySuite.txt
           retention-days: 5
 
   TestAuthMapSchemaSuite:
@@ -1204,7 +1204,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestAuthMapSchemaSuite
-          path: test-result-indy-test-autmation-TestAuthMapSchemaSuite.txt
+          path: test-result-indy-test-automation-TestAuthMapSchemaSuite.txt
           retention-days: 5
 
   TestAuthMapUpgradeSuite:
@@ -1262,7 +1262,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestAuthMapUpgradeSuite
-          path: test-result-indy-test-autmation-TestAuthMapUpgradeSuite.txt
+          path: test-result-indy-test-automation-TestAuthMapUpgradeSuite.txt
           retention-days: 5
 
   TestCatchUpSuite:
@@ -1320,7 +1320,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestCatchUpSuite
-          path: test-result-indy-test-autmation-TestCatchUpSuite.txt
+          path: test-result-indy-test-automation-TestCatchUpSuite.txt
           retention-days: 5
 
   TestCatchUpSuiteExtended:
@@ -1378,7 +1378,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestCatchUpSuiteExtended
-          path: test-result-indy-test-autmation-TestCatchUpSuiteExtended.txt
+          path: test-result-indy-test-automation-TestCatchUpSuiteExtended.txt
           retention-days: 5
 
   TestConsensusSuite:
@@ -1436,7 +1436,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestConsensusSuite
-          path: test-result-indy-test-autmation-TestConsensusSuite.txt
+          path: test-result-indy-test-automation-TestConsensusSuite.txt
           retention-days: 5
 
   TestMultiSigSuite:
@@ -1494,7 +1494,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestMultiSigSuite
-          path: test-result-indy-test-autmation-TestMultiSigSuite.txt
+          path: test-result-indy-test-automation-TestMultiSigSuite.txt
           retention-days: 5
 
   TestProductionSuite:
@@ -1552,7 +1552,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestProductionSuite
-          path: test-result-indy-test-autmation-TestProductionSuite.txt
+          path: test-result-indy-test-automation-TestProductionSuite.txt
           retention-days: 5
 
   TestTAASuite:
@@ -1610,7 +1610,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestTAASuite
-          path: test-result-indy-test-autmation-TestTAASuite.txt
+          path: test-result-indy-test-automation-TestTAASuite.txt
           retention-days: 5
 
   TestViewChangeSuite:
@@ -1668,5 +1668,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: detailed-test-result-TestViewChangeSuite
-          path: test-result-indy-test-autmation-TestViewChangeSuite.txt
+          path: test-result-indy-test-automation-TestViewChangeSuite.txt
           retention-days: 5
