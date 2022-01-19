@@ -1,6 +1,6 @@
 ![logo](collateral/logos/indy-logo.png)
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/pschlarb/indy-node/tree/Gitpod)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/hyperledger/indy-node/tree/ubuntu-20.04-upgrade)
 # Indy Node
 * [About Indy Node](#about-indy-node)
 * [Technical Overview of Indy Blockchain](#technical-overview-of-indy-blockchain)
