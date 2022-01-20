@@ -1,9 +1,22 @@
 # Dev Setup
+The preferred method of setting up the development environment is to use the devcontainers.
+All configuration files for VSCode and [Gitpod](https://gitpod.io) are already placed in this repository.
+If you are new to the concept of devcontainers in combination with VSCode [here](https://code.visualstudio.com/docs/remote/containers) is a good article about it.
 
-There are scripts that can help in setting up environment and project for developers.
+Simply clone this repository and VSCode will most likely ask you to open it in the devcontainer, if you have the correct extension("ms-vscode-remote.remote-containers") installed.
+If VSCode didn't ask to open it, open the command palette and use the `Remote-Containers: Rebuild and Reopen in Container` command.
+
+If you want to use Gitpod simply use this [link](https://gitpod.io/#https://github.com/hyperledger/indy-node/tree/ubuntu-20.04-upgrade) 
+or if you want to work with your fork, prefix the entire URL of your branch with  `gitpod.io/#` so that it looks like `https://gitpod.io/#https://github.com/hyperledger/indy-node/tree/ubuntu-20.04-upgrade`.
+
+**Note**: Be aware that the config files for Gitpod and VSCode are currently only used in the `ubuntu-20.04-upgrade` branch!
+
+
+There are also scripts that can help in setting up an environment and project for developers.
 The scripts are in [dev-setup](https://github.com/hyperledger/indy-node/tree/master/dev-setup) folder.
+**Note**: Beware that these may be outdated and more cumbersome to set up.
 
-**Note**: as of now, we provide scripts for Ubuntu only. It's not guaranteed that the code is working on Windows.
+**Note**: As of now, we provide scripts for Ubuntu only. It's not guaranteed that the code is working on Windows.
 
 - One needs Python 3.5 to work with the code 
 - We recommend using Python virtual environment for development
