@@ -3,7 +3,6 @@ from hashlib import sha256
 from typing import Optional
 import base58
 
-import base58
 from common.serializers.serialization import domain_state_serializer
 from indy_common.auth import Authoriser
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit

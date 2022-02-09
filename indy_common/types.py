@@ -47,7 +47,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     RS_NAME, RS_ID, RS_CONTENT, RS_CONTEXT_TYPE_VALUE, RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, \
     RICH_SCHEMA_ENCODING, RS_MAPPING_TYPE_VALUE, RICH_SCHEMA_MAPPING, RS_CRED_DEF_TYPE_VALUE, \
     RICH_SCHEMA_CRED_DEF, GET_RICH_SCHEMA_OBJECT_BY_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
-    RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, DIDDOCCONTENT
+    RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, DIDDOC_CONTENT
 from indy_common.version import SchemaVersion
 
 
@@ -83,7 +83,7 @@ class ClientNYMOperation(PClientNYMOperation):
         (VERKEY, VerkeyField(optional=True, nullable=True)),
         (TARGET_NYM, DestNymField()),
         (ROLE, RoleField(optional=True)),
-        (DIDDOCCONTENT, LimitedLengthStringField(max_length=RAW_FIELD_LIMIT, optional=True)),
+        (DIDDOC_CONTENT, JsonField(max_length=JSON_FIELD_LIMIT, optional=True)),
     )
 
 
