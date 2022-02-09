@@ -126,9 +126,6 @@ class NymHandler(PNymHandler):
             request.identifier, isCommitted=False
         )
 
-        if operation[TARGET_NYM] != base58(sha256(b'VERKEY').digest()[:16]):
-            raise InvalidClientRequest("Invalid dest {}. Must be first 16 bytes of SHA256 of verkey".format(operation[TARGET_NYM]))
-
         nym_data = self.database_manager.idr_cache.getNym(request.identifier, isCommitted=False)
         if not nym_data:
             # Non-ledger nym case. These two checks duplicated and mainly executed in client_authn,
@@ -150,7 +147,7 @@ class NymHandler(PNymHandler):
             raise InvalidClientRequest(
                 identifier,
                 req_id,
-                "DID must be self-certifying",
+                "DID is not self-certifying; must be first 16 bytes of SHA256 of verkey",
             )
 
         self.write_req_validator.validate(
@@ -187,14 +184,13 @@ class NymHandler(PNymHandler):
         # DID must be the base58 encoded first 16 bytes of the 32 bytes verkey
         # See https://hyperledger.github.io/indy-did-method/#creation
 
-        if self._is_abbrev_verkey(verkey):
-            return True
+        # Previously, it was possible to abbreviate the verification key sent
+        # in a nym transaction. Since the DID is now the first 16 bytes of the
+        # hash of the full verkey, this abberviation is no longer possible.
 
-        # Full verkey
-        return did == base58.b58encode(base58.b58decode(verkey)[:16]).decode("utf-8")
-
-    def _is_abbrev_verkey(self, verkey):
-        return verkey.startswith("~") and verkey.len() == 16
+        return did == base58.b58encode(
+            sha256(base58.b58decode(verkey)).digest()[:16]
+        ).decode("utf-8")
 
     def _validate_diddoc_content(self, diddoc):
 
