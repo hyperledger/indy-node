@@ -37,7 +37,7 @@
    The Stewards must:
    1. Generate Steward DIDs as described in [Creating DID](./CreateDID.md).
    1. Install their node as described in [Installation and configuration of Indy-Node](../installation-and-configuration.md) (with some small adjustments):
-      1. Determine a name for the new network and have the stewards substitute it in the appropriate places in the guide, such as when setting the network name and creating the directory when creating the keys for the node.
+      1. Determine a name for the new network and have the stewards substitute it in the appropriate places in the guide, such as when setting the network name and creating the directory when creating the keys for the node. This step MUST be completed before running init_indy_node as part of step [3.2.3 Create the Key for the Validator Node](https://github.com/lynnbendixsen/indy-node/blob/master/docs/source/installation-and-configuration.md#323-create-the-key-for-the-validator-node). 
       1. They all need to stop at the normal place ([3.5. Add Node to a Pool](../installation-and-configuration.md#3.5.-Add-Node-to-a-Pool)) as instructed in the guide as the steps that follow differ when creating a new network.  The following sections of this guide describe the steps required to start the new network.
 
    Once the Stewards have created their DID and Verkey, and performed the initial setup of they node, give the Stewards access to a spreadsheet like [this one](https://docs.google.com/spreadsheets/d/1LDduIeZp7pansd9deXeVSqGgdf0VdAHNMc7xYli3QAY/edit#gid=0) and have them fill out their own row of the Stewards sheet.  The completed sheet will be used to generate the genesis transaction files for the network.   

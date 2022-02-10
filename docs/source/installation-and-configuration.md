@@ -254,7 +254,8 @@ Many providers, such as AWS, use local, non-routable IP addresses on their nodes
 
 Please run the following on the Validator before running `init_indy_node`.
 
-In the `/etc/indy/indy_config.py` file, change the Network name from “sandbox” (Sovrin StagingNet) to “net3” (Sovrin BuilderNet) (use sudo to edit the file or use `sudo sed -i -re "s/(NETWORK_NAME = ')\w+/\1net3/" /etc/indy/indy_config.py)` then run the following commands:
+In the `/etc/indy/indy_config.py` file, change the Network name from “sandbox” (Sovrin StagingNet) to “net3” (Sovrin BuilderNet) (use sudo to edit the file or use `sudo sed -i -re "s/(NETWORK_NAME = ')\w+/\1net3/" /etc/indy/indy_config.py)` then run the following commands:  
+Note: **This is where you would substitute the directory name of the new network if you were setting up a new network.**
 ```
 sudo -i -u indy mkdir /var/lib/indy/net3
 cd /var/lib/indy/net3
@@ -328,7 +329,8 @@ At this point you should have the following data available:
 #### 3.5.1 Configuration
 After you have been informed that your public key has been placed onto the ledger of the Network, you may complete the configuration steps to activate your Validator node on that network.
 
-Things to verify before activating the node:
+Things to verify before activating the node:  
+Note: If you are creating a new network, substitute the new networks directory name for 'net3' below.
 - `cat /etc/indy/indy_config.py`
   - Ensure the network configuration is correct.
 - `cat /etc/indy/indy.env`
