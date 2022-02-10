@@ -42,7 +42,12 @@ For the sake of simplicity this walkthrough runs all of the nodes on the local m
    newNetwork:indy> did new seed=000000000000000000000000Steward4
    Did "TWwCRQRZ2ZHMJFn9TzLp7W" has been created with "~UhP7K35SAXbix1kCQV4Upx" verkey
    ```
-5. Create Validator Node keys
+5. Edit `/etc/indy/indy_config.py` and change the network name.
+   `NETWORK_NAME = "newNetwork"`
+
+6. `mkdir /var/lib/indy/newNetwork`
+
+7. Create Validator Node keys
 
    > The seed will be randomly generated. As mentioned above with the seed you can recreate the key!
 
@@ -100,9 +105,9 @@ For the sake of simplicity this walkthrough runs all of the nodes on the local m
    Proof of possession for BLS key is QsrUH1e5zsdiEGij1NeY9S7CwzUdU2rzjskHNGHCQ8rtgYZyBC99MgRPzgkJHP86nWQUo2fSRvyWLQdBwvWfNtSqUBQgVScQPHg9CJXWWohWnzSP4ViBo8EEeGXEoP2NPeRnFCCfuhYAC7stZgBATFyvdFRwG58ws76qQQQsfDDHBV
    ```
 
-6. Fill in the spreadsheet.
+8. Fill in the spreadsheet.
    
-7. Download the script from [https://github.com/sovrin-foundation/steward-tools/tree/master/create_genesis] and generate the genesis file.
+9. Download the script from [https://github.com/sovrin-foundation/steward-tools/tree/master/create_genesis] and generate the genesis file.
 
    ```
    $ python genesis_from_files.py --trustees Trustees.csv --stewards Stewards.csv 
@@ -115,11 +120,6 @@ For the sake of simplicity this walkthrough runs all of the nodes on the local m
    INFO:root:Recovering tree from transaction log
    INFO:root:Recovered tree in 0.000322740000228805 seconds
    ```
-8. Edit `/etc/indy/indy_config.py` and change the network name.
-   `NETWORK_NAME = "newNetwork"`
-
-9. `mkdir /var/lib/indy/newNetwork`
-
 10. `cp domain_transactions_genesis /var/lib/indy/newNetwork/ && cp pool_transactions_genesis /var/lib/indy/newNetwork/`
 
 11. Start the nodes:
