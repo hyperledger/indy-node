@@ -4,6 +4,9 @@ from .__metadata__ import (
     __author_email__, __maintainer__, __license__,
     load_version, set_version, load_manifest, set_manifest
 )
+import sys
+if sys.version_info >= (3, 8):
+    import pkg_resources
 
 PLUGIN_LEDGER_IDS = set()
 PLUGIN_CLIENT_REQUEST_FIELDS = {}
@@ -12,7 +15,6 @@ PLUGIN_CLIENT_REQ_OP_TYPES = {}
 
 # TODO review is it really necessary here
 def setup_plugins():
-    import sys
     import os
     import pip
     import importlib    # noqa
@@ -50,7 +52,12 @@ def setup_plugins():
                           format(plugin_root))
     sys.path.insert(0, plugin_root.__path__[0])
     enabled_plugins = config.ENABLED_PLUGINS
-    installed_packages = {p.project_name: p for p in pip.get_installed_distributions()}
+
+    if sys.version_info >= (3, 8):
+        installed_packages = {p.project_name: p for p in pkg_resources.working_set}
+    else:
+        installed_packages = {p.project_name: p for p in pip.get_installed_distributions()}
+        
     for plugin_name in enabled_plugins:
         plugin = find_and_load_plugin(plugin_name, plugin_root, installed_packages)
         plugin_globals = plugin.__dict__
