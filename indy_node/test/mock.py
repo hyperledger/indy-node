@@ -20,7 +20,7 @@ def build_nym_request(identifier, dest, verkey, diddoc_content, role):
     if verkey:
         operation["verkey"] = verkey
     if diddoc_content:
-        operation["diddoc_content"] = diddoc_content
+        operation["diddocContent"] = json.dumps(diddoc_content)
     if role:
         operation["role"] = role
 
