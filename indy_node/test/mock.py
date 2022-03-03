@@ -4,7 +4,9 @@ from random import randint
 from indy_common.constants import GET_NYM, NYM
 
 
-def build_nym_request(identifier, dest, verkey, diddoc_content, role):
+def build_nym_request(
+    identifier: str, dest: str, verkey: str, diddoc_content: dict, role: str
+):
 
     request = {
         "identifier": identifier,

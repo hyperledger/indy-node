@@ -30,7 +30,7 @@ diddoc_content = {
 
 
 # Prepare nym with role endorser and no diddoc content
-@pytest.fixture("module")
+@pytest.fixture(scope="module")
 def prepare_endorser(looper, sdk_pool_handle, sdk_wallet_steward, sdk_wallet_endorser):
     _, did_steward = sdk_wallet_steward
     wh, _ = sdk_wallet_endorser
@@ -46,7 +46,7 @@ def prepare_endorser(looper, sdk_pool_handle, sdk_wallet_steward, sdk_wallet_end
 
 
 # Add diddoc content to nym
-@pytest.fixture("module")
+@pytest.fixture(scope="module")
 def add_diddoc_content(looper, sdk_pool_handle, sdk_wallet_endorser, prepare_endorser):
     _, did = sdk_wallet_endorser
     nym_request = build_nym_request(did, did, None, diddoc_content, None)

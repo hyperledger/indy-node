@@ -1,5 +1,6 @@
 from binascii import hexlify
 from hashlib import sha256
+import json
 from typing import Optional
 import base58
 
@@ -63,6 +64,7 @@ class NymHandler(PNymHandler):
 
         diddoc_content = operation.get(DIDDOC_CONTENT, None)
         if diddoc_content:
+            diddoc_content = json.loads(diddoc_content)
             try:
                 self._validate_diddoc_content(diddoc_content)
             except InvalidDIDDocException:
