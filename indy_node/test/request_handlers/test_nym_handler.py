@@ -15,9 +15,6 @@ from plenum.common.txn_util import reqToTxn, append_txn_metadata
 from plenum.common.util import randomString
 from plenum.server.request_handlers.utils import nym_to_state_key
 
-config = getConfig()
-ENABLE_DID_INDY = config.ENABLE_DID_INDY
-
 
 @pytest.fixture(scope="module")
 def nym_handler(db_manager, tconf, write_auth_req_validator):
@@ -174,6 +171,7 @@ def test_nym_static_validation_diddoc_content_fails_with_same_id(
 def test_nym_dynamic_validation_for_new_nym(
     nym_request, nym_handler: NymHandler, creator
 ):
+    nym_handler.config.ENABLE_DID_INDY = True
     nym_handler.write_req_validator.validate = get_exception(False)
     add_to_idr(nym_handler.database_manager.idr_cache, creator, STEWARD)
     nym_handler.dynamic_validation(nym_request, 0)
@@ -183,10 +181,10 @@ def test_nym_dynamic_validation_for_new_nym(
         nym_handler.dynamic_validation(nym_request, 0)
 
 
-@pytest.mark.skipif(not ENABLE_DID_INDY, reason="DID Indy")
 def test_nym_dynamic_validation_for_new_nym_fails_not_self_certifying(
     nym_request, nym_handler: NymHandler
 ):
+    nym_handler.config.ENABLE_DID_INDY = True
     nym_request.operation["dest"] = "V4SGRU86Z58d6TV7PBUe6f"
     with pytest.raises(InvalidClientRequest):
         nym_handler.additional_dynamic_validation(nym_request, None)

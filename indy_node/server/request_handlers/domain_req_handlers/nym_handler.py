@@ -9,7 +9,6 @@ from indy_common.auth import Authoriser
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.base_diddoc_template import BaseDIDDoc
-from indy_common.config_util import getConfig
 
 # TODO - Import DIDDOC_CONTENT from plenum?
 from indy_common.constants import NYM, DIDDOC_CONTENT
@@ -32,8 +31,6 @@ from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.nym_handler import NymHandler as PNymHandler
 from plenum.server.request_handlers.utils import get_nym_details, nym_to_state_key
 
-config = getConfig()
-NAMESPACE = config.NETWORK_NAME
 # TODO - Clean up
 DID_CONTEXT = "https://www.w3.org/ns/did/v1"
 
@@ -45,6 +42,7 @@ class NymHandler(PNymHandler):
                  write_req_validator: WriteRequestValidator):
         super().__init__(config, database_manager)
         self.write_req_validator = write_req_validator
+        self.namespace = config.NETWORK_NAME
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
@@ -142,7 +140,7 @@ class NymHandler(PNymHandler):
                     "Non-ledger nym txn must contain verkey for new did",
                 )
 
-        if not self._is_self_certifying(
+        if self.config.ENABLE_DID_INDY and not self._is_self_certifying(
             request.operation.get(TARGET_NYM), request.operation.get(VERKEY)
         ):
             raise InvalidClientRequest(
@@ -230,6 +228,6 @@ class NymHandler(PNymHandler):
         dest = request.operation.get(TARGET_NYM)
         verkey = request.operation.get(VERKEY)
 
-        diddoc = BaseDIDDoc(NAMESPACE, dest, verkey)
+        diddoc = BaseDIDDoc(self.config.NETWORK_NAME, dest, verkey)
 
         return diddoc
