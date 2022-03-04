@@ -192,7 +192,7 @@ def test_get_previous_nym_data_by_seq_no(
     replies = sdk_get_and_check_replies(looper, [request_couple])
 
     assert (
-        json.loads(replies[0][1]["result"]["data"])["diddocContent"] == diddoc_content
+        json.loads(replies[0][1]["result"]["data"])["diddocContent"] == diddoc_content_json
     )
 
 
