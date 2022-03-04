@@ -8,7 +8,7 @@ EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("type", ConstantField),
     ("dest", IdentifierField),
     ("timestamp", IntegerField),
-    ("seNo", TxnSeqNoField)
+    ("seqNo", TxnSeqNoField)
 ])
 
 
