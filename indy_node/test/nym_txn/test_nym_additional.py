@@ -85,7 +85,6 @@ def test_send_same_nyms_only_first_gets_written(looper, sdk_pool_handle, sdk_wal
 
 def get_nym(looper, sdk_pool_handle, sdk_wallet_steward, t_did):
     _, s_did = sdk_wallet_steward
-    print(json.dumps(build_get_nym_request(s_did, t_did)))
     get_nym_req = looper.loop.run_until_complete(build_get_nym_request(s_did, t_did))
     req = sdk_sign_and_send_prepared_request(
         looper, sdk_wallet_steward, sdk_pool_handle, get_nym_req
