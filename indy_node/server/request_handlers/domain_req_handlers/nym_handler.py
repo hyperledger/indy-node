@@ -1,5 +1,6 @@
 from binascii import hexlify
 from hashlib import sha256
+import json
 from typing import Optional
 import base58
 
@@ -8,7 +9,6 @@ from indy_common.auth import Authoriser
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.base_diddoc_template import BaseDIDDoc
-from indy_common.config_util import getConfig
 
 # TODO - Import DIDDOC_CONTENT from plenum?
 from indy_common.constants import NYM, DIDDOC_CONTENT
@@ -31,8 +31,6 @@ from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.nym_handler import NymHandler as PNymHandler
 from plenum.server.request_handlers.utils import get_nym_details, nym_to_state_key
 
-config = getConfig()
-NAMESPACE = config.NETWORK_NAME
 # TODO - Clean up
 DID_CONTEXT = "https://www.w3.org/ns/did/v1"
 
@@ -44,6 +42,7 @@ class NymHandler(PNymHandler):
                  write_req_validator: WriteRequestValidator):
         super().__init__(config, database_manager)
         self.write_req_validator = write_req_validator
+        self.namespace = config.NETWORK_NAME
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
@@ -63,6 +62,7 @@ class NymHandler(PNymHandler):
 
         diddoc_content = operation.get(DIDDOC_CONTENT, None)
         if diddoc_content:
+            diddoc_content = json.loads(diddoc_content)
             try:
                 self._validate_diddoc_content(diddoc_content)
             except InvalidDIDDocException:
@@ -140,7 +140,7 @@ class NymHandler(PNymHandler):
                     "Non-ledger nym txn must contain verkey for new did",
                 )
 
-        if not self._is_self_certifying(
+        if self.config.ENABLE_DID_INDY and not self._is_self_certifying(
             request.operation.get(TARGET_NYM), request.operation.get(VERKEY)
         ):
             raise InvalidClientRequest(
@@ -197,16 +197,6 @@ class NymHandler(PNymHandler):
         if diddoc.get("id", None):
             raise InvalidDIDDocException
 
-        context = diddoc.get("@context", None)
-        if context:
-            # Must be string or array and contain DID_CONTEXT
-            if not isinstance(context, (list, str)):
-                raise InvalidDIDDocException
-            if isinstance(context, str) and not context == DID_CONTEXT:
-                raise InvalidDIDDocException
-            elif isinstance(context, list) and DID_CONTEXT not in context:
-                raise InvalidDIDDocException
-
         # No element in diddoc is allowed to have same id as verkey in base diddoc
         # Alernative would be to merge with base did doc and perform generic did doc validation,
         # e.g. using pyDID
@@ -228,6 +218,6 @@ class NymHandler(PNymHandler):
         dest = request.operation.get(TARGET_NYM)
         verkey = request.operation.get(VERKEY)
 
-        diddoc = BaseDIDDoc(NAMESPACE, dest, verkey)
+        diddoc = BaseDIDDoc(self.config.NETWORK_NAME, dest, verkey)
 
         return diddoc

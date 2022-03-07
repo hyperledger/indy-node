@@ -27,10 +27,11 @@ diddoc_content = {
         }
     ],
 }
+diddoc_content_json = json.dumps(diddoc_content)
 
 
 # Prepare nym with role endorser and no diddoc content
-@pytest.fixture("module")
+@pytest.fixture(scope="module")
 def prepare_endorser(looper, sdk_pool_handle, sdk_wallet_steward, sdk_wallet_endorser):
     _, did_steward = sdk_wallet_steward
     wh, _ = sdk_wallet_endorser
@@ -46,7 +47,7 @@ def prepare_endorser(looper, sdk_pool_handle, sdk_wallet_steward, sdk_wallet_end
 
 
 # Add diddoc content to nym
-@pytest.fixture("module")
+@pytest.fixture(scope="module")
 def add_diddoc_content(looper, sdk_pool_handle, sdk_wallet_endorser, prepare_endorser):
     _, did = sdk_wallet_endorser
     nym_request = build_nym_request(did, did, None, diddoc_content, None)
@@ -64,14 +65,14 @@ def test_get_nym_data_with_diddoc_content(
     looper, sdk_pool_handle, sdk_wallet_endorser, add_diddoc_content
 ):
     _, did = sdk_wallet_endorser
-    get_nym_request = build_get_nym_request(did, did, None, None)
+    get_nym_request = build_get_nym_request(did, did)
     request_couple = sdk_sign_and_send_prepared_request(
         looper, sdk_wallet_endorser, sdk_pool_handle, get_nym_request
     )
     replies = sdk_get_and_check_replies(looper, [request_couple])
 
     assert (
-        json.loads(replies[0][1]["result"]["data"])["diddoc_content"] == diddoc_content
+        json.loads(replies[0][1]["result"]["data"])["diddocContent"] == diddoc_content_json
     )
 
 
@@ -79,12 +80,14 @@ def test_get_previous_nym_data_by_timestamp(
     looper, sdk_pool_handle, sdk_wallet_endorser, add_diddoc_content
 ):
     _, did = sdk_wallet_endorser
+
     # Get current nym data
-    get_nym_request = build_get_nym_request(did, did, None, None)
+    get_nym_request = build_get_nym_request(did, did)
     request_couple = sdk_sign_and_send_prepared_request(
         looper, sdk_wallet_endorser, sdk_pool_handle, get_nym_request
     )
     replies = sdk_get_and_check_replies(looper, [request_couple])
+
     # Get timestamp from data
     timestamp = replies[0][1]["result"]["txnTime"]
 
@@ -93,48 +96,51 @@ def test_get_previous_nym_data_by_timestamp(
     new_diddoc_content["serviceEndpoint"][0][
         "serviceEndpoint"
     ] = "https://new.example.com"
+    new_diddoc_content = json.dumps(new_diddoc_content)
 
     time.sleep(3)
 
-    nym_request = build_nym_request(did, did, None, new_diddoc_content, None)
+    nym_request = build_nym_request(
+        identifier=did, dest=did, diddoc_content=new_diddoc_content
+    )
     request_couple = sdk_sign_and_send_prepared_request(
         looper, sdk_wallet_endorser, sdk_pool_handle, nym_request
     )
     sdk_get_and_check_replies(looper, [request_couple])
 
-    get_nym_request = build_get_nym_request(did, did, None, None)
+    get_nym_request = build_get_nym_request(did, did)
     request_couple = sdk_sign_and_send_prepared_request(
         looper, sdk_wallet_endorser, sdk_pool_handle, get_nym_request
     )
     replies = sdk_get_and_check_replies(looper, [request_couple])
 
     assert (
-        json.loads(replies[0][1]["result"]["data"])["diddoc_content"] == new_diddoc_content
+        json.loads(replies[0][1]["result"]["data"])["diddocContent"] == new_diddoc_content
     )
 
     update_ts = replies[0][1]["result"]["txnTime"]
 
     # Get previous nym data by exact timestamp
-    get_nym_request = build_get_nym_request(did, did, timestamp, None)
+    get_nym_request = build_get_nym_request(did, did, timestamp)
     request_couple = sdk_sign_and_send_prepared_request(
         looper, sdk_wallet_endorser, sdk_pool_handle, get_nym_request
     )
     replies = sdk_get_and_check_replies(looper, [request_couple])
 
     assert (
-        json.loads(replies[0][1]["result"]["data"])["diddoc_content"] == diddoc_content
+        json.loads(replies[0][1]["result"]["data"])["diddocContent"] == diddoc_content_json
     )
 
     # Get previous nym data by timestamp but not exact
     ts = randint(timestamp + 1, update_ts - 1)
-    get_nym_request = build_get_nym_request(did, did, ts, None)
+    get_nym_request = build_get_nym_request(did, did, ts)
     request_couple = sdk_sign_and_send_prepared_request(
         looper, sdk_wallet_endorser, sdk_pool_handle, get_nym_request
     )
     replies = sdk_get_and_check_replies(looper, [request_couple])
 
     assert (
-        json.loads(replies[0][1]["result"]["data"])["diddoc_content"] == diddoc_content
+        json.loads(replies[0][1]["result"]["data"])["diddocContent"] == diddoc_content_json
     )
 
 
@@ -142,12 +148,14 @@ def test_get_previous_nym_data_by_seq_no(
     looper, sdk_pool_handle, sdk_wallet_endorser, add_diddoc_content
 ):
     _, did = sdk_wallet_endorser
+
     # Get current nym data
-    get_nym_request = build_get_nym_request(did, did, None, None)
+    get_nym_request = build_get_nym_request(did, did)
     request_couple = sdk_sign_and_send_prepared_request(
         looper, sdk_wallet_endorser, sdk_pool_handle, get_nym_request
     )
     replies = sdk_get_and_check_replies(looper, [request_couple])
+
     # Get seq_no from data
     seq_no = replies[0][1]["result"]["seqNo"]
 
@@ -156,6 +164,7 @@ def test_get_previous_nym_data_by_seq_no(
     new_diddoc_content["serviceEndpoint"][0][
         "serviceEndpoint"
     ] = "https://new.example.com"
+    new_diddoc_content = json.dumps(new_diddoc_content)
 
     time.sleep(3)
 
@@ -165,25 +174,25 @@ def test_get_previous_nym_data_by_seq_no(
     )
     sdk_get_and_check_replies(looper, [request_couple])
 
-    get_nym_request = build_get_nym_request(did, did, None, None)
+    get_nym_request = build_get_nym_request(did, did)
     request_couple = sdk_sign_and_send_prepared_request(
         looper, sdk_wallet_endorser, sdk_pool_handle, get_nym_request
     )
     replies = sdk_get_and_check_replies(looper, [request_couple])
 
     assert (
-        json.loads(replies[0][1]["result"]["data"])["diddoc_content"] == new_diddoc_content
+        json.loads(replies[0][1]["result"]["data"])["diddocContent"] == new_diddoc_content
     )
 
     # Get previous nym data by seq_no
-    get_nym_request = build_get_nym_request(did, did, None, seq_no)
+    get_nym_request = build_get_nym_request(did, did, seq_no=seq_no)
     request_couple = sdk_sign_and_send_prepared_request(
         looper, sdk_wallet_endorser, sdk_pool_handle, get_nym_request
     )
     replies = sdk_get_and_check_replies(looper, [request_couple])
 
     assert (
-        json.loads(replies[0][1]["result"]["data"])["diddoc_content"] == diddoc_content
+        json.loads(replies[0][1]["result"]["data"])["diddocContent"] == diddoc_content_json
     )
 
 
@@ -208,26 +217,6 @@ def test_add_arbitrary_property(
     replies = sdk_get_and_check_replies(looper, [request_couple])
 
     assert replies[0][1]["result"]["txn"]["data"]["someProp"] == "someValue"
-
-
-def test_add_diddoc_content_did_context_missing_fails(
-    looper, sdk_pool_handle, sdk_wallet_endorser, prepare_endorser
-):
-    _, did = sdk_wallet_endorser
-    diddoc_content_without_did_context = copy.deepcopy(diddoc_content)
-    diddoc_content_without_did_context["@context"] = [
-        "https://identity.foundation/didcomm-messaging/service-endpoint/v1"
-    ]
-    nym_request = build_nym_request(
-        did, did, None, diddoc_content_without_did_context, None
-    )
-    request_couple = sdk_sign_and_send_prepared_request(
-        looper, sdk_wallet_endorser, sdk_pool_handle, nym_request
-    )
-    with pytest.raises(RequestNackedException) as e:
-        sdk_get_and_check_replies(looper, [request_couple])
-    e.match("InvalidClientRequest")
-    e.match("Invalid DIDDOC_Content")
 
 
 def test_add_didoc_with_id_fails(

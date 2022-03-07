@@ -14,7 +14,7 @@ DOMAIN_LEDGER_ID = 1
 
 # NYM
 # TODO: Will be defined in plenum
-DIDDOC_CONTENT = "diddoc_content"
+DIDDOC_CONTENT = "diddocContent"
 
 # SCHEMA
 SCHEMA_NAME = "name"

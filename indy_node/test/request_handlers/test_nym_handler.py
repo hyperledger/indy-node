@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import json
 import pytest
 
@@ -8,49 +9,26 @@ from indy_common.constants import NYM, ROLE, DIDDOC_CONTENT
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.test.request_handlers.helper import add_to_idr, get_exception
 from ledger.util import F
-from plenum.common.constants import STEWARD, TARGET_NYM, IDENTIFIER, VERKEY
+from plenum.common.constants import STEWARD, TARGET_NYM, IDENTIFIER, TXN_TYPE, VERKEY
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import reqToTxn, append_txn_metadata
 from plenum.common.util import randomString
 from plenum.server.request_handlers.utils import nym_to_state_key
 
-config = getConfig()
-ENABLE_DID_INDY = config.ENABLE_DID_INDY
+
+@contextmanager
+def enable_did_indy(handler: NymHandler):
+    handler.config.ENABLE_DID_INDY = True
+    try:
+        yield
+    finally:
+        handler.config.ENABLE_DID_INDY = False
 
 
 @pytest.fixture(scope="module")
 def nym_handler(db_manager, tconf, write_auth_req_validator):
     return NymHandler(tconf, db_manager, write_auth_req_validator)
-
-
-@pytest.fixture(scope="function")
-def nym_request(creator):
-    return Request(
-        identifier=creator,
-        reqId=5,
-        operation={
-            "type": NYM,
-            "dest": "X3XUxYQM2cfkSMzfMNma73",
-            "role": None,
-            "diddoc_content": {
-                "@context": [
-                    "https://www.w3.org/ns/did/v1",
-                    "https://identity.foundation/didcomm-messaging/service-endpoint/v1",
-                ],
-                "serviceEndpoint": [
-                    {
-                        "id": "did:indy:sovrin:123456#didcomm",
-                        "type": "didcomm-messaging",
-                        "serviceEndpoint": "https://example.com",
-                        "recipientKeys": ["#verkey"],
-                        "routingKeys": [],
-                    }
-                ],
-            },
-            "verkey": "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYx",
-        },
-    )
 
 
 @pytest.fixture(scope="module")
@@ -59,6 +37,50 @@ def creator(db_manager):
     idr = db_manager.idr_cache
     add_to_idr(idr, identifier, None)
     return identifier
+
+
+@pytest.fixture
+def doc():
+    yield {
+        "@context": [
+            "https://www.w3.org/ns/did/v1",
+            "https://identity.foundation/didcomm-messaging/service-endpoint/v1",
+        ],
+        "serviceEndpoint": [
+            {
+                "id": "did:indy:sovrin:123456#didcomm",
+                "type": "didcomm-messaging",
+                "serviceEndpoint": "https://example.com",
+                "recipientKeys": ["#verkey"],
+                "routingKeys": [],
+            }
+        ],
+    }
+
+
+@pytest.fixture
+def nym_request_factory(creator, doc):
+    def _factory(diddoc_content: dict = None):
+        if diddoc_content is None:
+            diddoc_content = doc
+        return Request(
+            identifier=creator,
+            reqId=5,
+            operation={
+                TXN_TYPE: NYM,
+                TARGET_NYM: "X3XUxYQM2cfkSMzfMNma73",
+                ROLE: None,
+                DIDDOC_CONTENT: json.dumps(diddoc_content),
+                VERKEY: "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYx",
+            },
+        )
+
+    yield _factory
+
+
+@pytest.fixture(scope="function")
+def nym_request(nym_request_factory):
+    yield nym_request_factory()
 
 
 def test_nym_static_validation_passes(nym_request, nym_handler: NymHandler):
@@ -112,42 +134,29 @@ def test_nym_static_validation_not_authorized_random(
 
 
 def test_nym_static_validation_fails_diddoc_content_with_id(
-    nym_request, nym_handler: NymHandler
+    nym_request_factory, doc, nym_handler: NymHandler
 ):
-    nym_request.operation["diddoc_content"]["id"] = randomString()
+    doc["id"] = randomString()
+    nym_request = nym_request_factory(doc)
     with pytest.raises(InvalidClientRequest):
         nym_handler.static_validation(nym_request)
-
-
-def test_nym_static_validation_fails_diddoc_content_with_context_is_not_did_context(
-    nym_request, nym_handler: NymHandler
-):
-    nym_request.operation["diddoc_content"]["@context"] = randomString()
-    with pytest.raises(InvalidClientRequest):
-        nym_handler.static_validation(nym_request)
-
-
-def test_nym_static_validation_diddoc_content_with_did_context(
-    nym_request, nym_handler: NymHandler
-):
-    nym_request.operation["diddoc_content"]["@context"] = "https://www.w3.org/ns/did/v1"
-    nym_handler.static_validation(nym_request)
 
 
 def test_nym_static_validation_diddoc_content_without_context(
-    nym_request, nym_handler: NymHandler
+    nym_request_factory, doc, nym_handler: NymHandler
 ):
-    del nym_request.operation["diddoc_content"]["@context"]
+    del doc["@context"]
+    nym_request = nym_request_factory(doc)
     nym_handler.static_validation(nym_request)
 
 
 def test_nym_static_validation_diddoc_content_fails_with_same_id(
-    nym_request, nym_handler: NymHandler
+    nym_request_factory, doc, nym_handler: NymHandler
 ):
-    nym_request.operation["diddoc_content"]["authentication"] = [{
+    doc["authentication"] = [{
         "id": "did:indy:sovrin:123456#verkey"
     }]
-    print(json.dumps(nym_request.operation["diddoc_content"], indent=4))
+    nym_request = nym_request_factory(doc)
     with pytest.raises(InvalidClientRequest):
         nym_handler.static_validation(nym_request)
 
@@ -164,13 +173,13 @@ def test_nym_dynamic_validation_for_new_nym(
         nym_handler.dynamic_validation(nym_request, 0)
 
 
-@pytest.mark.skipif(not ENABLE_DID_INDY, reason="DID Indy")
 def test_nym_dynamic_validation_for_new_nym_fails_not_self_certifying(
     nym_request, nym_handler: NymHandler
 ):
-    nym_request.operation["dest"] = "V4SGRU86Z58d6TV7PBUe6f"
-    with pytest.raises(InvalidClientRequest):
-        nym_handler.additional_dynamic_validation(nym_request, None)
+    with enable_did_indy(nym_handler):
+        nym_request.operation["dest"] = "V4SGRU86Z58d6TV7PBUe6f"
+        with pytest.raises(InvalidClientRequest):
+            nym_handler.additional_dynamic_validation(nym_request, None)
 
 
 def test_nym_dynamic_validation_for_existing_nym(

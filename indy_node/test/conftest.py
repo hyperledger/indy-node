@@ -419,7 +419,8 @@ def fake_node(db_manager, fake_pool_cfg, fake_upgrader, fake_restarter, fake_poo
                          config=FakeSomething(
                              stewardThreshold=20,
                              poolTransactionsFile="//pool_genesis_that_cannot_exist",
-                             domainTransactionsFile="//domain_genesis_that_cannot_exist"
+                             domainTransactionsFile="//domain_genesis_that_cannot_exist",
+                             NETWORK_NAME="sandbox",
                          ),
                          poolCfg=fake_pool_cfg,
                          upgrader=fake_upgrader,
