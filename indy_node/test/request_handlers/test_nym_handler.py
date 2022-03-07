@@ -142,23 +142,6 @@ def test_nym_static_validation_fails_diddoc_content_with_id(
         nym_handler.static_validation(nym_request)
 
 
-def test_nym_static_validation_fails_diddoc_content_with_context_is_not_did_context(
-    nym_request_factory, doc, nym_handler: NymHandler
-):
-    doc["@context"] = randomString()
-    nym_request = nym_request_factory(doc)
-    with pytest.raises(InvalidClientRequest):
-        nym_handler.static_validation(nym_request)
-
-
-def test_nym_static_validation_diddoc_content_with_did_context(
-    nym_request_factory, doc, nym_handler: NymHandler
-):
-    doc["@context"] = "https://www.w3.org/ns/did/v1"
-    nym_request = nym_request_factory(doc)
-    nym_handler.static_validation(nym_request)
-
-
 def test_nym_static_validation_diddoc_content_without_context(
     nym_request_factory, doc, nym_handler: NymHandler
 ):
