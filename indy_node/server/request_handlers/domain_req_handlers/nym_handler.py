@@ -197,16 +197,6 @@ class NymHandler(PNymHandler):
         if diddoc.get("id", None):
             raise InvalidDIDDocException
 
-        context = diddoc.get("@context", None)
-        if context:
-            # Must be string or array and contain DID_CONTEXT
-            if not isinstance(context, (list, str)):
-                raise InvalidDIDDocException
-            if isinstance(context, str) and not context == DID_CONTEXT:
-                raise InvalidDIDDocException
-            elif isinstance(context, list) and DID_CONTEXT not in context:
-                raise InvalidDIDDocException
-
         # No element in diddoc is allowed to have same id as verkey in base diddoc
         # Alernative would be to merge with base did doc and perform generic did doc validation,
         # e.g. using pyDID

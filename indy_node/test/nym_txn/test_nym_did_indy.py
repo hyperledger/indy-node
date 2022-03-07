@@ -219,26 +219,6 @@ def test_add_arbitrary_property(
     assert replies[0][1]["result"]["txn"]["data"]["someProp"] == "someValue"
 
 
-def test_add_diddoc_content_did_context_missing_fails(
-    looper, sdk_pool_handle, sdk_wallet_endorser, prepare_endorser
-):
-    _, did = sdk_wallet_endorser
-    diddoc_content_without_did_context = copy.deepcopy(diddoc_content)
-    diddoc_content_without_did_context["@context"] = [
-        "https://identity.foundation/didcomm-messaging/service-endpoint/v1"
-    ]
-    nym_request = build_nym_request(
-        did, did, None, diddoc_content_without_did_context, None
-    )
-    request_couple = sdk_sign_and_send_prepared_request(
-        looper, sdk_wallet_endorser, sdk_pool_handle, nym_request
-    )
-    with pytest.raises(RequestNackedException) as e:
-        sdk_get_and_check_replies(looper, [request_couple])
-    e.match("InvalidClientRequest")
-    e.match("Invalid DIDDOC_Content")
-
-
 def test_add_didoc_with_id_fails(
     looper, sdk_pool_handle, sdk_wallet_endorser, prepare_endorser
 ):
