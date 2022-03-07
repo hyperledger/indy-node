@@ -1,0 +1,75 @@
+name: "Test Indy Node"
+
+on:
+  workflow_call:
+    inputs:
+      GITHUB_REPOSITORY_NAME:
+        required: true
+        type: string
+      UBUNTU_VERSION:
+        required: true
+        type: string
+
+jobs:
+  indy_node_tests:
+    name: Sliced Module Tests
+    runs-on: ubuntu-20.04
+    # Fix for scacap/action-surefire-report out of memory error:
+    # - https://github.com/ScaCap/action-surefire-report/issues/17
+    env:
+      NODE_OPTIONS: '--max_old_space_size=4096'
+      #SLICE_TOTAL_SLICES needs to match the total number of slices in the matrix strategy.
+      SLICE_TOTAL_SLICES: 11
+    container:
+      image: ghcr.io/${{ inputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ inputs.UBUNTU_VERSION }}
+    strategy:
+      matrix:
+        module: [indy_node, indy_common]
+        slice: [1, 2, 3, 4 ,5, 6, 7, 8, 9, 10, 11]
+      fail-fast: false
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      # ===============================================
+      # Caching cannot be used.
+      #  - For some reason as soon as it is enabled
+      #    the test start complaining about zmq missing
+      #    for the plenum install.
+      # -----------------------------------------------
+      # - name: Cache pip
+      #   uses: actions/cache@v2
+      #   with:
+      #     # pip cache on the node-build image is not in the default location.
+      #     # path: ~/.cache/pip
+      #     path: /root/.cache/pip
+      #     key: ${{ runner.os }}-indy-node-pip-${{ hashFiles('**/requirements.txt', '**/setup.py') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-indy-node-pip-
+
+      - name: Install dependencies
+        run: |
+          # Explicitly use the existing pip cache location in the node-build image.
+          pip --cache-dir /root/.cache/pip install .[tests]
+
+      - name: Run Indy Node ${{ matrix.module }} test slice ${{ matrix.slice }}/ ${{ env.SLICE_TOTAL_SLICES }}
+        id: node-test
+        run: RUSTPYTHONASYNCIODEBUG=0 python3 runner.py --pytest "python3 -m pytest -l -vv" --dir "${{ matrix.module }}" --output "test-result-node-${{ matrix.slice }}.txt" --test-only-slice "${{ matrix.slice }}/ ${{ env.SLICE_TOTAL_SLICES }}"
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@v1.0.7
+        continue-on-error: true
+        with:
+          check_name: Indy Node ${{ matrix.module }} Test Report for slice ${{ matrix.slice }}/${{ strategy.job-total }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          report_paths: "*-test-results.xml"
+
+      - name: Upload Detailed Test Failure Results
+        # The test runner only emits the detailed test results if the tests fail.
+        if: (steps.node-test.outcome == 'failure') && failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: detailed-test-result-slice-${{ matrix.slice }}
+          path: test-result-node-${{ matrix.slice }}.txt
+          retention-days: 5
