@@ -75,8 +75,9 @@ def test_get_nym_data_with_diddoc_content_without_seqNo_or_timestamp(
 
 
 def test_get_previous_nym_data_by_timestamp(
-    looper, sdk_pool_handle, sdk_wallet_endorser, add_diddoc_content
+    looper, sdk_pool_handle, sdk_wallet_endorser_factory, add_diddoc_content
 ):
+    sdk_wallet_endorser = sdk_wallet_endorser_factory(diddoc_content)
     _, did = sdk_wallet_endorser
 
     # Get current nym data
@@ -143,8 +144,9 @@ def test_get_previous_nym_data_by_timestamp(
 
 
 def test_get_previous_nym_data_by_seq_no(
-    looper, sdk_pool_handle, sdk_wallet_endorser, add_diddoc_content
+    looper, sdk_pool_handle, sdk_wallet_endorser_factory, add_diddoc_content
 ):
+    sdk_wallet_endorser = sdk_wallet_endorser_factory(diddoc_content)
     _, did = sdk_wallet_endorser
 
     # Get current nym data
