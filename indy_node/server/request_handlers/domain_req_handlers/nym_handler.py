@@ -1,35 +1,30 @@
+import json
 from binascii import hexlify
 from hashlib import sha256
-import json
 from typing import Optional
-import base58
 
+import base58
 from common.serializers.serialization import domain_state_serializer
 from indy_common.auth import Authoriser
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.base_diddoc_template import BaseDIDDoc
-
 # TODO - Import DIDDOC_CONTENT from plenum?
-from indy_common.constants import NYM, DIDDOC_CONTENT
-
+from indy_common.constants import DIDDOC_CONTENT, NYM
 # TODO - Improve exception with reason
 from indy_common.exceptions import InvalidDIDDocException
 from ledger.util import F
 from plenum.common.constants import ROLE, TARGET_NYM, TXN_TIME, VERKEY
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
-from plenum.common.txn_util import (
-    get_from,
-    get_payload_data,
-    get_request_data,
-    get_seq_no,
-    get_txn_time,
-)
+from plenum.common.txn_util import (get_from, get_payload_data,
+                                    get_request_data, get_seq_no, get_txn_time)
 from plenum.common.types import f
 from plenum.server.database_manager import DatabaseManager
-from plenum.server.request_handlers.nym_handler import NymHandler as PNymHandler
-from plenum.server.request_handlers.utils import get_nym_details, nym_to_state_key
+from plenum.server.request_handlers.nym_handler import \
+    NymHandler as PNymHandler
+from plenum.server.request_handlers.utils import (get_nym_details,
+                                                  nym_to_state_key)
 
 # TODO - Clean up
 DID_CONTEXT = "https://www.w3.org/ns/did/v1"
@@ -60,17 +55,16 @@ class NymHandler(PNymHandler):
                                        "{} not a valid role".
                                        format(role))
 
-        diddoc_content = operation.get(DIDDOC_CONTENT, None)
-        if diddoc_content:
+        if diddoc_content := operation.get(DIDDOC_CONTENT, None):
             diddoc_content = json.loads(diddoc_content)
             try:
                 self._validate_diddoc_content(diddoc_content)
-            except InvalidDIDDocException:
+            except InvalidDIDDocException as e:
                 raise InvalidClientRequest(
                     identifier,
                     req_id,
                     "Invalid DIDDOC_Content",
-                )
+                ) from e
 
     def additional_dynamic_validation(
         self, request: Request, req_pp_time: Optional[int]
@@ -78,12 +72,13 @@ class NymHandler(PNymHandler):
         self._validate_request_type(request)
         operation = request.operation
 
-        nym_data = self.database_manager.idr_cache.getNym(operation[TARGET_NYM], isCommitted=False)
-        if not nym_data:
+        if nym_data := self.database_manager.idr_cache.getNym(
+            operation[TARGET_NYM], isCommitted=False
+        ):
+            self._validate_existing_nym(request, operation, nym_data)
+        else:
             # If nym does not exist
             self._validate_new_nym(request, operation)
-        else:
-            self._validate_existing_nym(request, operation, nym_data)
 
     def gen_txn_id(self, txn):
         self._validate_txn_type(txn)
@@ -218,6 +213,4 @@ class NymHandler(PNymHandler):
         dest = request.operation.get(TARGET_NYM)
         verkey = request.operation.get(VERKEY)
 
-        diddoc = BaseDIDDoc(self.config.NETWORK_NAME, dest, verkey)
-
-        return diddoc
+        return BaseDIDDoc(self.config.NETWORK_NAME, dest, verkey)
