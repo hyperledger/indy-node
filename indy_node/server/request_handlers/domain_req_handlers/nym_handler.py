@@ -9,22 +9,27 @@ from indy_common.auth import Authoriser
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.base_diddoc_template import BaseDIDDoc
+
 # TODO - Import DIDDOC_CONTENT from plenum?
-from indy_common.constants import DIDDOC_CONTENT, NYM
+from indy_common.constants import DIDDOC_CONTENT, NYM, SELF_CERT
+
 # TODO - Improve exception with reason
 from indy_common.exceptions import InvalidDIDDocException
 from ledger.util import F
 from plenum.common.constants import ROLE, TARGET_NYM, TXN_TIME, VERKEY
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
-from plenum.common.txn_util import (get_from, get_payload_data,
-                                    get_request_data, get_seq_no, get_txn_time)
+from plenum.common.txn_util import (
+    get_from,
+    get_payload_data,
+    get_request_data,
+    get_seq_no,
+    get_txn_time,
+)
 from plenum.common.types import f
 from plenum.server.database_manager import DatabaseManager
-from plenum.server.request_handlers.nym_handler import \
-    NymHandler as PNymHandler
-from plenum.server.request_handlers.utils import (get_nym_details,
-                                                  nym_to_state_key)
+from plenum.server.request_handlers.nym_handler import NymHandler as PNymHandler
+from plenum.server.request_handlers.utils import get_nym_details, nym_to_state_key
 
 # TODO - Clean up
 DID_CONTEXT = "https://www.w3.org/ns/did/v1"
@@ -33,8 +38,12 @@ DID_CONTEXT = "https://www.w3.org/ns/did/v1"
 class NymHandler(PNymHandler):
     state_serializer = domain_state_serializer
 
-    def __init__(self, config, database_manager: DatabaseManager,
-                 write_req_validator: WriteRequestValidator):
+    def __init__(
+        self,
+        config,
+        database_manager: DatabaseManager,
+        write_req_validator: WriteRequestValidator,
+    ):
         super().__init__(config, database_manager)
         self.write_req_validator = write_req_validator
         self.namespace = config.NETWORK_NAME
@@ -47,13 +56,13 @@ class NymHandler(PNymHandler):
         if isinstance(nym, str):
             nym = nym.strip()
         if not nym:
-            raise InvalidClientRequest(identifier, req_id,
-                                       "{} needs to be present".
-                                       format(TARGET_NYM))
+            raise InvalidClientRequest(
+                identifier, req_id, "{} needs to be present".format(TARGET_NYM)
+            )
         if not Authoriser.isValidRole(role):
-            raise InvalidClientRequest(identifier, req_id,
-                                       "{} not a valid role".
-                                       format(role))
+            raise InvalidClientRequest(
+                identifier, req_id, "{} not a valid role".format(role)
+            )
 
         if diddoc_content := operation.get(DIDDOC_CONTENT, None):
             diddoc_content = json.loads(diddoc_content)
@@ -72,6 +81,15 @@ class NymHandler(PNymHandler):
         self._validate_request_type(request)
         operation = request.operation
 
+        if operation.get(SELF_CERT) and not self._is_self_certifying(
+            operation[TARGET_NYM], operation[VERKEY]
+        ):
+            raise InvalidClientRequest(
+                request.identifier,
+                request.reqId,
+                "self-certification option requested"
+                "but provided nym is not self-certifying.",
+            )
         if nym_data := self.database_manager.idr_cache.getNym(
             operation[TARGET_NYM], isCommitted=False
         ):
@@ -89,8 +107,7 @@ class NymHandler(PNymHandler):
     def update_state(self, txn, prev_result, request, is_committed=False):
         self._validate_txn_type(txn)
         nym = get_payload_data(txn).get(TARGET_NYM)
-        existing_data = get_nym_details(self.state, nym,
-                                        is_committed=is_committed)
+        existing_data = get_nym_details(self.state, nym, is_committed=is_committed)
         txn_data = get_payload_data(txn)
         new_data = {}
         if not existing_data:
@@ -120,14 +137,20 @@ class NymHandler(PNymHandler):
             request.identifier, isCommitted=False
         )
 
-        nym_data = self.database_manager.idr_cache.getNym(request.identifier, isCommitted=False)
+        nym_data = self.database_manager.idr_cache.getNym(
+            request.identifier, isCommitted=False
+        )
         if not nym_data:
             # Non-ledger nym case. These two checks duplicated and mainly executed in client_authn,
             # but it has point to repeat them here, for clear understanding of validation non-ledger request cases.
             if request.identifier != request.operation.get(TARGET_NYM):
-                raise InvalidClientRequest(identifier, req_id, "DID which is not stored on ledger can "
-                                                               "send nym txn only if appropriate auth_rules set "
-                                                               "and sender did equal to destination nym")
+                raise InvalidClientRequest(
+                    identifier,
+                    req_id,
+                    "DID which is not stored on ledger can "
+                    "send nym txn only if appropriate auth_rules set "
+                    "and sender did equal to destination nym",
+                )
             if not request.operation.get(VERKEY):
                 raise InvalidClientRequest(
                     identifier,
@@ -150,7 +173,9 @@ class NymHandler(PNymHandler):
 
     def _validate_existing_nym(self, request, operation, nym_data):
         origin = request.identifier
-        owner = self.database_manager.idr_cache.getOwnerFor(operation[TARGET_NYM], isCommitted=False)
+        owner = self.database_manager.idr_cache.getOwnerFor(
+            operation[TARGET_NYM], isCommitted=False
+        )
         is_owner = origin == owner
 
         updateKeys = [ROLE, VERKEY]
@@ -160,12 +185,18 @@ class NymHandler(PNymHandler):
                 updateKeysInOperationOrOwner = True
                 newVal = operation[key]
                 oldVal = nym_data.get(key)
-                self.write_req_validator.validate(request,
-                                                  [AuthActionEdit(txn_type=NYM,
-                                                                  field=key,
-                                                                  old_value=oldVal,
-                                                                  new_value=newVal,
-                                                                  is_owner=is_owner)])
+                self.write_req_validator.validate(
+                    request,
+                    [
+                        AuthActionEdit(
+                            txn_type=NYM,
+                            field=key,
+                            old_value=oldVal,
+                            new_value=newVal,
+                            is_owner=is_owner,
+                        )
+                    ],
+                )
         if not updateKeysInOperationOrOwner:
             raise InvalidClientRequest(request.identifier, request.reqId)
 
@@ -193,7 +224,7 @@ class NymHandler(PNymHandler):
             raise InvalidDIDDocException
 
         # No element in diddoc is allowed to have same id as verkey in base diddoc
-        # Alernative would be to merge with base did doc and perform generic did doc validation,
+        # Alternative would be to merge with base did doc and perform generic did doc validation,
         # e.g. using pyDID
         for el in diddoc.values():
             if isinstance(el, list):
@@ -204,7 +235,9 @@ class NymHandler(PNymHandler):
     def _has_same_id_fragment(self, item, fragment):
 
         return (
-            isinstance(item, dict) and "id" in item and item["id"].partition("#")[2] == fragment
+            isinstance(item, dict)
+            and "id" in item
+            and item["id"].partition("#")[2] == fragment
         )
 
     # Currently not used

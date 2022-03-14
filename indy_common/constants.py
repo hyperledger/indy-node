@@ -15,6 +15,7 @@ DOMAIN_LEDGER_ID = 1
 # NYM
 # TODO: Will be defined in plenum
 DIDDOC_CONTENT = "diddocContent"
+SELF_CERT = "self-certification"
 
 # SCHEMA
 SCHEMA_NAME = "name"
