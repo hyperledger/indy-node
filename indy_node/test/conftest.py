@@ -59,6 +59,7 @@ from indy_common.test.conftest import general_conf_tdir, tconf as _tconf, poolTx
     domainTxnOrderedFields, looper, setTestLogLevel, node_config_helper_class, config_helper_class
 
 from indy_node.test.helper import TestNode, TestNodeBootstrap
+from indy_node.test.mock import build_nym_request
 
 from indy_node.server.upgrader import Upgrader
 from indy_node.utils.node_control_utils import NodeControlUtil
@@ -168,6 +169,20 @@ def sdk_node_theta_added(looper,
         looper.run(checkNodesConnected(txnPoolNodeSet))
     sdk_pool_refresh(looper, sdk_pool_handle)
     return new_steward_wallet, new_node
+
+
+@pytest.fixture(scope="module")
+def sdk_wallet_endorser_factory(looper, sdk_pool_handle, sdk_wallet_trustee):
+    def _sdk_wallet_endorser_factory(diddoc_content):
+        wh, did = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trustee,
+            alias='TA-1', role='ENDORSER')
+        nym_request = build_nym_request(did, did, None, diddoc_content, None)
+        request_couple = sdk_sign_and_send_prepared_request(
+            looper, (wh, did), sdk_pool_handle, nym_request
+        )
+        sdk_get_and_check_replies(looper, [request_couple])
+        return wh, did
+    return _sdk_wallet_endorser_factory
 
 
 @pytest.fixture(scope="module")
