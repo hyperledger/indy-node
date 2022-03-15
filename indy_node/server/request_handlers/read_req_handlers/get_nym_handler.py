@@ -34,7 +34,7 @@ class GetNymHandler(ReadRequestHandler):
             raise InvalidClientRequest(
                 request.identifier,
                 request.reqId,
-                "Cannot resolve nym with both seqNo and timestamp present.",
+                "Cannot resolve nym with both seqNo and timestamp present",
             )
         if read_seq_no:
             # Move to this to init?
