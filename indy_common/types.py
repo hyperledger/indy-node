@@ -23,6 +23,7 @@ from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, 
     NONCE_FIELD_LIMIT, ALIAS_FIELD_LIMIT, \
     ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT
 from common.version import GenericVersion
+from ..indy_common.config import DIDDOC_CONTENT_SIZE_LIMIT
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ConstraintsEnum, CONSTRAINT_ID, AUTH_CONSTRAINTS, METADATA, \
@@ -83,7 +84,7 @@ class ClientNYMOperation(PClientNYMOperation):
         (VERKEY, VerkeyField(optional=True, nullable=True)),
         (TARGET_NYM, DestNymField()),
         (ROLE, RoleField(optional=True)),
-        (DIDDOC_CONTENT, JsonField(max_length=JSON_FIELD_LIMIT, optional=True)),
+        (DIDDOC_CONTENT, JsonField(max_length=DIDDOC_CONTENT_SIZE_LIMIT, optional=True)),
     )
 
 
