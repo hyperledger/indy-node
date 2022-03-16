@@ -1,7 +1,7 @@
 import json
 from binascii import hexlify
 from hashlib import sha256
-from typing import Optional
+from typing import Mapping, Optional
 
 import base58
 from common.serializers.serialization import domain_state_serializer
@@ -11,7 +11,15 @@ from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.base_diddoc_template import BaseDIDDoc
 
 # TODO - Import DIDDOC_CONTENT from plenum?
-from indy_common.constants import DIDDOC_CONTENT, NYM, NYM_VERSION
+from indy_common.constants import (
+    DIDDOC_CONTENT,
+    NYM,
+    NYM_VERSION,
+    NYM_VERSION_NULL,
+    NYM_VERSION_CONVENTION,
+    NYM_VERSION_SELF_CERT,
+    DEFAULT_NYM_VERSION,
+)
 
 # TODO - Improve exception with reason
 from indy_common.exceptions import InvalidDIDDocException
@@ -31,9 +39,6 @@ from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.nym_handler import NymHandler as PNymHandler
 from plenum.server.request_handlers.utils import get_nym_details, nym_to_state_key
 
-# TODO - Clean up
-DID_CONTEXT = "https://www.w3.org/ns/did/v1"
-
 
 class NymHandler(PNymHandler):
     state_serializer = domain_state_serializer
@@ -51,6 +56,7 @@ class NymHandler(PNymHandler):
     def static_validation(self, request: Request):
         self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
+        assert isinstance(operation, Mapping)
         role = operation.get(ROLE)
         nym = operation.get(TARGET_NYM)
         if isinstance(nym, str):
@@ -64,7 +70,8 @@ class NymHandler(PNymHandler):
                 identifier, req_id, "{} not a valid role".format(role)
             )
 
-        if diddoc_content := operation.get(DIDDOC_CONTENT, None):
+        diddoc_content = operation.get(DIDDOC_CONTENT, None)
+        if diddoc_content:
             diddoc_content = json.loads(diddoc_content)
             try:
                 self._validate_diddoc_content(diddoc_content)
@@ -75,26 +82,40 @@ class NymHandler(PNymHandler):
                     "Invalid DIDDOC_Content",
                 ) from e
 
+        version = operation.get(NYM_VERSION, DEFAULT_NYM_VERSION)
+        if version not in (
+            NYM_VERSION_NULL,
+            NYM_VERSION_CONVENTION,
+            NYM_VERSION_SELF_CERT,
+        ):
+            raise InvalidClientRequest(
+                request.identifier,
+                request.reqId,
+                "nym version must be one of {{{}}}".format(
+                    ", ".join(
+                        str(val)
+                        for val in [
+                            NYM_VERSION_NULL,
+                            NYM_VERSION_CONVENTION,
+                            NYM_VERSION_SELF_CERT,
+                        ]
+                    )
+                ),
+            )
+
     def additional_dynamic_validation(
         self, request: Request, req_pp_time: Optional[int]
     ):
         self._validate_request_type(request)
         operation = request.operation
-        version = operation.get(NYM_VERSION, 0)
-        if version not in [0,1,2]:
-            raise InvalidClientRequest(
-                request.identifier,
-                request.reqId,
-                "did version must be one of 0,1,2"
-            )
-        if nym_data := self.database_manager.idr_cache.getNym(
+        assert isinstance(operation, Mapping)
+        nym_data = self.database_manager.idr_cache.getNym(
             operation[TARGET_NYM], isCommitted=False
-        ):
-            # TODO: check previous version for self-cert
+        )
+
+        if nym_data:
             self._validate_existing_nym(request, operation, nym_data)
         else:
-            # If nym does not exist
-            # TODO: self-cert check needs to be done
             self._validate_new_nym(request, operation)
 
     def gen_txn_id(self, txn):
@@ -120,7 +141,7 @@ class NymHandler(PNymHandler):
             new_data[VERKEY] = txn_data[VERKEY]
         if DIDDOC_CONTENT in txn_data:
             new_data[DIDDOC_CONTENT] = txn_data[DIDDOC_CONTENT]
-        new_data[NYM_VERSION] = txn_data.get(NYM_VERSION, 0)
+        new_data[NYM_VERSION] = txn_data.get(NYM_VERSION, DEFAULT_NYM_VERSION)
         new_data[F.seqNo.name] = get_seq_no(txn)
         new_data[TXN_TIME] = get_txn_time(txn)
         existing_data.update(new_data)
