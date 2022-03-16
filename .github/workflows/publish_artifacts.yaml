@@ -1,0 +1,83 @@
+name: "Publish Artifacts"
+
+on:
+  workflow_call:
+    inputs:
+      GITHUB_REF:
+        required: true
+        type: string
+      UBUNTU_VERSION:
+        required: true
+        type: string
+      distribution:
+        required: true
+        type: string
+    secrets:
+      INDY_ARTIFACTORY_REPO_CONFIG: 
+        required: true
+      PYPI_API_TOKEN: 
+        required: true
+
+
+jobs:
+  publish_artifacts:
+    name: Publish Artifacts
+    runs-on: ubuntu-20.04
+    env:
+      GITHUB_REF: ${{ inputs.GITHUB_REF }}
+      distribution: ${{ inputs.distribution }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v1
+
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@v2
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.INDY_ARTIFACTORY_REPO_CONFIG }}
+
+      - name: Ping Artifactory
+        run: |
+          # Test the connection to Ping the Hyperledger Artifactory server
+          # to ensure everything has been setup correctly.
+          jfrog rt ping
+
+      - name: Download Node Artifacts from Pipeline Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: node-deb
+          path: to_publish
+
+      - name: Publish Node Artifacts
+        uses: ./.github/actions/publish-deb
+        with:
+          sourceDirectory: /home/runner/work/indy-node/indy-node/to_publish
+          distribution: ${{ env.distribution }}
+          component: ${{ env.GITHUB_REF }}
+
+      - name: Download 3rd Party Artifacts Dependencies from Cache
+        id: third-party-dependencies
+        uses: actions/cache@v2
+        with:
+          path: /tmp/third-party-dependencies
+          key: ${{ format('third-party-dependencies-{0}', hashFiles(format('./build-scripts/{0}/build-3rd-parties.sh', inputs.UBUNTU_VERSION ))) }}
+
+      - name: Publish 3rd Party Dependencies
+        uses: ./.github/actions/publish-deb
+        with:
+          sourceDirectory: /home/runner/tmp/third-party-dependencies
+          distribution: ${{ env.distribution }}
+          component: ${{ env.GITHUB_REF }}
+
+      - name: Download Python Packages from Pipeline Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: node-python
+          path: dist
+
+      - name: Publish Python Package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          skip_existing: true
+          

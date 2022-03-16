@@ -15,7 +15,6 @@ from plenum.common.messages.fields import ConstantField, IdentifierField, \
     AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField, AnyField, FieldBase, \
     VerkeyField, DestNymField, NonNegativeNumberField
 from plenum.common.messages.message_base import MessageValidator
-from plenum.common.messages.node_messages import NonNegativeNumberField
 from plenum.common.request import Request as PRequest
 from plenum.common.types import OPERATION
 from plenum.common.util import is_network_ip_address_valid, is_network_port_valid
@@ -27,10 +26,10 @@ from indy_common.config import DIDDOC_CONTENT_SIZE_LIMIT
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ConstraintsEnum, CONSTRAINT_ID, AUTH_CONSTRAINTS, METADATA, \
-    NEED_TO_BE_OWNER, SIG_COUNT, ROLE, OFF_LEDGER_SIGNATURE
+    NEED_TO_BE_OWNER, SIG_COUNT, ROLE as AUTH_ROLE, OFF_LEDGER_SIGNATURE
 from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
-from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
-    DATA, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
+from indy_common.constants import ATTRIB, GET_ATTR, \
+    GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     POOL_UPGRADE, POOL_CONFIG, \
     DISCLO, SCHEMA, ENDPOINT, CLAIM_DEF, SCHEDULE, SHA256, \
     TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, START, CANCEL, \
@@ -363,7 +362,7 @@ class ConstraintField(FieldBase):
 class ConstraintEntityField(MessageValidator):
     schema = (
         (CONSTRAINT_ID, ChooseField(values=ConstraintsEnum.values())),
-        (ROLE, RoleField()),
+        (AUTH_ROLE, RoleField()),
         (SIG_COUNT, NonNegativeNumberField()),
         (NEED_TO_BE_OWNER, BooleanField(optional=True)),
         (OFF_LEDGER_SIGNATURE, BooleanField(optional=True)),

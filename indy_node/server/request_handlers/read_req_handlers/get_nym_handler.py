@@ -1,5 +1,6 @@
-from common.serializers.serialization import domain_state_serializer
 from indy_common.constants import GET_NYM, TIMESTAMP
+
+from common.serializers.serialization import domain_state_serializer
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.server.request_handlers.utils import StateValue
 from plenum.common.constants import TARGET_NYM, TXN_TIME, DOMAIN_LEDGER_ID, TXN_METADATA_SEQ_NO
