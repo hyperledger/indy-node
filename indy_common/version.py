@@ -16,6 +16,10 @@ class SchemaVersion(DigitDotVersion):
         super().__init__(version, parts_num=(2, 3), **kwargs)
 
 
+class NymVersion(DigitDotVersion):
+    def __init__(self, version: str, **kwargs):
+        super().__init__(version, parts_num=(1,1), **kwargs)
+
 class TopPkgDefVersion(DigitDotVersion, SourceVersion):
     def __init__(self, version: str, **kwargs):
         super().__init__(version, parts_num=(2, 3), **kwargs)

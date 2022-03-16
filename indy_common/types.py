@@ -31,7 +31,7 @@ from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
 from indy_common.constants import ATTRIB, GET_ATTR, \
     GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     POOL_UPGRADE, POOL_CONFIG, \
-    DISCLO, SCHEMA, ENDPOINT, CLAIM_DEF, SCHEDULE, SELF_CERT, SHA256, \
+    DISCLO, SCHEMA, ENDPOINT, CLAIM_DEF, SCHEDULE, NYM_VERSION, SHA256, \
     TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, START, CANCEL, \
     REVOC_REG_DEF, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
     TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
@@ -48,7 +48,7 @@ from indy_common.constants import ATTRIB, GET_ATTR, \
     RICH_SCHEMA_ENCODING, RS_MAPPING_TYPE_VALUE, RICH_SCHEMA_MAPPING, RS_CRED_DEF_TYPE_VALUE, \
     RICH_SCHEMA_CRED_DEF, GET_RICH_SCHEMA_OBJECT_BY_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
     RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, DIDDOC_CONTENT
-from indy_common.version import SchemaVersion
+from indy_common.version import SchemaVersion, NymVersion
 
 
 class Request(PRequest):
@@ -84,7 +84,7 @@ class ClientNYMOperation(PClientNYMOperation):
         (TARGET_NYM, DestNymField()),
         (ROLE, RoleField(optional=True)),
         (DIDDOC_CONTENT, JsonField(max_length=DIDDOC_CONTENT_SIZE_LIMIT, optional=True)),
-        (SELF_CERT, NonNegativeNumberField(optional=True)), # TODO: don't use NonNegativeNumberField
+        (NYM_VERSION, VersionField(version_cls=NymVersion, optional=True)),
     )
 
 

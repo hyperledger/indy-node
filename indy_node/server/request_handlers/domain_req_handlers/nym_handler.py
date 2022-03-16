@@ -11,7 +11,7 @@ from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.base_diddoc_template import BaseDIDDoc
 
 # TODO - Import DIDDOC_CONTENT from plenum?
-from indy_common.constants import DIDDOC_CONTENT, NYM, SELF_CERT
+from indy_common.constants import DIDDOC_CONTENT, NYM, NYM_VERSION
 
 # TODO - Improve exception with reason
 from indy_common.exceptions import InvalidDIDDocException
@@ -80,22 +80,21 @@ class NymHandler(PNymHandler):
     ):
         self._validate_request_type(request)
         operation = request.operation
-
-        if operation.get(SELF_CERT) and not self._is_self_certifying(
-            operation[TARGET_NYM], operation[VERKEY]
-        ):
+        version = operation.get(NYM_VERSION, 0)
+        if version not in [0,1,2]:
             raise InvalidClientRequest(
                 request.identifier,
                 request.reqId,
-                "self-certification option requested"
-                "but provided nym is not self-certifying.",
+                "did version must be one of 0,1,2"
             )
         if nym_data := self.database_manager.idr_cache.getNym(
             operation[TARGET_NYM], isCommitted=False
         ):
+            # TODO: check previous version for self-cert
             self._validate_existing_nym(request, operation, nym_data)
         else:
             # If nym does not exist
+            # TODO: self-cert check needs to be done
             self._validate_new_nym(request, operation)
 
     def gen_txn_id(self, txn):
@@ -121,6 +120,7 @@ class NymHandler(PNymHandler):
             new_data[VERKEY] = txn_data[VERKEY]
         if DIDDOC_CONTENT in txn_data:
             new_data[DIDDOC_CONTENT] = txn_data[DIDDOC_CONTENT]
+        new_data[NYM_VERSION] = txn_data.get(NYM_VERSION, 0)
         new_data[F.seqNo.name] = get_seq_no(txn)
         new_data[TXN_TIME] = get_txn_time(txn)
         existing_data.update(new_data)
