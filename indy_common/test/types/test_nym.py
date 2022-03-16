@@ -5,6 +5,7 @@ from indy_common.types import ClientNYMOperation
 
 VALID_TARGET_NYM = 'a' * 43
 
+
 @pytest.fixture
 def validator():
     yield ClientNYMOperation()
