@@ -48,7 +48,7 @@ from indy_common.constants import ATTRIB, GET_ATTR, \
     RICH_SCHEMA_ENCODING, RS_MAPPING_TYPE_VALUE, RICH_SCHEMA_MAPPING, RS_CRED_DEF_TYPE_VALUE, \
     RICH_SCHEMA_CRED_DEF, GET_RICH_SCHEMA_OBJECT_BY_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
     RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, DIDDOC_CONTENT
-from indy_common.version import SchemaVersion, NymVersion
+from indy_common.version import SchemaVersion
 
 
 class Request(PRequest):
@@ -84,7 +84,7 @@ class ClientNYMOperation(PClientNYMOperation):
         (TARGET_NYM, DestNymField()),
         (ROLE, RoleField(optional=True)),
         (DIDDOC_CONTENT, JsonField(max_length=DIDDOC_CONTENT_SIZE_LIMIT, optional=True)),
-        (NYM_VERSION, VersionField(version_cls=NymVersion, optional=True)),
+        (NYM_VERSION, IntegerField(optional=True)),
     )
 
 

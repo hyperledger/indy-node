@@ -256,9 +256,9 @@ class NymHandler(PNymHandler):
     def _has_same_id_fragment(self, item, fragment):
 
         return (
-            isinstance(item, dict)
-            and "id" in item
-            and item["id"].partition("#")[2] == fragment
+            isinstance(item, dict) and
+            "id" in item and
+            item["id"].partition("#")[2] == fragment
         )
 
     # Currently not used
