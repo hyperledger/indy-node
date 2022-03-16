@@ -1,13 +1,13 @@
-from indy_common.constants import GET_NYM, TIMESTAMP, VALUE
+from indy_common.constants import GET_NYM, TIMESTAMP
 
 from common.serializers.serialization import domain_state_serializer
-from indy_common.constants import GET_NYM, TIMESTAMP
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.server.request_handlers.utils import StateValue
 from plenum.common.constants import TARGET_NYM, TXN_TIME, DOMAIN_LEDGER_ID, TXN_METADATA_SEQ_NO
 from plenum.common.request import Request
 from plenum.common.types import f
 from plenum.common.txn_util import get_txn_time
+from plenum.common.exceptions import InvalidClientRequest
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.read_request_handler import (
     ReadRequestHandler,
@@ -29,6 +29,12 @@ class GetNymHandler(ReadRequestHandler):
         # See https://hyperledger.github.io/indy-did-method/#did-versions
         timestamp = request.operation.get(TIMESTAMP, None)
         read_seq_no = request.operation.get("seqNo", None)
+        if timestamp and read_seq_no:
+            raise InvalidClientRequest(
+                request.identifier,
+                request.reqId,
+                "Cannot resolve nym with both seqNo and timestamp present",
+            )
         if read_seq_no:
             # Move to this to init?
             db = self.database_manager.get_database(DOMAIN_LEDGER_ID)
