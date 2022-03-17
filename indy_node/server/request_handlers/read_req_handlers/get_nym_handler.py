@@ -3,7 +3,7 @@ from indy_common.constants import GET_NYM, TIMESTAMP
 from common.serializers.serialization import domain_state_serializer
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.server.request_handlers.utils import StateValue
-from plenum.common.constants import TARGET_NYM, TXN_TIME, DOMAIN_LEDGER_ID, TXN_METADATA_SEQ_NO
+from plenum.common.constants import TARGET_NYM, TXN_TIME, DOMAIN_LEDGER_ID, TXN_METADATA_SEQ_NO, NYM_VERSION
 from plenum.common.request import Request
 from plenum.common.types import f
 from plenum.common.txn_util import get_txn_time
@@ -52,6 +52,7 @@ class GetNymHandler(ReadRequestHandler):
             if nym_state_value and nym_state_value.value:
                 nym_data = nym_state_value.value
                 nym_data[TARGET_NYM] = nym
+                nym_data[NYM_VERSION] = nym_data.get(NYM_VERSION, 0)
                 data = domain_state_serializer.serialize(nym_data)
                 seq_no = nym_state_value.seq_no
                 update_time = nym_state_value.update_time
@@ -61,6 +62,7 @@ class GetNymHandler(ReadRequestHandler):
             if nym_data:
                 nym_data = domain_state_serializer.deserialize(nym_data)
                 nym_data[TARGET_NYM] = nym
+                nym_data[NYM_VERSION] = nym_data.get(NYM_VERSION, 0)
                 data = domain_state_serializer.serialize(nym_data)
                 seq_no = nym_data[f.SEQ_NO.nm]
                 update_time = nym_data[TXN_TIME]
