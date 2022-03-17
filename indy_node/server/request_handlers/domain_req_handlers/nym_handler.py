@@ -10,7 +10,6 @@ from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.base_diddoc_template import BaseDIDDoc
 
-# TODO - Import DIDDOC_CONTENT from plenum?
 from indy_common.constants import (
     DIDDOC_CONTENT,
     NYM,
@@ -18,7 +17,6 @@ from indy_common.constants import (
     NYM_VERSION_NULL,
     NYM_VERSION_CONVENTION,
     NYM_VERSION_SELF_CERT,
-    DEFAULT_NYM_VERSION,
 )
 
 # TODO - Improve exception with reason
@@ -82,8 +80,8 @@ class NymHandler(PNymHandler):
                     "Invalid DIDDOC_Content",
                 ) from e
 
-        version = operation.get(NYM_VERSION, DEFAULT_NYM_VERSION)
-        if version not in (
+        version = operation.get(NYM_VERSION, None)
+        if version and version not in (
             NYM_VERSION_NULL,
             NYM_VERSION_CONVENTION,
             NYM_VERSION_SELF_CERT,
@@ -141,7 +139,8 @@ class NymHandler(PNymHandler):
             new_data[VERKEY] = txn_data[VERKEY]
         if DIDDOC_CONTENT in txn_data:
             new_data[DIDDOC_CONTENT] = txn_data[DIDDOC_CONTENT]
-        new_data[NYM_VERSION] = txn_data.get(NYM_VERSION, DEFAULT_NYM_VERSION)
+        if NYM_VERSION in txn_data:
+            new_data[NYM_VERSION] = txn_data[NYM_VERSION]
         new_data[F.seqNo.name] = get_seq_no(txn)
         new_data[TXN_TIME] = get_txn_time(txn)
         existing_data.update(new_data)
