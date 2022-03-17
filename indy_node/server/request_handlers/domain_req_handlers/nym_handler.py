@@ -22,7 +22,7 @@ from indy_common.constants import (
 # TODO - Improve exception with reason
 from indy_common.exceptions import InvalidDIDDocException
 from ledger.util import F
-from plenum.common.constants import ROLE, TARGET_NYM, TXN_TIME, VERKEY
+from plenum.common.constants import ROLE, TARGET_NYM, TXN_TIME, VERKEY, NYM_VERSION
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import (
@@ -178,7 +178,16 @@ class NymHandler(PNymHandler):
                     "Non-ledger nym txn must contain verkey for new did",
                 )
 
-        if self.config.ENABLE_DID_INDY and not self._is_self_certifying(
+        version = nym_data.get(NYM_VERSION)
+        if version == 1 and not self._legacy_convention_validation(
+            request.operation.get(TARGET_NYM), request.operation.get(VERKEY)
+        ):
+            raise InvalidClientRequest(
+                identifier,
+                req_id,
+                "Nym with version 1 must be first 16 bytes of verkey",
+            )
+        elif version == 2 and not self._is_self_certifying(
             request.operation.get(TARGET_NYM), request.operation.get(VERKEY)
         ):
             raise InvalidClientRequest(
@@ -236,6 +245,11 @@ class NymHandler(PNymHandler):
         return did == base58.b58encode(
             sha256(base58.b58decode(verkey)).digest()[:16]
         ).decode("utf-8")
+
+    def _legacy_convention_validation(self, did, verkey):
+        """did:sov method validation: the did is derived
+        from the first 16 bytes of the verkey"""
+        return did == base58.b58decode(verkey).digest()[:16]
 
     def _validate_diddoc_content(self, diddoc):
 
