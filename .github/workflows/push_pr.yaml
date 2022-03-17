@@ -9,6 +9,7 @@ on:
     branches:
       - ubuntu-20.04-upgrade
       - feature/did-indy*
+      - feature/self-cert
   workflow_dispatch: 
 
 jobs:
