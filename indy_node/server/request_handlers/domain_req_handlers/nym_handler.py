@@ -22,7 +22,7 @@ from indy_common.constants import (
 # TODO - Improve exception with reason
 from indy_common.exceptions import InvalidDIDDocException
 from ledger.util import F
-from plenum.common.constants import ROLE, TARGET_NYM, TXN_TIME, VERKEY, NYM_VERSION
+from plenum.common.constants import ROLE, TARGET_NYM, TXN_TIME, VERKEY
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import (
