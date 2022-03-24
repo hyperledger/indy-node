@@ -178,7 +178,7 @@ class NymHandler(PNymHandler):
                     "Non-ledger nym txn must contain verkey for new did",
                 )
 
-        version = nym_data.get(NYM_VERSION)
+        version = request.operation.get(NYM_VERSION)
         if version == 1 and not self._legacy_convention_validation(
             request.operation.get(TARGET_NYM), request.operation.get(VERKEY)
         ):
