@@ -4,7 +4,7 @@ import pytest
 
 from indy_common.auth import Authoriser
 from indy_common.config_util import getConfig
-from indy_common.constants import NYM, ROLE, DIDDOC_CONTENT
+from indy_common.constants import NYM, ROLE, DIDDOC_CONTENT, NYM_VERSION
 
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.test.request_handlers.helper import add_to_idr, get_exception
@@ -220,3 +220,16 @@ def test_update_state(nym_request: Request, nym_handler: NymHandler):
     assert state_value[ROLE] == nym_request.operation.get(ROLE)
     assert state_value[VERKEY] == nym_request.operation.get(VERKEY)
     assert state_value[DIDDOC_CONTENT] == nym_request.operation.get(DIDDOC_CONTENT)
+
+
+def test_fail_on_version_update(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+    nym_request = nym_request_factory(doc)
+    nym_request.operation[NYM_VERSION] = 2
+    txn = reqToTxn(nym_request)
+    seq_no = 1
+    txn_time = 1560241033
+    append_txn_metadata(txn, seq_no, txn_time)
+    nym_data = nym_handler.update_state(txn, None, None, False)
+    with pytest.raises(InvalidClientRequest) as e:
+        nym_handler._validate_existing_nym(nym_request, nym_request.operation, nym_data)
+    e.match("Cannot set version on existing nym")
