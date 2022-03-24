@@ -156,10 +156,6 @@ class NymHandler(PNymHandler):
         nym_data = self.database_manager.idr_cache.getNym(
             request.identifier, isCommitted=False
         )
-
-        nym_data = self.database_manager.idr_cache.getNym(
-            request.identifier, isCommitted=False
-        )
         if not nym_data:
             # Non-ledger nym case. These two checks duplicated and mainly executed in client_authn,
             # but it has point to repeat them here, for clear understanding of validation non-ledger request cases.
