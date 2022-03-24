@@ -173,15 +173,6 @@ def test_nym_dynamic_validation_for_new_nym(
         nym_handler.dynamic_validation(nym_request, 0)
 
 
-def test_nym_dynamic_validation_for_new_nym_fails_not_self_certifying(
-    nym_request, nym_handler: NymHandler
-):
-    with enable_did_indy(nym_handler):
-        nym_request.operation["dest"] = "V4SGRU86Z58d6TV7PBUe6f"
-        with pytest.raises(InvalidClientRequest):
-            nym_handler.additional_dynamic_validation(nym_request, None)
-
-
 def test_nym_dynamic_validation_for_existing_nym(
     nym_request: Request, nym_handler: NymHandler, creator
 ):
