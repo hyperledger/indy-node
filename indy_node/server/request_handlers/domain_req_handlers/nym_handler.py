@@ -209,6 +209,14 @@ class NymHandler(PNymHandler):
 
         updateKeys = [ROLE, VERKEY]
         updateKeysInOperationOrOwner = is_owner
+
+        if NYM_VERSION in operation:
+            raise InvalidClientRequest(
+                request.identifier,
+                request.reqId,
+                "Cannot set version on existing nym"
+            )
+
         for key in updateKeys:
             if key in operation:
                 updateKeysInOperationOrOwner = True
@@ -227,9 +235,6 @@ class NymHandler(PNymHandler):
                     ],
                 )
         if not updateKeysInOperationOrOwner:
-            raise InvalidClientRequest(request.identifier, request.reqId)
-
-        if nym_data.get(NYM_VERSION):
             raise InvalidClientRequest(request.identifier, request.reqId)
 
     def _decode_state_value(self, encoded):
