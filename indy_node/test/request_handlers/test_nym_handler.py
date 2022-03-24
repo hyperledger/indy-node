@@ -247,3 +247,17 @@ def test_nym_validation_self_certifying(nym_request: Request, nym_handler: NymHa
     with pytest.raises(InvalidClientRequest) as e:
         nym_handler._validate_new_nym(nym_request, nym_request.operation)
     e.match("Nym with version 1 must be first 16 bytes of verkey")
+
+
+def test_nym_validation_legacy_convetion(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+    nym_request = nym_request_factory(doc)
+    nym_request.operation[NYM_VERSION] = 2
+    nym_request.operation[TARGET_NYM] = "X3XUxYQM2cfkSMzfMNma73"
+    nym_request.operation[VERKEY] = "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYz"
+    txn = reqToTxn(nym_request)
+    seq_no = 1
+    txn_time = 1560241033
+    append_txn_metadata(txn, seq_no, txn_time)
+    with pytest.raises(InvalidClientRequest) as e:
+        nym_handler._validate_new_nym(nym_request, nym_request.operation)
+    e.match("DID is not self-certifying; must be first 16 bytes of SHA256 of verkey")
