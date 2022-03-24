@@ -257,7 +257,7 @@ class NymHandler(PNymHandler):
     def _legacy_convention_validation(self, did, verkey):
         """did:sov method validation: the did is derived
         from the first 16 bytes of the verkey"""
-        return did == base58.b58decode(verkey).digest()[:16]
+        return did == base58.b58encode(base58.b58decode(verkey)[:16])
 
     def _validate_diddoc_content(self, diddoc):
 
