@@ -148,7 +148,7 @@ def systemTests(Closure body) {
             def uid = sh(returnStdout: true, script: 'id -u').trim()
             docker.build("hyperledger/indy-node-ci", "--build-arg uid=$uid -f ci/ubuntu.dockerfile ci").inside {
                 sh """
-                    pip install 'pip<10.0.0' 'pyzmq==18.1.0'
+                    pip install 'pyzmq==18.1.0'
                     pip install .[tests] >$pipLogName
                 """
 
