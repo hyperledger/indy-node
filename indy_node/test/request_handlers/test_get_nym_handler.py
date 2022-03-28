@@ -250,3 +250,18 @@ def test_nym_txn_rejected_with_both_seqNo_and_timestamp(
     e.match("InvalidClientRequest")
     e.match("client request invalid")
     e.match("Cannot resolve nym with both seqNo and timestamp present.")
+
+
+def test_get_nym_handler_returns_default_nym_version(
+    looper, sdk_pool_handle, sdk_wallet_endorser, add_diddoc_content
+):
+    _, did = sdk_wallet_endorser
+    get_nym_request = build_get_nym_request(did, did)
+    request_couple = sdk_sign_and_send_prepared_request(
+        looper, sdk_wallet_endorser, sdk_pool_handle, get_nym_request
+    )
+    replies = sdk_get_and_check_replies(looper, [request_couple])
+
+    assert (
+        json.loads(replies[0][1]["result"]["data"])["version"] == 0
+    )
