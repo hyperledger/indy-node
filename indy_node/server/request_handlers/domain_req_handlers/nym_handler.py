@@ -8,7 +8,6 @@ from common.serializers.serialization import domain_state_serializer
 from indy_common.auth import Authoriser
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.base_diddoc_template import BaseDIDDoc
 
 from indy_common.constants import (
     DIDDOC_CONTENT,
@@ -175,21 +174,21 @@ class NymHandler(PNymHandler):
                 )
 
         version = request.operation.get(NYM_VERSION)
-        if version == 1 and not self._legacy_convention_validation(
+        if version == NYM_VERSION_CONVENTION and not self._legacy_convention_validation(
             request.operation.get(TARGET_NYM), request.operation.get(VERKEY)
         ):
             raise InvalidClientRequest(
                 identifier,
                 req_id,
-                "Nym with version 1 must be first 16 bytes of verkey",
+                "Identifier with version 1 must be first 16 bytes of verkey",
             )
-        elif version == 2 and not self._is_self_certifying(
+        elif version == NYM_VERSION_SELF_CERT and not self._is_self_certifying(
             request.operation.get(TARGET_NYM), request.operation.get(VERKEY)
         ):
             raise InvalidClientRequest(
                 identifier,
                 req_id,
-                "DID is not self-certifying; must be first 16 bytes of SHA256 of verkey",
+                "Identifier with version 2 must be first 16 bytes of SHA256 of verkey",
             )
 
         self.write_req_validator.validate(
@@ -239,8 +238,12 @@ class NymHandler(PNymHandler):
         return None, None, None
 
     def _is_self_certifying(self, did, verkey):
-        # DID must be the base58 encoded first 16 bytes of the 32 bytes verkey
-        # See https://hyperledger.github.io/indy-did-method/#creation
+        """Validate that the identifier is self-certifying.
+
+        DID must be the base58 encoded first 16 bytes of the 32 bytes verkey
+        See https://hyperledger.github.io/indy-did-method/#creation
+        """
+
 
         # Previously, it was possible to abbreviate the verification key sent
         # in a nym transaction. Since the DID is now the first 16 bytes of the
@@ -251,19 +254,24 @@ class NymHandler(PNymHandler):
         ).decode("utf-8")
 
     def _legacy_convention_validation(self, did, verkey):
-        """did:sov method validation: the did is derived
-        from the first 16 bytes of the verkey"""
+        """Validate old Indy SDK convention for DID generation.
+
+        The did is derived from the first 16 bytes of the verkey.
+        """
         return did == base58.b58encode(base58.b58decode(verkey)[:16])
 
     def _validate_diddoc_content(self, diddoc):
+        """Validate DID Doc according to assembly rules.
+
+        See https://hyperledger.github.io/indy-did-method/#creation
+        """
 
         # Must not have an id property
         if diddoc.get("id", None):
             raise InvalidDIDDocException
 
-        # No element in diddoc is allowed to have same id as verkey in base diddoc
-        # Alternative would be to merge with base did doc and perform generic did doc validation,
-        # e.g. using pyDID
+        # No element in diddoc is allowed to have same id as verkey in base
+        # diddoc
         for el in diddoc.values():
             if isinstance(el, list):
                 for item in el:
@@ -271,17 +279,8 @@ class NymHandler(PNymHandler):
                         raise InvalidDIDDocException
 
     def _has_same_id_fragment(self, item, fragment):
-
         return (
             isinstance(item, dict)
             and "id" in item
             and item["id"].partition("#")[2] == fragment
         )
-
-    # Currently not used
-    def _make_base_diddoc(self, request: Request):
-
-        dest = request.operation.get(TARGET_NYM)
-        verkey = request.operation.get(VERKEY)
-
-        return BaseDIDDoc(self.config.NETWORK_NAME, dest, verkey)
