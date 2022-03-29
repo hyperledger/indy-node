@@ -253,7 +253,7 @@ def test_nym_txn_rejected_with_both_seqNo_and_timestamp(
 
 
 def test_get_nym_handler_returns_no_nym_version_when_absent(
-    looper, sdk_pool_handle, sdk_wallet_endorser, add_diddoc_content
+    looper, sdk_pool_handle, sdk_wallet_endorser
 ):
     _, did = sdk_wallet_endorser
     get_nym_request = build_get_nym_request(did, did)
@@ -268,7 +268,7 @@ def test_get_nym_handler_returns_no_nym_version_when_absent(
 
 
 def test_get_nym_handler_returns_nym_version_when_set(
-    looper, sdk_pool_handle, sdk_wallet_endorser_factory, add_diddoc_content
+    looper, sdk_pool_handle, sdk_wallet_endorser_factory
 ):
     sdk_wallet_endorser = sdk_wallet_endorser_factory(version=NYM_VERSION_CONVENTION)
     _, did = sdk_wallet_endorser

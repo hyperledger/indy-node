@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 import json
+from unittest import mock
 
 from ledger.util import F
 from plenum.common.constants import IDENTIFIER, STEWARD, TARGET_NYM, TXN_TYPE, VERKEY
@@ -254,9 +255,9 @@ def test_fail_on_bad_version(version: int, nym_request: Request, nym_handler: Ny
     e.match("Version must be one of")
 
 
-def test_nym_validation_legacy_convetion(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+def test_nym_validation_legacy_convention_x(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
     nym_request = nym_request_factory(doc, NYM_VERSION_CONVENTION)
-    nym_request.operation[TARGET_NYM] = "X3XUxYQM2cfkSMzfMNma73"
+    nym_request.operation[TARGET_NYM] = "NOTDERIVEDFROMVERKEY"
     nym_request.operation[VERKEY] = "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYz"
     txn = reqToTxn(nym_request)
     seq_no = 1
@@ -267,9 +268,22 @@ def test_nym_validation_legacy_convetion(nym_request: Request, nym_handler: NymH
     e.match("Identifier with version 1")
 
 
-def test_nym_validation_self_certifying(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
-    nym_request = nym_request_factory(doc, NYM_VERSION_SELF_CERT)
+def test_nym_validation_legacy_convention(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+    nym_request = nym_request_factory(doc, NYM_VERSION_CONVENTION)
     nym_request.operation[TARGET_NYM] = "X3XUxYQM2cfkSMzfMNma73"
+    nym_request.operation[VERKEY] = "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYz"
+    txn = reqToTxn(nym_request)
+    seq_no = 1
+    txn_time = 1560241033
+    append_txn_metadata(txn, seq_no, txn_time)
+
+    with mock.patch.object(nym_handler, "write_req_validator"):
+        nym_handler._validate_new_nym(nym_request, nym_request.operation)
+
+
+def test_nym_validation_self_certifying_x(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+    nym_request = nym_request_factory(doc, NYM_VERSION_SELF_CERT)
+    nym_request.operation[TARGET_NYM] = "NOTSELFCERTIFYING"
     nym_request.operation[VERKEY] = "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYz"
     txn = reqToTxn(nym_request)
     seq_no = 1
@@ -278,3 +292,16 @@ def test_nym_validation_self_certifying(nym_request: Request, nym_handler: NymHa
     with pytest.raises(InvalidClientRequest) as e:
         nym_handler._validate_new_nym(nym_request, nym_request.operation)
     e.match("Identifier with version 2")
+
+
+def test_nym_validation_self_certifying(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+    nym_request = nym_request_factory(doc, NYM_VERSION_SELF_CERT)
+    nym_request.operation[TARGET_NYM] = "Dyqasan6xG5KsKdLufxCEf"
+    nym_request.operation[VERKEY] = "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYz"
+    txn = reqToTxn(nym_request)
+    seq_no = 1
+    txn_time = 1560241033
+    append_txn_metadata(txn, seq_no, txn_time)
+
+    with mock.patch.object(nym_handler, "write_req_validator"):
+        nym_handler._validate_new_nym(nym_request, nym_request.operation)
