@@ -4,7 +4,7 @@ import pytest
 
 from indy_common.auth import Authoriser
 from indy_common.config_util import getConfig
-from indy_common.constants import NYM, ROLE, DIDDOC_CONTENT
+from indy_common.constants import NYM, ROLE, DIDDOC_CONTENT, NYM_VERSION
 
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.test.request_handlers.helper import add_to_idr, get_exception
@@ -173,15 +173,6 @@ def test_nym_dynamic_validation_for_new_nym(
         nym_handler.dynamic_validation(nym_request, 0)
 
 
-def test_nym_dynamic_validation_for_new_nym_fails_not_self_certifying(
-    nym_request, nym_handler: NymHandler
-):
-    with enable_did_indy(nym_handler):
-        nym_request.operation["dest"] = "V4SGRU86Z58d6TV7PBUe6f"
-        with pytest.raises(InvalidClientRequest):
-            nym_handler.additional_dynamic_validation(nym_request, None)
-
-
 def test_nym_dynamic_validation_for_existing_nym(
     nym_request: Request, nym_handler: NymHandler, creator
 ):
@@ -229,3 +220,44 @@ def test_update_state(nym_request: Request, nym_handler: NymHandler):
     assert state_value[ROLE] == nym_request.operation.get(ROLE)
     assert state_value[VERKEY] == nym_request.operation.get(VERKEY)
     assert state_value[DIDDOC_CONTENT] == nym_request.operation.get(DIDDOC_CONTENT)
+
+
+def test_fail_on_version_update(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+    nym_request = nym_request_factory(doc)
+    nym_request.operation[NYM_VERSION] = 2
+    txn = reqToTxn(nym_request)
+    seq_no = 1
+    txn_time = 1560241033
+    append_txn_metadata(txn, seq_no, txn_time)
+    nym_data = nym_handler.update_state(txn, None, None, False)
+    with pytest.raises(InvalidClientRequest) as e:
+        nym_handler._validate_existing_nym(nym_request, nym_request.operation, nym_data)
+    e.match("Cannot set version on existing nym")
+
+
+def test_nym_validation_self_certifying(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+    nym_request = nym_request_factory(doc)
+    nym_request.operation[NYM_VERSION] = 1
+    nym_request.operation[TARGET_NYM] = "X3XUxYQM2cfkSMzfMNma73"
+    nym_request.operation[VERKEY] = "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYz"
+    txn = reqToTxn(nym_request)
+    seq_no = 1
+    txn_time = 1560241033
+    append_txn_metadata(txn, seq_no, txn_time)
+    with pytest.raises(InvalidClientRequest) as e:
+        nym_handler._validate_new_nym(nym_request, nym_request.operation)
+    e.match("Nym with version 1 must be first 16 bytes of verkey")
+
+
+def test_nym_validation_legacy_convetion(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+    nym_request = nym_request_factory(doc)
+    nym_request.operation[NYM_VERSION] = 2
+    nym_request.operation[TARGET_NYM] = "X3XUxYQM2cfkSMzfMNma73"
+    nym_request.operation[VERKEY] = "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYz"
+    txn = reqToTxn(nym_request)
+    seq_no = 1
+    txn_time = 1560241033
+    append_txn_metadata(txn, seq_no, txn_time)
+    with pytest.raises(InvalidClientRequest) as e:
+        nym_handler._validate_new_nym(nym_request, nym_request.operation)
+    e.match("DID is not self-certifying; must be first 16 bytes of SHA256 of verkey")

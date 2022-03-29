@@ -156,10 +156,6 @@ class NymHandler(PNymHandler):
         nym_data = self.database_manager.idr_cache.getNym(
             request.identifier, isCommitted=False
         )
-
-        nym_data = self.database_manager.idr_cache.getNym(
-            request.identifier, isCommitted=False
-        )
         if not nym_data:
             # Non-ledger nym case. These two checks duplicated and mainly executed in client_authn,
             # but it has point to repeat them here, for clear understanding of validation non-ledger request cases.
@@ -178,7 +174,16 @@ class NymHandler(PNymHandler):
                     "Non-ledger nym txn must contain verkey for new did",
                 )
 
-        if self.config.ENABLE_DID_INDY and not self._is_self_certifying(
+        version = request.operation.get(NYM_VERSION)
+        if version == 1 and not self._legacy_convention_validation(
+            request.operation.get(TARGET_NYM), request.operation.get(VERKEY)
+        ):
+            raise InvalidClientRequest(
+                identifier,
+                req_id,
+                "Nym with version 1 must be first 16 bytes of verkey",
+            )
+        elif version == 2 and not self._is_self_certifying(
             request.operation.get(TARGET_NYM), request.operation.get(VERKEY)
         ):
             raise InvalidClientRequest(
@@ -200,6 +205,14 @@ class NymHandler(PNymHandler):
 
         updateKeys = [ROLE, VERKEY]
         updateKeysInOperationOrOwner = is_owner
+
+        if NYM_VERSION in operation:
+            raise InvalidClientRequest(
+                request.identifier,
+                request.reqId,
+                "Cannot set version on existing nym"
+            )
+
         for key in updateKeys:
             if key in operation:
                 updateKeysInOperationOrOwner = True
@@ -236,6 +249,11 @@ class NymHandler(PNymHandler):
         return did == base58.b58encode(
             sha256(base58.b58decode(verkey)).digest()[:16]
         ).decode("utf-8")
+
+    def _legacy_convention_validation(self, did, verkey):
+        """did:sov method validation: the did is derived
+        from the first 16 bytes of the verkey"""
+        return did == base58.b58encode(base58.b58decode(verkey)[:16])
 
     def _validate_diddoc_content(self, diddoc):
 
