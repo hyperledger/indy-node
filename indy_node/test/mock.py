@@ -1,6 +1,6 @@
 import json
 from random import randint
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 from indy_common.constants import GET_NYM, NYM
 
@@ -10,7 +10,8 @@ def build_nym_request(
     dest: str,
     verkey: str = None,
     diddoc_content: Union[dict, str] = None,
-    role: str = None
+    role: str = None,
+    version: int = None,
 ):
     request = {
         "identifier": identifier,
@@ -18,7 +19,7 @@ def build_nym_request(
         "protocolVersion": 2
     }
 
-    operation = {
+    operation: Dict[str, Any] = {
         "dest": dest,
         "type": NYM
     }
@@ -34,12 +35,18 @@ def build_nym_request(
     if role:
         operation["role"] = role
 
+    if version:
+        operation["version"] = version
+
     request["operation"] = operation
     return json.dumps(request)
 
 
 def build_get_nym_request(
-    identifier: str, dest: str, timestamp: int = None, seq_no: int = None
+    identifier: str,
+    dest: str,
+    timestamp: Optional[int] = None,
+    seq_no: Optional[int] = None,
 ):
     request = {
         "identifier": identifier,

@@ -1,3 +1,4 @@
+import json
 import logging
 import time
 import warnings
@@ -22,7 +23,7 @@ from plenum.server.request_managers.action_request_manager import ActionRequestM
 from plenum.server.request_managers.read_request_manager import ReadRequestManager
 from plenum.server.request_managers.write_request_manager import WriteRequestManager
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_pool_refresh, prepare_new_node_data, \
-    create_and_start_new_node, prepare_node_request, sdk_sign_and_send_prepared_request
+    create_and_start_new_node, prepare_node_request, sdk_sign_and_send_prepared_request, prepare_nym_request
 from plenum.test.testing_utils import FakeSomething
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
@@ -173,15 +174,30 @@ def sdk_node_theta_added(looper,
 
 @pytest.fixture(scope="module")
 def sdk_wallet_endorser_factory(looper, sdk_pool_handle, sdk_wallet_trustee):
-    def _sdk_wallet_endorser_factory(diddoc_content):
-        wh, did = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trustee,
-            alias='TA-1', role='ENDORSER')
-        nym_request = build_nym_request(did, did, None, diddoc_content, None)
+    def _sdk_wallet_endorser_factory(diddoc_content=None, version=None):
+        seed = randomString(32)
+        alias = randomString(5)
+
+        raw_nym_request, did = looper.loop.run_until_complete(
+            prepare_nym_request(sdk_wallet_trustee, seed, alias, role='ENDORSER')
+        )
+        nym_request = json.loads(raw_nym_request)
+        if diddoc_content:
+            nym_request["operation"]["diddocContent"] = (
+                json.dumps(diddoc_content)
+                if isinstance(diddoc_content, dict)
+                else diddoc_content
+            )
+        if version:
+            nym_request["operation"]["version"] = version
+
         request_couple = sdk_sign_and_send_prepared_request(
-            looper, (wh, did), sdk_pool_handle, nym_request
+            looper, sdk_wallet_trustee, sdk_pool_handle, json.dumps(nym_request)
         )
         sdk_get_and_check_replies(looper, [request_couple])
-        return wh, did
+
+        return sdk_wallet_trustee[0], did
+
     return _sdk_wallet_endorser_factory
 
 

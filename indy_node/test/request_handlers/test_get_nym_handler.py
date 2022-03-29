@@ -5,7 +5,7 @@ from random import randint
 
 import pytest
 from indy.did import create_and_store_my_did
-from indy_common.constants import ENDORSER
+from indy_common.constants import ENDORSER, NYM_VERSION_CONVENTION
 from indy_node.test.helper import sdk_send_and_check_req_json
 from indy_node.test.mock import build_get_nym_request, build_nym_request
 from plenum.common.exceptions import RequestNackedException
@@ -265,3 +265,19 @@ def test_get_nym_handler_returns_no_nym_version_when_absent(
     assert (
         "version" not in json.loads(replies[0][1]["result"]["data"])
     )
+
+
+def test_get_nym_handler_returns_nym_version_when_set(
+    looper, sdk_pool_handle, sdk_wallet_endorser_factory, add_diddoc_content
+):
+    sdk_wallet_endorser = sdk_wallet_endorser_factory(version=NYM_VERSION_CONVENTION)
+    _, did = sdk_wallet_endorser
+    get_nym_request = build_get_nym_request(did, did)
+    request_couple = sdk_sign_and_send_prepared_request(
+        looper, sdk_wallet_endorser, sdk_pool_handle, get_nym_request
+    )
+    replies = sdk_get_and_check_replies(looper, [request_couple])
+
+    returned = json.loads(replies[0][1]["result"]["data"])
+    assert "version" in returned
+    assert returned["version"] == NYM_VERSION_CONVENTION

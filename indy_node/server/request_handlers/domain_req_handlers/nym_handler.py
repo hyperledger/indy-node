@@ -238,28 +238,24 @@ class NymHandler(PNymHandler):
             return domain_state_serializer.deserialize(encoded)
         return None, None, None
 
-    def _is_self_certifying(self, did, verkey):
+    def _is_self_certifying(self, identifier: str, verkey: str):
         """Validate that the identifier is self-certifying.
 
         DID must be the base58 encoded first 16 bytes of the 32 bytes verkey
         See https://hyperledger.github.io/indy-did-method/#creation
         """
-
-
-        # Previously, it was possible to abbreviate the verification key sent
-        # in a nym transaction. Since the DID is now the first 16 bytes of the
-        # hash of the full verkey, this abberviation is no longer possible.
-
-        return did == base58.b58encode(
+        return identifier == base58.b58encode(
             sha256(base58.b58decode(verkey)).digest()[:16]
         ).decode("utf-8")
 
-    def _legacy_convention_validation(self, did, verkey):
+    def _legacy_convention_validation(self, identifier: str, verkey: str):
         """Validate old Indy SDK convention for DID generation.
 
         The did is derived from the first 16 bytes of the verkey.
         """
-        return did == base58.b58encode(base58.b58decode(verkey)[:16])
+        return identifier == base58.b58encode(
+            base58.b58decode(verkey)[:16]
+        ).decode("utf-8")
 
     def _validate_diddoc_content(self, diddoc):
         """Validate DID Doc according to assembly rules.
