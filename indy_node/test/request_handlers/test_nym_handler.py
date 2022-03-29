@@ -1,20 +1,27 @@
 from contextlib import contextmanager
 import json
+from unittest import mock
+
+from ledger.util import F
+from plenum.common.constants import IDENTIFIER, STEWARD, TARGET_NYM, TXN_TYPE, VERKEY
+from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
+from plenum.common.request import Request
+from plenum.common.txn_util import append_txn_metadata, reqToTxn
+from plenum.common.util import randomString
+from plenum.server.request_handlers.utils import nym_to_state_key
 import pytest
 
 from indy_common.auth import Authoriser
-from indy_common.config_util import getConfig
-from indy_common.constants import NYM, ROLE, DIDDOC_CONTENT
-
+from indy_common.constants import (
+    DIDDOC_CONTENT,
+    NYM,
+    NYM_VERSION,
+    NYM_VERSION_CONVENTION,
+    NYM_VERSION_SELF_CERT,
+    ROLE,
+)
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.test.request_handlers.helper import add_to_idr, get_exception
-from ledger.util import F
-from plenum.common.constants import STEWARD, TARGET_NYM, IDENTIFIER, TXN_TYPE, VERKEY
-from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
-from plenum.common.request import Request
-from plenum.common.txn_util import reqToTxn, append_txn_metadata
-from plenum.common.util import randomString
-from plenum.server.request_handlers.utils import nym_to_state_key
 
 
 @contextmanager
@@ -60,7 +67,7 @@ def doc():
 
 @pytest.fixture
 def nym_request_factory(creator, doc):
-    def _factory(diddoc_content: dict = None):
+    def _factory(diddoc_content: dict = None, version: int = None):
         if diddoc_content is None:
             diddoc_content = doc
         return Request(
@@ -72,6 +79,7 @@ def nym_request_factory(creator, doc):
                 ROLE: None,
                 DIDDOC_CONTENT: json.dumps(diddoc_content),
                 VERKEY: "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYx",
+                **({NYM_VERSION: version} if version is not None else {})
             },
         )
 
@@ -173,15 +181,6 @@ def test_nym_dynamic_validation_for_new_nym(
         nym_handler.dynamic_validation(nym_request, 0)
 
 
-def test_nym_dynamic_validation_for_new_nym_fails_not_self_certifying(
-    nym_request, nym_handler: NymHandler
-):
-    with enable_did_indy(nym_handler):
-        nym_request.operation["dest"] = "V4SGRU86Z58d6TV7PBUe6f"
-        with pytest.raises(InvalidClientRequest):
-            nym_handler.additional_dynamic_validation(nym_request, None)
-
-
 def test_nym_dynamic_validation_for_existing_nym(
     nym_request: Request, nym_handler: NymHandler, creator
 ):
@@ -229,3 +228,80 @@ def test_update_state(nym_request: Request, nym_handler: NymHandler):
     assert state_value[ROLE] == nym_request.operation.get(ROLE)
     assert state_value[VERKEY] == nym_request.operation.get(VERKEY)
     assert state_value[DIDDOC_CONTENT] == nym_request.operation.get(DIDDOC_CONTENT)
+
+
+def test_fail_on_version_update(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+    nym_request = nym_request_factory(doc, NYM_VERSION_SELF_CERT)
+    txn = reqToTxn(nym_request)
+    seq_no = 1
+    txn_time = 1560241033
+    append_txn_metadata(txn, seq_no, txn_time)
+    nym_data = nym_handler.update_state(txn, None, None, False)
+    with pytest.raises(InvalidClientRequest) as e:
+        nym_handler._validate_existing_nym(nym_request, nym_request.operation, nym_data)
+    e.match("Cannot set version on existing nym")
+
+
+@pytest.mark.parametrize("version", [-1, 3, 100])
+def test_fail_on_bad_version(version: int, nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+    nym_request = nym_request_factory(doc, version)
+    txn = reqToTxn(nym_request)
+    seq_no = 1
+    txn_time = 1560241033
+    append_txn_metadata(txn, seq_no, txn_time)
+    nym_data = nym_handler.update_state(txn, None, None, False)
+    with pytest.raises(InvalidClientRequest) as e:
+        nym_handler.static_validation(nym_request)
+    e.match("Version must be one of")
+
+
+def test_nym_validation_legacy_convention_x(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+    nym_request = nym_request_factory(doc, NYM_VERSION_CONVENTION)
+    nym_request.operation[TARGET_NYM] = "NOTDERIVEDFROMVERKEY"
+    nym_request.operation[VERKEY] = "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYz"
+    txn = reqToTxn(nym_request)
+    seq_no = 1
+    txn_time = 1560241033
+    append_txn_metadata(txn, seq_no, txn_time)
+    with pytest.raises(InvalidClientRequest) as e:
+        nym_handler._validate_new_nym(nym_request, nym_request.operation)
+    e.match("Identifier with version 1")
+
+
+def test_nym_validation_legacy_convention(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+    nym_request = nym_request_factory(doc, NYM_VERSION_CONVENTION)
+    nym_request.operation[TARGET_NYM] = "X3XUxYQM2cfkSMzfMNma73"
+    nym_request.operation[VERKEY] = "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYz"
+    txn = reqToTxn(nym_request)
+    seq_no = 1
+    txn_time = 1560241033
+    append_txn_metadata(txn, seq_no, txn_time)
+
+    with mock.patch.object(nym_handler, "write_req_validator"):
+        nym_handler._validate_new_nym(nym_request, nym_request.operation)
+
+
+def test_nym_validation_self_certifying_x(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+    nym_request = nym_request_factory(doc, NYM_VERSION_SELF_CERT)
+    nym_request.operation[TARGET_NYM] = "NOTSELFCERTIFYING"
+    nym_request.operation[VERKEY] = "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYz"
+    txn = reqToTxn(nym_request)
+    seq_no = 1
+    txn_time = 1560241033
+    append_txn_metadata(txn, seq_no, txn_time)
+    with pytest.raises(InvalidClientRequest) as e:
+        nym_handler._validate_new_nym(nym_request, nym_request.operation)
+    e.match("Identifier with version 2")
+
+
+def test_nym_validation_self_certifying(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+    nym_request = nym_request_factory(doc, NYM_VERSION_SELF_CERT)
+    nym_request.operation[TARGET_NYM] = "Dyqasan6xG5KsKdLufxCEf"
+    nym_request.operation[VERKEY] = "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYz"
+    txn = reqToTxn(nym_request)
+    seq_no = 1
+    txn_time = 1560241033
+    append_txn_metadata(txn, seq_no, txn_time)
+
+    with mock.patch.object(nym_handler, "write_req_validator"):
+        nym_handler._validate_new_nym(nym_request, nym_request.operation)

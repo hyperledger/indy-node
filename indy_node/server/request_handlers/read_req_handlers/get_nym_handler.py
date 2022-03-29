@@ -1,4 +1,4 @@
-from indy_common.constants import GET_NYM, TIMESTAMP
+from indy_common.constants import GET_NYM, TIMESTAMP, NYM_VERSION
 
 from common.serializers.serialization import domain_state_serializer
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler

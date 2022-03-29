@@ -31,7 +31,7 @@ from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
 from indy_common.constants import ATTRIB, GET_ATTR, \
     GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     POOL_UPGRADE, POOL_CONFIG, \
-    DISCLO, SCHEMA, ENDPOINT, CLAIM_DEF, SCHEDULE, SHA256, \
+    DISCLO, SCHEMA, ENDPOINT, CLAIM_DEF, SCHEDULE, NYM_VERSION, SHA256, \
     TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, START, CANCEL, \
     REVOC_REG_DEF, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
     TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
@@ -84,6 +84,7 @@ class ClientNYMOperation(PClientNYMOperation):
         (TARGET_NYM, DestNymField()),
         (ROLE, RoleField(optional=True)),
         (DIDDOC_CONTENT, JsonField(max_length=DIDDOC_CONTENT_SIZE_LIMIT, optional=True)),
+        (NYM_VERSION, IntegerField(optional=True)),
     )
 
 
