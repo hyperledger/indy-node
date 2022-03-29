@@ -79,8 +79,8 @@ class NymHandler(PNymHandler):
                     "Invalid DIDDOC_Content",
                 ) from e
 
-        version = operation.get(NYM_VERSION, None)
-        if version and version not in (
+        version = operation.get(NYM_VERSION)
+        if version is not None and version not in (
             NYM_VERSION_NULL,
             NYM_VERSION_CONVENTION,
             NYM_VERSION_SELF_CERT,
@@ -88,7 +88,7 @@ class NymHandler(PNymHandler):
             raise InvalidClientRequest(
                 request.identifier,
                 request.reqId,
-                "nym version must be one of {{{}}}".format(
+                "Version must be one of {{{}}}, received {}".format(
                     ", ".join(
                         str(val)
                         for val in [
@@ -96,7 +96,8 @@ class NymHandler(PNymHandler):
                             NYM_VERSION_CONVENTION,
                             NYM_VERSION_SELF_CERT,
                         ]
-                    )
+                    ),
+                    version
                 ),
             )
 
