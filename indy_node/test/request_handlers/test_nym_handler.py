@@ -1,20 +1,26 @@
 from contextlib import contextmanager
 import json
+
+from ledger.util import F
+from plenum.common.constants import IDENTIFIER, STEWARD, TARGET_NYM, TXN_TYPE, VERKEY
+from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
+from plenum.common.request import Request
+from plenum.common.txn_util import append_txn_metadata, reqToTxn
+from plenum.common.util import randomString
+from plenum.server.request_handlers.utils import nym_to_state_key
 import pytest
 
 from indy_common.auth import Authoriser
-from indy_common.config_util import getConfig
-from indy_common.constants import NYM, ROLE, DIDDOC_CONTENT, NYM_VERSION
-
+from indy_common.constants import (
+    DIDDOC_CONTENT,
+    NYM,
+    NYM_VERSION,
+    NYM_VERSION_CONVENTION,
+    NYM_VERSION_SELF_CERT,
+    ROLE,
+)
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.test.request_handlers.helper import add_to_idr, get_exception
-from ledger.util import F
-from plenum.common.constants import STEWARD, TARGET_NYM, IDENTIFIER, TXN_TYPE, VERKEY
-from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
-from plenum.common.request import Request
-from plenum.common.txn_util import reqToTxn, append_txn_metadata
-from plenum.common.util import randomString
-from plenum.server.request_handlers.utils import nym_to_state_key
 
 
 @contextmanager
@@ -224,7 +230,7 @@ def test_update_state(nym_request: Request, nym_handler: NymHandler):
 
 def test_fail_on_version_update(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
     nym_request = nym_request_factory(doc)
-    nym_request.operation[NYM_VERSION] = 2
+    nym_request.operation[NYM_VERSION] = NYM_VERSION_SELF_CERT
     txn = reqToTxn(nym_request)
     seq_no = 1
     txn_time = 1560241033
@@ -235,9 +241,9 @@ def test_fail_on_version_update(nym_request: Request, nym_handler: NymHandler, d
     e.match("Cannot set version on existing nym")
 
 
-def test_nym_validation_self_certifying(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+def test_nym_validation_legacy_convetion(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
     nym_request = nym_request_factory(doc)
-    nym_request.operation[NYM_VERSION] = 1
+    nym_request.operation[NYM_VERSION] = NYM_VERSION_CONVENTION
     nym_request.operation[TARGET_NYM] = "X3XUxYQM2cfkSMzfMNma73"
     nym_request.operation[VERKEY] = "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYz"
     txn = reqToTxn(nym_request)
@@ -249,9 +255,9 @@ def test_nym_validation_self_certifying(nym_request: Request, nym_handler: NymHa
     e.match("Nym with version 1 must be first 16 bytes of verkey")
 
 
-def test_nym_validation_legacy_convetion(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
+def test_nym_validation_self_certifying(nym_request: Request, nym_handler: NymHandler, doc, nym_request_factory):
     nym_request = nym_request_factory(doc)
-    nym_request.operation[NYM_VERSION] = 2
+    nym_request.operation[NYM_VERSION] = NYM_VERSION_SELF_CERT
     nym_request.operation[TARGET_NYM] = "X3XUxYQM2cfkSMzfMNma73"
     nym_request.operation[VERKEY] = "HNjfjoeZ7WAHYDSzWcvzyvUABepctabD7QSxopM48fYz"
     txn = reqToTxn(nym_request)
