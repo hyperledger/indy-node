@@ -72,6 +72,8 @@ def test_get_nym_data_with_diddoc_content_without_seqNo_or_timestamp(
     assert (
         json.loads(replies[0][1]["result"]["data"])["diddocContent"] == diddoc_content_json
     )
+    print(replies[0][1]["result"])
+    assert False
 
 
 def test_get_previous_nym_data_by_timestamp(
@@ -141,6 +143,8 @@ def test_get_previous_nym_data_by_timestamp(
     assert (
         json.loads(replies[0][1]["result"]["data"])["diddocContent"] == diddoc_content_json
     )
+    print(replies[0][1]["result"])
+    assert False
 
 
 def test_get_previous_nym_data_by_seq_no(

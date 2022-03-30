@@ -1,3 +1,4 @@
+from typing import Any, Optional, Tuple, Union
 from indy_common.constants import GET_NYM, TIMESTAMP, NYM_VERSION
 
 from common.serializers.serialization import domain_state_serializer
@@ -28,53 +29,41 @@ class GetNymHandler(ReadRequestHandler):
         update_time = None
         proof = None
 
-        if timestamp:
-            nym_data = None
-            past_root = self.database_manager.ts_store.get_equal_or_prev(timestamp)
-            if past_root:
-                encoded_nym, proof = self._get_value_from_state(
-                    path, head_hash=past_root, with_proof=True
-                )
-                if encoded_nym:
-                    nym_data = domain_state_serializer.deserialize(encoded_nym)
-                    seq_no = nym_data[TXN_METADATA_SEQ_NO]
-                    update_time = nym_data[TXN_TIME]
-                    del nym_data[TXN_METADATA_SEQ_NO]
-                    del nym_data[TXN_TIME]
-                    del nym_data["identifier"]
-            nym_state_value = StateValue(
-                root_hash=past_root,
-                value=nym_data,
-                seq_no=seq_no,
-                update_time=update_time,
-                proof=proof,
-            )
-            if nym_state_value and nym_state_value.value:
-                nym_data = nym_state_value.value
-                nym_data[TARGET_NYM] = nym
-                data = domain_state_serializer.serialize(nym_data)
-                seq_no = nym_state_value.seq_no
-                update_time = nym_state_value.update_time
-                proof = nym_state_value.proof
-        else:
-            nym_data, proof = self._get_value_from_state(path, with_proof=True)
-            if nym_data:
-                nym_data = domain_state_serializer.deserialize(nym_data)
-                nym_data[TARGET_NYM] = nym
-                data = domain_state_serializer.serialize(nym_data)
-                seq_no = nym_data[f.SEQ_NO.nm]
-                update_time = nym_data[TXN_TIME]
+        nym_data, proof = self._get_value_at_timestamp_from_state(
+            path, timestamp=timestamp, with_proof=True
+        )
+        if nym_data:
+            nym_data = domain_state_serializer.deserialize(nym_data)
+            nym_data[TARGET_NYM] = nym
+            data = domain_state_serializer.serialize(nym_data)
+            seq_no = nym_data[f.SEQ_NO.nm]
+            update_time = nym_data[TXN_TIME]
 
         result = self.make_result(
             request=request,
-            data=data,
-            last_seq_no=seq_no,
-            update_time=update_time,
-            proof=proof,
+            data=data,  # Serailized retrieved txn data
+            last_seq_no=seq_no,  # nym_data[seqNo]
+            update_time=update_time,  # nym_data[TXN_TIME]
+            proof=proof,  # _get_value_from_state(..., with_proof=True)[1]
         )
 
         result.update(request.operation)
         return result
+
+    def _get_value_at_timestamp_from_state(
+        self, path: bytes, timestamp: Optional[str], with_proof=False
+    ) -> Tuple[Optional[Union[bytes, str]], Any]:
+        """Return the value and proof at a time in the past or None if it didn't exist.
+
+        If timestamp is none, return current state.
+        """
+        past_root = None
+        if timestamp:
+            past_root = self.database_manager.ts_store.get_equal_or_prev(timestamp)
+
+        return self._get_value_from_state(
+            path, head_hash=past_root, with_proof=with_proof
+        )
 
     def _retrieve_timestamp(self, request: Request):
         timestamp = request.operation.get(TIMESTAMP, None)
