@@ -17,8 +17,9 @@ logger = getlogger()
 
 class GetAttributeHandler(ReadRequestHandler):
 
-    def __init__(self, database_manager: DatabaseManager):
+    def __init__(self, node, database_manager: DatabaseManager):
         super().__init__(database_manager, GET_ATTR, DOMAIN_LEDGER_ID)
+        self.node = node
 
     def get_result(self, request: Request):
         self._validate_request_type(request)
