@@ -113,8 +113,10 @@ class GetAttributeHandler(ReadRequestHandler):
             encoded, proof = self._get_value_by_seq_no_from_state(
                 path, seq_no, with_proof=True
             )
-        head_hash = self.state.committedHeadHash if is_committed else self.state.headHash
-        encoded, proof = self._get_value_from_state(path, head_hash, with_proof=with_proof)
+        else:
+            head_hash = self.state.committedHeadHash if is_committed else self.state.headHash
+            encoded, proof = self._get_value_from_state(path, head_hash, with_proof=with_proof)
+
         if encoded:
             value, last_seq_no, last_update_time = decode_state_value(encoded)
             return value, last_seq_no, last_update_time, proof
