@@ -246,6 +246,8 @@ class ClientGetAttribOperation(ClientAttribOperation):
         (RAW, LimitedLengthStringField(max_length=RAW_FIELD_LIMIT, optional=True)),
         (ENC, LimitedLengthStringField(max_length=ENC_FIELD_LIMIT, optional=True)),
         (HASH, Sha256HexField(optional=True)),
+        (TIMESTAMP, IntegerField(optional=True)),
+        (TXN_METADATA_SEQ_NO, TxnSeqNoField(optional=True)),
     )
 
     def _validate_message(self, msg):
