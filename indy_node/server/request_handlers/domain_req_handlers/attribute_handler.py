@@ -48,11 +48,11 @@ class AttributeHandler(WriteRequestHandler):
                 get_key = attrib_raw_data_serializer.deserialize(operation[RAW])
                 if len(get_key) == 0:
                     raise InvalidClientRequest(identifier, request.reqId,
-                                               '"row" attribute field must contain non-empty dict {}'.
+                                               '"raw" attribute field must contain non-empty JSON object {}'.
                                                format(TARGET_NYM))
             except JSONDecodeError:
                 raise InvalidClientRequest(identifier, request.reqId,
-                                           'Attribute field must be dict while adding it as a row field {}'.
+                                           'Attribute field must be valid JSON object when adding it as a raw field {}'.
                                            format(TARGET_NYM))
 
     def additional_dynamic_validation(self, request: Request, req_pp_time: Optional[int]):

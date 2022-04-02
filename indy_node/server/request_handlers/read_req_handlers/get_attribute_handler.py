@@ -1,74 +1,108 @@
-from indy_node.server.request_handlers.domain_req_handlers.attribute_handler import AttributeHandler
-from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
-from indy_common.constants import ATTRIB, GET_ATTR
-from indy_node.server.request_handlers.utils import validate_attrib_keys
-from plenum.common.constants import RAW, ENC, HASH, TARGET_NYM, DOMAIN_LEDGER_ID
+from typing import Any, Mapping
+
+from plenum.common.constants import DOMAIN_LEDGER_ID, ENC, HASH, RAW, TARGET_NYM
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import get_request_data
 from plenum.server.database_manager import DatabaseManager
+from plenum.server.request_handlers.utils import decode_state_value
 from stp_core.common.log import getlogger
+
+from indy_common.constants import ATTRIB, GET_ATTR, TIMESTAMP
+from indy_node.server.request_handlers.domain_req_handlers.attribute_handler import (
+    AttributeHandler,
+)
+from indy_node.server.request_handlers.read_req_handlers.version_read_request_handler import (
+    VersionReadRequestHandler,
+)
+from indy_node.server.request_handlers.utils import validate_attrib_keys
 
 logger = getlogger()
 
 
-class GetAttributeHandler(ReadRequestHandler):
+class GetAttributeHandler(VersionReadRequestHandler):
 
-    def __init__(self, database_manager: DatabaseManager):
-        super().__init__(database_manager, GET_ATTR, DOMAIN_LEDGER_ID)
+    def __init__(self, node, database_manager: DatabaseManager):
+        super().__init__(node, database_manager, GET_ATTR, DOMAIN_LEDGER_ID)
 
     def get_result(self, request: Request):
         self._validate_request_type(request)
-        identifier, req_id, operation = get_request_data(request)
-        if not validate_attrib_keys(operation):
-            raise InvalidClientRequest(identifier, req_id,
-                                       '{} should have one and only one of '
-                                       '{}, {}, {}'
-                                       .format(ATTRIB, RAW, ENC, HASH))
-        nym = operation[TARGET_NYM]
-        if RAW in operation:
-            attr_type = RAW
-        elif ENC in operation:
-            # If attribute is encrypted, it will be queried by its hash
-            attr_type = ENC
-        else:
-            attr_type = HASH
-        attr_key = operation[attr_type]
-        value, last_seq_no, last_update_time, proof = \
-            self.get_attr(did=nym, key=attr_key, attr_type=attr_type)
-        attr = None
-        if value is not None:
-            if HASH in operation:
-                attr = attr_key
-            else:
-                attr = value
-        return self.make_result(request=request,
-                                data=attr,
-                                last_seq_no=last_seq_no,
-                                update_time=last_update_time,
-                                proof=proof)
 
-    def get_attr(self,
-                 did: str,
-                 key: str,
-                 attr_type,
-                 is_committed=True) -> (str, int, int, list):
-        assert did is not None
-        assert key is not None
-        path = AttributeHandler.make_state_path_for_attr(did, key, attr_type == HASH)
+        identifier, req_id, operation = get_request_data(request)
+
+        timestamp = operation.get(TIMESTAMP)
+        seq_no = operation.get("seqNo")
+        if timestamp and seq_no:
+            raise InvalidClientRequest(
+                request.identifier,
+                request.reqId,
+                "Cannot resolve nym with both seqNo and timestamp present",
+            )
+
+        if not validate_attrib_keys(operation):
+            raise InvalidClientRequest(
+                identifier, req_id,
+                '{} should have one and only one of '
+                '{}, {}, {}'
+                .format(ATTRIB, RAW, ENC, HASH)
+            )
+
+        attr_type = self._get_attr_type(operation)
+        path = AttributeHandler.make_state_path_for_attr(
+            operation[TARGET_NYM],
+            operation[attr_type],
+            attr_type == HASH,
+        )
+
+        encoded, proof = self.lookup_version(
+            path, seq_no=seq_no, timestamp=timestamp, with_proof=True
+        )
+
+        if not encoded:
+            return self.make_result(
+                request=request,
+                data=None,
+                last_seq_no=None,
+                update_time=None,
+                proof=proof
+            )
+
+        store_key, last_seq_no, last_update_time = decode_state_value(encoded)
+
+        if attr_type == HASH:
+            return self.make_result(
+                request=request,
+                data=operation[HASH],
+                last_seq_no=last_seq_no,
+                update_time=last_update_time,
+                proof=proof
+            )
+
+        store_value = self._get_value_from_attribute_store(store_key)
+        return self.make_result(
+            request=request,
+            data=store_value,
+            last_seq_no=last_seq_no,
+            update_time=last_update_time,
+            proof=proof
+        )
+
+    @staticmethod
+    def _get_attr_type(operation: Mapping[str, Any]):
+        """Return attribute type based on presence of keys in operation."""
+        if RAW in operation:
+            return RAW
+        if ENC in operation:
+            return ENC
+        return HASH
+
+    def _get_value_from_attribute_store(self, key: str):
+        """Retrieve value from attribute store or return None if it doesn't exist."""
         try:
-            hashed_val, last_seq_no, last_update_time, proof = \
-                self.lookup(path, is_committed, with_proof=True)
+            value = self.database_manager.attribute_store.get(key)
         except KeyError:
-            return None, None, None, None
-        if not hashed_val or hashed_val == '':
-            # Its a HASH attribute
-            return hashed_val, last_seq_no, last_update_time, proof
-        else:
-            try:
-                value = self.database_manager.attribute_store.get(hashed_val)
-            except KeyError:
-                logger.error('Could not get value from attribute store for {}'
-                             .format(hashed_val))
-                return None, None, None, None
-        return value, last_seq_no, last_update_time, proof
+            logger.error(
+                'Could not get value from attribute store for %s', key
+            )
+            return None
+        return value

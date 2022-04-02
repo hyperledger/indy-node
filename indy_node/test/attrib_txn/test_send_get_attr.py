@@ -1,17 +1,22 @@
-import pytest
+from hashlib import sha256
 import json
+from random import randint
+import time
+from typing import Optional
 
 from indy.ledger import build_get_attrib_request
 from libnacl.secret import SecretBox
-from hashlib import sha256
-
 from plenum.common.exceptions import RequestNackedException
-
 from plenum.test.helper import sdk_get_and_check_replies
-
-from indy_node.test.helper import createUuidIdentifier, sdk_add_attribute_and_check, \
-    sdk_get_attribute_and_check, modify_field
 from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request
+import pytest
+
+from indy_node.test.helper import (
+    createUuidIdentifier,
+    modify_field,
+    sdk_add_attribute_and_check,
+    sdk_get_attribute_and_check,
+)
 
 attrib_name = 'dateOfBirth'
 
@@ -32,6 +37,19 @@ def send_raw_attrib(looper, sdk_pool_handle, sdk_wallet_trustee):
                                       }))
 
     return rep
+
+
+@pytest.fixture
+def send_raw_attrib_factory(looper, sdk_pool_handle, sdk_wallet_trustee):
+
+    def _factory(attrib: dict):
+        rep = sdk_add_attribute_and_check(
+            looper, sdk_pool_handle, sdk_wallet_trustee,
+            json.dumps(attrib)
+        )
+
+        return rep
+    return _factory
 
 
 @pytest.fixture(scope="module")
@@ -124,3 +142,67 @@ def test_send_get_attr_hash_succeeds_for_existing_uuid_dest(
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
                                                         sdk_pool_handle, req)
     sdk_get_and_check_replies(looper, [request_couple])
+
+
+def test_get_attr_by_timestamp(
+    looper, sdk_pool_handle, sdk_wallet_trustee, send_raw_attrib_factory
+):
+    _, did = sdk_wallet_trustee
+
+    # Setup
+    initial = send_raw_attrib_factory({"attrib": 1})
+    time.sleep(3)
+    final = send_raw_attrib_factory({"attrib": 2})
+
+    timestamp = initial[0][1]["result"]["txnMetadata"]["txnTime"]
+    update_timestamp = final[0][1]["result"]["txnMetadata"]["txnTime"]
+
+    def _get_attrib(timestamp: Optional[int] = None):
+        raw_req = looper.loop.run_until_complete(
+            build_get_attrib_request(did, did, "attrib", None, None))
+
+        req = json.loads(raw_req)
+        if timestamp:
+            req["operation"]["timestamp"] = timestamp
+
+        request_couple = sdk_sign_and_send_prepared_request(
+            looper, sdk_wallet_trustee,
+            sdk_pool_handle, json.dumps(req)
+        )
+        replies = sdk_get_and_check_replies(looper, [request_couple])
+        return json.loads(replies[0][1]["result"]["data"])["attrib"]
+
+    assert _get_attrib() == 2
+    assert _get_attrib(timestamp=timestamp) == 1
+    assert _get_attrib(randint(timestamp + 1, update_timestamp - 1)) == 1
+
+
+def test_get_attr_by_seq_no(
+    looper, sdk_pool_handle, sdk_wallet_trustee, send_raw_attrib_factory
+):
+    _, did = sdk_wallet_trustee
+
+    # Setup
+    initial = send_raw_attrib_factory({"attrib": 1})
+    time.sleep(3)
+    send_raw_attrib_factory({"attrib": 2})
+
+    seq_no = initial[0][1]["result"]["txnMetadata"]["seqNo"]
+
+    def _get_attrib(seq_no: Optional[int] = None):
+        raw_req = looper.loop.run_until_complete(
+            build_get_attrib_request(did, did, "attrib", None, None))
+
+        req = json.loads(raw_req)
+        if seq_no:
+            req["operation"]["seqNo"] = seq_no
+
+        request_couple = sdk_sign_and_send_prepared_request(
+            looper, sdk_wallet_trustee,
+            sdk_pool_handle, json.dumps(req)
+        )
+        replies = sdk_get_and_check_replies(looper, [request_couple])
+        return json.loads(replies[0][1]["result"]["data"])["attrib"]
+
+    assert _get_attrib() == 2
+    assert _get_attrib(seq_no=seq_no) == 1
