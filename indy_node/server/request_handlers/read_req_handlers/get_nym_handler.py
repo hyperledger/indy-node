@@ -30,14 +30,14 @@ class GetNymHandler(VersionReadRequestHandler):
                 "Cannot resolve nym with both seqNo and timestamp present",
             )
 
-        nym_data, proof = self.lookup_version(
-            path, seq_no=read_seq_no, timestamp=timestamp, with_proof=True
-        )
-
         data = None
         seq_no = None
         update_time = None
         proof = None
+
+        nym_data, proof = self.lookup_version(
+            path, seq_no=read_seq_no, timestamp=timestamp, with_proof=True
+        )
 
         if nym_data:
             nym_data = domain_state_serializer.deserialize(nym_data)

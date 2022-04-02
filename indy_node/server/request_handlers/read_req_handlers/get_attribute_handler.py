@@ -57,13 +57,14 @@ class GetAttributeHandler(VersionReadRequestHandler):
         encoded, proof = self.lookup_version(
             path, seq_no=seq_no, timestamp=timestamp, with_proof=True
         )
+
         if not encoded:
             return self.make_result(
                 request=request,
                 data=None,
                 last_seq_no=None,
                 update_time=None,
-                proof=None
+                proof=proof
             )
 
         store_key, last_seq_no, last_update_time = decode_state_value(encoded)
