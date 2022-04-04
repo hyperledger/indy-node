@@ -8,10 +8,10 @@ from indy_common.constants import GET_NYM, NYM
 def build_nym_request(
     identifier: str,
     dest: str,
-    verkey: str = None,
-    diddoc_content: Union[dict, str] = None,
-    role: str = None,
-    version: int = None,
+    verkey: Optional[str] = None,
+    diddoc_content: Optional[Union[dict, str]] = None,
+    role: Optional[str] = None,
+    version: Optional[int] = None,
 ):
     request = {
         "identifier": identifier,
