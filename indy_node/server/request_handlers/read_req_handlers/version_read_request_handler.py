@@ -28,12 +28,21 @@ class VersionReadRequestHandler(ReadRequestHandler):
         timestamp: Optional[int] = None,
         with_proof=False,
     ) -> Tuple[Optional[Union[bytes, str]], Any]:
-        """Return the value and proof at a time in the past or None if it didn't exist.
+        """Lookup a value from the ledger state, optionally retrieving from the past.
 
-        If no value is found at timestamp, return (None, None).
+        If seq_no or timestamp is specified and no value is found, returns (None, None).
+        If neither are specified, value in its current state is retrieved, which will
+        also return (None, None) if it is not found on the ledger.
+
+        seq_no and timestamp are mutually exclusive.
         """
+        if seq_no is not None and timestamp is not None:
+            raise ValueError("seq_no and timestamp are mutually exclusive")
+
         if seq_no:
             timestamp = self._timestamp_from_seq_no(seq_no)
+            if not timestamp:
+                return None, None
 
         if timestamp:
             past_root = self.timestamp_store.get_equal_or_prev(timestamp)
@@ -49,6 +58,7 @@ class VersionReadRequestHandler(ReadRequestHandler):
         )
 
     def _timestamp_from_seq_no(self, seq_no: int) -> Optional[int]:
+        """Return timestamp of a transaction identified by seq_no."""
         db = self.database_manager.get_database(DOMAIN_LEDGER_ID)
         txn = self.node.getReplyFromLedger(db.ledger, seq_no, write=False)
 
