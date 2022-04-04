@@ -24,15 +24,6 @@ from indy_node.server.request_handlers.domain_req_handlers.nym_handler import Ny
 from indy_node.test.request_handlers.helper import add_to_idr, get_exception
 
 
-@contextmanager
-def enable_did_indy(handler: NymHandler):
-    handler.config.ENABLE_DID_INDY = True
-    try:
-        yield
-    finally:
-        handler.config.ENABLE_DID_INDY = False
-
-
 @pytest.fixture(scope="module")
 def nym_handler(db_manager, tconf, write_auth_req_validator):
     return NymHandler(tconf, db_manager, write_auth_req_validator)
