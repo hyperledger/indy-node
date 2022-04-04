@@ -116,7 +116,3 @@ JSON_LD_LIMIT = CONTEXT_SIZE_LIMIT
 DIDDOC_CONTENT_SIZE_LIMIT = 10 * 1024
 
 ENABLE_RICH_SCHEMAS = False
-# Enable enforcing self-certifying identifiers
-# This breaks a lot of tests because identifiers
-# without verkeys are registered
-ENABLE_DID_INDY = False
