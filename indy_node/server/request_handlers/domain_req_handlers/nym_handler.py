@@ -46,7 +46,6 @@ class NymHandler(PNymHandler):
     ):
         super().__init__(config, database_manager)
         self.write_req_validator = write_req_validator
-        self.namespace = config.NETWORK_NAME
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
