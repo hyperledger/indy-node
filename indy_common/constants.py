@@ -13,9 +13,10 @@ Environment = NamedTuple("Environment", [
 DOMAIN_LEDGER_ID = 1
 
 # NYM
-# TODO: Will be defined in plenum
 DIDDOC_CONTENT = "diddocContent"
 NYM_VERSION = "version"
+VERSION_ID = "seqNo"
+VERSION_TIME = "timestamp"
 
 NYM_VERSION_NULL = 0  # No Checks
 NYM_VERSION_CONVENTION = 1  # Nym is base58 of first 16 bytes of verkey

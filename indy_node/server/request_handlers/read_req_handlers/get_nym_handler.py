@@ -1,4 +1,4 @@
-from indy_common.constants import GET_NYM, TIMESTAMP
+from indy_common.constants import GET_NYM, VERSION_ID, VERSION_TIME
 
 from common.serializers.serialization import domain_state_serializer
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
@@ -20,14 +20,15 @@ class GetNymHandler(VersionReadRequestHandler):
         nym = request.operation[TARGET_NYM]
         path = NymHandler.make_state_path_for_nym(nym)
 
-        timestamp = request.operation.get(TIMESTAMP)
-        read_seq_no = request.operation.get("seqNo")
+        timestamp = request.operation.get(VERSION_TIME)
+        seq_no = request.operation.get(VERSION_ID)
 
-        if timestamp and read_seq_no:
+        if timestamp and seq_no:
             raise InvalidClientRequest(
                 request.identifier,
                 request.reqId,
-                "Cannot resolve nym with both seqNo and timestamp present",
+                f"{VERSION_ID} and {VERSION_TIME} are mutually exclusive; only one should be "
+                "specified",
             )
 
         data = None
@@ -36,7 +37,7 @@ class GetNymHandler(VersionReadRequestHandler):
         proof = None
 
         nym_data, proof = self.lookup_version(
-            path, seq_no=read_seq_no, timestamp=timestamp, with_proof=True
+            path, seq_no=seq_no, timestamp=timestamp, with_proof=True
         )
 
         if nym_data:

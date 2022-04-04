@@ -8,7 +8,7 @@ from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.utils import decode_state_value
 from stp_core.common.log import getlogger
 
-from indy_common.constants import ATTRIB, GET_ATTR, TIMESTAMP
+from indy_common.constants import ATTRIB, GET_ATTR, VERSION_ID, VERSION_TIME
 from indy_node.server.request_handlers.domain_req_handlers.attribute_handler import (
     AttributeHandler,
 )
@@ -30,13 +30,14 @@ class GetAttributeHandler(VersionReadRequestHandler):
 
         identifier, req_id, operation = get_request_data(request)
 
-        timestamp = operation.get(TIMESTAMP)
-        seq_no = operation.get("seqNo")
+        timestamp = operation.get(VERSION_TIME)
+        seq_no = operation.get(VERSION_ID)
         if timestamp and seq_no:
             raise InvalidClientRequest(
                 request.identifier,
                 request.reqId,
-                "Cannot resolve nym with both seqNo and timestamp present",
+                f"{VERSION_ID} and {VERSION_TIME} are mutually exclusive; only one should be "
+                "specified",
             )
 
         if not validate_attrib_keys(operation):
