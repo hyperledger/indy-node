@@ -68,7 +68,7 @@ class NymHandler(PNymHandler):
         if diddoc_content:
             diddoc_content = json.loads(diddoc_content)
             try:
-                self._validate_diddoc_content(diddoc_content):
+                self._validate_diddoc_content(diddoc_content)
             except InvalidDIDDocException as error:
                 raise InvalidClientRequest(
                     identifier,
