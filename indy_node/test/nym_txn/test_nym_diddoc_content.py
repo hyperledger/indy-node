@@ -31,4 +31,4 @@ def test_add_didoc_with_id_fails(
     with pytest.raises(RequestNackedException) as e:
         sdk_get_and_check_replies(looper, [request_couple])
     e.match("InvalidClientRequest")
-    e.match("Invalid DIDDOC_Content")
+    e.match("diddocContent must not have `id` at root")
