@@ -12,7 +12,7 @@ from plenum.test.helper import sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request
 
 
-def test_get_nym_data_with_diddoc_content_without_seqNo_or_timestamp(
+def test_get_nym_data_with_diddoc_content_without_seq_no_or_timestamp(
     looper, sdk_pool_handle, sdk_wallet_endorser_factory, diddoc_content, diddoc_content_json
 ):
     sdk_wallet_endorser = sdk_wallet_endorser_factory(diddoc_content)

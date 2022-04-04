@@ -32,7 +32,7 @@ class GetNymHandler(VersionReadRequestHandler):
             )
 
         data = None
-        seq_no = None
+        last_seq_no = None
         update_time = None
         proof = None
 
@@ -44,13 +44,13 @@ class GetNymHandler(VersionReadRequestHandler):
             nym_data = domain_state_serializer.deserialize(nym_data)
             nym_data[TARGET_NYM] = nym
             data = domain_state_serializer.serialize(nym_data)
-            seq_no = nym_data[f.SEQ_NO.nm]
+            last_seq_no = nym_data[f.SEQ_NO.nm]
             update_time = nym_data[TXN_TIME]
 
         result = self.make_result(
             request=request,
             data=data,  # Serailized retrieved txn data
-            last_seq_no=seq_no,  # nym_data[seqNo]
+            last_seq_no=last_seq_no,  # nym_data[seqNo]
             update_time=update_time,  # nym_data[TXN_TIME]
             proof=proof,  # _get_value_from_state(..., with_proof=True)[1]
         )
