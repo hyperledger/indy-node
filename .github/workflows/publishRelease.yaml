@@ -1,0 +1,120 @@
+name: Triggered by Version Bump merged
+
+#disable all tags and enable all brannches and only version file
+on:
+  push:
+    branches-ignore:
+      - update-rc-version
+      - update-version
+    paths:
+      - '!**'
+      - "indy_node/__version__.json"
+
+jobs:
+  release-infos:
+    name: release-infos
+    runs-on: ubuntu-latest
+    outputs:
+      isVersionBump: ${{ steps.get-release-info.outputs.isVersionBump }}
+      isPreRelease: ${{ steps.get-release-info.outputs.isRC }}
+      versionTag: ${{ steps.get-release-info.outputs.versionTag }}
+      component: ${{ steps.get-release-info.outputs.component}}
+      CACHE_KEY_BUILD: ${{ steps.workflow-setup.outputs.CACHE_KEY_BUILD }}
+      UBUNTU_VERSION: ${{ steps.workflow-setup.outputs.UBUNTU_VERSION }}
+      # Expose the lowercase version of the GitHub repository name
+      # to all subsequent jobs that reference image repositories
+      # as the push and pull operations require the URL of the repository
+      # to be in lowercase.
+      GITHUB_REPOSITORY_NAME: ${{ steps.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
+      distribution: ${{ steps.workflow-setup.outputs.distribution }}
+    steps:
+      - name: checkout source code
+        uses: actions/checkout@v2
+      - name: get-release-info
+        id: get-release-info
+        uses: pschlarb/indy-shared-gha/.github/actions/get-release-info@parametrization
+        with:
+          versionString: "${{ github.event.head_commit.message }}"
+      - name: workflow-setup
+        id: workflow-setup
+        uses: pschlarb/indy-shared-gha/.github/actions/workflow-setup@parametrization
+          
+  createRelease:
+    name: Create Release
+    needs: [release-infos]
+    if: needs.release-infos.outputs.isVersionBump == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        
+      - name: Download Node Artifacts from Github Action Artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: releasepr.yaml
+          workflow_conclusion: success
+          name: indy_node-deb
+          path: artifacts/indy_node-deb
+      - name: Download Node Artifacts from Github Action Artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: releasepr.yaml
+          workflow_conclusion: success
+          name: indy_node-python
+          path: artifacts/indy_node-python
+      - name: Download Node Artifacts from Github Action Artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          workflow: releasepr.yaml
+          workflow_conclusion: success
+          name: third-party-dependencies
+          path: artifacts/third-party-dependencies
+      - uses: actions/upload-artifact@v2
+        with:
+          name: third-party-dependencies
+          path: artifacts/third-party-dependencies
+          retention-days: 5
+      - uses: actions/upload-artifact@v2
+        with:
+          name: indy_node-deb
+          path: artifacts/indy_node-deb
+          retention-days: 5
+      - uses: actions/upload-artifact@v2
+        with:
+          name: indy_node-python
+          path: artifacts/indy_node-python
+          retention-days: 5
+      - name: Zip Files for Release
+        run: |
+          zip -r artifacts/indy_node-deb.zip artifacts/indy_node-deb
+          zip -r artifacts/indy_node-python.zip artifacts/indy_node-python
+          zip -r artifacts/third-party-dependencies.zip artifacts/third-party-dependencies
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.release-infos.outputs.VERSIONTAG }}
+          files: |
+            artifacts/**.zip
+          generate_release_notes: true
+          body: "[${{ needs.release-infos.outputs.VERSIONTAG }}] "
+          prerelease: ${{ needs.release-infos.outputs.isPreRelease }}
+          target_commitish: ${{github.event.ref}}
+          name: "${{ needs.release-infos.outputs.VERSIONTAG }}"
+          token: ${{ secrets.BOT_PR_PAT }}
+
+  publish_artifacts:
+    name: Publish Artifacts
+    needs: [release-infos, createRelease]
+    if: needs.release-infos.outputs.isVersionBump == 'true'
+    uses: pschlarb/indy-shared-gha/.github/workflows/publish_artifacts.yaml@parametrization
+    with:
+      COMPONENT: ${{ needs.release-infos.component }}
+      UBUNTU_VERSION: ${{ needs.release-infos.outputs.UBUNTU_VERSION }}
+      distribution: ${{ needs.release-infos.outputs.distribution }}
+      moduleName: indy_node      
+    secrets:
+      INDY_ARTIFACTORY_REPO_CONFIG: ${{ secrets.INDY_ARTIFACTORY_REPO_CONFIG }}
+      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}

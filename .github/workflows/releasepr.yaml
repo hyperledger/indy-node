@@ -1,0 +1,71 @@
+name: Triggered by Version Bump Release PR
+
+on:
+  pull_request:
+    paths:
+      - '!**'
+      - "indy_node/__version__.json"
+
+jobs:
+  release-infos:
+    name: infos
+    runs-on: ubuntu-latest
+    outputs:
+      isVersionBump: ${{ steps.get-release-info.outputs.isVersionBump }}
+      isPreRelease: ${{ steps.get-release-info.outputs.isRC }}
+      CACHE_KEY_BUILD: ${{ steps.workflow-setup.outputs.CACHE_KEY_BUILD }}
+      UBUNTU_VERSION: ${{ steps.workflow-setup.outputs.UBUNTU_VERSION }}
+      # Expose the lowercase version of the GitHub repository name
+      # to all subsequent jobs that reference image repositories
+      # as the push and pull operations require the URL of the repository
+      # to be in lowercase.
+      GITHUB_REPOSITORY_NAME: ${{ steps.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
+      distribution: ${{ steps.workflow-setup.outputs.distribution }}
+    steps:
+      - name: checkout source code
+        uses: actions/checkout@v2
+      - name: get-release-info
+        id: get-release-info
+        uses: pschlarb/indy-shared-gha/.github/actions/get-release-info@parametrization
+        with:
+          versionString: "${{ github.event.pull_request.body }}"
+      - name: workflow-setup
+        id: workflow-setup
+        uses: pschlarb/indy-shared-gha/.github/actions/workflow-setup@parametrization
+
+  lint:
+    name: Lint
+    needs: [release-infos]
+    if: needs.release-infos.outputs.isVersionBump == 'true'
+    uses: pschlarb/indy-shared-gha/.github/workflows/lint.yaml@parametrization
+
+  build-image:
+    name: Create Builder Image
+    needs: [release-infos, lint]
+    uses: pschlarb/indy-shared-gha/.github/workflows/buildimage.yaml@parametrization
+    with:
+      CACHE_KEY_BUILD: ${{ needs.release-infos.outputs.CACHE_KEY_BUILD }}
+      DOCKER_IMAGE: ghcr.io/${{  needs.release-infos.outputs.GITHUB_REPOSITORY_NAME }}/node-build
+      UBUNTU_VERSION: ${{ needs.release-infos.outputs.UBUNTU_VERSION }}
+
+
+  indy_node_tests:
+    name: Indy Node Tests
+    needs: [release-infos, build-image]
+    uses: ./.github/workflows/reuseable_test.yaml
+    with:
+      GITHUB_REPOSITORY_NAME: ${{ needs.release-infos.outputs.GITHUB_REPOSITORY_NAME }}
+      UBUNTU_VERSION: ${{ needs.release-infos.outputs.UBUNTU_VERSION }}
+
+
+  build_packages:
+    name: Build Packages
+    needs: [release-infos, indy_node_tests]
+    if: needs.release-infos.outputs.isVersionBump == 'true'
+    uses: pschlarb/indy-shared-gha/.github/workflows/buildpackages.yaml@parametrization
+    with:
+      DOCKER_IMAGE: ghcr.io/${{  needs.release-infos.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.release-infos.outputs.UBUNTU_VERSION }}
+      UBUNTU_VERSION: ${{ needs.release-infos.outputs.UBUNTU_VERSION }}
+      isDev: 'false'
+      isRC: '${{ needs.release-infos.outputs.isPreRelease }}'
+      moduleName: indy_node

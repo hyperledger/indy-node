@@ -1,0 +1,64 @@
+name: Triggered by set Tag
+
+on:
+  push:
+    tags:        
+      - setRelease-v**
+
+jobs:
+  taginfos:
+    name: get Tag infos
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-release-info.outputs.version }}
+      versionTag: ${{ steps.get-release-info.outputs.versionTag }}
+      prBranch: ${{ steps.get-release-info.outputs.prBranch }}
+      BASE: ${{ steps.branch.outputs.BASE}}
+    steps:
+      - name: checkout source code
+        uses: actions/checkout@v1
+      - name: extract branch 
+        id: branch
+        run: |
+          raw=$(git branch -r --contains ${{ github.ref }})
+          branch=${raw/origin\/}
+          echo ::set-output\ name=BASE::$branch
+          echo "::debug::BASE is being set to $branch"
+      - name: get-release-info
+        id: get-release-info
+        uses: pschlarb/indy-shared-gha/.github/actions/get-release-info@parametrization
+        with:
+          versionString: "${{ github.ref }}"
+
+
+  bump_version:
+    name: Bump Version Number
+    needs: taginfos
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Install deps for version change
+        run: pip install base58
+      - name: Prepare package and set version
+        run: |
+          ./bump_version.sh ${{ needs.taginfos.outputs.VERSION }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          author: ${{ github.actor }} <${{ github.event.pusher.email }}>
+          committer: ${{ github.actor }} <${{ github.event.pusher.email }}>
+          signoff: true
+          commit-message: Update Version number for v${{ needs.taginfos.outputs.version }}
+          base: ${{ needs.taginfos.outputs.BASE }}
+          branch: ${{ needs.taginfos.outputs.prBranch }}
+          title: "[${{ needs.taginfos.outputs.versionTag }}] - Update Version Number for Release"
+          body: "[${{ needs.taginfos.outputs.versionTag }}] - Update Version number for Release"
+          delete-branch: true
+          token: ${{ secrets.BOT_PR_PAT }}
+    
