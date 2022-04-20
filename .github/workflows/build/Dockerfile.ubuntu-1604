@@ -1,4 +1,5 @@
-FROM hyperledger/indy-core-baseci:0.0.3-master
+FROM hyperledger/indy-core-baseci:0.0.4
+
 LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88 \
