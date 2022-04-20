@@ -5,7 +5,7 @@ inputs:
   isRC:
     description: "A flag indicating whether or not this is a release candidate build; set to either 'true' or 'false'."
     required: true
-    default: true
+    default: "true"
 
 outputs:
   nodeVersion: 
