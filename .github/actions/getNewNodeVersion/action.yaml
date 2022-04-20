@@ -16,6 +16,10 @@ runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
     - name: Get Versions
       id: versions
       shell: bash

@@ -38,28 +38,26 @@ jobs:
           else
             echo ::set-output\ name=prBranch::update-plenum-version
           fi
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-      # - name: Install deps for version change
-      #   run: pip install base58
-      - name: Get New Node Version
-        id: nodeVersion
-        run: |
-          major=$(python3 -c "from indy_node import load_version; patch = load_version().parts[0]; print('' if patch is None else patch)")
-          minor=$(python3 -c "from indy_node import load_version; patch = load_version().parts[1]; print('' if patch is None else patch)")
-          patch=$(python3 -c "from indy_node import load_version; patch = load_version().parts[2]; patch+=1; print('' if patch is None else patch)")
-          if  [[ "${{ inputs.isRC }}" == "true" ]]; then
-            echo ::set-output\ name=nodeVersion::${major}.${minor}.${patch}rc1
-          else
-            echo ::set-output\ name=nodeVersion::${major}.${minor}.${patch}
-          fi
-      # - name: Get new Node Version
-      #   id: nodeVersion
-      #   uses: ./.github/actions/getNewNodeVersion
+      # - name: Set up Python
+      #   uses: actions/setup-python@v2
       #   with:
-      #     isRC: ${{ steps.get-release-info.outputs.isRC }}
+      #     python-version: '3.8'
+      # - name: Get New Node Version
+      #   id: nodeVersion
+      #   run: |
+      #     major=$(python3 -c "from indy_node import load_version; patch = load_version().parts[0]; print('' if patch is None else patch)")
+      #     minor=$(python3 -c "from indy_node import load_version; patch = load_version().parts[1]; print('' if patch is None else patch)")
+      #     patch=$(python3 -c "from indy_node import load_version; patch = load_version().parts[2]; patch+=1; print('' if patch is None else patch)")
+      #     if  [[ "${{ inputs.isRC }}" == "true" ]]; then
+      #       echo ::set-output\ name=nodeVersion::${major}.${minor}.${patch}rc1
+      #     else
+      #       echo ::set-output\ name=nodeVersion::${major}.${minor}.${patch}
+      #     fi
+      - name: Get new Node Version
+        id: nodeVersion
+        uses: ./.github/actions/getNewNodeVersion
+        with:
+          isRC: ${{ steps.get-release-info.outputs.isRC }}
 
   updateAndCommit:
     runs-on: ubuntu-latest
