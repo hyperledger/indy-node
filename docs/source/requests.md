@@ -3036,13 +3036,12 @@ Gets information about a DID (NYM).
     
     *Example*: `identifier` is a DID of the read request sender, and `dest` is the requested DID.
 
-- `timestamp` (XML datetime optional):
+- `timestamp` (XML datetime; optional; mutually exclusive with `seqNo`):
 
     The time an instance of the requested NYM was active at.
 
-- `seqNo` (integer optional):
+- `seqNo` (integer; optional; mutually exclusive with `timestamp`):
     Sequance number of the requested NYM.
-timestamp and seqNo are exclusive or.
 
 *Request Example*:
 ```
@@ -3117,6 +3116,13 @@ i.e. reply data contains requested value only.
 - `enc` (string; mutually exclusive with `raw` and `hash`):
 
     Encrypted attribute. 
+
+- `timestamp` (XML datetime; optional; mutually exclusive with `seqNo`):
+
+    The time an instance of the requested NYM was active at.
+
+- `seqNo` (integer; optional; mutually exclusive with `timestamp`):
+    Sequance number of the requested NYM.
 
 *Request Example*:
 ```
