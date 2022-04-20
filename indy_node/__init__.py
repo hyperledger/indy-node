@@ -14,7 +14,7 @@ PLUGIN_CLIENT_REQ_OP_TYPES = {}
 def setup_plugins():
     import sys
     import os
-    import pip
+    import importlib_metadata
     import importlib    # noqa
     from importlib.util import module_from_spec, spec_from_file_location    # noqa: E402
     from indy_common.config_util import getConfigOnce   # noqa: E402
@@ -50,7 +50,7 @@ def setup_plugins():
                           format(plugin_root))
     sys.path.insert(0, plugin_root.__path__[0])
     enabled_plugins = config.ENABLED_PLUGINS
-    installed_packages = {p.project_name: p for p in pip.get_installed_distributions()}
+    installed_packages = set(p.metadata["Name"] for p in importlib_metadata.distributions())
     for plugin_name in enabled_plugins:
         plugin = find_and_load_plugin(plugin_name, plugin_root, installed_packages)
         plugin_globals = plugin.__dict__
