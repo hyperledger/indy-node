@@ -1,0 +1,30 @@
+name: "Get New NodeVersion"
+description: "Sets version parameters and makes them available as outputs for subsequent processes."
+
+inputs:
+  isRC:
+    description: "A flag indicating whether or not this is a release candidate build; set to either 'true' or 'false'."
+    required: true
+    default: true
+
+outputs:
+  nodeVersion: 
+    description: "The new Version. (Bumped Patch by 1)"
+    value: ${{ steps.versions.outputs.nodeVersion }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - name: Get Versions
+      id: versions
+      shell: bash
+      run: |
+        major=$(python3 -c "from indy_node import load_version; patch = load_version().parts[0]; print('' if patch is None else patch)")
+        minor=$(python3 -c "from indy_node import load_version; patch = load_version().parts[1]; print('' if patch is None else patch)")
+        patch=$(python3 -c "from indy_node import load_version; patch = load_version().parts[2]; patch+=1; print('' if patch is None else patch)")
+        if  [[ "${{ inputs.isRC }}" == "true" ]]; then
+          echo ::set-output\ name=nodeVersion::${major}.${minor}.${patch}rc1
+        else
+          echo ::set-output\ name=nodeVersion::${major}.${minor}.${patch}
+        fi
