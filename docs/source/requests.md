@@ -551,7 +551,17 @@ creation of new DIDs, setting, and rotation of verification key, setting and cha
 
     NYM's alias.
     
+- `diddocContent` (json string; optional):
 
+    The diddocContent item is stored directly in the ledger state and has a maximum size of 10 KiB (10 x 1024 bytes).
+
+- `version` (integer; optional):
+
+    The NYM transaction version specifies the required level of validation of the relationship between the namespace identifier component of the DID and the intial public key (verkey). This field is optional, but if the NYM transaction version is provided, it must be set upon creation and cannot be updated. The accepted values are as follows:
+
+    0 or NYM transaction version is not set: No validation of namespace identifier and initial verkey binding is performed.
+    1: Validation is performed according to the did:sov method, in which the DID must be the first 16 bytes of the Verification Method public key.
+    2: Validation is performed according to the did:indy, in which the namespace identifier component of the DID (last element) is derived from the initial public key of the DID, using the base58 encoding of the first 16 bytes of the SHA256 of the Verification Method public key (did = Base58(Truncate_msb(16(SHA256(publicKey))))). This DID is considered self-certifying.
 If there is no NYM transaction with the specified DID (`dest`), then it can be considered as the creation of a new DID.
 
 If there is a NYM transaction with the specified DID (`dest`),  then this is update of existing DID.
@@ -3026,6 +3036,15 @@ Gets information about a DID (NYM).
     
     *Example*: `identifier` is a DID of the read request sender, and `dest` is the requested DID.
 
+- `timestamp` (POSIX timestamp; optional; mutually exclusive with `seqNo`):
+
+    Retrieve the value of the nym at specified timestamp.
+
+- `seqNo` (integer; optional; mutually exclusive with `timestamp`):
+
+    Retrieve the value of the nym at the time the transaction identified by
+    `seqNo` was written to the ledger.
+
 *Request Example*:
 ```
 {
@@ -3099,6 +3118,15 @@ i.e. reply data contains requested value only.
 - `enc` (string; mutually exclusive with `raw` and `hash`):
 
     Encrypted attribute. 
+
+- `timestamp` (POSIX timestamp; optional; mutually exclusive with `seqNo`):
+
+    Retrieve the value of the attrib at specified timestamp.
+
+- `seqNo` (integer; optional; mutually exclusive with `timestamp`):
+
+    Retrieve the value of the attrib at the time the transaction identified by
+    `seqNo` was written to the ledger.
 
 *Request Example*:
 ```
