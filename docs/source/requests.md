@@ -3036,12 +3036,14 @@ Gets information about a DID (NYM).
     
     *Example*: `identifier` is a DID of the read request sender, and `dest` is the requested DID.
 
-- `timestamp` (XML datetime; optional; mutually exclusive with `seqNo`):
+- `timestamp` (POSIX timestamp; optional; mutually exclusive with `seqNo`):
 
-    The time an instance of the requested NYM was active at.
+    Retrieve the value of the nym at specified timestamp.
 
 - `seqNo` (integer; optional; mutually exclusive with `timestamp`):
-    Sequance number of the requested NYM.
+
+    Retrieve the value of the nym at the time the transaction identified by
+    `seqNo` was written to the ledger.
 
 *Request Example*:
 ```
@@ -3117,12 +3119,14 @@ i.e. reply data contains requested value only.
 
     Encrypted attribute. 
 
-- `timestamp` (XML datetime; optional; mutually exclusive with `seqNo`):
+- `timestamp` (POSIX timestamp; optional; mutually exclusive with `seqNo`):
 
-    The time an instance of the requested NYM was active at.
+    Retrieve the value of the attrib at specified timestamp.
 
 - `seqNo` (integer; optional; mutually exclusive with `timestamp`):
-    Sequance number of the requested NYM.
+
+    Retrieve the value of the attrib at the time the transaction identified by
+    `seqNo` was written to the ledger.
 
 *Request Example*:
 ```
