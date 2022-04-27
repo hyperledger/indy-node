@@ -12,6 +12,9 @@ def validator():
 
 
 def test_nym(validator):
+    """Validate that the NYM transaction accepts only JSON
+    strings as DIDDOC_CONTENT."""
+
     msg = {
         TXN_TYPE: NYM,
         TARGET_NYM: VALID_TARGET_NYM,
@@ -21,6 +24,8 @@ def test_nym(validator):
 
 
 def test_nym_raw_dictionary(validator):
+    """Validate that the NYM transaction does not accept
+    dictionaries as DIDDOC_CONTENT."""
     msg = {
         TXN_TYPE: NYM,
         TARGET_NYM: VALID_TARGET_NYM,
