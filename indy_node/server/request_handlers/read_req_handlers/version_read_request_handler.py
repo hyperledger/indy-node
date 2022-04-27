@@ -38,6 +38,9 @@ class VersionReadRequestHandler(ReadRequestHandler):
         """
         if seq_no is not None and timestamp is not None:
             raise ValueError("seq_no and timestamp are mutually exclusive")
+        # The above check determines whether the method is used correctly
+        # A similar check in GetNymHandler and GetAttributeHandler determines
+        # whether the request is valid
 
         if seq_no:
             timestamp = self._timestamp_from_seq_no(seq_no)

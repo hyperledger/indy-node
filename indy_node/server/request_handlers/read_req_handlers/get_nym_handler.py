@@ -30,6 +30,9 @@ class GetNymHandler(VersionReadRequestHandler):
                 f"{VERSION_ID} and {VERSION_TIME} are mutually exclusive; only one should be "
                 "specified",
             )
+        # The above check determines whether the request is valid
+        # A similar check in VersionReadRequestHandler determines
+        # whether the method is used correctly
 
         data = None
         last_seq_no = None
