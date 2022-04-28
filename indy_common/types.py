@@ -3,32 +3,35 @@ from copy import deepcopy
 from hashlib import sha256
 
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
-    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, OP_VER
+    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, OP_VER, TXN_METADATA_SEQ_NO, \
+    ALIAS, TXN_TYPE, DATA, VERKEY, ROLE, NYM
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
+from plenum.common.messages.client_request import ClientNYMOperation as PClientNYMOperation
 from plenum.common.messages.fields import ConstantField, IdentifierField, \
     LimitedLengthStringField, TxnSeqNoField, \
     Sha256HexField, JsonField, MapField, BooleanField, VersionField, \
     ChooseField, IntegerField, IterableField, \
-    AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField, AnyField, FieldBase
+    AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField, AnyField, FieldBase, \
+    VerkeyField, DestNymField, NonNegativeNumberField
 from plenum.common.messages.message_base import MessageValidator
-from plenum.common.messages.node_messages import NonNegativeNumberField
 from plenum.common.request import Request as PRequest
 from plenum.common.types import OPERATION
 from plenum.common.util import is_network_ip_address_valid, is_network_port_valid
 from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, \
-    NONCE_FIELD_LIMIT, \
+    NONCE_FIELD_LIMIT, ALIAS_FIELD_LIMIT, \
     ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT
 from common.version import GenericVersion
+from indy_common.config import DIDDOC_CONTENT_SIZE_LIMIT
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ConstraintsEnum, CONSTRAINT_ID, AUTH_CONSTRAINTS, METADATA, \
-    NEED_TO_BE_OWNER, SIG_COUNT, ROLE, OFF_LEDGER_SIGNATURE
+    NEED_TO_BE_OWNER, SIG_COUNT, ROLE as AUTH_ROLE, OFF_LEDGER_SIGNATURE
 from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
-from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
-    DATA, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
+from indy_common.constants import ATTRIB, GET_ATTR, \
+    GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     POOL_UPGRADE, POOL_CONFIG, \
-    DISCLO, SCHEMA, ENDPOINT, CLAIM_DEF, SCHEDULE, SHA256, \
+    DISCLO, SCHEMA, ENDPOINT, CLAIM_DEF, SCHEDULE, NYM_VERSION, SHA256, \
     TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, START, CANCEL, \
     REVOC_REG_DEF, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
     TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
@@ -44,7 +47,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     RS_NAME, RS_ID, RS_CONTENT, RS_CONTEXT_TYPE_VALUE, RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, \
     RICH_SCHEMA_ENCODING, RS_MAPPING_TYPE_VALUE, RICH_SCHEMA_MAPPING, RS_CRED_DEF_TYPE_VALUE, \
     RICH_SCHEMA_CRED_DEF, GET_RICH_SCHEMA_OBJECT_BY_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
-    RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
+    RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, DIDDOC_CONTENT
 from indy_common.version import SchemaVersion
 
 
@@ -68,6 +71,20 @@ class ClientGetNymOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(GET_NYM)),
         (TARGET_NYM, IdentifierField()),
+        (TIMESTAMP, IntegerField(optional=True)),
+        (TXN_METADATA_SEQ_NO, TxnSeqNoField(optional=True)),
+    )
+
+
+class ClientNYMOperation(PClientNYMOperation):
+    schema = (
+        (TXN_TYPE, ConstantField(NYM)),
+        (ALIAS, LimitedLengthStringField(max_length=ALIAS_FIELD_LIMIT, optional=True)),
+        (VERKEY, VerkeyField(optional=True, nullable=True)),
+        (TARGET_NYM, DestNymField()),
+        (ROLE, RoleField(optional=True)),
+        (DIDDOC_CONTENT, JsonField(max_length=DIDDOC_CONTENT_SIZE_LIMIT, optional=True)),
+        (NYM_VERSION, IntegerField(optional=True)),
     )
 
 
@@ -229,6 +246,8 @@ class ClientGetAttribOperation(ClientAttribOperation):
         (RAW, LimitedLengthStringField(max_length=RAW_FIELD_LIMIT, optional=True)),
         (ENC, LimitedLengthStringField(max_length=ENC_FIELD_LIMIT, optional=True)),
         (HASH, Sha256HexField(optional=True)),
+        (TIMESTAMP, IntegerField(optional=True)),
+        (TXN_METADATA_SEQ_NO, TxnSeqNoField(optional=True)),
     )
 
     def _validate_message(self, msg):
@@ -346,7 +365,7 @@ class ConstraintField(FieldBase):
 class ConstraintEntityField(MessageValidator):
     schema = (
         (CONSTRAINT_ID, ChooseField(values=ConstraintsEnum.values())),
-        (ROLE, RoleField()),
+        (AUTH_ROLE, RoleField()),
         (SIG_COUNT, NonNegativeNumberField()),
         (NEED_TO_BE_OWNER, BooleanField(optional=True)),
         (OFF_LEDGER_SIGNATURE, BooleanField(optional=True)),
@@ -469,6 +488,7 @@ class ClientGetRichSchemaObjectByMetadataOperation(MessageValidator):
 
 class ClientOperationField(PClientOperationField):
     _specific_operations = {
+        NYM: ClientNYMOperation(),
         SCHEMA: ClientSchemaOperation(),
         ATTRIB: ClientAttribOperation(),
         GET_ATTR: ClientGetAttribOperation(),

@@ -10,7 +10,7 @@ EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("dest", IdentifierField),
     ("raw", JsonField),
     ('enc', LimitedLengthStringField),
-    ('hash', Sha256HexField)
+    ('hash', Sha256HexField),
 ])
 
 

@@ -6,6 +6,11 @@ class InvalidConnectionException(Exception):
     pass
 
 
+class InvalidDIDDocException(Exception):
+    def __init__(self, reason: str):
+        self.reason = reason
+
+
 class NotFound(RuntimeError):
     pass
 

@@ -3,10 +3,12 @@ on:
   push:
     branches:
       - ubuntu-20.04-upgrade
+      - feature/did-indy*
 
   pull_request:
     branches:
       - ubuntu-20.04-upgrade
+      - feature/did-indy*
   workflow_dispatch: 
 
 jobs:
@@ -47,6 +49,11 @@ jobs:
           fi
           if [[ "${{github.base_ref}}" == "ubuntu-20.04-upgrade" || "${{github.ref}}" == "refs/heads/ubuntu-20.04-upgrade" ]]; then
             echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile.ubuntu-2004') }}"
+            echo "::set-output name=UBUNTU_VERSION::ubuntu-2004"
+            echo "::set-output name=distribution::focal"
+          fi
+          if [[ "${{github.base_ref}}" == "feature/did-indy-new" || "${{github.ref}}" == "refs/heads/feature/did-indy-new" ]]; then
+            echo "::set-output name=CACHE_KEY_BUILD::${{ hashFiles('.github/workflows/build/Dockerfile.ubuntu-2004') }}-0"
             echo "::set-output name=UBUNTU_VERSION::ubuntu-2004"
             echo "::set-output name=distribution::focal"
           fi
