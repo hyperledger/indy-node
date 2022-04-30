@@ -73,7 +73,7 @@
             python-rocksdb==0.7.0 \
             python-ursa==0.1.1 \
             python3-indy==1.13.0 \
-            pyzmq==18.1.0 \
+            pyzmq==22.3.0 \
             rlp==0.6.0 \
             semver==2.13.0 \
             setuptools==53.0.0 \
