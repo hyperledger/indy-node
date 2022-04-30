@@ -55,7 +55,7 @@
             msgpack-python==0.5.6 \
             orderedset==2.0.3 \
             packaging==20.9 \
-            pip==9.0.3 \
+            pip \
             pluggy==0.13.1 \
             portalocker==2.2.1 \
             prompt-toolkit==3.0.16 \

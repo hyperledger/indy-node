@@ -64,7 +64,6 @@ RUN pip3 install -U \
     # Required by setup.py
     setuptools==50.3.2 \
     # Still pinned. Needs to be updated like in plenum
-    'pip<10.0.0' \
     'pyzmq==18.1.0'
 
 
