@@ -43,8 +43,8 @@
             distro==1.5.0 \
             execnet==1.8.0 \
             flake8==3.8.4 \
-            indy-plenum==1.13.0.dev1032 \
-            indy-node==1.13.0.dev1222 \
+            indy-plenum==1.13.0.dev14 \
+            indy-node==1.13.0.dev19 \
             iniconfig==1.1.1 \
             intervaltree==2.1.0 \
             ioflo==2.0.2 \
@@ -73,7 +73,7 @@
             python-rocksdb==0.7.0 \
             python-ursa==0.1.1 \
             python3-indy==1.13.0 \
-            pyzmq==18.1.0 \
+            pyzmq==22.3.0 \
             rlp==0.6.0 \
             semver==2.13.0 \
             setuptools==53.0.0 \

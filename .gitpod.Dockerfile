@@ -64,8 +64,7 @@ RUN sudo apt-get update -y && sudo apt-get install -y \
 RUN pip3 install -U \
     # Required by setup.py
     setuptools==50.3.2 \
-    # Still pinned. Needs to be updated like in plenum
-    'pyzmq==18.1.0'
+    'pyzmq==22.3.0'
 
 
 # install fpm

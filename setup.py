@@ -55,7 +55,7 @@ setup(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
 
-    install_requires=['indy-plenum==1.13.0.dev175',
+    install_requires=['indy-plenum==1.13.0.dev14',
                       'importlib-metadata<3.0',
                       'timeout-decorator>=0.5.0',
                       'distro>=1.5.0'],
