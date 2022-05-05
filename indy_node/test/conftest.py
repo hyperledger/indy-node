@@ -95,6 +95,12 @@ def warnfilters():
             message="The 'warn' method is deprecated")
         warnings.filterwarnings(
             'ignore', category=ResourceWarning, message='unclosed transport')
+        # These warnings occur when zmq sockets are still open when being garbage collected.
+        # The sockets are then automatically closed.
+        warnings.filterwarnings(
+            'ignore',
+            category=ResourceWarning,
+            message='unclosed.*socket.*\<zmq\.Socket')
 
     return _
 
