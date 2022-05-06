@@ -28,12 +28,14 @@ echo -e "\n\nPrepares indy-node debian package version"
 sed -i -r "s~indy-node==([0-9\.]+[0-9])(\.)?([a-z]+)~indy-node==\1\~\3~" setup.py
 
 if [ "$distro_packages" = "debian-packages" ]; then
-  # Only used for the deb package builds, NOT for the PyPi package builds.
-  # Update the package names to match the versions that are pre-installed on the os.
+  # Update the package names to match the names that are available on the os.
   echo -e "\nAdapt the dependencies for the Canonical archive"
   sed -i "s~timeout-decorator~python3-timeout-decorator~" setup.py
   sed -i "s~distro~python3-distro~" setup.py
+  sed -i "s~importlib-metadata=~python3-importlib-metadata=~" setup.py
 
+
+  # Only used for the deb package builds, NOT for the PyPi package builds.
   echo -e "\n\nPrepares indy-plenum debian package version"
   sed -i -r "s~indy-plenum==([0-9\.]+[0-9])(\.)?([a-z]+)~indy-plenum==\1\~\3~" setup.py
 
