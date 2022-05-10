@@ -4,7 +4,6 @@ from .__metadata__ import (
     __author_email__, __maintainer__, __license__,
     load_version, set_version, load_manifest, set_manifest
 )
-import pkg_resources
 
 PLUGIN_LEDGER_IDS = set()
 PLUGIN_CLIENT_REQUEST_FIELDS = {}

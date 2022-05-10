@@ -26,23 +26,23 @@ jobs:
         uses: actions/checkout@v2
       - name: get-release-info
         id: get-release-info
-        uses: pschlarb/indy-shared-gha/.github/actions/get-release-info@parametrization
+        uses: hyperledger/indy-shared-gha/.github/actions/get-release-info@main
         with:
           versionString: "${{ github.event.pull_request.body }}"
       - name: workflow-setup
         id: workflow-setup
-        uses: pschlarb/indy-shared-gha/.github/actions/workflow-setup@parametrization
+        uses: hyperledger/indy-shared-gha/.github/actions/workflow-setup@main
 
   lint:
     name: Lint
     needs: [release-infos]
     if: needs.release-infos.outputs.isVersionBump == 'true'
-    uses: pschlarb/indy-shared-gha/.github/workflows/lint.yaml@parametrization
+    uses: hyperledger/indy-shared-gha/.github/workflows/lint.yaml@main
 
   build-image:
     name: Create Builder Image
     needs: [release-infos, lint]
-    uses: pschlarb/indy-shared-gha/.github/workflows/buildimage.yaml@parametrization
+    uses: hyperledger/indy-shared-gha/.github/workflows/buildimage.yaml@main
     with:
       CACHE_KEY_BUILD: ${{ needs.release-infos.outputs.CACHE_KEY_BUILD }}
       DOCKER_IMAGE: ghcr.io/${{  needs.release-infos.outputs.GITHUB_REPOSITORY_NAME }}/node-build
@@ -62,7 +62,7 @@ jobs:
     name: Build Packages
     needs: [release-infos, indy_node_tests]
     if: needs.release-infos.outputs.isVersionBump == 'true'
-    uses: pschlarb/indy-shared-gha/.github/workflows/buildpackages.yaml@parametrization
+    uses: hyperledger/indy-shared-gha/.github/workflows/buildpackages.yaml@main
     with:
       DOCKER_IMAGE: ghcr.io/${{  needs.release-infos.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.release-infos.outputs.UBUNTU_VERSION }}
       UBUNTU_VERSION: ${{ needs.release-infos.outputs.UBUNTU_VERSION }}

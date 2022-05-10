@@ -1,0 +1,76 @@
+name: Indy Node - Push and PR Workflow
+on:
+  pull_request:
+    branches:
+      - ubuntu-20.04-upgrade
+      - feature/did-indy*
+    paths:
+      - '**.py'
+  workflow_dispatch: 
+
+jobs:
+  workflow-setup:
+    name: Initialize Workflow
+    runs-on: ubuntu-latest
+    outputs:
+      CACHE_KEY_BUILD: ${{ steps.setup.outputs.CACHE_KEY_BUILD }}
+      UBUNTU_VERSION: ${{ steps.setup.outputs.UBUNTU_VERSION }}
+      # Expose the lowercase version of the GitHub repository name
+      # to all subsequent jobs that reference image repositories
+      # as the push and pull operations require the URL of the repository
+      # to be in lowercase.
+      GITHUB_REPOSITORY_NAME: ${{ steps.setup.outputs.GITHUB_REPOSITORY_NAME }} 
+      distribution: ${{ steps.setup.outputs.distribution }}
+      publish: ${{ steps.setup.outputs.publish }}
+    steps:
+      - name: checkout source code
+        uses: actions/checkout@v2
+      - name: setup
+        id: setup
+        uses: hyperledger/indy-shared-gha/.github/actions/workflow-setup@main
+
+  lint:
+    name: Lint
+    uses: hyperledger/indy-shared-gha/.github/workflows/lint.yaml@main
+      
+  build-image:
+    name: Create Builder Image
+    needs: [workflow-setup, lint]
+    uses: hyperledger/indy-shared-gha/.github/workflows/buildimage.yaml@main
+    with:
+      CACHE_KEY_BUILD: ${{ needs.workflow-setup.outputs.CACHE_KEY_BUILD }}
+      DOCKER_IMAGE: ghcr.io/${{  needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build
+      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+
+  indy_node_tests:
+    name: Indy Node Tests
+    needs: [workflow-setup, build-image]
+    uses: ./.github/workflows/reuseable_test.yaml
+    with:
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
+      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+
+  build_packages:
+    name: Build Packages
+    needs: [workflow-setup, indy_node_tests]
+    uses: hyperledger/indy-shared-gha/.github/workflows/buildpackages.yaml@main
+    with:
+      DOCKER_IMAGE: ghcr.io/${{  needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.release-infos.outputs.UBUNTU_VERSION }}
+      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+      isDev: true
+      isRC: false
+      moduleName: indy_node
+
+  publish_artifacts:
+    name: Publish Artifacts
+    needs: [workflow-setup, build_packages]
+    if: needs.workflow-setup.outputs.publish == 'true'
+    uses: hyperledger/indy-shared-gha/.github/workflows/publish_artifacts.yaml@main
+    with:
+      COMPONENT: 'dev'
+      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+      distribution: ${{ needs.workflow-setup.outputs.distribution }}
+      moduleName: indy_node
+    secrets:
+      INDY_ARTIFACTORY_REPO_CONFIG: ${{ secrets.INDY_ARTIFACTORY_REPO_CONFIG }}
+      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}

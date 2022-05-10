@@ -26,7 +26,7 @@ jobs:
           echo "::debug::BASE is being set to $branch"
       - name: get-release-info
         id: get-release-info
-        uses: pschlarb/indy-shared-gha/.github/actions/get-release-info@parametrization
+        uses: hyperledger/indy-shared-gha/.github/actions/get-release-info@main
         with:
           versionString: "${{ github.ref }}"
 
