@@ -44,24 +44,22 @@ jobs:
           python-version: '3.8'
       - name: Install deps for version change
         run: |
-          apt-get update -y && apt-get install -y \
-                  # common stuff
-                  gnupg \
-                  apt-transport-https \
-                  ca-certificates \
-                  apt-utils
+          sudo apt-get update -y && apt-get install -y \
+                       gnupg \
+                       apt-transport-https \
+                       ca-certificates \
+                       apt-utils
 
-          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61
-          echo "deb  https://hyperledger.jfrog.io/artifactory/indy focal dev"  >> /etc/apt/sources.list
-          apt-get update -y && apt-get install -y \
-                  # rocksdb python wrapper
-                  rocksdb=5.8.8 \
-                  libgflags-dev \
-                  libsnappy-dev \
-                  zlib1g-dev \
-                  libbz2-dev \
-                  liblz4-dev \
-                  libgflags-dev \
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61
+          sudo echo "deb  https://hyperledger.jfrog.io/artifactory/indy focal dev"  >> /etc/apt/sources.list
+          sudo apt-get update -y && apt-get install -y \
+                       rocksdb=5.8.8 \
+                       libgflags-dev \
+                       libsnappy-dev \
+                       zlib1g-dev \
+                       libbz2-dev \
+                       liblz4-dev \
+                       libgflags-dev \
 
           pip install packaging \
                       importlib_metadata==3.10.1 \
