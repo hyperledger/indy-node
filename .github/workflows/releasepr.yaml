@@ -42,6 +42,7 @@ jobs:
   build-image:
     name: Create Builder Image
     needs: [release-infos, lint]
+    if: needs.release-infos.outputs.isVersionBump == 'true'
     uses: hyperledger/indy-shared-gha/.github/workflows/buildimage.yaml@main
     with:
       CACHE_KEY_BUILD: ${{ needs.release-infos.outputs.CACHE_KEY_BUILD }}
@@ -52,6 +53,7 @@ jobs:
   indy_node_tests:
     name: Indy Node Tests
     needs: [release-infos, build-image]
+    if: needs.release-infos.outputs.isVersionBump == 'true'
     uses: ./.github/workflows/reuseable_test.yaml
     with:
       GITHUB_REPOSITORY_NAME: ${{ needs.release-infos.outputs.GITHUB_REPOSITORY_NAME }}

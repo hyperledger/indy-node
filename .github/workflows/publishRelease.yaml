@@ -27,6 +27,7 @@ jobs:
       # to be in lowercase.
       GITHUB_REPOSITORY_NAME: ${{ steps.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
       distribution: ${{ steps.workflow-setup.outputs.distribution }}
+      publish: ${{ steps.workflow-setup.outputs.publish}}
     steps:
       - name: checkout source code
         uses: actions/checkout@v2
@@ -108,7 +109,7 @@ jobs:
   publish_artifacts:
     name: Publish Artifacts
     needs: [release-infos, createRelease]
-    if: needs.release-infos.outputs.isVersionBump == 'true'
+    if: needs.release-infos.outputs.isVersionBump == 'true' && needs.release-infos.outputs.publish == 'true'
     uses: hyperledger/indy-shared-gha/.github/workflows/publish_artifacts.yaml@main
     with:
       COMPONENT: ${{ needs.release-infos.component }}

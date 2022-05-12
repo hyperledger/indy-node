@@ -43,7 +43,10 @@ jobs:
         with:
           python-version: '3.8'
       - name: Install deps for version change
-        run: pip install base58
+        run: pip install packaging \
+                         importlib_metadata==3.10.1 \
+                         indy-plenum==1.13.0.dev14 \
+                         pyzmq==22.3.0
       - name: Prepare package and set version
         run: |
           ./bump_version.sh ${{ needs.taginfos.outputs.VERSION }}

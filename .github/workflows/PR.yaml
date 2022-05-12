@@ -60,17 +60,3 @@ jobs:
       isDev: true
       isRC: false
       moduleName: indy_node
-
-  publish_artifacts:
-    name: Publish Artifacts
-    needs: [workflow-setup, build_packages]
-    if: needs.workflow-setup.outputs.publish == 'true'
-    uses: hyperledger/indy-shared-gha/.github/workflows/publish_artifacts.yaml@main
-    with:
-      COMPONENT: 'dev'
-      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
-      distribution: ${{ needs.workflow-setup.outputs.distribution }}
-      moduleName: indy_node
-    secrets:
-      INDY_ARTIFACTORY_REPO_CONFIG: ${{ secrets.INDY_ARTIFACTORY_REPO_CONFIG }}
-      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
