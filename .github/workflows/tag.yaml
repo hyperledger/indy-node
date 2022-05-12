@@ -44,7 +44,7 @@ jobs:
           python-version: '3.8'
       - name: Install deps for version change
         run: |
-          sudo apt-get update -y && apt-get install -y \
+          sudo apt-get update -y && sudo apt-get install -y \
                        gnupg \
                        apt-transport-https \
                        ca-certificates \
@@ -52,7 +52,7 @@ jobs:
 
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61
           sudo echo "deb  https://hyperledger.jfrog.io/artifactory/indy focal dev"  >> /etc/apt/sources.list
-          sudo apt-get update -y && apt-get install -y \
+          sudo apt-get update -y && sudo apt-get install -y \
                        rocksdb=5.8.8 \
                        libgflags-dev \
                        libsnappy-dev \
