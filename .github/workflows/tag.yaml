@@ -51,7 +51,7 @@ jobs:
                        apt-utils
 
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61
-          sudo echo "deb  https://hyperledger.jfrog.io/artifactory/indy focal dev"  >> /etc/apt/sources.list
+          sudo add-apt-repository 'deb  https://hyperledger.jfrog.io/artifactory/indy focal dev'
           sudo apt-get update -y && sudo apt-get install -y \
                        rocksdb=5.8.8 \
                        libgflags-dev \
