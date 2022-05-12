@@ -44,6 +44,13 @@ jobs:
           python-version: '3.8'
       - name: Install deps for version change
         run: |
+          apt-get update -y && apt-get install -y \
+                  # common stuff
+                  gnupg \
+                  apt-transport-https \
+                  ca-certificates \
+                  apt-utils
+
           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61
           echo "deb  https://hyperledger.jfrog.io/artifactory/indy focal dev"  >> /etc/apt/sources.list
           apt-get update -y && apt-get install -y \
