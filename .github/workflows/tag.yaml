@@ -20,7 +20,7 @@ jobs:
       - name: extract branch 
         id: branch
         run: |
-          raw=$(git branch -r --contains ${{ github.ref }})
+          raw=$(git branch -r --contains ${{ github.ref }} | head -n 1)
           branch=${raw//origin\/}
           echo ::set-output\ name=BASE::$branch
           echo "::debug::BASE is being set to $branch"
@@ -29,7 +29,6 @@ jobs:
         uses: hyperledger/indy-shared-gha/.github/actions/get-release-info@main
         with:
           versionString: "${{ github.ref }}"
-
 
   bump_version:
     name: Bump Version Number
