@@ -1,4 +1,4 @@
-name: Indy Node - Push and PR Workflow
+name: Indy Node - PR Workflow
 on:
   pull_request:
     branches:
@@ -6,6 +6,9 @@ on:
       - feature/did-indy*
     paths:
       - '**.py'
+      - '.github/**'
+      - 'build-scripts/**'
+      - 'bump_version.sh'
   workflow_dispatch: 
 
 jobs:
@@ -55,22 +58,8 @@ jobs:
     needs: [workflow-setup, indy_node_tests]
     uses: hyperledger/indy-shared-gha/.github/workflows/buildpackages.yaml@main
     with:
-      DOCKER_IMAGE: ghcr.io/${{  needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.release-infos.outputs.UBUNTU_VERSION }}
+      DOCKER_IMAGE: ghcr.io/${{  needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
       UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
       isDev: true
       isRC: false
       moduleName: indy_node
-
-  publish_artifacts:
-    name: Publish Artifacts
-    needs: [workflow-setup, build_packages]
-    if: needs.workflow-setup.outputs.publish == 'true'
-    uses: hyperledger/indy-shared-gha/.github/workflows/publish_artifacts.yaml@main
-    with:
-      COMPONENT: 'dev'
-      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
-      distribution: ${{ needs.workflow-setup.outputs.distribution }}
-      moduleName: indy_node
-    secrets:
-      INDY_ARTIFACTORY_REPO_CONFIG: ${{ secrets.INDY_ARTIFACTORY_REPO_CONFIG }}
-      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}

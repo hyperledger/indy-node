@@ -43,7 +43,21 @@ jobs:
         with:
           python-version: '3.8'
       - name: Install deps for version change
-        run: pip install base58
+        run: |
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61
+          sudo add-apt-repository 'deb  https://hyperledger.jfrog.io/artifactory/indy focal dev'
+          sudo apt-get update -y && sudo apt-get install -y \
+                       rocksdb=5.8.8 \
+                       libgflags-dev \
+                       libsnappy-dev \
+                       zlib1g-dev \
+                       libbz2-dev \
+                       liblz4-dev \
+                       libgflags-dev \
+          pip install packaging \
+                      importlib_metadata==3.10.1 \
+                      indy-plenum==1.13.0.dev14 \
+                      pyzmq==22.3.0               
       - name: Prepare package and set version
         run: |
           ./bump_version.sh ${{ needs.taginfos.outputs.VERSION }}
