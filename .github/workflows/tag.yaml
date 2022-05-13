@@ -57,7 +57,7 @@ jobs:
           pip install packaging \
                       importlib_metadata==3.10.1 \
                       indy-plenum==1.13.0.dev14 \
-                      pyzmq==22.3.0               
+                      pyzmq==22.3.0
       - name: Prepare package and set version
         run: |
           ./bump_version.sh ${{ needs.taginfos.outputs.VERSION }}
