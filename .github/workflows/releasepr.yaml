@@ -52,7 +52,7 @@ jobs:
 
   indy_node_tests:
     name: Indy Node Tests
-    needs: [release-infos, build-image]
+    needs: [release-infos, build-docker-image]
     if: needs.release-infos.outputs.isVersionBump == 'true'
     uses: ./.github/workflows/reuseable_test.yaml
     with:

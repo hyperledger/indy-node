@@ -53,7 +53,7 @@ jobs:
                        zlib1g-dev \
                        libbz2-dev \
                        liblz4-dev \
-                       libgflags-dev \
+                       libgflags-dev
           pip install packaging \
                       importlib_metadata==3.10.1 \
                       indy-plenum==1.13.0.dev14 \
