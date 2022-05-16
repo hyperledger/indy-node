@@ -1,0 +1,81 @@
+@startuml
+
+:**Tag Triggered - Release Workflow**;
+start
+
+:Create a tag on the branch and commit on which the release 
+is to be based. 
+
+The tag must be in the following format:
+  - ""setRelease-v<Major>.<Minor>.<Patch>[-rc<Num>]""
+
+Examples:
+  - To generate an RC Release (marked as a pre-release)
+  - ""setRelease-v1.12.6-rc0""
+  - To generate an official Release
+    - ""setRelease-v1.12.6"";
+
+partition "**Workflow**: tag.yaml" {
+  floating note left
+    Workflow triggered 
+    by the ""setRelease""
+    tag being pushed.
+  end note
+
+  :Extract information;
+  note left:Extract version number from tag
+  :Bump version number;
+  :Create Pull Request to the branch, where the tag was set on;
+}
+
+partition "**Workflow**: releasepr.yaml" {
+  floating note left
+    Workflow triggered 
+    by Pull Request affecting
+    **ONLY** ""indy_node/_version_.json"".
+  end note
+
+  :Extract information;
+  if (isVersionBump) then (yes)
+    :Lint using ""indy-shared-gha"";
+    :build Docker-images using ""indy-shared-gha"";
+    :Execute tests (""reuseable_tests.yaml"");
+    :Esecute ""indy-test-automation"";
+    note left: WIP
+    :build packages using ""indy-shared-gha"";
+    note left: packages published to workflow
+  else (no)  
+  endif
+}
+
+if (**Review PR** - All tests passed?) then (Merge PR)
+  partition "**Workflow**: publishRelease.yaml" {
+    floating note right
+      Workflow triggered by
+      pushes affecting
+      **ONLY** 
+      ""indy_node/_version_.json"".
+    end note
+
+    :Extract version number from the commit message;
+    if (isVersionBump) then (yes)
+      :Download artifacts from last successfull ""releasepr"" run;
+      :Create a GitHub Release;
+      :Set tag and title to match release version;
+
+      if (is RC Release) then (yes)
+        :Set pre-release checkbox;
+      else (no)
+      endif
+      :Publish GitHub Release
+        - Containing the artifacts;
+      :Publish Packages using ""indy-shared-gha"";
+    else (no)  
+    endif
+  }
+else (Close PR without Merging)
+  :Release process aborted;
+endif
+
+stop
+@enduml

@@ -1,0 +1,75 @@
+name: Triggered by set Tag
+
+on:
+  push:
+    tags:        
+      - setRelease-v**
+
+jobs:
+  taginfos:
+    name: get Tag infos
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-release-info.outputs.version }}
+      versionTag: ${{ steps.get-release-info.outputs.versionTag }}
+      prBranch: ${{ steps.get-release-info.outputs.prBranch }}
+      BASE: ${{ steps.get-branch.outputs.branch}}
+    steps:
+      - name: checkout source code
+        uses: actions/checkout@v1
+      - name: extract branch 
+        id: get-branch
+        uses: hyperledger/indy-shared-gha/.github/actions/branch-from-tag@main
+        with:
+          tag: ${{ github.ref }}
+      - name: get-release-info
+        id: get-release-info
+        uses: hyperledger/indy-shared-gha/.github/actions/get-release-info@main
+        with:
+          versionString: "${{ github.ref }}"
+
+  bump_version:
+    name: Bump Version Number
+    needs: taginfos
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: Install deps for version change
+        run: |
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61
+          sudo add-apt-repository 'deb  https://hyperledger.jfrog.io/artifactory/indy focal dev'
+          sudo apt-get update -y && sudo apt-get install -y \
+                       rocksdb=5.8.8 \
+                       libgflags-dev \
+                       libsnappy-dev \
+                       zlib1g-dev \
+                       libbz2-dev \
+                       liblz4-dev \
+                       libgflags-dev
+          pip install packaging \
+                      importlib_metadata==3.10.1 \
+                      indy-plenum==1.13.0.dev14 \
+                      pyzmq==22.3.0               
+      - name: Prepare package and set version
+        run: |
+          ./bump_version.sh ${{ needs.taginfos.outputs.VERSION }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          author: ${{ github.actor }} <${{ github.event.pusher.email }}>
+          committer: ${{ github.actor }} <${{ github.event.pusher.email }}>
+          signoff: true
+          commit-message: Update Version number for v${{ needs.taginfos.outputs.version }}
+          base: ${{ needs.taginfos.outputs.BASE }}
+          branch: ${{ needs.taginfos.outputs.prBranch }}
+          title: "[${{ needs.taginfos.outputs.versionTag }}] - Update Version Number for Release"
+          body: "[${{ needs.taginfos.outputs.versionTag }}] - Update Version number for Release"
+          delete-branch: true
+          token: ${{ secrets.BOT_PR_PAT }}
+    
