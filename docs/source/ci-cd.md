@@ -2,24 +2,27 @@
 
 #### Branches
 
-- `master` branch contains the latest changes. All PRs usually need to be sent to master.
-- `stable` branch contains latest releases (https://github.com/hyperledger/indy-node/releases). Hotfixes need to be sent to both stable and master.
-- `release-*` branches hold release candidates during release workflow
-- `hotfix-*` branches hold release candidates during hotfix workflow
+At the moment work is being done so that `ubuntu20.04-upgrade` becomes the new master/main branch.
+The old `master` will be moved to `ubuntu16` branch.
+
+- `master` branches contains the latest changes. All PRs usually need to be sent to master.
+   
+
 
 #### Pull Requests
 
 - Each PR needs to be reviewed.
-- PR can be merged only after all tests pass and code is reviewed.
+- PR can be merged only after all tests pass and the code is reviewed.
 
 ## Continuous Integration
 
 - for each PR we execute:
     - static code validation
     - Unit/Integration tests
-- We use pipeline in code approach and Jenkins as our main CI/CD server.
-- CI part of the pipeline (running tests for each PR) is defined in `Jenkinsfile.ci` file.
-- CI part is run on Hyperledger and Sovrin Foundation Jenkins servers, so they are public and open as every contributor needs to see results of the tests run for his or her PR.
+- We use pipeline in code approach and Github Actions as our main CI/CD server.
+- CI part of the pipeline (running tests for each PR) is defined in `.github/workflows/PR.yaml` file.
+- CI part is run on Github, so they are public and open as every contributor needs to see results of the tests run for his or her PR.
+   Github Actions are by default deactivated on new forks. The pipeline contain checks so that no publish action is tried on forks (which would likely fail due to missing login information).
 
 #### Static Code Validation
 
@@ -33,14 +36,14 @@
 
 ## Continuous Delivery
 
-- CD part of the pipeline is defined in `Jenkinsfile.cd` file.
-- CD part is run on Sovrin Foundation Jenkins server dealing with issuing and uploading new builds.
+- CD part of the pipeline is defined in `.github/workflows/publishRelease.yaml` & `.github/workflows/PR.yaml` file.
+- CD part is run via GitHubActions issuing and uploading new builds.
 
 #### Builds
 
 What artifacts are produced after each push
 - to `master` branch:
-    - all artifacts include developmental release segment `devN` in their version
+    - all artifacts include developmental release segment `devN` in their version.
     - indy-plenum:
         - indy-plenum in [pypi](https://pypi.python.org/pypi/indy-plenum)
         - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial master-latest`](https://repo.sovrin.org/lib/apt/xenial/master-latest/)
@@ -49,27 +52,15 @@ What artifacts are produced after each push
         - indy-node deb package in [`https://repo.sovrin.org/deb xenial master-latest`](https://repo.sovrin.org/lib/apt/xenial/master-latest/)
         - indy-node deb package in [`https://repo.sovrin.org/deb xenial master`](https://repo.sovrin.org/lib/apt/xenial/master/) (copied from `master-latest`)
         - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial master`](https://repo.sovrin.org/lib/apt/xenial/master/) (copied from `master-latest`)
-- to `release-*` and `hotfix-*` branches:
-    - all artifacts include pre-release segment `rcN` in their version
+- to `ubuntu-20.04-upgrade` branch:
+    - all artifacts include developmental release segment `devN` in their version, where `N` is a unix timestamp.
     - indy-plenum:
         - indy-plenum in [pypi](https://pypi.python.org/pypi/indy-plenum)
-        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial rc-latest`](https://repo.sovrin.org/lib/apt/xenial/rc-latest/)
+        - indy-plenum deb package in [`https://hyperledger.jfrog.io/artifactory/indy`](https://hyperledger.jfrog.io/artifactory/indy)
     - indy-node:
         - indy-node in [pypi](https://pypi.python.org/pypi/indy-node)
-        - indy-node deb package in [`https://repo.sovrin.org/deb xenial rc-latest`](https://repo.sovrin.org/lib/apt/xenial/rc-latest/)
-        - indy-node deb package in [`https://repo.sovrin.org/deb xenial rc`](https://repo.sovrin.org/lib/apt/xenial/rc/) (copied from `rc-latest`)
-        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial rc`](https://repo.sovrin.org/lib/apt/xenial/rc/) (copied from `rc-latest`)
-- to `stable` branch:
-    - indy-plenum:
-        - indy-plenum in [pypi](https://pypi.python.org/pypi/indy-plenum)
-        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial stable-latest`](https://repo.sovrin.org/lib/apt/xenial/stable-latest/)
-        - indy-plenum release tag (https://github.com/hyperledger/indy-plenum/releases)
-    - indy-node:
-        - indy-node in [pypi](https://pypi.python.org/pypi/indy-node)
-        - indy-node deb package in [`https://repo.sovrin.org/deb xenial stable-latest`](https://repo.sovrin.org/lib/apt/xenial/stable-latest/) (re-packed from `rc-latest`)
-        - indy-node deb package in [`https://repo.sovrin.org/deb xenial stable`](https://repo.sovrin.org/lib/apt/xenial/stable/) (copied from `rc-latest`)
-        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial stable`](https://repo.sovrin.org/lib/apt/xenial/stable/) (copied from `stable-latest`)
-        - indy-node release tag (https://github.com/hyperledger/indy-node/releases)
+        - indy-node deb package in [`https://hyperledger.jfrog.io/artifactory/indy`](https://hyperledger.jfrog.io/artifactory/indy)
+
 
 Use cases for artifacts
 - PyPI artifacts can be used for development experiments, but not intended to be used for production.
@@ -84,6 +75,7 @@ Use cases for artifacts
 ##### Supported platforms and OSes
 
 - Ubuntu 16.04 on x86_64
+- Ubuntu 20.04 on x86_64
 
 ##### Build scripts
 
@@ -102,7 +94,7 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
 - Please note, that we are using versioning that satisfies [PEP 440](https://www.python.org/dev/peps/pep-0440) with release segment as `MAJOR.MINOR.PATCH` that satisfies [SemVer](https://semver.org/) as well.
 - Version is set in the code (see [\_\_version\_\_.json](https://github.com/hyperledger/indy-node/blob/master/indy_node/__version__.json)).
 - Version is bumped for new releases / hotfixes either manually or using [bump_version.sh](https://github.com/hyperledger/indy-node/blob/master/indy_node/bump_version.sh) script. The latter is preferred.
-- During development phase version includes developmental segment `devN`, where `N` is set for CD pipeline artifacts as incremented build number of build server jobs. In the source code it is just equal to `0` always.
+- During development phase version includes developmental segment `devN`, where `N` is a unix timestamp at buildtime.
 - During release preparation phase (release / hotfix workflows) version includes pre-release segment `rcN`, where `N>=1` and set in the source code by developers.
 - Each dependency (including indy-plenum) has a strict version (see [setup.py](https://github.com/hyperledger/indy-node/blob/master/setup.py))
 - If you install indy-node (either from pypi, or from deb package), the specified in setup.py version of indy-plenum is installed.
@@ -126,85 +118,41 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
     - different versions in migrations scripts
 
 ## Release workflow
+The diagram for the Release Workflow can be found [here](release-workflow.png).
+It starts with setting a tag in the form of `setRelease-v<Major>.<Minor>.<Patch>[-rc<Num>]`.
 
 ### Feature Release
 
-#### 1. Release Candidate Preparation
+#### 1. Release Candidate and Release Preparation
 
 1. [**Maintainer**]
-    - Create `release-X.Y.Z` branch from `stable` (during the first RC preparation only).
-2. [**Contributor**]
-    - Create `rc-X.Y.Z.rcN` branch from `release-X.Y.Z` (`N` starts from `1` and is incremented for each new RC).
-    - Apply necessary changes from `master` (either `merge` or `cherry-pick`).
-    - (_optional_) [`indy-node`] Set **stable** (just X.Y.Z) `indy-plenum` version in `setup.py`.
-    - Set the package version `./bump_version.sh X.Y.Z.rcN`.
-    - Commit, push and create a PR to `release-X.Y.Z`.
-3. Until PR is merged:
-    1. [**build server**]
-        - Run CI for the PR and notifies GitHub.
-    2. [**Maintainer**]
-        - Review the PR.
-        - Either ask for changes or merge.
-    3. [**Contributor**]
-        - (_optional_) Update the PR if either CI failed or reviewer asked for changes.
-        - (_optional_) [**indy-node**] Bump `indy-plenum` version in `setup.py` if changes require new `indy-plenum` release.
+    - Create `setRelease-vX.Y.Z` tag on desired branch (most of the time it would be `master|ubuntu20.04-upgrade`).
+2. [**GHA `tag.yaml`**]
+    - Bumps version
+    - creates PR with the updated Version
+2. [**GHA `releasepr.yaml`**]
+    - Runs on the update Version PR
+    - Tests the code (e.g. DCO, CI testing, static code validation etc.).
+    - Builds packages.
 
-#### 2. Release Candidate Acceptance
+#### 2. Release Candidate and Release Acceptance
 
 **Note** If any of the following steps fails new release candidate should be prepared.
 
 1. [**Maintainer**]
-    - **Start release candidate pipeline manually**.
-2. [**build server**]
-    - Checkout the repository.
-    - Publish to PyPI as `X.Y.Z.rcN`.
-    - Bump version locally to `X.Y.Z`, commit and push as the `release commit` to remote.
-    - Build debian packages:
-        - for the project: source code version would be `X.Y.Z`, debian package version `X.Y.Z~rcN`;
-        - for the 3rd party dependencies missed in the official debian repositories.
-    - Publish the packages to `rc-latest` debian channel.
-    - [`indy-node`] Copy the package along with its dependencies (including `indy-plenum`)
-      from `rc-latest` to `rc` channel.
-    - [`indy-node`] Run system tests for the `rc` channel.
-    - Create **release PR** from `release-X.Y.Z` (that points to `release commit`) branch to `stable`.
-    - Notify maintainers.
-    - Wait for an approval to proceed. **It shouldn't be provided until `release PR` passes all necessary checks** (e.g. DCO, CI testing, maintainers reviews etc.).
-3. [**build server**]
-    - Run CI for the PR and notify GitHub.
-4. [**QA**]
-    - (_optional_) Perform additional testing.
-5. [**Maintainer**]
-    - Review the PR but **do not merge it**.
-    - If approved: let build server to proceed.
-    - Otherwise: stop the pipeline.
-6. [**build server**]
-    - If approved:
-        - perform fast-forward merge;
-        - create and push tag `vX.Y.Z`;
-        - Notify maintainers.
-    - Otherwise rollback `release commit` by moving `release-X.Y.Z` to its parent.
-
-#### 3. Publishing
-
-1. [**build server**] triggered once the `release PR` is merged
-    - Publish to PyPI as `X.Y.Z`.
-    - Download and re-pack debian package `X.Y.Z~rcN` (from `rc-latest` channel) to `X.Y.Z` changing only the package name.
-    - Publish the package to `rc-latest` debian channel.
-    - Copy the package along with its dependencies from `rc-latest` to `stable-latest` channel.
-    - [`indy-node`] Copy the package along with its dependencies (including `indy-plenum`) from `stable-latest` to `stable` channel.
-    - [`indy-node`] Run system tests for the `stable` channel.
-    - Notify maintainers.
+    - Wait till the PR with the updated Version number from the RC preperation step is created and the Pipeline has run its tests (`releasepr.yaml` run successfully).
+2. [**Maintainer**]
+    - If all checks passed and RC is approved merge the update version PR. It will kick of the `Releasepr.yaml`Pipeline, which creates a Github Release and publishes the packages.
+    - Otherwise: just close the update version PR **without** merging.
+3. [**GHA (`publishRelease.yaml`)**]
+    - Gets the artifacts from the last successfull `releasepr.yaml` run.
+    - Publishes the artifacts to a Github Release, pypi and Artifactory.
 
 #### 4. New Development Cycle Start
-
-1. [**Contributor**]:
-    - Create PR to `master` with version bump to `X'.Y'.Z'.dev0`, where `X'.Y'.Z'` is next target release version. Usually it increments one of `X`, `Y` or `Z` and resets lower parts (check [SemVer](https://semver.org/) for more details), e.g.:
-        - `X.Y.Z+1` - bugfix release
-        - `X.Y+1.0` - feature release, backwards compatible API additions/changes
-        - `X+1.0.0` - major release, backwards incompatible API changes
 
 ### Hotfix Release
 
 Hotfix release is quite similar except the following difference:
-  - hotfix branches named `hotfix-X.Y.Z`;
+  - hotfix branches named `hotfix-X.Y.Z` created from last Release commit;
   - `master` usually is not merged since hotfixes (as a rule) should include only fixes for stable code.
+  - `setRelease`-Tag created on Hotfix branch.
