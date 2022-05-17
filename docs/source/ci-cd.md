@@ -2,10 +2,11 @@
 
 #### Branches
 
-At the moment work is being done so that `ubuntu20.04-upgrade` becomes the new master/main branch.
+At the moment work is being done so that `ubuntu-20.04-upgrade` becomes the new master/main branch.
 The old `master` will be moved to `ubuntu16` branch.
+The documentation for the old "legacy" process will reside in that branch.
 
-- `master` branches contains the latest changes. All PRs usually need to be sent to master.
+- `master` | `ubuntu-20.04` branches contains the latest changes. All PRs usually need to be sent to `master` | `ubuntu-20.04-upgrade`.
    
 
 
@@ -36,7 +37,7 @@ The old `master` will be moved to `ubuntu16` branch.
 
 ## Continuous Delivery
 
-- CD part of the pipeline is defined in `.github/workflows/publishRelease.yaml` & `.github/workflows/PR.yaml` file.
+- CD part of the pipeline is defined in `.github/workflows/tag.yaml`, `.github/workflows/releasepr.yaml`, and `.github/workflows/publishRelease.yaml` file.
 - CD part is run via GitHubActions issuing and uploading new builds.
 
 #### Builds
@@ -74,7 +75,6 @@ Use cases for artifacts
 
 ##### Supported platforms and OSes
 
-- Ubuntu 16.04 on x86_64
 - Ubuntu 20.04 on x86_64
 
 ##### Build scripts
@@ -84,8 +84,8 @@ We use [fpm](https://github.com/jordansissel/fpm) for packaging python code into
 - https://github.com/hyperledger/indy-plenum/blob/master/build-scripts
 
 We also pack some 3rd parties dependencies which are not presented in canonical ubuntu repositories:
-- https://github.com/hyperledger/indy-node/blob/master/build-scripts/ubuntu-1604/build-3rd-parties.sh
-- https://github.com/hyperledger/indy-plenum/blob/master/build-scripts/ubuntu-1604/build-3rd-parties.sh
+- https://github.com/hyperledger/indy-node/tree/ubuntu-20.04-upgrade/build-scripts/ubuntu-2004/build-3rd-parties.sh
+- https://github.com/hyperledger/indy-plenum/tree/ubuntu-20.04-upgrade/build-scripts//ubuntu-2004/build-3rd-parties.sh
 
 Each `build-scripts` folder includes `Readme.md`. Please check them for more details.
 
@@ -104,22 +104,9 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
     - different versions in migrations scripts
 
 
-##### For releases `< 1.7.0` (deprecated)
-- Please note, that we are using semver-like approach for versioning (major, minor, build) for each of the components.
-- Major and minor parts are set in the code (see [\_\_metadata\_\_.py](https://github.com/hyperledger/indy-node/blob/master/indy_node/__metadata__.py)). They must be incremented for new releases manually from code if needed.
-- Build part is incremented with each build on Jenkins (so it always increases, but may be not sequentially)
-- Each dependency (including indy-plenum) has a strict version (see [setup.py](https://github.com/hyperledger/indy-node/blob/master/setup.py))
-- If you install indy-node (either from pypi, or from deb package), the specified in setup.py version of indy-plenum is installed.
-- Master and Stable builds usually have different versions.
-- Differences in master and stable code:
-    - `setup.py`:
-        - dev suffix in project names and indy-plenum dependency in master; no suffixes in stable
-        - different versions of indy-plenum dependency
-    - different versions in migrations scripts
-
 ## Release workflow
-The diagram for the Release Workflow can be found [here](release-workflow.png).
 It starts with setting a tag in the form of `setRelease-v<Major>.<Minor>.<Patch>[-rc<Num>]`.
+![release-workflow](./release-workflow.png)
 
 ### Feature Release
 
@@ -142,7 +129,7 @@ It starts with setting a tag in the form of `setRelease-v<Major>.<Minor>.<Patch>
 1. [**Maintainer**]
     - Wait till the PR with the updated Version number from the RC preperation step is created and the Pipeline has run its tests (`releasepr.yaml` run successfully).
 2. [**Maintainer**]
-    - If all checks passed and RC is approved merge the update version PR. It will kick of the `Releasepr.yaml`Pipeline, which creates a Github Release and publishes the packages.
+    - If all checks passed and RC is approved merge the update version PR. It will kick of the `publishRelease.yaml` Pipeline, which creates a Github Release and publishes the packages.
     - Otherwise: just close the update version PR **without** merging.
 3. [**GHA (`publishRelease.yaml`)**]
     - Gets the artifacts from the last successfull `releasepr.yaml` run.
