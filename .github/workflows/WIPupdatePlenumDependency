@@ -28,7 +28,7 @@
 #           echo "::debug::BASE is being set to $branch"
 #       - name: get-release-info
 #         id: get-release-info
-#         uses: hyperledger/indy-shared-gha/.github/actions/get-release-info@main
+#         uses: hyperledger/indy-shared-gha/.github/actions/get-release-info@v1
 #         with:
 #           versionString: "${{ github.ref }}"
 #       - name: setPRBranch
