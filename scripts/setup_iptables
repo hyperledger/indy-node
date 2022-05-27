@@ -1,49 +1,178 @@
 #!/bin/bash
 
-if [ $# -lt 2 ]; then
-    echo ""
-    echo "Usage: $0 client_port connlimit";
-    echo "  client_port - node client port";
-    echo "  connlimit   - clients connections limit";
-    echo ""
-    exit 1;
-fi
+usage () {
+  cat <<-EOF
 
+  Usage:
 
-DPORT=$1
-CONN_LIMIT=$2
+    $0 [-d] <client_port> <overall_connlimit> [per_ip_connlimit] [conn_rate_period] [conn_rate_limit]
+
+      Options:
+        -d                  - Delete the corresponding rules.
+                              Removes the rules corresponding to the supplied input parameters.
+
+      Input Parameters:
+        client_port         - Required.  The node's client port.
+        overall_connlimit   - Required.  The overall connection limit for all clients.
+        per_ip_connlimit    - Optional.  The connection limit per IP address; defaults to 3.
+        conn_rate_period    - Optional.  The period for connection rate limiting; defaults to 60 seconds.
+        conn_rate_limit     - Optional.  The connection limit for connection rate limiting; default to 10.
+
+        Example:
+        $0 9701 300
+
+EOF
+    exit 1
+}
+
+check_setup () {
+  cat <<-EOF
+
+    Warning: iptables and/or iptables-persistent is not installed, or permission denied.  Client connections limit is not set.
+
+    Please ensure iptables and iptables-persistent are both installed and iptables-persistent is enabled, and try running with sudo.
+
+    # To install iptables-persistent:
+    sudo apt-get install -y iptables-persistent
+
+    # Make sure services are enabled on Debian or Ubuntu using the systemctl command:
+    sudo systemctl is-enabled netfilter-persistent.service
+
+    # If not enable it:
+    sudo systemctl enable netfilter-persistent.service
+
+    # Get status:
+    sudo systemctl status netfilter-persistent.service
+
+EOF
+    exit 1
+}
+
 LOG_CHAIN=LOG_CONN_REJECT
+OPERATION="add_rule"
 
-add_rule_if_not_exist()
-{
-    RULE="$1"
+while getopts dh FLAG; do
+  case $FLAG in
+    d)
+      OPERATION="delete_rule"
+      DELETE=1
+      ;;
+    h)
+      usage
+      ;;
+    \?)
+      usage
+      ;;
+  esac
+done
+shift $((OPTIND-1))
 
-    cmd="iptables -C $RULE 2>/dev/null 1>&2"
+DPORT=${1}
+OVER_ALL_CONN_LIMIT=${2}
+
+# Default to 3 connections per IP.
+CONN_LIMIT_PER_IP=${3:-3}
+
+# Default: Allow an IP to make up to 10 connection attempts every 100 seconds.
+CONN_RATE_LIMIT_PERIOD=${4:-60}
+CONN_RATE_LIMIT_LIMIT=${5:-10}
+
+add() {
+    if [ -z ${DELETE} ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+delete() {
+    if [ ! -z ${DELETE} ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+rule_exists() {
+    RULE="${1}"
+    cmd="iptables -C ${RULE} 2>/dev/null 1>&2"
+    # echo $cmd
     eval $cmd
+    rtnCd=$?
+    if (( ${rtnCd} == 0 )); then
+        return 0
+    else
+        return 1
+    fi
+}
 
-    if [ $? -eq 1 ]; then
-        cmd="iptables -A $RULE"
+add_rule() {
+    RULE="${1}"
+    if ! rule_exists "${RULE}"; then
+        cmd="iptables -A ${RULE}"
+        # echo $cmd
         eval $cmd
     fi
 }
 
+delete_rule() {
+    RULE="${1}"
+    if rule_exists "${RULE}"; then
+        cmd="iptables -D ${RULE}"
+        # echo $cmd
+        eval $cmd
+    fi
+}
+
+save_rules() {
+    su -c "iptables-save > /etc/iptables/rules.v4 && ip6tables-save > /etc/iptables/rules.v6"
+}
+
+if [ $# -lt 2 ]; then
+    usage
+fi
+
 # Check whether iptables installed and works
-dpkg -s iptables 2>/dev/null 1>&2 && iptables -nL 2>/dev/null 1>&2
+dpkg -s iptables 2>/dev/null 1>&2 && iptables -nL 2>/dev/null 1>&2 && dpkg -s iptables-persistent 2>/dev/null 1>&2
 if [ $? -eq 0 ]; then
-    # Create logging chain for rejected connections
-    iptables -N $LOG_CHAIN 2>/dev/null 1>&2
+
+    if add; then
+        echo "Adding iptable rules ..."
+        # Create logging chain for rejected connections
+        iptables -N ${LOG_CHAIN} 2>/dev/null 1>&2
+    else
+        echo "Removing iptable rules ..."
+    fi
 
     # Append a rule that sets log level and log prefix
-    RULE="$LOG_CHAIN -j LOG --log-level warning --log-prefix \"connlimit: \""
-    add_rule_if_not_exist "$RULE"
+    RULE="${LOG_CHAIN} -j LOG --log-level warning --log-prefix \"connlimit: \""
+    ${OPERATION} "${RULE}"
 
     # Append a rule that finally rejects connection
-    RULE="$LOG_CHAIN -p tcp -j REJECT --reject-with tcp-reset"
-    add_rule_if_not_exist "$RULE"
+    RULE="${LOG_CHAIN} -p tcp -j REJECT --reject-with tcp-reset"
+    ${OPERATION} "${RULE}"
 
-    # Append a rule to limit the number of simultaneous clients connections
-    RULE="INPUT -p tcp --syn --dport $DPORT -m connlimit --connlimit-above $CONN_LIMIT --connlimit-mask 0 -j $LOG_CHAIN"
-    add_rule_if_not_exist "$RULE"
+    # Append a rule to limit the total number of simultaneous client connections
+    RULE="INPUT -p tcp --syn --dport ${DPORT} -m connlimit --connlimit-above ${OVER_ALL_CONN_LIMIT} --connlimit-mask 0 -j ${LOG_CHAIN}"
+    ${OPERATION} "${RULE}"
+
+    # Append a rule to limit the number connections per IP address
+    RULE="INPUT -p tcp -m tcp --dport ${DPORT} --tcp-flags FIN,SYN,RST,ACK SYN -m connlimit --connlimit-above ${CONN_LIMIT_PER_IP} --connlimit-mask 32 --connlimit-saddr -j ${LOG_CHAIN}"
+    ${OPERATION} "${RULE}"
+
+    # Append rules to rate limit connections
+    RULE="INPUT -p tcp -m tcp --dport ${DPORT} -m conntrack --ctstate NEW -m recent --set --name DEFAULT --mask 255.255.255.255 --rsource"
+    ${OPERATION} "${RULE}"
+    RULE="INPUT -p tcp -m tcp --dport ${DPORT} -m conntrack --ctstate NEW -m recent --update --seconds ${CONN_RATE_LIMIT_PERIOD} --hitcount ${CONN_RATE_LIMIT_LIMIT} --name DEFAULT --mask 255.255.255.255 --rsource -j ${LOG_CHAIN}"
+    ${OPERATION} "${RULE}"
+
+    if delete; then
+        # Remove logging chain for rejected connections
+        iptables -X ${LOG_CHAIN} 2>/dev/null 1>&2
+    fi
+
+    # Save the rules
+    save_rules
 else
-    echo "Warning: iptables is not installed or permission denied, clients connections limit is not set."
+    check_setup
 fi
