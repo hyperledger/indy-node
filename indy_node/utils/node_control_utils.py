@@ -199,8 +199,26 @@ class NodeControlUtil:
 
     @classmethod
     def _get_curr_info(cls, package):
+        # Only allow processing of a single package
+        package = re.split("\s+|;|&&|\|", package.splitlines()[0], 1)[0].rstrip()
+
+        # Ensure the package exists before fetching the details directly from dpkg
+        if not cls._package_exists(package):
+            return ''
+
         cmd = compose_cmd(['dpkg', '-s', package])
         return cls.run_shell_command(cmd)
+
+    @classmethod
+    def _package_exists(cls, package):
+        cmd = compose_cmd(
+            ['dpkg', '--get-selections', '|', 'grep', '-v', 'deinstall', '|', 'cut', '-f1']
+        )
+        installed_packages = cls.run_shell_command(cmd)
+
+        # Ensure full match of package names.
+        is_installed = True if package in installed_packages.split('\n') else False
+        return is_installed
 
     @classmethod
     def _parse_deps(cls, deps: str):

@@ -144,7 +144,7 @@ def getIndex(predicateFn: Callable[[T], bool], items: List[T]) -> int:
 def compose_cmd(cmd):
     if os.name != 'nt':
         cmd = ' '.join(cmd)
-    cmd = re.split(";|&&", cmd.splitlines()[0], 1)[0].rstrip()
+        cmd = re.split(";|&&", cmd.splitlines()[0], 1)[0].rstrip()
     return cmd
 
 

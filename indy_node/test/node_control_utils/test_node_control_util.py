@@ -1,5 +1,7 @@
+from ast import arg
 import pytest
 import shutil
+import re
 
 from common.version import DigitDotVersion
 
@@ -13,8 +15,8 @@ from indy_node.utils.node_control_utils import (
 # - conditionally skip all tests for non-debian systems
 # - teste _parse_version_deps_from_pkg_mgr_output deeply
 
-generated_commands = []
 
+generated_commands = []
 
 @pytest.fixture
 def catch_generated_commands(monkeypatch):
@@ -29,12 +31,107 @@ def catch_generated_commands(monkeypatch):
     monkeypatch.setattr(NodeControlUtil, 'run_shell_command', _f)
 
 
-def test_generated_cmd_get_curr_info(catch_generated_commands):
-    pkg_name = 'some_package'
+some_package_info = 'Package: some_package\nVersion: 1.2.3\nDepends: aaa (= 1.2.4), bbb (>= 1.2.5), ccc, aaa'
+some_other_package_info = 'Package: some_other_package\nVersion: 4.5.6\nDepends: ddd (= 3.4.5), eee (>= 5.1.2), fff, ddd'
+app_package_info = f'Package: {APP_NAME}\nVersion: 1.2.3\nDepends: aaa (= 1.2.4), bbb (>= 1.2.5), ccc, aaa'
+any_package_info = 'Package: any_package\nVersion: 1.2.3\nDepends: aaa (= 1.2.4), bbb (>= 1.2.5), ccc, aaa'
+
+@pytest.fixture
+def patch_run_shell_command(monkeypatch):
+    generated_commands[:] = []
+
+    pkg_list = f'openssl\nsed\ntar\nsome_package\nsome_other_package\n{APP_NAME}\nany_package'
+    pkg_info = f'{some_package_info}\n\n{some_other_package_info}\n\n{app_package_info}\n\n{any_package_info}'
+
+    def mock_run_shell_command(command, *args, **kwargs):
+        # Keep track of the generated commands
+        generated_commands.append(command)
+        if command == 'dpkg --get-selections | grep -v deinstall | cut -f1':
+            return pkg_list
+        else:
+            package_name = command.split()[-1]
+            packages = re.split("\n\n", pkg_info)
+            for package in packages:
+                if package_name in package:
+                    return package
+
+            return ''
+
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_command', mock_run_shell_command)
+
+
+@pytest.mark.parametrize(
+    'pkg_name',
+    [
+        pytest.param('not_installed_package', id='not_installed_package'),
+        # Ensure partial matches don't work.
+        pytest.param('some', id='partial_name_match-some'),
+        pytest.param('package', id='partial_name_match-package'),
+    ]
+)
+def test_generated_cmd_get_curr_info_pkg_not_installed(patch_run_shell_command, pkg_name):
+    pkg_name = 'not_installed_package'
     # TODO not an API for now
     NodeControlUtil._get_curr_info(pkg_name)
     assert len(generated_commands) == 1
-    assert generated_commands[0] == "dpkg -s {}".format(pkg_name)
+    assert generated_commands[0] == 'dpkg --get-selections | grep -v deinstall | cut -f1'
+
+
+def test_generated_cmd_get_curr_info_pkg_installed(patch_run_shell_command):
+    pkg_name = 'some_package'
+    # TODO not an API for now
+    NodeControlUtil._get_curr_info(pkg_name)
+    assert len(generated_commands) == 2
+    assert generated_commands[0] == 'dpkg --get-selections | grep -v deinstall | cut -f1'
+    assert generated_commands[1] == "dpkg -s {}".format(pkg_name)
+
+
+def test_generated_cmd_get_curr_info_accepts_single_pkg_only(patch_run_shell_command):
+    expected_pkg_name = 'some_other_package'
+    # The extra spaces between the package names is on purpose.
+    pkg_name = 'some_other_package   some_package'
+    # TODO not an API for now
+    NodeControlUtil._get_curr_info(pkg_name)
+    assert len(generated_commands) == 2
+    assert generated_commands[0] == 'dpkg --get-selections | grep -v deinstall | cut -f1'
+    assert generated_commands[1] == "dpkg -s {}".format(expected_pkg_name)
+
+
+@pytest.mark.parametrize(
+    'pkg_name,package',
+    [
+        pytest.param('some_package', 'some_package|echo "hey";echo "hi"&&echo "hello"|echo "hello world"\necho "hello world!"', id='strips mixed cmd concat'),
+        pytest.param('some_package', 'some_package|echo "hey"', id='strips pipe cmd concat'),
+        pytest.param('some_package', 'some_package;echo "hey"', id='strips semi-colon cmd concat'),
+        pytest.param('some_package', 'some_package&&echo "hey"', id='strips AND cmd concat'),
+        pytest.param('some_package', 'some_package\necho "hey"', id='strips Cr cmd concat'),
+        pytest.param('some_package', 'some_package echo "hey"', id='strips whitespace'),
+    ]
+)
+def test_generated_cmd_get_curr_info_with_command_concat(patch_run_shell_command, pkg_name, package):
+    # TODO not an API for now
+    NodeControlUtil._get_curr_info(package)
+    assert len(generated_commands) == 2
+    assert generated_commands[0] == 'dpkg --get-selections | grep -v deinstall | cut -f1'
+    assert generated_commands[1] == "dpkg -s {}".format(pkg_name)
+
+
+@pytest.mark.parametrize(
+    'pkg_name,expected_output',
+    [
+        pytest.param('some_package', some_package_info, id='some_package'),
+        pytest.param('some_other_package', some_other_package_info, id='some_other_package'),
+        pytest.param(APP_NAME, app_package_info, id=APP_NAME),
+        pytest.param('any_package', any_package_info, id='any_package'),
+        pytest.param('not_installed_package', '', id='not_installed_package'),
+        # Ensure partial matches don't work.
+        pytest.param('some', '', id='partial_name_match-some'),
+        pytest.param('package', '', id='partial_name_match-package'),
+    ]
+)
+def test_get_curr_info_output(patch_run_shell_command, pkg_name, expected_output):
+    pkg_info = NodeControlUtil._get_curr_info(pkg_name)
+    assert pkg_info == expected_output
 
 
 def test_generated_cmd_get_latest_pkg_version(catch_generated_commands):
@@ -154,24 +251,52 @@ def test_get_latest_pkg_version_for_unknown_package():
         'some-unknown-package-name', update_cache=False) is None
 
 
-def test_curr_pkg_info_no_data(monkeypatch):
-    monkeypatch.setattr(NodeControlUtil, 'run_shell_command', lambda *_: '')
-    assert (None, []) == NodeControlUtil.curr_pkg_info('any_package')
+def test_curr_pkg_info_no_data(patch_run_shell_command):
+    assert (None, []) == NodeControlUtil.curr_pkg_info('some-unknown-package-name')
 
 
-def test_curr_pkg_info(monkeypatch):
-    output = 'Version: 1.2.3\nDepends: aaa (= 1.2.4), bbb (>= 1.2.5), ccc, aaa'
+@pytest.mark.parametrize(
+    'pkg_name,version,expected_deps',
+    [
+        pytest.param('some_package', '1.2.3', ['aaa=1.2.4', 'bbb=1.2.5', 'ccc'], id='some_package'),
+        pytest.param('some_other_package', '4.5.6', ['ddd=3.4.5', 'eee=5.1.2', 'fff'], id='some_other_package'),
+        pytest.param(APP_NAME, '1.2.3', ['aaa=1.2.4', 'bbb=1.2.5', 'ccc'], id=APP_NAME),
+        pytest.param('any_package', '1.2.3', ['aaa=1.2.4', 'bbb=1.2.5', 'ccc'], id='any_package'),
+    ]
+)
+def test_curr_pkg_info(patch_run_shell_command, pkg_name, version, expected_deps):
+    upstream_cls = src_version_cls(pkg_name)
+    expected_version = DebianVersion(
+        version, upstream_cls=upstream_cls)
+
+    pkg_info = NodeControlUtil.curr_pkg_info(pkg_name)
+
+    assert expected_version == pkg_info[0]
+    assert isinstance(expected_version, type(pkg_info[0]))
+    assert isinstance(expected_version.upstream, type(pkg_info[0].upstream))
+    assert expected_deps == pkg_info[1]
+
+
+@pytest.mark.parametrize(
+    'pkg_name',
+    [
+        pytest.param(f'{APP_NAME} | echo "hey"; echo "hi" && echo "hello"|echo "hello world"', id='multiple'),
+        pytest.param(f'{APP_NAME}|echo "hey"', id='pipe'),
+        pytest.param(f'{APP_NAME};echo "hey"', id='semi-colon'),
+        pytest.param(f'{APP_NAME}&&echo "hey"', id='and'),
+        pytest.param(f'{APP_NAME}\necho "hey"', id='Cr'),
+        pytest.param(f'{APP_NAME} echo "hey"', id='whitespace'),
+    ]
+)
+def test_curr_pkg_info_with_command_concat(patch_run_shell_command, pkg_name):
     expected_deps = ['aaa=1.2.4', 'bbb=1.2.5', 'ccc']
-    monkeypatch.setattr(NodeControlUtil, 'run_shell_command', lambda *_: output)
+    upstream_cls = src_version_cls(pkg_name)
+    expected_version = DebianVersion(
+        '1.2.3', upstream_cls=upstream_cls)
 
-    for pkg_name in [APP_NAME, 'any_package']:
-        upstream_cls = src_version_cls(pkg_name)
-        expected_version = DebianVersion(
-            '1.2.3', upstream_cls=upstream_cls)
+    pkg_info = NodeControlUtil.curr_pkg_info(pkg_name)
 
-        pkg_info = NodeControlUtil.curr_pkg_info(pkg_name)
-
-        assert expected_version == pkg_info[0]
-        assert isinstance(expected_version, type(pkg_info[0]))
-        assert isinstance(expected_version.upstream, type(pkg_info[0].upstream))
-        assert expected_deps == pkg_info[1]
+    assert expected_version == pkg_info[0]
+    assert isinstance(expected_version, type(pkg_info[0]))
+    assert isinstance(expected_version.upstream, type(pkg_info[0].upstream))
+    assert expected_deps == pkg_info[1]
