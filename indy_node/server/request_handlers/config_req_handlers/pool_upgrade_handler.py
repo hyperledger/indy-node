@@ -88,7 +88,9 @@ class PoolUpgradeHandler(WriteRequestHandler):
         pkg_to_upgrade = operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
         if not pkg_to_upgrade:
             raise InvalidClientRequest(identifier, req_id, "Upgrade package name is empty")
-        pkg_to_upgrade = re.split(";|&&", pkg_to_upgrade.splitlines()[0], 1)[0].rstrip()
+
+        # Only allow processing of a single package
+        pkg_to_upgrade = re.split("\s+|;|&&|\|", pkg_to_upgrade.splitlines()[0], 1)[0].rstrip()
         targetVersion = operation[VERSION]
         reinstall = operation.get(REINSTALL, False)
         try:
