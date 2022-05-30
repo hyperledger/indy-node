@@ -96,7 +96,27 @@ def test_pool_upgrade_dynamic_validation_fails_not_installed(
                         lambda *x: (None, None))
     with pytest.raises(InvalidClientRequest) as e:
         pool_upgrade_handler.dynamic_validation(pool_upgrade_request, 0)
-    e.match('is not installed and cannot be upgraded')
+    e.match(f'{pool_upgrade_request.operation[PACKAGE]} is not installed and cannot be upgraded')
+
+
+def test_pool_upgrade_dynamic_validation_fails_not_installed_mpr(
+        monkeypatch,
+        pool_upgrade_handler,
+        pool_upgrade_request,
+        tconf):
+    pool_upgrade_handler.upgrader.get_upgrade_txn = \
+        lambda predicate, reverse: \
+            {TXN_PAYLOAD: {TXN_PAYLOAD_DATA: {}}}
+    pool_upgrade_handler.write_req_validator.validate = lambda a, b: 0
+
+    monkeypatch.setattr(NodeControlUtil, 'curr_pkg_info',
+                        lambda *x: (None, None))
+
+    # When multiple packages are requested, only the first should be processed.
+    pool_upgrade_request.operation[PACKAGE] = 'some_package some_other_package'
+    with pytest.raises(InvalidClientRequest) as e:
+        pool_upgrade_handler.dynamic_validation(pool_upgrade_request, 0)
+    e.match('some_package is not installed and cannot be upgraded')
 
 
 def test_pool_upgrade_dynamic_validation_fails_belong(
@@ -113,7 +133,7 @@ def test_pool_upgrade_dynamic_validation_fails_belong(
                         lambda *x: ('1.1.1', ['some_pkg']))
     with pytest.raises(InvalidClientRequest) as e:
         pool_upgrade_handler.dynamic_validation(pool_upgrade_request, 0)
-    e.match('doesn\'t belong to pool')
+    e.match(f'{pool_upgrade_request.operation[PACKAGE]} doesn\'t belong to pool')
 
 
 def test_pool_upgrade_dynamic_validation_fails_upgradable(
