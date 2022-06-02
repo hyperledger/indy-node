@@ -71,3 +71,10 @@ jobs:
       isDev: 'false'
       isRC: '${{ needs.release-infos.outputs.isPreRelease }}'
       moduleName: indy_node
+
+  statusCheck:
+    name: statusCheck
+    runs-on: ubuntu-latest
+    needs: [workflow-setup, build_packages]
+    steps:
+      - run: 'echo "Just a status Check (Always true, when executed) for branch protection rules(blocks merging while test are running and if tests fail)." '
