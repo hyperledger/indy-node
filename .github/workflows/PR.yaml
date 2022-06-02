@@ -1,10 +1,14 @@
 name: Indy Node - PR Workflow
 on:
   pull_request:
+    paths:
+      - '**'
+      - "!plenum/__version__.json"
+
     branches:
       - ubuntu-20.04-upgrade
-      - feature/did-indy*
-  workflow_dispatch: 
+
+  workflow_dispatch:
 
 jobs:
   workflow-setup:
@@ -17,7 +21,7 @@ jobs:
       # to all subsequent jobs that reference image repositories
       # as the push and pull operations require the URL of the repository
       # to be in lowercase.
-      GITHUB_REPOSITORY_NAME: ${{ steps.setup.outputs.GITHUB_REPOSITORY_NAME }} 
+      GITHUB_REPOSITORY_NAME: ${{ steps.setup.outputs.GITHUB_REPOSITORY_NAME }}
       distribution: ${{ steps.setup.outputs.distribution }}
       publish: ${{ steps.setup.outputs.publish }}
       testsNeeded: ${{ steps.testsNeeded.outputs.testsNeeded }}
@@ -36,14 +40,14 @@ jobs:
               - '**.py'
               - '.github/**'
               - 'build-scripts/**'
-              - 'bump_version.sh'   
+              - 'bump_version.sh'
 
   lint:
     name: Lint
     needs: [workflow-setup]
     if: ${{ needs.workflow-setup.outputs.testsNeeded == 'true' }}
     uses: hyperledger/indy-shared-gha/.github/workflows/lint.yaml@v1
-      
+
   build-image:
     name: Create Builder Image
     needs: [workflow-setup, lint]
