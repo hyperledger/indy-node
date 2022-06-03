@@ -13,7 +13,7 @@ jobs:
       version: ${{ steps.get-release-info.outputs.version }}
       versionTag: ${{ steps.get-release-info.outputs.versionTag }}
       prBranch: ${{ steps.get-release-info.outputs.prBranch }}
-      BASE: ${{ steps.get-branch.outputs.branch}}
+      BASE: ${{ steps.get-branch.outputs.branch }}
     steps:
       - name: checkout source code
         uses: actions/checkout@v1

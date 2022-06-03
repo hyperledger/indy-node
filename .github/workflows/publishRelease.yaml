@@ -18,7 +18,7 @@ jobs:
       isVersionBump: ${{ steps.get-release-info.outputs.isVersionBump }}
       isPreRelease: ${{ steps.get-release-info.outputs.isRC }}
       versionTag: ${{ steps.get-release-info.outputs.versionTag }}
-      component: ${{ steps.get-release-info.outputs.component}}
+      component: ${{ steps.get-release-info.outputs.component }}
       CACHE_KEY_BUILD: ${{ steps.workflow-setup.outputs.CACHE_KEY_BUILD }}
       UBUNTU_VERSION: ${{ steps.workflow-setup.outputs.UBUNTU_VERSION }}
       # Expose the lowercase version of the GitHub repository name
@@ -27,7 +27,7 @@ jobs:
       # to be in lowercase.
       GITHUB_REPOSITORY_NAME: ${{ steps.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
       distribution: ${{ steps.workflow-setup.outputs.distribution }}
-      publish: ${{ steps.workflow-setup.outputs.publish}}
+      publish: ${{ steps.workflow-setup.outputs.publish }}
     steps:
       - name: checkout source code
         uses: actions/checkout@v2
@@ -52,7 +52,7 @@ jobs:
       - name: Download Node deb Artifacts from Github Action Artifacts
         uses: dawidd6/action-download-artifact@v2
         with:
-          github_token: ${{secrets.GITHUB_TOKEN}}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: releasepr.yaml
           workflow_conclusion: success
           name: indy_node-deb
@@ -60,7 +60,7 @@ jobs:
       - name: Download Node python Artifacts from Github Action Artifacts
         uses: dawidd6/action-download-artifact@v2
         with:
-          github_token: ${{secrets.GITHUB_TOKEN}}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: releasepr.yaml
           workflow_conclusion: success
           name: indy_node-python
@@ -68,7 +68,7 @@ jobs:
       - name: Download Node third party dependency Artifacts from Github Action Artifacts
         uses: dawidd6/action-download-artifact@v2
         with:
-          github_token: ${{secrets.GITHUB_TOKEN}}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: releasepr.yaml
           workflow_conclusion: success
           name: third-party-dependencies
@@ -102,7 +102,7 @@ jobs:
           generate_release_notes: true
           body: "[${{ needs.release-infos.outputs.VERSIONTAG }}] "
           prerelease: ${{ needs.release-infos.outputs.isPreRelease }}
-          target_commitish: ${{github.event.ref}}
+          target_commitish: ${{ github.event.ref }}
           name: "${{ needs.release-infos.outputs.VERSIONTAG }}"
           token: ${{ secrets.BOT_PR_PAT }}
 
