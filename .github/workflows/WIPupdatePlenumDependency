@@ -14,8 +14,8 @@
 #       version: ${{ steps.get-release-info.outputs.version }}
 #       isPreRelease: ${{ steps.get-release-info.outputs.isRC }}
 #       Branch: ${{ steps.setPRBranch.outputs.prBranch }}
-#       BASE: ${{ steps.branch.outputs.BASE}}
-#       nodeVersion: ${{ steps.nodeVersion.outputs.nodeVersion}}
+#       BASE: ${{ steps.branch.outputs.BASE }}
+#       nodeVersion: ${{ steps.nodeVersion.outputs.nodeVersion }}
 #     steps:
 #       - name: checkout source code
 #         uses: actions/checkout@v3
@@ -70,14 +70,14 @@
 #           token: ${{ secrets.BOT_PR_PAT }}
 #       - name: Update Setup.py
 #         run: |
-#           sed -E -i 's/indy-plenum==[[:digit:]]+.[[:digit:]]+.[[:digit:]]+(.(dev|rc)[[:digit:]]+)?/indy-plenum==${{needs.taginfos.outputs.version}}/g' setup.py
+#           sed -E -i 's/indy-plenum==[[:digit:]]+.[[:digit:]]+.[[:digit:]]+(.(dev|rc)[[:digit:]]+)?/indy-plenum==${{ needs.taginfos.outputs.version }}/g' setup.py
 #       - name: CommitAndTag
 #         uses: EndBug/add-and-commit@v9
 #         with:
 #           author_name: ${{ github.actor }} 
 #           author_email: ${{ github.event.pusher.email }}
 #           commit: --signoff
-#           message: 'Update Plenum Dependency to  ${{needs.taginfos.outputs.version}}'
-#           push: "origin ${{ needs.taginfos.outputs.Branch}} --set-upstream --force"
-#           new_branch: ${{ needs.taginfos.outputs.Branch}}
-#           tag: "setRelease-v${{needs.taginfos.outputs.nodeVersion}}"
+#           message: 'Update Plenum Dependency to  ${{ needs.taginfos.outputs.version }}'
+#           push: "origin ${{ needs.taginfos.outputs.Branch }} --set-upstream --force"
+#           new_branch: ${{ needs.taginfos.outputs.Branch }}
+#           tag: "setRelease-v${{ needs.taginfos.outputs.nodeVersion }}"
