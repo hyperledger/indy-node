@@ -112,7 +112,7 @@ jobs:
     if: needs.release-infos.outputs.isVersionBump == 'true' && needs.release-infos.outputs.publish == 'true'
     uses: hyperledger/indy-shared-gha/.github/workflows/publish_artifacts.yaml@v1
     with:
-      COMPONENT: ${{ needs.release-infos.component }}
+      COMPONENT: ${{ needs.release-infos.outputs.component }}
       UBUNTU_VERSION: ${{ needs.release-infos.outputs.UBUNTU_VERSION }}
       distribution: ${{ needs.release-infos.outputs.distribution }}
       moduleName: indy_node      
