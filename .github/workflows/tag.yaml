@@ -2,7 +2,7 @@ name: Triggered by set Tag
 
 on:
   push:
-    tags:        
+    tags:
       - setRelease-v**
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: checkout source code
         uses: actions/checkout@v1
-      - name: extract branch 
+      - name: extract branch
         id: get-branch
         uses: hyperledger/indy-shared-gha/.github/actions/branch-from-tag@v1
         with:
@@ -53,8 +53,8 @@ jobs:
                        libgflags-dev
           pip install packaging \
                       importlib_metadata==3.10.1 \
-                      indy-plenum==1.13.0.dev14 \
-                      pyzmq==22.3.0               
+                      indy-plenum==1.13.1rc2 \
+                      pyzmq==22.3.0
       - name: Prepare package and set version
         run: |
           ./bump_version.sh ${{ needs.taginfos.outputs.VERSION }}
@@ -72,4 +72,3 @@ jobs:
           body: "[${{ needs.taginfos.outputs.versionTag }}] - Update Version number for Release"
           delete-branch: true
           token: ${{ secrets.BOT_PR_PAT }}
-    
