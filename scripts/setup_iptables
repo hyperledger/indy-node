@@ -128,6 +128,33 @@ save_rules() {
     su -c "iptables-save > /etc/iptables/rules.v4 && ip6tables-save > /etc/iptables/rules.v6"
 }
 
+disable_ipv6() {
+    echo "Disabling IPv6 ..."
+    ip6_conf_file="/etc/sysctl.d/60-custom-disable-ipv6.conf"
+    mkdir -p ${ip6_conf_file%/*}
+
+    cat <<-EOF > ${ip6_conf_file}
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+EOF
+
+    sysctl -p
+    systemctl restart procps
+}
+
+enable_ipv6() {
+    echo "Enabling IPv6 ..."
+    ip6_conf_file="/etc/sysctl.d/60-custom-disable-ipv6.conf"
+
+    if [ -f ${ip6_conf_file} ]; then
+        rm ${ip6_conf_file}
+    fi
+    sysctl -p
+    systemctl restart procps
+}
+
+
 if [ $# -lt 2 ]; then
     usage
 fi
@@ -173,6 +200,12 @@ if [ $? -eq 0 ]; then
 
     # Save the rules
     save_rules
+
+    if add; then
+        disable_ipv6
+    else
+        enable_ipv6
+    fi
 else
     check_setup
 fi
