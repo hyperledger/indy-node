@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y \
 # pypi based packages
 RUN pip3 install -U \ 
     'pip<10.0.0' \
-    setuptools \
+    'setuptools<=50.3.2' \
     virtualenv
 
 COPY scripts/clean.sh /usr/local/bin/indy_image_clean

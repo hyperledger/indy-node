@@ -12,8 +12,7 @@ RUN apt-get update -y && apt-get install -y \
 	python-setuptools \
 	python3-nacl
 RUN pip3 install -U \ 
-	'pip<10.0.0' \
-	setuptools \
+	'setuptools<=50.3.2' \
 	pep8==1.7.1 \
 	pep8-naming==0.6.1 \
 	flake8==3.5.0
