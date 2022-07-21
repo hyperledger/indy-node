@@ -96,7 +96,7 @@ def test_pool_upgrade_dynamic_validation_fails_not_installed(
                         lambda *x: (None, None))
     with pytest.raises(InvalidClientRequest) as e:
         pool_upgrade_handler.dynamic_validation(pool_upgrade_request, 0)
-    e.match(f'{pool_upgrade_request.operation[PACKAGE]} is not installed and cannot be upgraded')
+    e.match('{} is not installed and cannot be upgraded'.format(pool_upgrade_request.operation[PACKAGE]))
 
 
 def test_pool_upgrade_dynamic_validation_fails_not_installed_mpr(
@@ -133,7 +133,7 @@ def test_pool_upgrade_dynamic_validation_fails_belong(
                         lambda *x: ('1.1.1', ['some_pkg']))
     with pytest.raises(InvalidClientRequest) as e:
         pool_upgrade_handler.dynamic_validation(pool_upgrade_request, 0)
-    e.match(f'{pool_upgrade_request.operation[PACKAGE]} doesn\'t belong to pool')
+    e.match('{} doesn\'t belong to pool'.format(pool_upgrade_request.operation[PACKAGE]))
 
 
 def test_pool_upgrade_dynamic_validation_fails_upgradable(

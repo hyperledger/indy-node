@@ -33,15 +33,15 @@ def catch_generated_commands(monkeypatch):
 
 some_package_info = 'Package: some_package\nVersion: 1.2.3\nDepends: aaa (= 1.2.4), bbb (>= 1.2.5), ccc, aaa'
 some_other_package_info = 'Package: some_other_package\nVersion: 4.5.6\nDepends: ddd (= 3.4.5), eee (>= 5.1.2), fff, ddd'
-app_package_info = f'Package: {APP_NAME}\nVersion: 1.2.3\nDepends: aaa (= 1.2.4), bbb (>= 1.2.5), ccc, aaa'
+app_package_info = 'Package: {}\nVersion: 1.2.3\nDepends: aaa (= 1.2.4), bbb (>= 1.2.5), ccc, aaa'.format(APP_NAME)
 any_package_info = 'Package: any_package\nVersion: 1.2.3\nDepends: aaa (= 1.2.4), bbb (>= 1.2.5), ccc, aaa'
 
 @pytest.fixture
 def patch_run_shell_command(monkeypatch):
     generated_commands[:] = []
 
-    pkg_list = f'openssl\nsed\ntar\nsome_package\nsome_other_package\n{APP_NAME}\nany_package'
-    pkg_info = f'{some_package_info}\n\n{some_other_package_info}\n\n{app_package_info}\n\n{any_package_info}'
+    pkg_list = 'openssl\nsed\ntar\nsome_package\nsome_other_package\n{}\nany_package'.format(APP_NAME)
+    pkg_info = '{}\n\n{}\n\n{}\n\n{}'.format(some_package_info, some_other_package_info, app_package_info, any_package_info)
 
     def mock_run_shell_command(command, *args, **kwargs):
         # Keep track of the generated commands
@@ -280,12 +280,12 @@ def test_curr_pkg_info(patch_run_shell_command, pkg_name, version, expected_deps
 @pytest.mark.parametrize(
     'pkg_name',
     [
-        pytest.param(f'{APP_NAME} | echo "hey"; echo "hi" && echo "hello"|echo "hello world"', id='multiple'),
-        pytest.param(f'{APP_NAME}|echo "hey"', id='pipe'),
-        pytest.param(f'{APP_NAME};echo "hey"', id='semi-colon'),
-        pytest.param(f'{APP_NAME}&&echo "hey"', id='and'),
-        pytest.param(f'{APP_NAME}\necho "hey"', id='Cr'),
-        pytest.param(f'{APP_NAME} echo "hey"', id='whitespace'),
+        pytest.param('{} | echo "hey"; echo "hi" && echo "hello"|echo "hello world"'.format(APP_NAME), id='multiple'),
+        pytest.param('{}|echo "hey"'.format(APP_NAME), id='pipe'),
+        pytest.param('{};echo "hey"'.format(APP_NAME), id='semi-colon'),
+        pytest.param('{}&&echo "hey"'.format(APP_NAME), id='and'),
+        pytest.param('{}\necho "hey"'.format(APP_NAME), id='Cr'),
+        pytest.param('{} echo "hey"'.format(APP_NAME), id='whitespace'),
     ]
 )
 def test_curr_pkg_info_with_command_concat(patch_run_shell_command, pkg_name):
