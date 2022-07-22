@@ -95,7 +95,7 @@ def systemTests = { component, releaseVersion ->
             ['TestConsensusSuite.py'],
             ['test_state_proof.py']
         ]
-        testVersion = 'v0.8.36'
+        testVersion = 'v0.8-indy-crypto'
         testVersionByTag = true
         delegate.gatherLogs = gatherLogs
     }
