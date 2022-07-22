@@ -17,7 +17,7 @@ RUN apt-get update -y && apt-get install -y \
 
 RUN pip3 install -U \ 
 	'pip<10.0.0' \
-	setuptools
+	'setuptools<=50.3.2'
 
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BD33704C

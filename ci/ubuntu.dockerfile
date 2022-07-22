@@ -5,6 +5,9 @@ ARG uid=1000
 ARG user=indy
 ARG venv=venv
 
+# Update Sovrin signing key
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88 
+
 RUN apt-get update -y && apt-get install -y \
     python3-nacl \
     libindy-crypto=0.4.5 \
@@ -15,6 +18,8 @@ RUN apt-get update -y && apt-get install -y \
     liblz4-dev \
     libsnappy-dev \
     rocksdb=5.8.8
+
+ENV PATH="/home/$user/$venv/bin:$PATH"
 
 RUN indy_ci_add_user $uid $user $venv
 
