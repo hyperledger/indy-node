@@ -81,7 +81,7 @@ def systemTests(Closure body) {
                     "PYTHON3_LIBINDY_CRYPTO_VERSION=${indyCryptoVersions.debian}",
                     "INDY_PLENUM_VERSION=${indyPlenumVersions.debian}",
                     "INDY_NODE_VERSION=${config.pkgVersion}",
-                    "LIBINDY_REPO_COMPONENT=${indySDKVersions.debian == indySDKVersions.pypi ? 'stable' : 'master'}",
+                    "LIBINDY_REPO_COMPONENT=${indySDKVersions.debian.replaceAll("-xenial", "") == indySDKVersions.pypi ? 'stable' : 'master'}",
                     "LIBINDY_VERSION=${indySDKVersions.debian}",
                 ]) {
                     sh "./system/docker/prepare.sh $systemTestsNetwork"
