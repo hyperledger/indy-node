@@ -14,12 +14,15 @@ usage () {
       Input Parameters:
         client_port         - Required.  The node's client port.
         overall_connlimit   - Required.  The overall connection limit for all clients.
-        per_ip_connlimit    - Optional.  The connection limit per IP address; defaults to 3.
+        per_ip_connlimit    - Optional.  The connection limit per IP address; defaults to 10.
         conn_rate_period    - Optional.  The period for connection rate limiting; defaults to 60 seconds.
-        conn_rate_limit     - Optional.  The connection limit for connection rate limiting; default to 10.
+        conn_rate_limit     - Optional.  The connection limit for connection rate limiting; default to 20.
+        logging_level       - Optional.  If used, this should be set to a level such as 'debug' so they can 
+                                         easily be filtered from the logs and included only as needed.
+                                         Default is no logging.
 
         Example:
-        $0 9701 300
+        $0 9702 15000
 
 EOF
     exit 1
@@ -70,12 +73,14 @@ shift $((OPTIND-1))
 DPORT=${1}
 OVER_ALL_CONN_LIMIT=${2}
 
-# Default to 3 connections per IP.
-CONN_LIMIT_PER_IP=${3:-3}
+# Default to 10 connections per IP.
+CONN_LIMIT_PER_IP=${3:-10}
 
-# Default: Allow an IP to make up to 10 connection attempts every 100 seconds.
+# Default: Allow an IP to make up to 20 connection attempts every 60 seconds.
 CONN_RATE_LIMIT_PERIOD=${4:-60}
-CONN_RATE_LIMIT_LIMIT=${5:-10}
+CONN_RATE_LIMIT_LIMIT=${5:-20}
+
+CONN_LOGGING_LEVEL=${6}
 
 add() {
     if [ -z ${DELETE} ]; then
@@ -171,9 +176,16 @@ if [ $? -eq 0 ]; then
         echo "Removing iptable rules ..."
     fi
 
-    # Append a rule that sets log level and log prefix
+    # Make sure the previous default logging rule is removed.  It causes too much CPU overhead under load.
     RULE="${LOG_CHAIN} -j LOG --log-level warning --log-prefix \"connlimit: \""
-    ${OPERATION} "${RULE}"
+    delete_rule "${RULE}"
+
+    # Append a rule that sets log level and log prefix
+    # Default to no logging unless a logging level is explicitly supplied.
+    if [ ! -z ${CONN_LOGGING_LEVEL} ]; then
+        RULE="${LOG_CHAIN} -j LOG --log-level ${CONN_LOGGING_LEVEL} --log-prefix \"connlimit: \""
+        ${OPERATION} "${RULE}"
+    fi
 
     # Append a rule that finally rejects connection
     RULE="${LOG_CHAIN} -p tcp -j REJECT --reject-with tcp-reset"
