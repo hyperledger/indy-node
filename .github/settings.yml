@@ -6,7 +6,7 @@ repository:
   name: indy-node
   description: The server portion of a distributed ledger purpose-built for decentralized identity.
   homepage: https://wiki.hyperledger.org/display/indy
-  default_branch: master
+  default_branch: main
   has_downloads: false
   has_issues: true
   has_projects: false
