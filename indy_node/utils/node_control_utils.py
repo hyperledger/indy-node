@@ -359,7 +359,47 @@ class NodeControlUtil:
     @classmethod
     def update_package_cache(cls):
         cmd = compose_cmd(['apt', 'update'])
+        try:
+            cls.run_shell_script(cmd)
+        except ShellError as e:
+            # Currently two issues can stop this from working.
+            # 1) The Sovrin Repo key needs to be updated
+            #    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88
+            # 2) The following certificate validation error occurs:
+            #       Err:6 https://repo.sovrin.org/deb xenial Release
+            #         server certificate verification failed. CAfile: /etc/ssl/certs/ca-certificates.crt CRLfile: none
+            #       Reading package lists... Done
+            #       E: The repository 'https://repo.sovrin.org/deb xenial Release' does not have a Release file.
+            #       N: Updating from such a repository can't be done securely, and is therefore disabled by default.
+            #       N: See apt-secure(8) manpage for repository creation and user configuration details.
+            #    This can be fixed by updating libgnutls30:
+            #    apt --only-upgrade install -y libgnutls30
+            logger.warning("Call to apt update failed in update_package_cache; {}".format(e))
+            cls.update_repo_keys()
+            cls.update_apt_update_dependencies()
+
+            # Try again ...
+            logger.info("Trying apt update again ...")
+            cls.run_shell_script(cmd)
+
+    @classmethod
+    def update_repo_keys(cls):
+        logger.info("Updating signing keys for the artifact repository ...")
+        cmd = compose_cmd(['apt-key', 'adv', '--keyserver', 'keyserver.ubuntu.com', '--recv-keys', 'CE7709D068DB5E88'])
         cls.run_shell_script(cmd)
+
+    @classmethod
+    def update_apt_update_dependencies(cls):
+        cmd = compose_cmd(['apt', 'list', '--upgradable'])
+        logger.info("Getting list of upgradable packages ...")
+        upgradable_packages = cls.run_shell_command(cmd).split("\n")
+        libgnutls30 = next((x for x in upgradable_packages if x.find('libgnutls30') != -1), None)
+        if libgnutls30 is not None:
+            logger.info("Upgrading libgnutls30 ...")
+            cmd = compose_cmd(['apt', '--only-upgrade', 'install', '-y', 'libgnutls30'])
+            cls.run_shell_script(cmd)
+        else:
+            logger.info("libgnutls30 is already up to date.")
 
     @classmethod
     def get_deps_tree(cls, *package, depth=0):

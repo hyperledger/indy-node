@@ -162,11 +162,118 @@ def test_generated_cmd_get_info_from_package_manager(catch_generated_commands):
     assert len(generated_commands) == 1
     assert generated_commands[0] == "apt-cache show {}".format(" ".join(packages))
 
-
+# apt update is successful
 def test_generated_cmd_update_package_cache(catch_generated_commands):
     NodeControlUtil.update_package_cache()
     assert len(generated_commands) == 1
     assert generated_commands[0] == "apt update"
+
+# apt update fails
+# apt update dependencies don't need to be upgraded, i.e. only key update is performed.
+def test_generated_cmd_update_package_cache_2(monkeypatch):
+    run_shell_script_counter = 0
+    commands = []
+
+    def _run_shell_script(command, *args, **kwargs):
+        nonlocal run_shell_script_counter
+        run_shell_script_counter += 1
+        commands.append(command)
+
+        if run_shell_script_counter == 1:
+            raise ShellError(100, "apt update")
+
+        return ''
+
+    def _f(command, *args, **kwargs):
+        commands.append(command)
+        return ''
+
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_script', _run_shell_script)
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_script_extended', _f)
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_command', _f)
+
+    NodeControlUtil.update_package_cache()
+    assert len(commands) == 4
+    assert commands[0] == "apt update"
+    assert commands[1] == "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88"
+    assert commands[2] == "apt list --upgradable"
+    assert commands[3] == "apt update"
+
+
+# apt update fails
+# apt update dependencies need to be upgraded
+def test_generated_cmd_update_package_cache_3(monkeypatch):
+    run_shell_script_counter = 0
+    commands = []
+
+    def _run_shell_script(command, *args, **kwargs):
+        nonlocal run_shell_script_counter
+        run_shell_script_counter += 1
+        commands.append(command)
+
+        if run_shell_script_counter == 1:
+            raise ShellError(100, "apt update")
+
+        return ''
+
+    def _run_shell_command(command, *args, **kwargs):
+        commands.append(command)
+        return """libgnutls-openssl27/xenial-updates 3.4.10-4ubuntu1.9 amd64 [upgradable from: 3.4.10-4ubuntu1.7]
+libgnutls30/xenial-updates 3.4.10-4ubuntu1.9 amd64 [upgradable from: 3.4.10-4ubuntu1.7]
+liblxc1/xenial-updates 2.0.11-0ubuntu1~16.04.3 amd64 [upgradable from: 2.0.8-0ubuntu1~16.04.2]"""
+
+    def _f(command, *args, **kwargs):
+        commands.append(command)
+        return ''
+
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_script', _run_shell_script)
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_script_extended', _f)
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_command', _run_shell_command)
+
+    NodeControlUtil.update_package_cache()
+    assert len(commands) == 5
+    assert commands[0] == "apt update"
+    assert commands[1] == "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88"
+    assert commands[2] == "apt list --upgradable"
+    assert commands[3] == "apt --only-upgrade install -y libgnutls30"
+    assert commands[4] == "apt update"
+
+
+def test_generated_cmd_update_repo_keys(catch_generated_commands):
+    NodeControlUtil.update_repo_keys()
+    assert len(generated_commands) == 1
+    assert generated_commands[0] == "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88"
+
+
+# apt update dependencies don't need to be upgraded
+def test_generated_cmd_update_apt_update_dependencies_1(catch_generated_commands):
+    NodeControlUtil.update_apt_update_dependencies()
+    assert len(generated_commands) == 1
+    assert generated_commands[0] == "apt list --upgradable"
+
+
+# apt update dependencies need to be upgraded
+def test_generated_cmd_update_apt_update_dependencies_2(monkeypatch):
+    commands = []
+
+    def _run_shell_command(command, *args, **kwargs):
+        commands.append(command)
+        return """libgnutls-openssl27/xenial-updates 3.4.10-4ubuntu1.9 amd64 [upgradable from: 3.4.10-4ubuntu1.7]
+libgnutls30/xenial-updates 3.4.10-4ubuntu1.9 amd64 [upgradable from: 3.4.10-4ubuntu1.7]
+liblxc1/xenial-updates 2.0.11-0ubuntu1~16.04.3 amd64 [upgradable from: 2.0.8-0ubuntu1~16.04.2]"""
+
+    def _f(command, *args, **kwargs):
+        commands.append(command)
+        return ''
+
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_script', _f)
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_script_extended', _f)
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_command', _run_shell_command)
+
+    NodeControlUtil.update_apt_update_dependencies()
+    assert len(commands) == 2
+    assert commands[0] == "apt list --upgradable"
+    assert commands[1] == "apt --only-upgrade install -y libgnutls30"
 
 
 def test_generated_cmd_get_sys_holds(monkeypatch, catch_generated_commands):
