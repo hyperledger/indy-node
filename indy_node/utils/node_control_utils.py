@@ -361,7 +361,7 @@ class NodeControlUtil:
         cmd = compose_cmd(['apt', 'update'])
         try:
             cls.run_shell_script(cmd)
-        except ShellError as e:
+        except Exception as e:
             # Currently two issues can stop this from working.
             # 1) The Sovrin Repo key needs to be updated
             #    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88
