@@ -180,7 +180,7 @@ def test_generated_cmd_update_package_cache_2(monkeypatch):
         commands.append(command)
 
         if run_shell_script_counter == 1:
-            raise ShellError(100, "apt update")
+            raise Exception("Command 'apt update' returned non-zero exit status")
 
         return ''
 
@@ -212,7 +212,7 @@ def test_generated_cmd_update_package_cache_3(monkeypatch):
         commands.append(command)
 
         if run_shell_script_counter == 1:
-            raise ShellError(100, "apt update")
+            raise Exception("Command 'apt update' returned non-zero exit status")
 
         return ''
 
