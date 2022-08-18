@@ -5,18 +5,19 @@ usage () {
 
   Usage:
 
-    $0 [-d] <client_port> <overall_connlimit> [per_ip_connlimit] [conn_rate_period] [conn_rate_limit]
+    $0 [-d] <client_port> <overall_connlimit> [per_ip_connlimit] [conn_rate_limit] [conn_rate_period] [logging_level]
 
       Options:
         -d                  - Delete the corresponding rules.
                               Removes the rules corresponding to the supplied input parameters.
+        -t                  - Test mode.  Prints out the list of input settings and exits.
 
       Input Parameters:
         client_port         - Required.  The node's client port.
         overall_connlimit   - Required.  The overall connection limit for all clients.
         per_ip_connlimit    - Optional.  The connection limit per IP address; defaults to 10.
+        conn_rate_limit     - Optional.  The connection limit for connection rate limiting; default to -1, off.
         conn_rate_period    - Optional.  The period for connection rate limiting; defaults to 60 seconds.
-        conn_rate_limit     - Optional.  The connection limit for connection rate limiting; default to 20.
         logging_level       - Optional.  If used, this should be set to a level such as 'debug' so they can 
                                          easily be filtered from the logs and included only as needed.
                                          Default is no logging.
@@ -51,14 +52,37 @@ EOF
     exit 1
 }
 
+print_settings() {
+  if (( ${CONN_RATE_LIMIT_LIMIT} <= 0 || ${CONN_RATE_LIMIT_PERIOD} <= 0 )); then
+    RATE_LIMIT_MESSAGE=" - Connection rate limiting is turned off."
+  fi
+
+  cat <<-EOF
+
+  client_port:          ${DPORT}
+  overall_connlimit:    ${OVER_ALL_CONN_LIMIT}
+  per_ip_connlimit:     ${CONN_LIMIT_PER_IP}
+  conn_rate_limit:      ${CONN_RATE_LIMIT_LIMIT} ${RATE_LIMIT_MESSAGE} 
+  conn_rate_period:     ${CONN_RATE_LIMIT_PERIOD} ${RATE_LIMIT_MESSAGE}
+  logging_level:        ${CONN_LOGGING_LEVEL:-Not set, (off) default}
+
+  OPERATION:            ${OPERATION}
+  DELETE:               ${DELETE}
+  TEST_MODE:            ${TEST_MODE}
+EOF
+}
+
 LOG_CHAIN=LOG_CONN_REJECT
 OPERATION="add_rule"
 
-while getopts dh FLAG; do
+while getopts dth FLAG; do
   case $FLAG in
     d)
       OPERATION="delete_rule"
       DELETE=1
+      ;;
+    t)
+      TEST_MODE=1
       ;;
     h)
       usage
@@ -76,9 +100,11 @@ OVER_ALL_CONN_LIMIT=${2}
 # Default to 10 connections per IP.
 CONN_LIMIT_PER_IP=${3:-10}
 
-# Default: Allow an IP to make up to 20 connection attempts every 60 seconds.
-CONN_RATE_LIMIT_PERIOD=${4:-60}
-CONN_RATE_LIMIT_LIMIT=${5:-20}
+# Default: Rate limiting disabled; -1.
+CONN_RATE_LIMIT_LIMIT=${4:--1}
+
+# Default to a per minute rate limit.
+CONN_RATE_LIMIT_PERIOD=${5:-60}
 
 CONN_LOGGING_LEVEL=${6}
 
@@ -159,9 +185,13 @@ enable_ipv6() {
     systemctl restart procps
 }
 
-
 if [ $# -lt 2 ]; then
     usage
+fi
+
+if [ ! -z ${TEST_MODE} ]; then
+    print_settings
+    exit 0
 fi
 
 # Check whether iptables installed and works
@@ -200,10 +230,15 @@ if [ $? -eq 0 ]; then
     ${OPERATION} "${RULE}"
 
     # Append rules to rate limit connections
-    RULE="INPUT -p tcp -m tcp --dport ${DPORT} -m conntrack --ctstate NEW -m recent --set --name DEFAULT --mask 255.255.255.255 --rsource"
-    ${OPERATION} "${RULE}"
-    RULE="INPUT -p tcp -m tcp --dport ${DPORT} -m conntrack --ctstate NEW -m recent --update --seconds ${CONN_RATE_LIMIT_PERIOD} --hitcount ${CONN_RATE_LIMIT_LIMIT} --name DEFAULT --mask 255.255.255.255 --rsource -j ${LOG_CHAIN}"
-    ${OPERATION} "${RULE}"
+    if (( ${CONN_RATE_LIMIT_LIMIT} > 0 && ${CONN_RATE_LIMIT_PERIOD} > 0 )); then
+        echo "Including settings for rate limiting ..."
+        RULE="INPUT -p tcp -m tcp --dport ${DPORT} -m conntrack --ctstate NEW -m recent --set --name DEFAULT --mask 255.255.255.255 --rsource"
+        ${OPERATION} "${RULE}"
+        RULE="INPUT -p tcp -m tcp --dport ${DPORT} -m conntrack --ctstate NEW -m recent --update --seconds ${CONN_RATE_LIMIT_PERIOD} --hitcount ${CONN_RATE_LIMIT_LIMIT} --name DEFAULT --mask 255.255.255.255 --rsource -j ${LOG_CHAIN}"
+        ${OPERATION} "${RULE}"
+    else
+        echo "Rate limiting is disabled, skipping settings for rate limiting ..."
+    fi
 
     if delete; then
         # Remove logging chain for rejected connections
