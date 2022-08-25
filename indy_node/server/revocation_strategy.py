@@ -2,6 +2,7 @@ from abc import abstractmethod, ABCMeta
 
 from copy import deepcopy
 
+from indy_common.compat_set import CompatSet
 from indy_common.state import domain
 from indy_common.types import Request
 from indy_common.constants import REVOC_REG_DEF_ID, VALUE, ACCUM, PREV_ACCUM, ISSUED, REVOKED
@@ -137,7 +138,7 @@ class RevokedStrategy(RevocationStrategy):
             issued_from_txn = value_from_txn.get(ISSUED, [])
             revoked_from_txn = value_from_txn.get(REVOKED, [])
             # set with all previous revoked minus issued from txn
-            result_indicies = set(indices).difference(issued_from_txn)
+            result_indicies = CompatSet(indices).difference(issued_from_txn)
             result_indicies.update(revoked_from_txn)
             value_from_txn[ISSUED] = []
             value_from_txn[REVOKED] = list(result_indicies)
@@ -195,7 +196,7 @@ class IssuedStrategy(RevocationStrategy):
             issued_from_txn = value_from_txn.get(ISSUED, [])
             revoked_from_txn = value_from_txn.get(REVOKED, [])
             # set with all previous issued minus revoked from txn
-            result_indicies = set(indices).difference(revoked_from_txn)
+            result_indicies = CompatSet(indices).difference(revoked_from_txn)
             result_indicies.update(issued_from_txn)
             value_from_txn[REVOKED] = []
             value_from_txn[ISSUED] = list(result_indicies)
