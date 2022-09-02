@@ -1,3 +1,5 @@
+import re
+
 from typing import Optional
 
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
@@ -52,22 +54,6 @@ class PoolUpgradeHandler(WriteRequestHandler):
         self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
         status = '*'
-
-        pkg_to_upgrade = operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
-        targetVersion = operation[VERSION]
-        reinstall = operation.get(REINSTALL, False)
-
-        if not pkg_to_upgrade:
-            raise InvalidClientRequest(identifier, req_id, "Upgrade package name is empty")
-
-        try:
-            res = self.upgrader.check_upgrade_possible(pkg_to_upgrade, targetVersion, reinstall)
-        except Exception as exc:
-            res = str(exc)
-
-        if res:
-            raise InvalidClientRequest(identifier, req_id, res)
-
         action = operation.get(ACTION)
         # TODO: Some validation needed for making sure name and version
         # present
@@ -98,6 +84,22 @@ class PoolUpgradeHandler(WriteRequestHandler):
                                          new_value=action)
         self.write_req_validator.validate(request,
                                           [auth_action])
+
+        pkg_to_upgrade = operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
+        if not pkg_to_upgrade:
+            raise InvalidClientRequest(identifier, req_id, "Upgrade package name is empty")
+
+        # Only allow processing of a single package
+        pkg_to_upgrade = re.split("\s+|;|&&|\|", pkg_to_upgrade.splitlines()[0], 1)[0].rstrip()
+        targetVersion = operation[VERSION]
+        reinstall = operation.get(REINSTALL, False)
+        try:
+            res = self.upgrader.check_upgrade_possible(pkg_to_upgrade, targetVersion, reinstall)
+        except Exception as exc:
+            res = str(exc)
+
+        if res:
+            raise InvalidClientRequest(identifier, req_id, res)
 
     def apply_forced_request(self, req: Request):
         super().apply_forced_request(req)
