@@ -1,5 +1,7 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.12.5](#1125)
+
 * [1.12.4](#1124)
 
 * [1.12.3](#1123)
@@ -61,6 +63,10 @@
 #### Disclosure
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
+
+## 1.12.5
+
+Starting with release v1.12.5 all release notes are maintained in the related GitHub release record.  Please see [Releases](https://github.com/hyperledger/indy-node/releases) for details.  For example; [v1.12.5](https://github.com/hyperledger/indy-node/releases/v1.12.5)
 
 ## 1.12.4
 ### Release date: Aug 19th, 2020
