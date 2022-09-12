@@ -2,6 +2,7 @@ import pytest
 
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, ISSUANCE_BY_DEFAULT, \
     VALUE, ISSUANCE_TYPE, ISSUED, REVOKED, ACCUM
+from indy_common.config_util import getConfig
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handler import RevocRegEntryHandler
 from indy_node.test.request_handlers.helper import add_to_idr
@@ -124,3 +125,65 @@ def test_update_state(revoc_reg_entry_handler, revoc_reg_entry_request,
     txn_data[VALUE] = {ACCUM: txn_data[VALUE][ACCUM]}
     path, _ = RevocRegEntryHandler.prepare_revoc_reg_entry_accum_for_state(txn)
     assert revoc_reg_entry_handler.get_from_state(path) == (txn_data, seq_no, txn_time)
+
+
+def test_legacy_switch_by_default_new(revoc_reg_entry_handler, revoc_reg_entry_request,
+                                      revoc_reg_def_handler, revoc_reg_def_request):
+    # Default case -> False
+    config = getConfig()
+    assert config.REV_STRATEGY_USE_COMPAT_ORDERING is False
+
+    state = _test_ordering(revoc_reg_entry_handler, revoc_reg_entry_request,
+                           revoc_reg_def_handler, revoc_reg_def_request)
+
+    assert state[VALUE][REVOKED] == [5, 6, 12, 13]
+
+
+def test_legacy_switch_by_default_old(revoc_reg_entry_handler, revoc_reg_entry_request,
+                                      revoc_reg_def_handler, revoc_reg_def_request):
+    # Default case -> False
+    config = getConfig()
+    config.REV_STRATEGY_USE_COMPAT_ORDERING = True
+
+    state = _test_ordering(revoc_reg_entry_handler, revoc_reg_entry_request,
+                           revoc_reg_def_handler, revoc_reg_def_request)
+    
+    assert state[VALUE][REVOKED] == [12, 13, 5, 6]
+
+
+def _test_ordering(revoc_reg_entry_handler, revoc_reg_entry_request,
+                   revoc_reg_def_handler, revoc_reg_def_request):
+    # create revoc_req_def
+    seq_no = 1
+    txn_time = 1560241030
+    revoc_reg_def_request.operation[VALUE] = {}
+    revoc_reg_def_request.operation[VALUE][ISSUANCE_TYPE] = ISSUANCE_BY_DEFAULT
+    txn = reqToTxn(revoc_reg_def_request)
+    append_txn_metadata(txn, seq_no, txn_time)
+    path = RevocRegDefHandler.prepare_revoc_def_for_state(txn,
+                                                          path_only=True)
+    revoc_reg_def_handler.update_state(txn, None, revoc_reg_def_request)
+
+    # create first revoc_req_entry
+    seq_no = 2
+    txn_time = 1560241033
+    revoc_reg_entry_request.operation[REVOC_REG_DEF_ID] = path.decode()
+    revoc_reg_entry_request.operation[VALUE][ISSUED] = []
+    revoc_reg_entry_request.operation[VALUE][REVOKED] = [4, 5, 6, 12]
+    txn = reqToTxn(revoc_reg_entry_request)
+    append_txn_metadata(txn, seq_no, txn_time)
+    revoc_reg_entry_handler.update_state(txn, None, revoc_reg_entry_request)
+
+    # create second revoc_req_entry
+    seq_no = 3
+    txn_time = 1560241042
+    revoc_reg_entry_request.operation[REVOC_REG_DEF_ID] = path.decode()
+    revoc_reg_entry_request.operation[VALUE][ISSUED] = [4]
+    revoc_reg_entry_request.operation[VALUE][REVOKED] = [13]
+    txn = reqToTxn(revoc_reg_entry_request)
+    append_txn_metadata(txn, seq_no, txn_time)
+    revoc_reg_entry_handler.update_state(txn, None, revoc_reg_entry_request)
+    state = revoc_reg_entry_handler.get_from_state(
+        RevocRegEntryHandler.prepare_revoc_reg_entry_for_state(txn,
+                                                               path_only=True))
+    return state[0]
