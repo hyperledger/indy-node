@@ -5,6 +5,7 @@ from copy import deepcopy
 from indy_common.compat_set import CompatSet
 from indy_common.state import domain
 from indy_common.types import Request
+from indy_common.config_util import getConfig
 from indy_common.constants import REVOC_REG_DEF_ID, VALUE, ACCUM, PREV_ACCUM, ISSUED, REVOKED
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.txn_util import get_from, get_req_id, get_payload_data
@@ -17,6 +18,7 @@ class RevocationStrategy(metaclass=ABCMeta):
         self.author_did = None
         self.revoc_reg_def_id = None
         self.req_id = None
+        self.sort_legacy = getConfig().REV_STRATEGY_USE_COMPAT_ORDERING or False
 
     def set_parameters_from_txn(self, author_did, revoc_reg_def_id, req_id):
         self.author_did = author_did
@@ -138,10 +140,17 @@ class RevokedStrategy(RevocationStrategy):
             issued_from_txn = value_from_txn.get(ISSUED, [])
             revoked_from_txn = value_from_txn.get(REVOKED, [])
             # set with all previous revoked minus issued from txn
-            result_indicies = CompatSet(indices).difference(issued_from_txn)
-            result_indicies.update(revoked_from_txn)
+            if self.sort_legacy:
+                result_indicies = CompatSet(indices).difference(issued_from_txn)
+                result_indicies.update(revoked_from_txn)
+                result_indicies = list(result_indicies)
+            else:
+                result_indicies = set(indices).difference(issued_from_txn)
+                result_indicies.update(revoked_from_txn)
+                result_indicies = list(result_indicies)
+                result_indicies.sort()
             value_from_txn[ISSUED] = []
-            value_from_txn[REVOKED] = list(result_indicies)
+            value_from_txn[REVOKED] = result_indicies
             txn_data[VALUE] = value_from_txn
         # contains already changed txn
         self.set_to_state(txn)
@@ -196,10 +205,17 @@ class IssuedStrategy(RevocationStrategy):
             issued_from_txn = value_from_txn.get(ISSUED, [])
             revoked_from_txn = value_from_txn.get(REVOKED, [])
             # set with all previous issued minus revoked from txn
-            result_indicies = CompatSet(indices).difference(revoked_from_txn)
-            result_indicies.update(issued_from_txn)
+            if self.sort_legacy:
+                result_indicies = CompatSet(indices).difference(revoked_from_txn)
+                result_indicies.update(issued_from_txn)
+                result_indicies = list(result_indicies)
+            else:
+                result_indicies = set(indices).difference(revoked_from_txn)
+                result_indicies.update(issued_from_txn)
+                result_indicies = list(result_indicies)
+                result_indicies.sort()
             value_from_txn[REVOKED] = []
-            value_from_txn[ISSUED] = list(result_indicies)
+            value_from_txn[ISSUED] = result_indicies
             txn_data[VALUE] = value_from_txn
         # contains already changed txn
         self.set_to_state(txn)
