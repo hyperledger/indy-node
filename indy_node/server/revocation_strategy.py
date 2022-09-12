@@ -147,7 +147,8 @@ class RevokedStrategy(RevocationStrategy):
             else:
                 result_indicies = set(indices).difference(issued_from_txn)
                 result_indicies.update(revoked_from_txn)
-                result_indicies = list(result_indicies).sort()
+                result_indicies = list(result_indicies)
+                result_indicies.sort()
             value_from_txn[ISSUED] = []
             value_from_txn[REVOKED] = result_indicies
             txn_data[VALUE] = value_from_txn
@@ -211,7 +212,8 @@ class IssuedStrategy(RevocationStrategy):
             else:
                 result_indicies = set(indices).difference(revoked_from_txn)
                 result_indicies.update(issued_from_txn)
-                result_indicies = list(result_indicies).sort()
+                result_indicies = list(result_indicies)
+                result_indicies.sort()
             value_from_txn[REVOKED] = []
             value_from_txn[ISSUED] = result_indicies
             txn_data[VALUE] = value_from_txn
