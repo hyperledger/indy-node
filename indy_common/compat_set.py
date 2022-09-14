@@ -313,20 +313,28 @@ class _CompatSetInner:
         table = self._table
         i = entry.hash & mask
         perturb = entry.hash
+        found = None
 
         while True:
             if table[i] is None:
-                table[i] = entry
-                return
+                found = i
+                break
 
             if i + LINEAR_PROBES <= mask:
                 for j in range(i + 1, i + LINEAR_PROBES + 1):
                     if table[j] is None:
-                        table[j] = entry
-                        return
+                        found = j
+                        break
+
+            if found is not None:
+                break
 
             perturb >>= PERTURB_SHIFT
             i = (i * 5 + 1 + perturb) & mask
+
+        table[found] = entry
+        self._fill += 1
+        self._used += 1
 
     def intersection(self, other: Iterable) -> "_CompatSetInner":
         """Return a new inner set representing the intersection with another."""
@@ -406,7 +414,6 @@ class _CompatSetInner:
             for entry in other._table:
                 if entry is not None and entry is not REMOVED:
                     self.insert_entry_clean(entry)
-            self._used = other._used
             return
 
         # We can't assure there are no duplicates, so do normal insertions
@@ -444,18 +451,17 @@ class _CompatSetInner:
 
     def resize(self, min_used: int):
         """Adjust the allocated size of the set."""
-        old_fill = self._fill
         old_table = self._table
         assert min_used >= 0
 
         new_size = MIN_SIZE
         while new_size <= min_used:
-            new_size <<= 1
+            new_size *= 2
 
         self._table = [None] * new_size
-        self._fill = old_fill
+        self._fill = 0
         self._mask = new_size - 1
-        self._used = old_fill
+        self._used = 0
 
         for entry in old_table:
             if entry is not None and entry is not REMOVED:
