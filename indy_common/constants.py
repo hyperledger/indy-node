@@ -183,6 +183,8 @@ AUTH_RULE = IndyTransactions.AUTH_RULE.value
 AUTH_RULES = IndyTransactions.AUTH_RULES.value
 GET_AUTH_RULE = IndyTransactions.GET_AUTH_RULE.value
 
+FLAG = IndyTransactions.FLAG.value
+
 # client Rich Schema transaction types
 JSON_LD_CONTEXT = IndyTransactions.JSON_LD_CONTEXT.value
 RICH_SCHEMA = IndyTransactions.RICH_SCHEMA.value
@@ -246,3 +248,8 @@ RS_MAPPING_ISSUANCE_DATE = "issuanceDate"
 RS_MAPPING_SCHEMA = "schema"
 RS_MAPPING_ENC = "enc"
 RS_MAPPING_RANK = "rank"
+
+# Flag content fields:
+FLAG_NAME = "name"
+FLAG_VALUE = "value"
+FLAG_TIME = "timestamp"
