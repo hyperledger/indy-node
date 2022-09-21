@@ -9,7 +9,6 @@ from indy_common.constants import (
     FLAG,
     FLAG_NAME,
     FLAG_VALUE,
-    FLAG_TIME,
     TXN_TYPE,
     NYM,
     ENDORSER,
@@ -210,3 +209,48 @@ def test_config_flag_update_state_correct_value(
     assert(state_value == val)
     state_time = FlagHandler.get_state_timestamp(state)
     assert(state_time == txn_time)
+
+
+def test_config_flag_get_state_empty_key(
+    flag_handler: FlagHandler,
+    flag_request: Request,
+):
+    add_to_idr(
+        flag_handler.database_manager.idr_cache,
+        flag_request.identifier,
+        TRUSTEE,
+    )
+
+    seq_no = 2
+    txn_time = 1560241033
+    txn = reqToTxn(flag_request)
+    append_txn_metadata(txn, seq_no, txn_time)
+    flag_handler.update_state(txn, None, flag_request)
+
+    (value, timestamp) = flag_handler.get_state("")
+    assert(value is None)
+    assert(timestamp is None)
+
+
+def test_config_flag_get_state_valid(
+    flag_handler: FlagHandler,
+    flag_request: Request,
+):
+    add_to_idr(
+        flag_handler.database_manager.idr_cache,
+        flag_request.identifier,
+        TRUSTEE,
+    )
+
+    val = "Test12345"
+    flag_request.operation[FLAG_VALUE] = val
+    key = flag_request.operation.get(FLAG_NAME)
+    seq_no = 2
+    txn_time = 1560241033
+    txn = reqToTxn(flag_request)
+    append_txn_metadata(txn, seq_no, txn_time)
+    flag_handler.update_state(txn, None, flag_request)
+
+    (value, timestamp) = flag_handler.get_state(key)
+    assert(value == val)
+    assert(timestamp == txn_time)

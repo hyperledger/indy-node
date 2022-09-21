@@ -69,8 +69,12 @@ class FlagHandler(WriteRequestHandler):
 
     def get_state(self, key):
         if key is None or key == "":
-            return None
-        
+            return None, None
+        path = FlagHandler.make_state_path_for_flag(key)
+        state = self.get_from_state(path)
+        value = FlagHandler.get_state_value(state)
+        timestamp = FlagHandler.get_state_timestamp(state)
+        return (value, timestamp)
 
     @staticmethod
     def make_state_path_for_flag(key) -> bytes:
