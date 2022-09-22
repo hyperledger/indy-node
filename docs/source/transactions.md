@@ -1617,7 +1617,7 @@ The `constraint_id` fields is where one can define the desired auth constraint f
     
         Constraint Type. As of now, the following constraint types are supported:
             
-            - "ROLE": a constraint defining how many siganatures of a given role are required
+            - "ROLE": a constraint defining how many signatures of a given role are required
             - "OR": logical disjunction for all constraints from `auth_constraints` 
             - "AND": logical conjunction for all constraints from `auth_constraints`
             
