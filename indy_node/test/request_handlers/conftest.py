@@ -1,9 +1,10 @@
 import random
 
 import pytest
-from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG
+from indy_common.constants import FLAG, FLAG_NAME, FLAG_VALUE, FLAG_NAME_COMPAT_ORDERING, REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG
 
 from indy_node.persistence.idr_cache import IdrCache
+from indy_node.server.request_handlers.config_req_handlers.flag_handler import FlagHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation
@@ -166,3 +167,19 @@ def taa_request(creator):
                               TXN_AUTHOR_AGREEMENT_TEXT: "text",
                               TXN_AUTHOR_AGREEMENT_VERSION: "version",
                               TXN_AUTHOR_AGREEMENT_RATIFICATION_TS: 0})
+
+
+@pytest.fixture(scope="module")
+def flag_handler(db_manager, write_auth_req_validator):
+    return FlagHandler(db_manager, write_auth_req_validator)
+
+
+@pytest.fixture(scope="function")
+def flag_request():
+    identifier = randomString()
+    return Request(
+        identifier=identifier,
+        reqId=5,
+        operation={TXN_TYPE: FLAG, FLAG_NAME: FLAG_NAME_COMPAT_ORDERING, FLAG_VALUE: "True"},
+        signature="randomString",
+    )

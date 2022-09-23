@@ -35,9 +35,18 @@ class FlagHandler(WriteRequestHandler):
     def static_validation(self, request: Request):
         self._validate_request_type(request)
         name = request.operation.get(FLAG_NAME)
+        value = request.operation.get(FLAG_VALUE)
         if not name or name == "":
             raise InvalidClientRequest(
                 request.identifier, request.reqId, "Flag name is required"
+            )
+        if not isinstance(name, str):
+            raise InvalidClientRequest(
+                request.identifier, request.reqId, "Flag name must be of type string"
+            )
+        if not (isinstance(value, str) or (value is None)):
+            raise InvalidClientRequest(
+                request.identifier, request.reqId, "Flag value must be of type string or None"
             )
 
     def additional_dynamic_validation(
@@ -51,29 +60,41 @@ class FlagHandler(WriteRequestHandler):
         key = get_payload_data(txn).get(FLAG_NAME)
         value = get_payload_data(txn).get(FLAG_VALUE)
         time = get_txn_time(txn)
-        val = {FLAG_TIME: time, FLAG_VALUE: value}
-        val = self.state_serializer.serialize(val)
-        self.state.set(self.make_state_path_for_flag(key), val)
-
-    def _decode_state_value(self, encoded):
-        if encoded:
-            return self.state_serializer.deserialize(encoded)
-        return None
+        state_val = {FLAG_TIME: time, FLAG_VALUE: value}
+        state_val = self.state_serializer.serialize(state_val)
+        path = self.make_state_path_for_flag(key)
+        self.state.set(path, state_val)
 
     def authorize(self, request):
         domain_state = self.database_manager.get_database(DOMAIN_LEDGER_ID).state
+        # TODO: Clarify if is_committed=False ok here?
         if not is_trustee(domain_state, request.identifier, is_committed=False):
             raise UnauthorizedClientRequest(
                 request.identifier, request.reqId, "Only trustee can set config flags"
             )
 
-    def get_state(self, key):
+    def get_state(self, key, is_committed=False):
+        return FlagHandler.get_flag_from_state(self.state, key, is_committed)
+
+    @staticmethod
+    def _decode_state_value(encoded):
+        if encoded:
+            return config_state_serializer.deserialize(encoded)
+        return None
+
+    @staticmethod
+    def get_flag_from_state(state, key, is_committed=False):
         if key is None or key == "":
-            return None, None
+            return (None, None)
         path = FlagHandler.make_state_path_for_flag(key)
-        state = self.get_from_state(path)
-        value = FlagHandler.get_state_value(state)
-        timestamp = FlagHandler.get_state_timestamp(state)
+        state_raw = state.get(key=path, isCommitted=is_committed)
+        if state_raw is None:
+            return (None, None)
+        state_decoded = FlagHandler._decode_state_value(state_raw)
+        if state_decoded is None:
+            return (None, None)
+        value = FlagHandler.get_state_value(state_decoded)
+        timestamp = FlagHandler.get_state_timestamp(state_decoded)
         return (value, timestamp)
 
     @staticmethod

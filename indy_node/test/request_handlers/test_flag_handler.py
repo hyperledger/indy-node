@@ -4,6 +4,7 @@ from common.exceptions import LogicError
 from indy_node.server.request_handlers.config_req_handlers.flag_handler import (
     FlagHandler,
 )
+from indy_node.test.request_handlers.conftest import flag_request, flag_handler
 from indy_node.test.request_handlers.helper import add_to_idr
 from indy_common.constants import (
     FLAG,
@@ -18,22 +19,6 @@ from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientReq
 from plenum.common.request import Request
 from plenum.common.txn_util import reqToTxn, append_txn_metadata, get_payload_data
 from plenum.common.util import randomString
-
-
-@pytest.fixture(scope="module")
-def flag_handler(db_manager, write_auth_req_validator):
-    return FlagHandler(db_manager, write_auth_req_validator)
-
-
-@pytest.fixture(scope="function")
-def flag_request():
-    identifier = randomString()
-    return Request(
-        identifier=identifier,
-        reqId=5,
-        operation={TXN_TYPE: FLAG, FLAG_NAME: "REV_REG_ENTRY_SORT", FLAG_VALUE: "True"},
-        signature="randomString",
-    )
 
 
 def test_config_flag_static_validation_wrong_type(
@@ -69,6 +54,34 @@ def test_config_flag_static_validation_empty_key(
         TRUSTEE,
     )
     with pytest.raises(InvalidClientRequest, match="Flag name is required"):
+        flag_handler.static_validation(flag_request)
+
+
+def test_config_flag_static_validation_wrong_name_type(
+    flag_handler: FlagHandler,
+    flag_request: Request,
+):
+    flag_request.operation[FLAG_NAME] = 123
+    add_to_idr(
+        flag_handler.database_manager.idr_cache,
+        flag_request.identifier,
+        TRUSTEE,
+    )
+    with pytest.raises(InvalidClientRequest, match="Flag name must be of type string"):
+        flag_handler.static_validation(flag_request)
+
+
+def test_config_flag_static_validation_wrong_value_type(
+    flag_handler: FlagHandler,
+    flag_request: Request,
+):
+    flag_request.operation[FLAG_VALUE] = True
+    add_to_idr(
+        flag_handler.database_manager.idr_cache,
+        flag_request.identifier,
+        TRUSTEE,
+    )
+    with pytest.raises(InvalidClientRequest, match="Flag value must be of type string or None"):
         flag_handler.static_validation(flag_request)
 
 

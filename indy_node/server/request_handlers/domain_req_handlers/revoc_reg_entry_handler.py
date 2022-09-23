@@ -3,14 +3,15 @@ from typing import Callable, Optional
 
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, VALUE, ISSUANCE_TYPE
+from indy_common.config_util import getConfig
+from indy_common.constants import CONFIG_LEDGER_ID, FLAG_NAME_COMPAT_ORDERING, REVOC_REG_ENTRY, REVOC_REG_DEF_ID, VALUE, ISSUANCE_TYPE
 from indy_common.state.state_constants import MARKER_REVOC_REG_ENTRY, MARKER_REVOC_REG_ENTRY_ACCUM
+from indy_node.server.request_handlers.config_req_handlers.flag_handler import FlagHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID, TXN_TIME
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import get_from, get_payload_data, get_req_id, get_request_data, get_txn_time, get_seq_no
 from plenum.common.types import f
-
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 from plenum.server.request_handlers.utils import encode_state_value
@@ -24,6 +25,24 @@ class RevocRegEntryHandler(WriteRequestHandler):
         super().__init__(database_manager, REVOC_REG_ENTRY, DOMAIN_LEDGER_ID)
         self.get_revocation_strategy = get_revocation_strategy
         self.write_req_validator = write_req_validator
+        self.legacy_sort_config = getConfig().REV_STRATEGY_USE_COMPAT_ORDERING or False
+        self.config_state = self.database_manager.get_database(CONFIG_LEDGER_ID).state
+
+    def use_legacy_sort(self, txn) -> bool:
+        # TODO: Clarify if is_committed=False ok here?
+        (ledger_value, ledger_timestamp) = FlagHandler.get_flag_from_state(self.config_state, FLAG_NAME_COMPAT_ORDERING, is_committed=False)
+        if ledger_value:
+            if ledger_value and isinstance(ledger_value, str):
+                # only allow False as value, ignore otherwise
+                if ledger_value.lower() == 'false':
+                    # Check if this transaction is after the time of config transaction (relevant for catchup)
+                    txn_time = get_txn_time(txn)
+                    if ledger_timestamp < txn_time:
+                        return False
+                    # If we are before the timestamp, then switch to the behavior from the local node config
+                    
+
+        return self.legacy_sort_config
 
     def static_validation(self, request: Request):
         pass
@@ -71,7 +90,9 @@ class RevocRegEntryHandler(WriteRequestHandler):
         )
         writer_cls = self.get_revocation_strategy(
             revoc_def[VALUE][ISSUANCE_TYPE])
-        writer = writer_cls(self.state)
+
+        sort_legacy = self.use_legacy_sort(txn)
+        writer = writer_cls(self.state, sort_legacy)
         writer.write(current_entry, txn)
         return txn
 

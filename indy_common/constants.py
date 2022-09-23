@@ -253,3 +253,5 @@ RS_MAPPING_RANK = "rank"
 FLAG_NAME = "name"
 FLAG_VALUE = "value"
 FLAG_TIME = "timestamp"
+# Known flag names
+FLAG_NAME_COMPAT_ORDERING = "REV_STRATEGY_USE_COMPAT_ORDERING"
