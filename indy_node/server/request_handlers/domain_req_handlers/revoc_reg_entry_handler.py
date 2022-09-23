@@ -40,8 +40,6 @@ class RevocRegEntryHandler(WriteRequestHandler):
                     if ledger_timestamp < txn_time:
                         return False
                     # If we are before the timestamp, then switch to the behavior from the local node config
-                    
-
         return self.legacy_sort_config
 
     def static_validation(self, request: Request):

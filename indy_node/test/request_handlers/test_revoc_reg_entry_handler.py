@@ -18,19 +18,11 @@ from indy_common.constants import (
     TAG,
 )
 from indy_common.config_util import getConfig
-from indy_node.server.request_handlers.config_req_handlers.flag_handler import (
-    FlagHandler,
-)
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import (
     RevocRegDefHandler,
 )
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handler import (
     RevocRegEntryHandler,
-)
-from indy_node.test.request_handlers.conftest import (
-    revoc_reg_def_request,
-    flag_handler,
-    flag_request,
 )
 from indy_node.test.request_handlers.helper import add_to_idr
 from plenum.common.constants import TXN_TIME, TRUSTEE

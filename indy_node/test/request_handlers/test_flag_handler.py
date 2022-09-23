@@ -4,7 +4,6 @@ from common.exceptions import LogicError
 from indy_node.server.request_handlers.config_req_handlers.flag_handler import (
     FlagHandler,
 )
-from indy_node.test.request_handlers.conftest import flag_request, flag_handler
 from indy_node.test.request_handlers.helper import add_to_idr
 from indy_common.constants import (
     FLAG,
@@ -17,8 +16,7 @@ from indy_common.constants import (
 from plenum.common.constants import TRUSTEE, STEWARD
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
-from plenum.common.txn_util import reqToTxn, append_txn_metadata, get_payload_data
-from plenum.common.util import randomString
+from plenum.common.txn_util import reqToTxn, append_txn_metadata
 
 
 def test_config_flag_static_validation_wrong_type(

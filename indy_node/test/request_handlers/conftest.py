@@ -48,9 +48,6 @@ def schema_request():
                               }})
 
 
-
-
-
 @pytest.fixture(scope="function")
 def rs_schema_request():
     authors_did, name, version, _type = "2hoqvcwupRTUNkXn6ArYzs", randomString(), "1.1", "8"
@@ -121,9 +118,6 @@ def rs_schema_broken_request():
                                    'name': 'ISO18023_Drivers_License'}
                               }
                    )
-
-
-
 
 
 @pytest.fixture(scope="module")
