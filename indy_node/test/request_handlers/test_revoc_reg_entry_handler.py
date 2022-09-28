@@ -16,6 +16,7 @@ from indy_common.constants import (
     CRED_DEF_ID,
     REVOC_TYPE,
     TAG,
+    CONFIG_LEDGER_ID
 )
 from indy_common.config_util import getConfig
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import (
@@ -33,12 +34,14 @@ from plenum.common.txn_util import reqToTxn, append_txn_metadata, get_payload_da
 from plenum.common.types import f
 from plenum.common.util import randomString
 from plenum.server.request_handlers.utils import encode_state_value
+from plenum.server.node import Node
 
-
-@pytest.fixture(scope="module")
-def revoc_reg_entry_handler(db_manager, write_auth_req_validator):
+@pytest.fixture(scope="function")
+def revoc_reg_entry_handler(db_manager_ts, write_auth_req_validator, get_flag_request_handler):
+    node = Node.__new__(Node)
+    node.get_flag_handler = get_flag_request_handler
     return RevocRegEntryHandler(
-        db_manager, write_auth_req_validator, RevocRegDefHandler.get_revocation_strategy
+        db_manager_ts, write_auth_req_validator, RevocRegDefHandler.get_revocation_strategy, node
     )
 
 
@@ -181,10 +184,6 @@ def test_update_state(
 def test_legacy_switch_by_default_new(
     revoc_reg_entry_handler, revoc_reg_entry_request, revoc_reg_def_handler
 ):
-    # Default case -> False
-    config = getConfig()
-    assert config.REV_STRATEGY_USE_COMPAT_ORDERING is False
-
     state = _test_ordering(
         revoc_reg_entry_handler, revoc_reg_entry_request, revoc_reg_def_handler
     )
@@ -192,15 +191,11 @@ def test_legacy_switch_by_default_new(
 
 
 def test_legacy_switch_old(
-    write_auth_req_validator, db_manager, revoc_reg_entry_request, revoc_reg_def_handler
+    revoc_reg_entry_request,
+    revoc_reg_def_handler,
+    revoc_reg_entry_handler
 ):
-    # Set to true -> enables Usage of CompatSet
-    config = getConfig()
-    config.REV_STRATEGY_USE_COMPAT_ORDERING = True
-
-    revoc_reg_entry_handler = RevocRegEntryHandler(
-        db_manager, write_auth_req_validator, RevocRegDefHandler.get_revocation_strategy
-    )
+    revoc_reg_entry_handler.legacy_sort_config = True
 
     state = _test_ordering(
         revoc_reg_entry_handler, revoc_reg_entry_request, revoc_reg_def_handler
@@ -227,7 +222,6 @@ def _test_ordering(
 
     revoc_reg_def_request.operation[VALUE] = {}
     revoc_reg_def_request.operation[VALUE][ISSUANCE_TYPE] = ISSUANCE_BY_DEFAULT
-    # New random string to create new registry
     txn = reqToTxn(revoc_reg_def_request)
     append_txn_metadata(txn, seq_no, txn_time)
     path = RevocRegDefHandler.prepare_revoc_def_for_state(txn, path_only=True)
@@ -259,20 +253,15 @@ def _test_ordering(
 
 
 def test_ordering_switch_via_transaction(
-    write_auth_req_validator,
-    db_manager,
     flag_handler,
     flag_request,
+    get_flag_request_handler,
     revoc_reg_def_handler,
+    revoc_reg_entry_handler,
     revoc_reg_entry_request
 ):
     # enable legacy sorting
-    config = getConfig()
-    config.REV_STRATEGY_USE_COMPAT_ORDERING = True
-
-    revoc_reg_entry_handler = RevocRegEntryHandler(
-        db_manager, write_auth_req_validator, RevocRegDefHandler.get_revocation_strategy
-    )
+    revoc_reg_entry_handler.legacy_sort_config = True
 
     # First run to make sure legacy sorting works
     state = _test_ordering(
@@ -293,7 +282,9 @@ def test_ordering_switch_via_transaction(
     flag_request.operation[FLAG_VALUE] = "False"
     txn = reqToTxn(flag_request)
     append_txn_metadata(txn, seq_no, txn_time)
-    flag_handler.update_state(txn, None, flag_request, is_committed=True)
+    flag_handler.update_state(txn, None, flag_request)
+    flag_handler.state.commit()
+    get_flag_request_handler.timestamp_store.set(txn_time, flag_handler.state.headHash, ledger_id=CONFIG_LEDGER_ID)
 
     # Second run to test the switch to proper sorting via config transaction
     state = _test_ordering(
@@ -303,17 +294,16 @@ def test_ordering_switch_via_transaction(
 
 
 def test_ordering_switch_via_transaction_catchup(
-    write_auth_req_validator,
-    db_manager,
     flag_handler,
+    get_flag_request_handler,
     flag_request,
     revoc_reg_def_handler,
+    revoc_reg_entry_handler,
     revoc_reg_entry_request
 ):
 
     # enable legacy sorting locally
-    config = getConfig()
-    config.REV_STRATEGY_USE_COMPAT_ORDERING = True
+    revoc_reg_entry_handler.legacy_sort_config = True
 
     # config flag transaction
     add_to_idr(
@@ -328,11 +318,9 @@ def test_ordering_switch_via_transaction_catchup(
     flag_request.operation[FLAG_VALUE] = "False"
     txn = reqToTxn(flag_request)
     append_txn_metadata(txn, seq_no, txn_time)
-    flag_handler.update_state(txn, None, flag_request, is_committed=True)
-
-    revoc_reg_entry_handler = RevocRegEntryHandler(
-        db_manager, write_auth_req_validator, RevocRegDefHandler.get_revocation_strategy
-    )
+    flag_handler.update_state(txn, None, flag_request)
+    flag_handler.state.commit()
+    get_flag_request_handler.timestamp_store.set(txn_time, flag_handler.state.headHash, ledger_id=CONFIG_LEDGER_ID)
 
     # First run to make sure legacy sorting works
     state = _test_ordering(
@@ -348,17 +336,16 @@ def test_ordering_switch_via_transaction_catchup(
 
 
 def test_ordering_switch_via_transaction_catchup_locally(
-    write_auth_req_validator,
-    db_manager,
     flag_handler,
     flag_request,
+    get_flag_request_handler,
     revoc_reg_def_handler,
+    revoc_reg_entry_handler,
     revoc_reg_entry_request
 ):
 
     # disable legacy sorting locally
-    config = getConfig()
-    config.REV_STRATEGY_USE_COMPAT_ORDERING = False
+    revoc_reg_entry_handler.legacy_sort_config = False
 
     # config flag transaction
     add_to_idr(
@@ -373,11 +360,10 @@ def test_ordering_switch_via_transaction_catchup_locally(
     flag_request.operation[FLAG_VALUE] = "False"
     txn = reqToTxn(flag_request)
     append_txn_metadata(txn, seq_no, txn_time)
-    flag_handler.update_state(txn, None, flag_request, is_committed=True)
+    flag_handler.update_state(txn, None, flag_request)
+    flag_handler.state.commit()
+    get_flag_request_handler.timestamp_store.set(txn_time, flag_handler.state.headHash, ledger_id=CONFIG_LEDGER_ID)
 
-    revoc_reg_entry_handler = RevocRegEntryHandler(
-        db_manager, write_auth_req_validator, RevocRegDefHandler.get_revocation_strategy
-    )
 
     # First run to make sure we use new sorting before the transaction time because of local sort setting
     state = _test_ordering(

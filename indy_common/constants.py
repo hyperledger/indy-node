@@ -184,6 +184,7 @@ AUTH_RULES = IndyTransactions.AUTH_RULES.value
 GET_AUTH_RULE = IndyTransactions.GET_AUTH_RULE.value
 
 FLAG = IndyTransactions.FLAG.value
+GET_FLAG = IndyTransactions.GET_FLAG.value
 
 # client Rich Schema transaction types
 JSON_LD_CONTEXT = IndyTransactions.JSON_LD_CONTEXT.value
@@ -252,6 +253,5 @@ RS_MAPPING_RANK = "rank"
 # Flag content fields:
 FLAG_NAME = "name"
 FLAG_VALUE = "value"
-FLAG_TIME = "timestamp"
 # Known flag names
 FLAG_NAME_COMPAT_ORDERING = "REV_STRATEGY_USE_COMPAT_ORDERING"

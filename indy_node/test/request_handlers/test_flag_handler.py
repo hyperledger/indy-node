@@ -2,13 +2,15 @@ import pytest
 
 from common.exceptions import LogicError
 from indy_node.server.request_handlers.config_req_handlers.flag_handler import (
-    FlagHandler,
+    FlagRequestHandler,
 )
+from indy_node.server.request_handlers.read_req_handlers.get_flag_handler import GetFlagRequestHandler
 from indy_node.test.request_handlers.helper import add_to_idr
 from indy_common.constants import (
-    FLAG,
+    CONFIG_LEDGER_ID,
     FLAG_NAME,
     FLAG_VALUE,
+    GET_FLAG,
     TXN_TYPE,
     NYM,
     ENDORSER,
@@ -19,8 +21,15 @@ from plenum.common.request import Request
 from plenum.common.txn_util import reqToTxn, append_txn_metadata
 
 
+@pytest.fixture(scope="function")
+def get_flag_request(creator):
+    return Request(identifier=creator,
+                   reqId=5,
+                   operation={TXN_TYPE: GET_FLAG})
+
+
 def test_config_flag_static_validation_wrong_type(
-    flag_handler: FlagHandler, flag_request: Request
+    flag_handler: FlagRequestHandler, flag_request: Request
 ):
     with pytest.raises(LogicError):
         flag_request.operation[TXN_TYPE] = NYM
@@ -28,8 +37,8 @@ def test_config_flag_static_validation_wrong_type(
 
 
 def test_config_flag_static_validation_no_key(
-    flag_handler: FlagHandler,
-    flag_request: Request,
+    flag_handler: FlagRequestHandler,
+    flag_request: Request
 ):
     flag_request.operation[FLAG_NAME] = None
     add_to_idr(
@@ -42,8 +51,8 @@ def test_config_flag_static_validation_no_key(
 
 
 def test_config_flag_static_validation_empty_key(
-    flag_handler: FlagHandler,
-    flag_request: Request,
+    flag_handler: FlagRequestHandler,
+    flag_request: Request
 ):
     flag_request.operation[FLAG_NAME] = ""
     add_to_idr(
@@ -56,8 +65,8 @@ def test_config_flag_static_validation_empty_key(
 
 
 def test_config_flag_static_validation_wrong_name_type(
-    flag_handler: FlagHandler,
-    flag_request: Request,
+    flag_handler: FlagRequestHandler,
+    flag_request: Request
 ):
     flag_request.operation[FLAG_NAME] = 123
     add_to_idr(
@@ -70,8 +79,8 @@ def test_config_flag_static_validation_wrong_name_type(
 
 
 def test_config_flag_static_validation_wrong_value_type(
-    flag_handler: FlagHandler,
-    flag_request: Request,
+    flag_handler: FlagRequestHandler,
+    flag_request: Request
 ):
     flag_request.operation[FLAG_VALUE] = True
     add_to_idr(
@@ -84,14 +93,14 @@ def test_config_flag_static_validation_wrong_value_type(
 
 
 def test_config_flag_static_validation_pass(
-    flag_handler: FlagHandler, flag_request: Request
+    flag_handler: FlagRequestHandler, flag_request: Request
 ):
     flag_handler.static_validation(flag_request)
 
 
 def test_config_flag_dynamic_validation_authorize_not_trustee(
-    flag_handler: FlagHandler,
-    flag_request: Request,
+    flag_handler: FlagRequestHandler,
+    flag_request: Request
 ):
     add_to_idr(
         flag_handler.database_manager.idr_cache, flag_request.identifier, ENDORSER
@@ -111,8 +120,8 @@ def test_config_flag_dynamic_validation_authorize_not_trustee(
 
 
 def test_config_flag_dynamic_validation_authorize_no_nym(
-    flag_handler: FlagHandler,
-    flag_request: Request,
+    flag_handler: FlagRequestHandler,
+    flag_request: Request
 ):
     with pytest.raises(
         UnauthorizedClientRequest, match=".* is not found in the Ledger"
@@ -121,8 +130,8 @@ def test_config_flag_dynamic_validation_authorize_no_nym(
 
 
 def test_config_flag_dynamic_validation_authorize_no_permission(
-    flag_handler: FlagHandler,
-    flag_request: Request,
+    flag_handler: FlagRequestHandler,
+    flag_request: Request
 ):
     add_to_idr(flag_handler.database_manager.idr_cache, flag_request.identifier, None)
     with pytest.raises(
@@ -132,8 +141,8 @@ def test_config_flag_dynamic_validation_authorize_no_permission(
 
 
 def test_config_flag_dynamic_validation_authorize_passes(
-    flag_handler: FlagHandler,
-    flag_request: Request,
+    flag_handler: FlagRequestHandler,
+    flag_request: Request
 ):
     add_to_idr(
         flag_handler.database_manager.idr_cache,
@@ -144,8 +153,9 @@ def test_config_flag_dynamic_validation_authorize_passes(
 
 
 def test_config_flag_update_state_no_value(
-    flag_handler: FlagHandler,
+    flag_handler: FlagRequestHandler,
     flag_request: Request,
+    get_flag_request_handler: GetFlagRequestHandler
 ):
     add_to_idr(
         flag_handler.database_manager.idr_cache,
@@ -160,18 +170,19 @@ def test_config_flag_update_state_no_value(
     txn = reqToTxn(flag_request)
     append_txn_metadata(txn, seq_no, txn_time)
     flag_handler.update_state(txn, None, flag_request)
-    path = FlagHandler.make_state_path_for_flag(key)
-    state = flag_handler.get_from_state(path)
+    flag_handler.state.commit()
+
+    # lookup
+    state = get_flag_request_handler.lookup_key(key)
     assert(state)
-    state_value = FlagHandler.get_state_value(state)
+    state_value = FlagRequestHandler.get_state_value(state)
     assert(state_value is None)
-    state_time = FlagHandler.get_state_timestamp(state)
-    assert(state_time == txn_time)
 
 
 def test_config_flag_update_state_empty_value(
-    flag_handler: FlagHandler,
+    flag_handler: FlagRequestHandler,
     flag_request: Request,
+    get_flag_request_handler: GetFlagRequestHandler
 ):
     add_to_idr(
         flag_handler.database_manager.idr_cache,
@@ -186,18 +197,18 @@ def test_config_flag_update_state_empty_value(
     txn = reqToTxn(flag_request)
     append_txn_metadata(txn, seq_no, txn_time)
     flag_handler.update_state(txn, None, flag_request)
-    path = FlagHandler.make_state_path_for_flag(key)
-    state = flag_handler.get_from_state(path)
+    flag_handler.state.commit()
+
+    state = get_flag_request_handler.lookup_key(key)
     assert(state)
-    state_value = FlagHandler.get_state_value(state)
+    state_value = FlagRequestHandler.get_state_value(state)
     assert(state_value == "")
-    state_time = FlagHandler.get_state_timestamp(state)
-    assert(state_time == txn_time)
 
 
 def test_config_flag_update_state_correct_value(
-    flag_handler: FlagHandler,
+    flag_handler: FlagRequestHandler,
     flag_request: Request,
+    get_flag_request_handler: GetFlagRequestHandler
 ):
     add_to_idr(
         flag_handler.database_manager.idr_cache,
@@ -213,18 +224,17 @@ def test_config_flag_update_state_correct_value(
     txn = reqToTxn(flag_request)
     append_txn_metadata(txn, seq_no, txn_time)
     flag_handler.update_state(txn, None, flag_request)
-    path = FlagHandler.make_state_path_for_flag(key)
-    state = flag_handler.get_from_state(path)
+    flag_handler.state.commit()
+    state = get_flag_request_handler.lookup_key(key)
     assert(state)
-    state_value = FlagHandler.get_state_value(state)
+    state_value = FlagRequestHandler.get_state_value(state)
     assert(state_value == val)
-    state_time = FlagHandler.get_state_timestamp(state)
-    assert(state_time == txn_time)
 
 
 def test_config_flag_update_state_edit(
-    flag_handler: FlagHandler,
+    flag_handler: FlagRequestHandler,
     flag_request: Request,
+    get_flag_request_handler: GetFlagRequestHandler
 ):
     add_to_idr(
         flag_handler.database_manager.idr_cache,
@@ -240,11 +250,8 @@ def test_config_flag_update_state_edit(
     txn = reqToTxn(flag_request)
     append_txn_metadata(txn, seq_no, txn_time_old)
     flag_handler.update_state(txn, None, flag_request)
-    old_head_hash = flag_handler.state.headHash
-    assert(old_head_hash)
-    (value, timestamp) = flag_handler.get_state(key)
-    assert(value == val_old)
-    assert(timestamp == txn_time_old)
+    flag_handler.state.commit()
+    get_flag_request_handler.timestamp_store.set(txn_time_old, flag_handler.state.headHash, ledger_id=CONFIG_LEDGER_ID)
 
     val_new = "new_value"
     flag_request.operation[FLAG_VALUE] = val_new
@@ -254,24 +261,30 @@ def test_config_flag_update_state_edit(
     txn = reqToTxn(flag_request)
     append_txn_metadata(txn, seq_no, txn_time)
     flag_handler.update_state(txn, None, flag_request)
+    flag_handler.state.commit()
+    get_flag_request_handler.timestamp_store.set(txn_time, flag_handler.state.headHash, ledger_id=CONFIG_LEDGER_ID)
 
-    (value, timestamp) = flag_handler.get_state(key)
-    assert(value == val_new)
-    assert(timestamp == txn_time)
+    # check current state
+    state = get_flag_request_handler.lookup_key(key)
+    assert(state)
+    state_value = FlagRequestHandler.get_state_value(state)
+    assert(state_value == val_new)
 
     # check old state
-    path = FlagHandler.make_state_path_for_flag(key)
-    state_encoded = flag_handler.state.get_for_root_hash(old_head_hash, path)
-    state_raw = flag_handler._decode_state_value(state_encoded)
-    value = FlagHandler.get_state_value(state_raw)
-    timestamp = FlagHandler.get_state_timestamp(state_raw)
-    assert(value == val_old)
-    assert(timestamp == txn_time_old)
+    state = get_flag_request_handler.lookup_key(key, timestamp=txn_time_old)
+    assert(state)
+    state_value = FlagRequestHandler.get_state_value(state)
+    assert(state_value == val_old)
+
+    # check for None state before
+    state = get_flag_request_handler.lookup_key(key, timestamp=(txn_time_old - 1))
+    assert(state is None)
 
 
 def test_config_flag_get_state_empty_key(
-    flag_handler: FlagHandler,
+    flag_handler: FlagRequestHandler,
     flag_request: Request,
+    get_flag_request_handler: GetFlagRequestHandler
 ):
     add_to_idr(
         flag_handler.database_manager.idr_cache,
@@ -284,15 +297,17 @@ def test_config_flag_get_state_empty_key(
     txn = reqToTxn(flag_request)
     append_txn_metadata(txn, seq_no, txn_time)
     flag_handler.update_state(txn, None, flag_request)
+    flag_handler.state.commit()
 
-    (value, timestamp) = flag_handler.get_state("")
+    value = get_flag_request_handler.lookup_key("")
     assert(value is None)
-    assert(timestamp is None)
 
 
-def test_config_flag_get_state_valid(
-    flag_handler: FlagHandler,
+def test_config_flag_get_result_valid(
+    flag_handler: FlagRequestHandler,
     flag_request: Request,
+    get_flag_request_handler: GetFlagRequestHandler,
+    get_flag_request: Request,
 ):
     add_to_idr(
         flag_handler.database_manager.idr_cache,
@@ -308,7 +323,13 @@ def test_config_flag_get_state_valid(
     txn = reqToTxn(flag_request)
     append_txn_metadata(txn, seq_no, txn_time)
     flag_handler.update_state(txn, None, flag_request)
+    flag_handler.state.commit()
+    get_flag_request_handler.timestamp_store.set(txn_time, flag_handler.state.headHash, ledger_id=CONFIG_LEDGER_ID)
 
-    (value, timestamp) = flag_handler.get_state(key)
-    assert(value == val)
-    assert(timestamp == txn_time)
+    get_flag_request.operation[FLAG_NAME] = key
+
+    (req_val, req_proof) = get_flag_request_handler.get_result(get_flag_request)
+    assert(req_val)
+    state_value = FlagRequestHandler.get_state_value(req_val)
+    assert(state_value == val)
+    assert(req_proof is None)

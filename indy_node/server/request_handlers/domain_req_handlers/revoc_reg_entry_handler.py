@@ -6,7 +6,6 @@ from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.config_util import getConfig
 from indy_common.constants import CONFIG_LEDGER_ID, FLAG_NAME_COMPAT_ORDERING, REVOC_REG_ENTRY, REVOC_REG_DEF_ID, VALUE, ISSUANCE_TYPE
 from indy_common.state.state_constants import MARKER_REVOC_REG_ENTRY, MARKER_REVOC_REG_ENTRY_ACCUM
-from indy_node.server.request_handlers.config_req_handlers.flag_handler import FlagHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID, TXN_TIME
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
@@ -15,31 +14,34 @@ from plenum.common.types import f
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 from plenum.server.request_handlers.utils import encode_state_value
+from plenum.server.node import Node
+
+from indy_node.server.request_handlers.config_req_handlers.flag_handler import FlagRequestHandler
 
 
 class RevocRegEntryHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator,
-                 get_revocation_strategy: Callable):
+                 get_revocation_strategy: Callable,
+                 node: Node):
         super().__init__(database_manager, REVOC_REG_ENTRY, DOMAIN_LEDGER_ID)
         self.get_revocation_strategy = get_revocation_strategy
         self.write_req_validator = write_req_validator
         self.legacy_sort_config = getConfig().REV_STRATEGY_USE_COMPAT_ORDERING or False
         self.config_state = self.database_manager.get_database(CONFIG_LEDGER_ID).state
+        self.node = node
 
     def use_legacy_sort(self, txn) -> bool:
-        # TODO: Clarify if is_committed=False ok here?
-        (ledger_value, ledger_timestamp) = FlagHandler.get_flag_from_state(self.config_state, FLAG_NAME_COMPAT_ORDERING, is_committed=False)
-        if ledger_value:
-            if ledger_value and isinstance(ledger_value, str):
-                # only allow False as value, ignore otherwise
-                if ledger_value.lower() == 'false':
-                    # Check if this transaction is after the time of config transaction (relevant for catchup)
-                    txn_time = get_txn_time(txn)
-                    if ledger_timestamp < txn_time:
-                        return False
-                    # If we are before the timestamp, then switch to the behavior from the local node config
+        txn_time = get_txn_time(txn)
+        get_flag_handler = self.node.get_flag_handler
+        state_raw = get_flag_handler.lookup_key(FLAG_NAME_COMPAT_ORDERING, timestamp=txn_time)
+        sort_state = FlagRequestHandler.get_state_value(state_raw)
+        if sort_state and isinstance(sort_state, str):
+            # only allow False as value, ignore otherwise
+            if sort_state.lower() == 'false':
+                return False
+        # default to default behavior
         return self.legacy_sort_config
 
     def static_validation(self, request: Request):

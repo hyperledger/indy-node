@@ -39,6 +39,7 @@ class IndyTransactions(Transactions):
     AUTH_RULES = "122"
 
     FLAG = "130"
+    GET_FLAG = "131"
 
     # Rich Schema
     JSON_LD_CONTEXT = "200"

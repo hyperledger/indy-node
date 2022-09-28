@@ -9,20 +9,20 @@ from indy_common.constants import (
     DOMAIN_LEDGER_ID,
     FLAG_NAME,
     FLAG_VALUE,
-    FLAG_TIME,
 )
-from indy_common.state.state_constants import MARKER_FLAG
 from plenum.common.exceptions import UnauthorizedClientRequest, InvalidClientRequest
 from plenum.common.request import Request
-from plenum.common.txn_util import get_payload_data, get_txn_time, get_seq_no
+from plenum.common.txn_util import get_payload_data
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import (
     WriteRequestHandler,
 )
-from plenum.server.request_handlers.utils import encode_state_value, is_trustee
+from plenum.server.request_handlers.utils import is_trustee
+
+from indy_common.state.state_constants import MARKER_FLAG
 
 
-class FlagHandler(WriteRequestHandler):
+class FlagRequestHandler(WriteRequestHandler):
     def __init__(
         self,
         database_manager: DatabaseManager,
@@ -59,8 +59,7 @@ class FlagHandler(WriteRequestHandler):
         self._validate_txn_type(txn)
         key = get_payload_data(txn).get(FLAG_NAME)
         value = get_payload_data(txn).get(FLAG_VALUE)
-        time = get_txn_time(txn)
-        state_val = {FLAG_TIME: time, FLAG_VALUE: value}
+        state_val = {FLAG_VALUE: value}
         state_val = self.state_serializer.serialize(state_val)
         path = self.make_state_path_for_flag(key)
         self.state.set(path, state_val)
@@ -73,38 +72,12 @@ class FlagHandler(WriteRequestHandler):
                 request.identifier, request.reqId, "Only trustee can set config flags"
             )
 
-    def get_state(self, key, is_committed=False):
-        return FlagHandler.get_flag_from_state(self.state, key, is_committed)
-
-    @staticmethod
-    def _decode_state_value(encoded):
-        if encoded:
-            return config_state_serializer.deserialize(encoded)
-        return None
-
-    @staticmethod
-    def get_flag_from_state(state, key, is_committed=False):
-        if key is None or key == "":
-            return (None, None)
-        path = FlagHandler.make_state_path_for_flag(key)
-        state_raw = state.get(key=path, isCommitted=is_committed)
-        if state_raw is None:
-            return (None, None)
-        state_decoded = FlagHandler._decode_state_value(state_raw)
-        if state_decoded is None:
-            return (None, None)
-        value = FlagHandler.get_state_value(state_decoded)
-        timestamp = FlagHandler.get_state_timestamp(state_decoded)
-        return (value, timestamp)
-
     @staticmethod
     def make_state_path_for_flag(key) -> bytes:
         return "{MARKER}:{FLAG}".format(MARKER=MARKER_FLAG, FLAG=key).encode()
 
     @staticmethod
-    def get_state_timestamp(state_raw):
-        return state_raw.get(FLAG_TIME)
-
-    @staticmethod
     def get_state_value(state_raw):
+        if state_raw is None:
+            return state_raw
         return state_raw.get(FLAG_VALUE)
