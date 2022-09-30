@@ -14,6 +14,7 @@ from plenum.common.constants import KeyValueStorageType, TXN_TYPE, TXN_AUTHOR_AG
     TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_RATIFICATION_TS, TS_LABEL
 from plenum.common.request import Request
 from plenum.common.util import randomString
+from plenum.server.node import Node
 from storage.helper import initKeyValueStorage, initKeyValueStorageIntKeys
 from storage.state_ts_store import StateTsDbStorage
 from storage.kv_in_memory import KeyValueStorageInMemory
@@ -189,7 +190,8 @@ def db_manager_ts(db_manager, ts_store):
 
 @pytest.fixture(scope="module")
 def get_flag_request_handler(db_manager_ts):
-    return GetFlagRequestHandler(db_manager_ts)
+    node = Node.__new__(Node)
+    return GetFlagRequestHandler(node, db_manager_ts)
 
 
 @pytest.fixture(scope="function")

@@ -36,7 +36,7 @@ class FlagRequestHandler(WriteRequestHandler):
         self._validate_request_type(request)
         name = request.operation.get(FLAG_NAME)
         value = request.operation.get(FLAG_VALUE)
-        if not name or name == "":
+        if not name:
             raise InvalidClientRequest(
                 request.identifier, request.reqId, "Flag name is required"
             )
@@ -63,14 +63,6 @@ class FlagRequestHandler(WriteRequestHandler):
         state_val = self.state_serializer.serialize(state_val)
         path = self.make_state_path_for_flag(key)
         self.state.set(path, state_val)
-
-    def authorize(self, request):
-        domain_state = self.database_manager.get_database(DOMAIN_LEDGER_ID).state
-        # TODO: Clarify if is_committed=False ok here?
-        if not is_trustee(domain_state, request.identifier, is_committed=False):
-            raise UnauthorizedClientRequest(
-                request.identifier, request.reqId, "Only trustee can set config flags"
-            )
 
     @staticmethod
     def make_state_path_for_flag(key) -> bytes:

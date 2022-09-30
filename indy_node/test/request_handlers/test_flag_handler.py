@@ -14,6 +14,8 @@ from indy_common.constants import (
     TXN_TYPE,
     NYM,
     ENDORSER,
+    VERSION_ID,
+    VERSION_TIME,
 )
 from plenum.common.constants import TRUSTEE, STEWARD
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
@@ -279,6 +281,43 @@ def test_config_flag_update_state_edit(
     # check for None state before
     state = get_flag_request_handler.lookup_key(key, timestamp=(txn_time_old - 1))
     assert(state is None)
+
+
+def test_config_flag_get_result_exclusive(
+    flag_handler: FlagRequestHandler,
+    flag_request: Request,
+    get_flag_request_handler: GetFlagRequestHandler,
+    get_flag_request: Request
+):
+    add_to_idr(
+        flag_handler.database_manager.idr_cache,
+        flag_request.identifier,
+        TRUSTEE,
+    )
+
+    val = "True"
+    flag_request.operation[FLAG_VALUE] = val
+    key = flag_request.operation.get(FLAG_NAME)
+    seq_no = 2
+    txn_time = 1560241033
+    txn = reqToTxn(flag_request)
+    append_txn_metadata(txn, seq_no, txn_time)
+    flag_handler.update_state(txn, None, flag_request)
+    flag_handler.state.commit()
+
+    state = get_flag_request_handler.lookup_key(key)
+    assert(state)
+    state_value = FlagRequestHandler.get_state_value(state)
+    assert(state_value == val)
+
+    get_flag_request.operation[FLAG_NAME] = key
+    get_flag_request.operation[VERSION_TIME] = txn_time
+    get_flag_request.operation[VERSION_ID] = seq_no
+
+    with pytest.raises(
+        InvalidClientRequest, match=".*seqNo and timestamp are mutually exclusive; only one should be specified"
+    ):
+        get_flag_request_handler.get_result(get_flag_request)
 
 
 def test_config_flag_get_state_empty_key(

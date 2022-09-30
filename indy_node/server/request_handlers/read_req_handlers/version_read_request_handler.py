@@ -6,8 +6,6 @@ from plenum.server.request_handlers.handler_interfaces.read_request_handler impo
 from plenum.server.node import Node
 from storage.state_ts_store import StateTsDbStorage
 
-from indy_common.constants import DOMAIN_LEDGER_ID
-
 
 class VersionReadRequestHandler(ReadRequestHandler):
     """Specialized read request handler enabling looking up past versions."""
@@ -48,7 +46,7 @@ class VersionReadRequestHandler(ReadRequestHandler):
                 return None, None
 
         if timestamp:
-            past_root = self.timestamp_store.get_equal_or_prev(timestamp)
+            past_root = self.timestamp_store.get_equal_or_prev(timestamp, ledger_id=self.ledger_id)
             if past_root:
                 return self._get_value_from_state(
                     path, head_hash=past_root, with_proof=with_proof
@@ -62,7 +60,7 @@ class VersionReadRequestHandler(ReadRequestHandler):
 
     def _timestamp_from_seq_no(self, seq_no: int) -> Optional[int]:
         """Return timestamp of a transaction identified by seq_no."""
-        db = self.database_manager.get_database(DOMAIN_LEDGER_ID)
+        db = self.database_manager.get_database(self.ledger_id)
         txn = self.node.getReplyFromLedger(db.ledger, seq_no, write=False)
 
         if txn and "result" in txn:

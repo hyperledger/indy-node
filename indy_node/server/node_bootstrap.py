@@ -205,7 +205,8 @@ class NodeBootstrap(PNodeBootstrap):
         ledgers_freeze_handler = LedgersFreezeHandler(database_manager=self.node.db_manager,
                                                       write_req_validator=self.node.write_req_validator)
         get_frozen_ledgers_handler = GetFrozenLedgersHandler(database_manager=self.node.db_manager)
-        get_flag_handler = GetFlagRequestHandler(database_manager=self.node.db_manager)
+        get_flag_handler = GetFlagRequestHandler(node=self.node,
+                                                 database_manager=self.node.db_manager)
         flag_handler = FlagRequestHandler(database_manager=self.node.db_manager,
                                           write_req_validator=self.node.write_req_validator)
         # Register write handlers

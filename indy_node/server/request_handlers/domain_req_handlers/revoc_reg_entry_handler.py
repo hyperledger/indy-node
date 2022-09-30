@@ -29,7 +29,6 @@ class RevocRegEntryHandler(WriteRequestHandler):
         self.get_revocation_strategy = get_revocation_strategy
         self.write_req_validator = write_req_validator
         self.legacy_sort_config = getConfig().REV_STRATEGY_USE_COMPAT_ORDERING or False
-        self.config_state = self.database_manager.get_database(CONFIG_LEDGER_ID).state
         self.node = node
 
     def use_legacy_sort(self, txn) -> bool:
