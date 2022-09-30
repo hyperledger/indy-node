@@ -37,9 +37,8 @@ from plenum.server.request_handlers.utils import encode_state_value
 from plenum.server.node import Node
 
 @pytest.fixture(scope="function")
-def revoc_reg_entry_handler(db_manager_ts, write_auth_req_validator, get_flag_request_handler):
+def revoc_reg_entry_handler(db_manager_ts, write_auth_req_validator):
     node = Node.__new__(Node)
-    node.get_flag_handler = get_flag_request_handler
     return RevocRegEntryHandler(
         db_manager_ts, write_auth_req_validator, RevocRegDefHandler.get_revocation_strategy, node
     )

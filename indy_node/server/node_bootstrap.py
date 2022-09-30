@@ -226,7 +226,6 @@ class NodeBootstrap(PNodeBootstrap):
         self.node.read_manager.register_req_handler(get_taa_handler)
         self.node.read_manager.register_req_handler(get_frozen_ledgers_handler)
         self.node.read_manager.register_req_handler(get_flag_handler)
-        self.node.get_flag_handler = get_flag_handler
         # Register write handlers for a version
         self.node.write_manager.register_req_handler_with_version(auth_rule_handler_1_9_1,
                                                                   version="1.9.1")
