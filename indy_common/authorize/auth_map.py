@@ -241,7 +241,7 @@ edit_frozen_ledgers = AuthActionEdit(txn_type=LEDGERS_FREEZE,
                                      old_value='*',
                                      new_value='*')
 
-edit_config_Flag = AuthActionEdit(txn_type=FLAG,
+edit_config_flag = AuthActionEdit(txn_type=FLAG,
                                   field='*',
                                   old_value='*',
                                   new_value='*')
@@ -338,7 +338,7 @@ auth_map = OrderedDict([
     (edit_revoc_reg_def.get_action_id(), owner_constraint),
     (edit_revoc_reg_entry.get_action_id(), owner_constraint),
     (edit_frozen_ledgers.get_action_id(), three_trustee_constraint),
-    (edit_config_Flag.get_action_id(), one_trustee_constraint),
+    (edit_config_flag.get_action_id(), one_trustee_constraint),
 ])
 
 # Edit Trustee:
