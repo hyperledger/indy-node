@@ -17,11 +17,11 @@ from indy_common.constants import (
     VERSION_ID,
     VERSION_TIME,
 )
-from plenum.common.constants import TRUSTEE, STEWARD
+from plenum.common.constants import TRUSTEE, STEWARD, DATA, STATE_PROOF, TXN_TIME
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import reqToTxn, append_txn_metadata
-
+from plenum.common.types import f
 
 @pytest.fixture(scope="function")
 def get_flag_request(creator):
@@ -366,9 +366,10 @@ def test_config_flag_get_result_valid(
     get_flag_request_handler.timestamp_store.set(txn_time, flag_handler.state.headHash, ledger_id=CONFIG_LEDGER_ID)
 
     get_flag_request.operation[FLAG_NAME] = key
-
-    (req_val, req_proof) = get_flag_request_handler.get_result(get_flag_request)
-    assert(req_val)
-    state_value = FlagRequestHandler.get_state_value(req_val)
+    result = get_flag_request_handler.get_result(get_flag_request)
+    assert(result.get(TXN_TYPE) == GET_FLAG)
+    assert(result.get(TXN_TIME) == txn_time)
+    assert(result.get(f.SEQ_NO.nm) == seq_no)
+    state_value = FlagRequestHandler.get_state_value(result.get(DATA))
     assert(state_value == val)
-    assert(req_proof is None)
+    assert(result.get(STATE_PROOF) is None)

@@ -6,20 +6,21 @@ from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.constants import (
     FLAG,
     CONFIG_LEDGER_ID,
-    DOMAIN_LEDGER_ID,
     FLAG_NAME,
     FLAG_VALUE,
 )
-from plenum.common.exceptions import UnauthorizedClientRequest, InvalidClientRequest
+from indy_common.state.state_constants import LAST_SEQ_NO, LAST_UPDATE_TIME, MARKER_FLAG
+from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
-from plenum.common.txn_util import get_payload_data
+from plenum.common.txn_util import (
+    get_payload_data,
+    get_seq_no,
+    get_txn_time,
+)
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import (
     WriteRequestHandler,
 )
-from plenum.server.request_handlers.utils import is_trustee
-
-from indy_common.state.state_constants import MARKER_FLAG
 
 
 class FlagRequestHandler(WriteRequestHandler):
@@ -59,10 +60,13 @@ class FlagRequestHandler(WriteRequestHandler):
         self._validate_txn_type(txn)
         key = get_payload_data(txn).get(FLAG_NAME)
         value = get_payload_data(txn).get(FLAG_VALUE)
-        state_val = {FLAG_VALUE: value}
-        state_val = self.state_serializer.serialize(state_val)
+        state = {}
+        state[FLAG_VALUE] = value
+        state[LAST_SEQ_NO] = get_seq_no(txn)
+        state[LAST_UPDATE_TIME] = get_txn_time(txn)
+        state = self.state_serializer.serialize(state)
         path = self.make_state_path_for_flag(key)
-        self.state.set(path, state_val)
+        self.state.set(path, state)
 
     @staticmethod
     def make_state_path_for_flag(key) -> bytes:
