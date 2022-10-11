@@ -64,9 +64,10 @@ class FlagRequestHandler(WriteRequestHandler):
         state[FLAG_VALUE] = value
         state[LAST_SEQ_NO] = get_seq_no(txn)
         state[LAST_UPDATE_TIME] = get_txn_time(txn)
-        state = self.state_serializer.serialize(state)
+        val = self.state_serializer.serialize(state)
         path = self.make_state_path_for_flag(key)
-        self.state.set(path, state)
+        self.state.set(path, val)
+        return state
 
     @staticmethod
     def make_state_path_for_flag(key) -> bytes:
