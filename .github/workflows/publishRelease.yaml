@@ -30,7 +30,7 @@ jobs:
       publish: ${{ steps.workflow-setup.outputs.publish }}
     steps:
       - name: checkout source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: get-release-info
         id: get-release-info
         uses: hyperledger/indy-shared-gha/.github/actions/get-release-info@v1
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         
       - name: Download Node deb Artifacts from Github Action Artifacts
         uses: dawidd6/action-download-artifact@v2
@@ -73,17 +73,17 @@ jobs:
           workflow_conclusion: success
           name: third-party-dependencies
           path: artifacts/third-party-dependencies
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: third-party-dependencies
           path: artifacts/third-party-dependencies
           retention-days: 5
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: indy_node-deb
           path: artifacts/indy_node-deb
           retention-days: 5
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: indy_node-python
           path: artifacts/indy_node-python

@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # ===============================================
       # Caching cannot be used.
@@ -38,7 +38,7 @@ jobs:
       #    for the plenum install.
       # -----------------------------------------------
       # - name: Cache pip
-      #   uses: actions/cache@v2
+      #   uses: actions/cache@v3
       #   with:
       #     # pip cache on the node-build image is not in the default location.
       #     # path: ~/.cache/pip
@@ -68,7 +68,7 @@ jobs:
       - name: Upload Detailed Test Failure Results
         # The test runner only emits the detailed test results if the tests fail.
         if: (steps.node-test.outcome == 'failure') && failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: detailed-test-result-slice-${{ matrix.slice }}
           path: test-result-node-${{ matrix.slice }}.txt
