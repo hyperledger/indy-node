@@ -36,7 +36,10 @@ complex design decision or a controversial PR.
 
 ## Maintainers
 
-* Alex - maintainer and scrum team lead. geo=western Russia; github, rocket.chat, jira=ashcherbakov
+
+## Emeritus Maintainers
+
 * Doug - maintainer. geo=Utah, USA; github=glowkey; rocket.chat, jira=DouglasWightman
+* Alex - maintainer and scrum team lead. geo=western Russia; github, rocket.chat, jira=ashcherbakov
 * Lovesh - maintainer and founder of codebase, often involved in advanced research
   instead of day-to-day scrum. geo=India; github; jira=lovesh; rocket.chat=LoveshHarchandani
