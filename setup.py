@@ -62,7 +62,7 @@ setup(
                     # https://github.com/hyperledger/indy-plenum/blob/eac38674252b539216be2c40bb13e53c5b70dad2/build-scripts/ubuntu-2004/build-3rd-parties.sh#L104-L106
                       'importlib-metadata==3.10.1',
                       'timeout-decorator>=0.5.0',
-                      'distro>=1.5.0'],
+                      'distro==1.7.0'],
     setup_requires=['pytest-runner'],
     extras_require={
         'tests': tests_require

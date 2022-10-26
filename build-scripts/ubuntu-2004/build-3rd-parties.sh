@@ -50,6 +50,6 @@ SCRIPT_PATH="${BASH_SOURCE[0]}"
 pushd `dirname ${SCRIPT_PATH}` >/dev/null
 
 build_from_pypi timeout-decorator 
-build_from_pypi distro
+build_from_pypi distro 1.7.0
 
 popd >/dev/null
