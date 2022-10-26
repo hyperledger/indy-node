@@ -1,18 +1,23 @@
 import random
 
 import pytest
-from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG
+from indy_common.constants import CONFIG_LEDGER_ID, DOMAIN_LEDGER_ID, FLAG, FLAG_NAME, FLAG_VALUE, FLAG_NAME_COMPAT_ORDERING, REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, TAG
 
 from indy_node.persistence.idr_cache import IdrCache
+from indy_node.server.request_handlers.config_req_handlers.flag_handler import FlagRequestHandler
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
+from indy_node.server.request_handlers.read_req_handlers.get_flag_handler import GetFlagRequestHandler
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from indy_node.test.request_handlers.helper import add_to_idr
 from plenum.common.constants import KeyValueStorageType, TXN_TYPE, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_TEXT, \
-    TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_RATIFICATION_TS
+    TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_RATIFICATION_TS, TS_LABEL
 from plenum.common.request import Request
 from plenum.common.util import randomString
-from storage.helper import initKeyValueStorage
+from plenum.server.node import Node
+from storage.helper import initKeyValueStorage, initKeyValueStorageIntKeys
+from storage.state_ts_store import StateTsDbStorage
+from storage.kv_in_memory import KeyValueStorageInMemory
 from indy_node.test.api.helper import req_id
 _reqId = req_id()
 
@@ -45,9 +50,6 @@ def schema_request():
                                   'attr_names': ['last_name',
                                                  'first_name', ]
                               }})
-
-
-
 
 
 @pytest.fixture(scope="function")
@@ -122,9 +124,6 @@ def rs_schema_broken_request():
                    )
 
 
-
-
-
 @pytest.fixture(scope="module")
 def revoc_reg_def_handler(db_manager, write_auth_req_validator):
     return RevocRegDefHandler(db_manager, write_auth_req_validator)
@@ -166,3 +165,52 @@ def taa_request(creator):
                               TXN_AUTHOR_AGREEMENT_TEXT: "text",
                               TXN_AUTHOR_AGREEMENT_VERSION: "version",
                               TXN_AUTHOR_AGREEMENT_RATIFICATION_TS: 0})
+
+
+@pytest.fixture(scope="module")
+def flag_handler(db_manager_ts, write_auth_req_validator):
+    return FlagRequestHandler(db_manager_ts, write_auth_req_validator)
+
+
+@pytest.fixture(scope="module")
+def ts_store(tmpdir_factory):
+    data_location = tmpdir_factory.mktemp('tmp').strpath
+    config_storage = initKeyValueStorageIntKeys(
+        KeyValueStorageType.Rocksdb,
+        data_location,
+        "config_test_db")
+    return StateTsDbStorage("test", {CONFIG_LEDGER_ID: config_storage})
+
+
+@pytest.fixture(scope="module")
+def db_manager_ts(db_manager, ts_store):
+    db_manager.register_new_store(TS_LABEL, ts_store)
+    return db_manager
+
+
+@pytest.fixture(scope="module")
+def get_flag_request_handler(db_manager_ts):
+    node = Node.__new__(Node)
+    return GetFlagRequestHandler(node, db_manager_ts)
+
+
+@pytest.fixture(scope="function")
+def flag_request():
+    identifier = randomString()
+    return Request(
+        identifier=identifier,
+        reqId=5,
+        operation={TXN_TYPE: FLAG, FLAG_NAME: FLAG_NAME_COMPAT_ORDERING, FLAG_VALUE: "True"},
+        signature="randomString",
+    )
+
+
+@pytest.fixture(scope="function")
+def flag_get_request():
+    identifier = randomString()
+    return Request(
+        identifier=identifier,
+        reqId=5,
+        operation={TXN_TYPE: FLAG, FLAG_NAME: FLAG_NAME_COMPAT_ORDERING, FLAG_VALUE: "True"},
+        signature="randomString",
+    )

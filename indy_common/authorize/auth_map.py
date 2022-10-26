@@ -7,7 +7,7 @@ from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstrain
 from indy_common.constants import ENDORSER, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
     CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, \
     REVOC_REG_DEF, ATTRIB, AUTH_RULES, JSON_LD_CONTEXT, RICH_SCHEMA, RICH_SCHEMA_MAPPING, \
-    RICH_SCHEMA_ENCODING, RICH_SCHEMA_CRED_DEF, RICH_SCHEMA_PRES_DEF
+    RICH_SCHEMA_ENCODING, RICH_SCHEMA_CRED_DEF, RICH_SCHEMA_PRES_DEF, FLAG
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML, \
     TXN_AUTHOR_AGREEMENT_DISABLE, LEDGERS_FREEZE
 
@@ -241,6 +241,11 @@ edit_frozen_ledgers = AuthActionEdit(txn_type=LEDGERS_FREEZE,
                                      old_value='*',
                                      new_value='*')
 
+edit_config_flag = AuthActionEdit(txn_type=FLAG,
+                                  field='*',
+                                  old_value='*',
+                                  new_value='*')
+
 # Anyone constraint
 anyone_constraint = AuthConstraint(role='*',
                                    sig_count=1)
@@ -333,6 +338,7 @@ auth_map = OrderedDict([
     (edit_revoc_reg_def.get_action_id(), owner_constraint),
     (edit_revoc_reg_entry.get_action_id(), owner_constraint),
     (edit_frozen_ledgers.get_action_id(), three_trustee_constraint),
+    (edit_config_flag.get_action_id(), one_trustee_constraint),
 ])
 
 # Edit Trustee:

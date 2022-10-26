@@ -3,27 +3,49 @@ from typing import Callable, Optional
 
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, VALUE, ISSUANCE_TYPE
+from indy_common.config_util import getConfig
+from indy_common.constants import FLAG_NAME_COMPAT_ORDERING, REVOC_REG_ENTRY, REVOC_REG_DEF_ID, VALUE, ISSUANCE_TYPE
 from indy_common.state.state_constants import MARKER_REVOC_REG_ENTRY, MARKER_REVOC_REG_ENTRY_ACCUM
+from indy_node.server.request_handlers.read_req_handlers.get_flag_handler import GetFlagRequestHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID, TXN_TIME
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import get_from, get_payload_data, get_req_id, get_request_data, get_txn_time, get_seq_no
 from plenum.common.types import f
-
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 from plenum.server.request_handlers.utils import encode_state_value
+from plenum.server.node import Node
+
+from indy_node.server.request_handlers.config_req_handlers.flag_handler import FlagRequestHandler
 
 
 class RevocRegEntryHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
                  write_req_validator: WriteRequestValidator,
-                 get_revocation_strategy: Callable):
+                 get_revocation_strategy: Callable,
+                 node: Node):
         super().__init__(database_manager, REVOC_REG_ENTRY, DOMAIN_LEDGER_ID)
         self.get_revocation_strategy = get_revocation_strategy
         self.write_req_validator = write_req_validator
+        # Default sorting behavior
+        self.legacy_sort_config = getConfig().REV_STRATEGY_USE_COMPAT_ORDERING or False
+        # Create a local GetFlagRequestHandler to allow lookups for the config flag
+        get_flag_handler = GetFlagRequestHandler(node=node,
+                                                 database_manager=database_manager)
+        self.get_flag_handler = get_flag_handler
+
+    def use_legacy_sort(self, txn) -> bool:
+        txn_time = get_txn_time(txn)
+        state_raw = self.get_flag_handler.lookup_key(FLAG_NAME_COMPAT_ORDERING, timestamp=txn_time)
+        sort_state = FlagRequestHandler.get_state_value(state_raw)
+        if sort_state and isinstance(sort_state, str):
+            # only allow False as value, ignore otherwise
+            if sort_state.lower() == 'false':
+                return False
+        # default to default behavior
+        return self.legacy_sort_config
 
     def static_validation(self, request: Request):
         pass
@@ -71,7 +93,9 @@ class RevocRegEntryHandler(WriteRequestHandler):
         )
         writer_cls = self.get_revocation_strategy(
             revoc_def[VALUE][ISSUANCE_TYPE])
-        writer = writer_cls(self.state)
+
+        sort_legacy = self.use_legacy_sort(txn)
+        writer = writer_cls(self.state, sort_legacy)
         writer.write(current_entry, txn)
         return txn
 
