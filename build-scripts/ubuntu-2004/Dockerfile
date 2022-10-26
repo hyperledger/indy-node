@@ -65,9 +65,9 @@ RUN pip3 install -U \
     setuptools==50.3.2 \
     'pyzmq==22.3.0'
 
-
 # install fpm
-RUN gem install --no-document rake fpm
+RUN gem install --no-document rake 
+RUN gem install --no-document fpm -v 1.14.2
 
 RUN apt-get -y autoremove \
     && rm -rf /var/lib/apt/lists/*

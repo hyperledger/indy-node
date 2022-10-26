@@ -69,4 +69,4 @@ RUN pip3 install -U \
 
 # install fpm
 RUN sudo gem install --no-document rake 
-RUN sudo gem install --no-document fpm -v 1.13.1
+RUN sudo gem install --no-document fpm -v 1.14.2
