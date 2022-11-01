@@ -28,7 +28,11 @@ runs:
         minor=$(python3 -c "from indy_node import load_version; patch = load_version().parts[1]; print('' if patch is None else patch)")
         patch=$(python3 -c "from indy_node import load_version; patch = load_version().parts[2]; patch+=1; print('' if patch is None else patch)")
         if  [[ "${{ inputs.isRC }}" == "true" ]]; then
-          echo ::set-output\ name=nodeVersion::${major}.${minor}.${patch}rc1
+          export nodeVersion="${major}.${minor}.${patch}rc1" 
         else
-          echo ::set-output\ name=nodeVersion::${major}.${minor}.${patch}
+          export nodeVersion="${major}.${minor}.${patch}"
         fi
+        echo "nodeVersion=$nodeVersion" >> $GITHUB_OUTPUT
+        echo "::group::DEBUG"
+        echo "nodeVersion is set to $nodeVersion"
+        echo "::endgroup::"
