@@ -16,8 +16,10 @@ jobs:
       BASE: ${{ steps.get-branch.outputs.branch }}
     steps:
       - name: checkout source code
-        uses: actions/checkout@v1
-      - name: extract branch
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: extract branch 
         id: get-branch
         uses: hyperledger/indy-shared-gha/.github/actions/branch-from-tag@v1
         with:
@@ -36,7 +38,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: '3.8'
       - name: Install deps for version change
