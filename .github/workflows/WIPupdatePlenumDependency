@@ -40,7 +40,7 @@
 #             echo ::set-output\ name=prBranch::update-plenum-version
 #           fi
 #       # - name: Set up Python
-#       #   uses: actions/setup-python@v2
+#       #   uses: actions/setup-python@v3
 #       #   with:
 #       #     python-version: '3.8'
 #       # - name: Get New Node Version
