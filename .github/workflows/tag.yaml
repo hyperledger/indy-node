@@ -55,7 +55,7 @@ jobs:
                        libgflags-dev
           pip install packaging \
                       importlib_metadata==3.10.1 \
-                      indy-plenum==1.13.1rc3 \
+                      indy-plenum==1.13.1.rc3 \
                       pyzmq==22.3.0
       - name: Prepare package and set version
         run: |

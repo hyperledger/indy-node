@@ -15,6 +15,9 @@ cp -r "${INPUT_PATH}/." "${TMP_DIR}"
 cd "${TMP_DIR}/build-scripts/ubuntu-2004"
 ./prepare-package.sh "${TMP_DIR}" indy_node "${VERSION}" debian-packages
 
+echo "Fetching the indy-plenum version from setup.py and converting it to deb format ..."
+plenumDebVersion=$(grep -oP "indy-plenum==\d+.\d+.\d+((-|.)?rc\d+)?" ${TMP_DIR}/setup.py | grep -oP "\d+.\d+.\d+((-|.)?rc\d+)?" | sed 's/\./\~/3')
+echo "plenumDebVersion: ${plenumDebVersion}"
 
 sed -i "s/{package_name}/${PACKAGE_NAME}/" "prerm"
 
@@ -29,6 +32,8 @@ fpm --input-type "python" \
     --depends at \
     --depends iptables \
     --depends libsodium23 \
+    --depends "indy-plenum(=${plenumDebVersion})" \
+    --python-disable-dependency "indy-plenum" \
     --no-python-fix-dependencies \
     --maintainer "Hyperledger <hyperledger-indy@lists.hyperledger.org>" \
     --before-install "preinst_node" \

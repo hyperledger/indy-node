@@ -49,6 +49,7 @@ function build_from_pypi {
 SCRIPT_PATH="${BASH_SOURCE[0]}"
 pushd `dirname ${SCRIPT_PATH}` >/dev/null
 
+build_from_pypi importlib-metadata 3.10.1
 build_from_pypi timeout-decorator 
 build_from_pypi distro 1.7.0
 
