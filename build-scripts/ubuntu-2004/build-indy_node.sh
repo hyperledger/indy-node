@@ -16,7 +16,7 @@ cd "${TMP_DIR}/build-scripts/ubuntu-2004"
 ./prepare-package.sh "${TMP_DIR}" indy_node "${VERSION}" debian-packages
 
 echo "Fetching the indy-plenum version from setup.py and converting it to deb format ..."
-plenumDebVersion=$(grep -oP "indy-plenum==\d+.\d+.\d+((-|.)?rc\d+)?" ${TMP_DIR}/setup.py | grep -oP "\d+.\d+.\d+((-|.)?rc\d+)?" | sed 's/\./\~/3')
+plenumDebVersion=$(grep -oP "indy-plenum==\d+.\d+.\d+((-|.)?(rc|dev)\d+)?" ${TMP_DIR}/setup.py | grep -oP "\d+.\d+.\d+((-|.)?(rc|dev)\d+)?" | sed 's/\./\~/3')
 echo "plenumDebVersion: ${plenumDebVersion}"
 
 sed -i "s/{package_name}/${PACKAGE_NAME}/" "prerm"
