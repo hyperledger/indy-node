@@ -46,6 +46,28 @@ jobs:
       #     key: ${{ runner.os }}-indy-node-pip-${{ hashFiles('**/requirements.txt', '**/setup.py') }}
       #     restore-keys: |
       #       ${{ runner.os }}-indy-node-pip-
+      - name: Download node deb
+        uses: actions/download-artifact@v3
+        with:
+          name: indy_node-deb
+
+      - name: Install dependencies from deb
+        run: |
+          apt update
+          function getDeps(){
+              echo "$(apt show ${1} 2>/dev/null  | grep -P "Depends: " | sed 's~Depends:~~g;s~(~~g;s~)~~g;s~>~~g;s~<~~g' |tr -d " \t\n\r" | tr "," "\n")";
+          }
+          aptStr=$(dpkg-deb -I $(pwd)/indy-node*.deb | grep -P "Depends: " | sed 's~Depends:~~g;s~(~~g;s~)~~g;s~>~~g;s~<~~g' | tr -d " \t\n\r" | tr "," "\n")
+          nodeStr="$(getDeps $(echo "$aptStr" | grep plenum))"
+          echo "Installing dependancies:" && \
+          echo ${aptStr} && \
+          echo ${fullStr}&& \
+          echo && \
+          apt install -y $(pwd)/indy-node*.deb $aptStr $nodeStr
+          #Libindy till it is set in dependencies
+          apt install -y libindy
+          ln -s /usr/lib/ursa/libursa.so /usr/lib/libursa.so
+        shell: bash
 
       - name: Install dependencies
         run: |
