@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - ubuntu-20.04-upgrade
+      - rocksdbfix
     paths:
       - '**.py'
       - '.github/**'
@@ -43,17 +44,9 @@ jobs:
       DOCKER_IMAGE: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build
       UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
 
-  indy_node_tests:
-    name: Indy Node Tests
-    needs: [workflow-setup, build-image]
-    uses: ./.github/workflows/reuseable_test.yaml
-    with:
-      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
-      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
-
   build_packages:
     name: Build Packages
-    needs: [workflow-setup, indy_node_tests]
+    needs: [workflow-setup, build-image]
     uses: hyperledger/indy-shared-gha/.github/workflows/buildpackages.yaml@v1
     with:
       DOCKER_IMAGE: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
@@ -62,9 +55,17 @@ jobs:
       isRC: false
       moduleName: indy_node
 
+  indy_node_tests:
+    name: Indy Node Tests
+    needs: [workflow-setup, build_packages]
+    uses: ./.github/workflows/reuseable_test.yaml
+    with:
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
+      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+
   publish_artifacts:
     name: Publish Artifacts
-    needs: [workflow-setup, build_packages]
+    needs: [workflow-setup, indy_node_tests]
     if: needs.workflow-setup.outputs.publish == 'true'
     uses: hyperledger/indy-shared-gha/.github/workflows/publish_artifacts.yaml@v1
     with:

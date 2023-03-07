@@ -56,17 +56,9 @@ jobs:
       DOCKER_IMAGE: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build
       UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
 
-  indy_node_tests:
-    name: Indy Node Tests
-    needs: [workflow-setup, build-image]
-    uses: ./.github/workflows/reuseable_test.yaml
-    with:
-      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
-      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
-
   build_packages:
     name: Build Packages
-    needs: [workflow-setup, indy_node_tests]
+    needs: [workflow-setup, build-image]
     uses: hyperledger/indy-shared-gha/.github/workflows/buildpackages.yaml@v1
     with:
       DOCKER_IMAGE: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
@@ -75,10 +67,18 @@ jobs:
       isRC: false
       moduleName: indy_node
 
+  indy_node_tests:
+    name: Indy Node Tests
+    needs: [workflow-setup, build_packages]
+    uses: ./.github/workflows/reuseable_test.yaml
+    with:
+      GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
+      UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+
   statusCheck:
     name: statusCheck
     runs-on: ubuntu-latest
-    needs: [workflow-setup, build_packages]
+    needs: [workflow-setup, indy_node_tests]
     if: ${{ needs.workflow-setup.outputs.testsNeeded == 'false' || success() }}
     steps:
       - run: 'echo "Just a status Check (Always true, when executed) for branch protection rules(blocks merging while test are running and if tests fail)." '
