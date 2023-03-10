@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - ubuntu-20.04-upgrade
+      - test-automation-integration
       - rocksdbfix
     paths:
       - '**.py'
@@ -62,6 +63,18 @@ jobs:
     with:
       GITHUB_REPOSITORY_NAME: ${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}
       UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
+
+  call-indy-test-automation:
+    name: Indy-Test-Automation
+    needs: [build_packages]
+    uses: pschlarb/indy-test-automation/.github/workflows/callable_test-automation-node.yaml@indy-gha-integration
+    with:
+      ubuntuVersion: "ubuntu-2004"
+      libIndyVersion: "1.15.0~1625-bionic"
+      includePaymentTests: false
+      testAutomationBranch: "indy-gha-integration"
+      debName: "indy-node*.deb"
+      packageName: "indy_node-deb"
 
   publish_artifacts:
     name: Publish Artifacts
