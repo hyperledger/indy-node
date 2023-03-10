@@ -70,9 +70,21 @@ jobs:
       GITHUB_REPOSITORY_NAME: ${{ needs.release-infos.outputs.GITHUB_REPOSITORY_NAME }}
       UBUNTU_VERSION: ${{ needs.release-infos.outputs.UBUNTU_VERSION }}
 
+  call-indy-test-automation:
+    name: Indy-Test-Automation
+    needs: [build_packages]
+    uses: hyperledger/indy-test-automation/.github/workflows/callable_test-automation-node.yaml@v0.11.0
+    with:
+      ubuntuVersion: "ubuntu-2004"
+      libIndyVersion: "1.15.0~1625-bionic"
+      includePaymentTests: false
+      testAutomationBranch: "v0.11.0"
+      debName: "indy-node*.deb"
+      packageName: "indy_node-deb"
+
   statusCheck:
     name: statusCheck
     runs-on: ubuntu-latest
-    needs: [indy_node_tests]
+    needs: [indy_node_tests, call-indy-test-automation]
     steps:
       - run: 'echo "Just a status Check (Always true, when executed) for branch protection rules(blocks merging while test are running and if tests fail)." '
