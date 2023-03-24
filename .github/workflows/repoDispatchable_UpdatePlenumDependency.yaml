@@ -1,0 +1,28 @@
+name: Repo Dispatched Update Plenum Dependecy
+
+on:
+  repository_dispatch:
+    types: [update-node]
+
+jobs:
+  update-setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update indy-plenum to ${{ github.event.client_payload.pyVersion }}
+        run: |
+          sed -i "s/\(indy-plenum==\)[^ ]*/\1${{ github.event.client_payload.pyVersion }},/g" setup.py
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          author: ${{ github.actor }} <${{ github.event.pusher.email }}>
+          signoff: true
+          committer: ${{ github.actor }} <${{ github.event.pusher.email }}>
+          commit-message: "Automated Update to indy-plenum==$pyVersion"
+          title: "Automated Update to indy-plenum==$pyVersion"
+          body: "This PR updates the indy-plenum version in `setup.py` to use `indy-plenum==$pyVersion`."
+          branch: "PlenumUpdates"
+          delete-branch: true
+          base: "DependencyUpdateTrigger"
