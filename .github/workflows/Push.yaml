@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - ubuntu-20.04-upgrade
+      - test-automation-integration
       - rocksdbfix
     paths:
       - '**.py'
