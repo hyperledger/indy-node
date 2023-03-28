@@ -1,0 +1,54 @@
+name: Triggered by test Tag
+
+on:
+  push:
+    tags:        
+      - test-v**
+
+jobs:
+  taginfos:
+    name: get Tag infos
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-release-info.outputs.version }}
+      versionTag: ${{ steps.get-release-info.outputs.versionTag }}
+      prBranch: ${{ steps.get-release-info.outputs.prBranch }}
+      BASE: ${{ steps.get-branch.outputs.branch }}
+    steps:
+      - name: checkout source code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: extract branch 
+        id: get-branch
+        uses: hyperledger/indy-shared-gha/.github/actions/branch-from-tag@v1
+        with:
+          tag: ${{ github.ref }}
+      - name: get-release-info
+        id: get-release-info
+        uses: hyperledger/indy-shared-gha/.github/actions/get-release-info@v1
+        with:
+          versionString: "${{ github.ref }}"
+
+  triggerSovrinUpdate:
+    runs-on: ubuntu-latest
+    needs: [taginfos]
+    steps:
+      - name: Convert to python version flavour
+        id: conversion
+        run: |
+          pyVersion=$(echo ${{  needs.taginfos.outputs.versionTag }} | sed 's~v~~g')
+          if [[ ${{  needs.taginfos.outputs.versionTag }} == *"-"* ]]; then
+          pyVersion=$(echo $pyVersion | sed 's~-~.~g')
+          echo "pyVersion=$pyVersion">> $GITHUB_OUTPUT
+          else
+          echo "pyVersion=$pyVersion" >> $GITHUB_OUTPUT
+          fi
+          echo "debVersion=$(echo $pyVersion | sed -E 's/^([^\.]*\.[^\.]*\.[^\.]*)\.(.*)$/\1~\2/')" >> $GITHUB_OUTPUT
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.BOT_PR_PAT_NODE }}
+          repository: pschlarb/sovrin
+          event-type: update-sovrin
+          client-payload: '{"pyVersion": "${{ steps.conversion.outputs.pyVersion }}", "debVersion": "${{ steps.conversion.outputs.debVersion }}", "email":"${{ github.event.pusher.email }}"}'
