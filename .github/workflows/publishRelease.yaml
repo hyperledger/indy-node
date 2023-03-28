@@ -119,3 +119,26 @@ jobs:
     secrets:
       INDY_ARTIFACTORY_REPO_CONFIG: ${{ secrets.INDY_ARTIFACTORY_REPO_CONFIG }}
       PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+
+  triggerSovrinUpdate:
+    runs-on: ubuntu-latest
+    needs: [release-infos, publish_artifacts]
+    steps:
+      - name: Convert to python version flavour
+        id: conversion
+        run: |
+          pyVersion=$(echo ${{ needs.release-infos.outputs.VERSIONTAG }} | sed 's~v~~g')
+          if [[ ${{ needs.release-infos.outputs.VERSIONTAG }} == *"-"* ]]; then
+            pyVersion=$(echo $pyVersion | sed 's~-~.~g')
+            echo "pyVersion=$pyVersion">> $GITHUB_OUTPUT
+          else
+            echo "pyVersion=$pyVersion" >> $GITHUB_OUTPUT
+          fi
+          echo "debVersion=$(echo $pyVersion | sed -E 's/^([^\.]*\.[^\.]*\.[^\.]*)\.(.*)$/\1~\2/')" >> $GITHUB_OUTPUT
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.BOT_PR_PAT_NODE }}
+          repository: pschlarb/sovrin
+          event-type: update-sovrin
+          client-payload: '{"pyVersion": "${{ steps.conversion.outputs.pyVersion }}", "debVersion": "${{ steps.conversion.outputs.debVersion }}", "email":"${{ github.event.pusher.email }}"}'
