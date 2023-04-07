@@ -1,6 +1,7 @@
 # Prerequisites
 * Docker
 * Current user added to 'docker' group (not needed for all environments)
+* Make sure `cgroup` is mounted. Refer to this [issue](https://github.com/hyperledger/indy-node/issues/1765).
 * macOS users will need to install an up to date version of sed using Homebrew `brew install gnu-sed`
 
 # Start pool
