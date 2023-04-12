@@ -10,28 +10,28 @@
 
         sudo apt-get update && sudo apt-get install -y \
             git \
-            wget \ 
-            unzip \ 
-            python3-pip \ 
-            python3-venv \ 
-            libsodium23 \ 
-            iptables \ 
-            at \ 
-            supervisor \ 
-            python3-nacl \ 
-            rocksdb-tools \ 
-            librocksdb5.17 \ 
-            librocksdb-dev \ 
-            libsnappy-dev \ 
-            liblz4-dev \ 
-            libbz2-dev \ 
-            libssl1.0.0 \ 
-            libindy \ 
+            wget \
+            unzip \
+            python3-pip \
+            python3-venv \
+            libsodium23 \
+            iptables \
+            at \
+            supervisor \
+            python3-nacl \
+            rocksdb-tools \
+            librocksdb5.17 \
+            librocksdb-dev \
+            libsnappy-dev \
+            liblz4-dev \
+            libbz2-dev \
+            libssl1.0.0 \
+            libindy \
             ursa
 
         git clone https://github.com/hyperledger/indy-node.git
         git clone https://github.com/hyperledger/indy-plenum.git
-        # in both indy-node and indy-plenum checkout origin/ubuntu-20.04-upgrade 
+        # in both indy-node and indy-plenum checkout origin/main
         sudo cp /usr/lib/ursa/libursa.* /usr/lib/
         # Should be done in python env
         pip install -U \
@@ -88,7 +88,7 @@
             zipp==1.2.0
 
 ##IDE Setup
-    Pycharm: 
+    Pycharm:
         # Open indy-node
         # Open indy-plenum - Link
         # Create virtual env in project structure - python interpreter
@@ -98,8 +98,8 @@
 ## Base Dependencies Needed to test
 ### Library Dependencies:
     libindy                                	1.15.0-bionic
-    libindy-crypto                         	0.4.5 
+    libindy-crypto                         	0.4.5
     ursa                                   	0.3.2-2
 
-    
+
 

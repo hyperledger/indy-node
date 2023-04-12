@@ -6,10 +6,10 @@ If you are new to the concept of devcontainers in combination with VSCode [here]
 Simply clone this repository and VSCode will most likely ask you to open it in the devcontainer, if you have the correct extension("ms-vscode-remote.remote-containers") installed.
 If VSCode didn't ask to open it, open the command palette and use the `Remote-Containers: Rebuild and Reopen in Container` command.
 
-If you want to use Gitpod simply use this [link](https://gitpod.io/#https://github.com/hyperledger/indy-node/tree/ubuntu-20.04-upgrade) 
-or if you want to work with your fork, prefix the entire URL of your branch with  `gitpod.io/#` so that it looks like `https://gitpod.io/#https://github.com/hyperledger/indy-node/tree/ubuntu-20.04-upgrade`.
+If you want to use Gitpod simply use this [link](https://gitpod.io/#https://github.com/hyperledger/indy-node/tree/main)
+or if you want to work with your fork, prefix the entire URL of your branch with  `gitpod.io/#` so that it looks like `https://gitpod.io/#https://github.com/hyperledger/indy-node/tree/main`.
 
-**Note**: Be aware that the config files for Gitpod and VSCode are currently only used in the `ubuntu-20.04-upgrade` branch!
+**Note**: Be aware that the config files for Gitpod and VSCode are currently only used in the `main` branch!
 
 
 There are also scripts that can help in setting up an environment and project for developers.
@@ -18,7 +18,7 @@ The scripts are in [dev-setup](https://github.com/hyperledger/indy-node/tree/mas
 
 **Note**: As of now, we provide scripts for Ubuntu only. It's not guaranteed that the code is working on Windows.
 
-- One needs Python 3.5 to work with the code 
+- One needs Python 3.5 to work with the code
 - We recommend using Python virtual environment for development
 - We use pytest for unit and integration testing
 - There are some dependencies that must be installed before being able to run the code
@@ -44,7 +44,7 @@ create a virtualenv to work in
     - Configure Project Interpreter to use just created virtualenv
         - Go to `Project: <name> -> Project Interpreter`
         - You’ll see indy-plenum and indy-node projects on the right side tab.
-        For each of them:   
+        For each of them:
             - Click on the project just beside “Project Interpreter” drop down, you’ll see one setting icon, click on it.
             - Select “Add Local”
             - Select existing virtualenv path as below: <virtual env path>/bin/python3.5
@@ -58,13 +58,13 @@ create a virtualenv to work in
         For each of them:
             - Select Py.test from the ‘Default test runner’
     - Press `Apply`
- 
+
 
 ## Detailed Setup
 
 ### Setup Python
 
-One needs Python 3.5 to work with the code. You can use `dev-setup/ubuntu/setup_dev_python.sh` script for quick installation of Python 3.5, pip 
+One needs Python 3.5 to work with the code. You can use `dev-setup/ubuntu/setup_dev_python.sh` script for quick installation of Python 3.5, pip
 and virtual environment on Ubuntu, or follow the detailed instructions below.
 
 
@@ -98,7 +98,7 @@ Download the latest build (pywin32-220.win-amd64-py3.5.exe is the latest build a
 
 Indy also depends on libsodium, an awesome crypto library. These need to be installed separately.
 
-##### Ubuntu 
+##### Ubuntu
 
 1. We need to install libsodium with the package manager. This typically requires a package repo that's not active by default. Inspect ```/etc/apt/sources.list``` file with your favorite editor (using sudo). On ubuntu 16, you are looking for a line that says ```deb http://us.archive.ubuntu.com/ubuntu xenial main universe```. On ubuntu 14, look for or add: ```deb http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main``` and ```deb-src http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main```.
 
@@ -170,7 +170,7 @@ on how Ursa can be installed and built for other platforms.
 We recommend creating a new Python virtual environment for trying out Indy.
 A virtual environment is a Python environment which is isolated from the
 system's default Python environment (you can change that) and any other
-virtual environment you create. 
+virtual environment you create.
 
 You can create a new virtual environment by:
 ```
@@ -209,7 +209,7 @@ Navigate to the root directory of the source (for each project) and install requ
 pip install -e .[tests]
 ```
 If you are working with both indy-plenum and indy-node, then please make sure that both projects are installed with -e option,
-and not from pypi (have a look at the sequence at `init-dev-project.sh`). 
+and not from pypi (have a look at the sequence at `init-dev-project.sh`).
 
 Go to the folder with tests (either `indy-plenum`, `indy-node/indy_node`, `indy-node/indy_client` or `indy-node/indy_common`)
 and run tests

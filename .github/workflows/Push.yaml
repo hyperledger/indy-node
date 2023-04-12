@@ -2,15 +2,14 @@ name: Indy Node - Push Workflow
 on:
   push:
     branches:
-      - ubuntu-20.04-upgrade
+      - main
       - test-automation-integration
-      - rocksdbfix
     paths:
       - '**.py'
       - '.github/**'
       - 'build-scripts/**'
       - 'bump_version.sh'
-      
+
 jobs:
   workflow-setup:
     name: Initialize Workflow
@@ -22,7 +21,7 @@ jobs:
       # to all subsequent jobs that reference image repositories
       # as the push and pull operations require the URL of the repository
       # to be in lowercase.
-      GITHUB_REPOSITORY_NAME: ${{ steps.setup.outputs.GITHUB_REPOSITORY_NAME }} 
+      GITHUB_REPOSITORY_NAME: ${{ steps.setup.outputs.GITHUB_REPOSITORY_NAME }}
       distribution: ${{ steps.setup.outputs.distribution }}
       publish: ${{ steps.setup.outputs.publish }}
     steps:
@@ -35,7 +34,7 @@ jobs:
   lint:
     name: Lint
     uses: hyperledger/indy-shared-gha/.github/workflows/lint.yaml@v1
-      
+
   build-image:
     name: Create Builder Image
     needs: [workflow-setup, lint]
