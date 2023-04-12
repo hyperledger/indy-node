@@ -172,6 +172,10 @@ AUTH_RULE = IndyTransactions.AUTH_RULE.value
 AUTH_RULES = IndyTransactions.AUTH_RULES.value
 GET_AUTH_RULE = IndyTransactions.GET_AUTH_RULE.value
 
+SET_FEES = IndyTransactions.SET_FEES.value
+GET_FEES = IndyTransactions.GET_FEES.value
+GET_FEE = IndyTransactions.GET_FEE.value
+
 # client Rich Schema transaction types
 JSON_LD_CONTEXT = IndyTransactions.JSON_LD_CONTEXT.value
 RICH_SCHEMA = IndyTransactions.RICH_SCHEMA.value
@@ -235,3 +239,11 @@ RS_MAPPING_ISSUANCE_DATE = "issuanceDate"
 RS_MAPPING_SCHEMA = "schema"
 RS_MAPPING_ENC = "enc"
 RS_MAPPING_RANK = "rank"
+
+# FEES
+FEE = "fee"
+FEES = "fees"
+FEES_ALIAS = "alias"
+FEES_VALUE = "value"
+FEE_ALIAS_LENGTH = 128
+FEES_FIELD_NAME = "fees"

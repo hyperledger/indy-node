@@ -11,7 +11,7 @@ from plenum.common.messages.fields import ConstantField, IdentifierField, \
     Sha256HexField, JsonField, MapField, BooleanField, VersionField, \
     ChooseField, IntegerField, IterableField, \
     AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField, AnyField, FieldBase
-from plenum.common.messages.message_base import MessageValidator
+from plenum.common.messages.message_base import MessageValidator, MessageBase
 from plenum.common.messages.node_messages import NonNegativeNumberField
 from plenum.common.request import Request as PRequest
 from plenum.common.types import OPERATION
@@ -44,7 +44,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     RS_NAME, RS_ID, RS_CONTENT, RS_CONTEXT_TYPE_VALUE, RICH_SCHEMA, RS_SCHEMA_TYPE_VALUE, RS_ENCODING_TYPE_VALUE, \
     RICH_SCHEMA_ENCODING, RS_MAPPING_TYPE_VALUE, RICH_SCHEMA_MAPPING, RS_CRED_DEF_TYPE_VALUE, \
     RICH_SCHEMA_CRED_DEF, GET_RICH_SCHEMA_OBJECT_BY_ID, GET_RICH_SCHEMA_OBJECT_BY_METADATA, \
-    RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE
+    RICH_SCHEMA_PRES_DEF, RS_PRES_DEF_TYPE_VALUE, GET_FEE, GET_FEES, SET_FEES, FEES_ALIAS, FEE_ALIAS_LENGTH, FEES
 from indy_common.version import SchemaVersion
 
 
@@ -467,6 +467,37 @@ class ClientGetRichSchemaObjectByMetadataOperation(MessageValidator):
     )
 
 
+class ClientGetFeeOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(GET_FEE)),
+        (FEES_ALIAS, LimitedLengthStringField(max_length=FEE_ALIAS_LENGTH)),
+    )
+
+
+class ClientGetFeesOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(GET_FEES)),
+    )
+
+
+class SetFeesField(MapField):
+    def __init__(self, **kwargs):
+        super().__init__(NonEmptyStringField(), NonNegativeNumberField(),
+                         **kwargs)
+
+    def _specific_validation(self, val):
+        error = super()._specific_validation(val)
+        if error:
+            return "set_fees -- " + error
+
+
+class ClientSetFeesOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(SET_FEES)),
+        (FEES, SetFeesField()),
+    )
+
+
 class ClientOperationField(PClientOperationField):
     _specific_operations = {
         SCHEMA: ClientSchemaOperation(),
@@ -496,7 +527,10 @@ class ClientOperationField(PClientOperationField):
         RICH_SCHEMA_CRED_DEF: ClientRichSchemaCredDefOperation(),
         RICH_SCHEMA_PRES_DEF: ClientRichSchemaPresDefOperation(),
         GET_RICH_SCHEMA_OBJECT_BY_ID: ClientGetRichSchemaObjectByIdOperation(),
-        GET_RICH_SCHEMA_OBJECT_BY_METADATA: ClientGetRichSchemaObjectByMetadataOperation()
+        GET_RICH_SCHEMA_OBJECT_BY_METADATA: ClientGetRichSchemaObjectByMetadataOperation(),
+        GET_FEE: ClientGetFeeOperation(),
+        GET_FEES: ClientGetFeesOperation(),
+        SET_FEES: ClientSetFeesOperation(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class

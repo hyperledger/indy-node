@@ -48,6 +48,10 @@ class IndyTransactions(Transactions):
     GET_RICH_SCHEMA_OBJECT_BY_ID = "300"
     GET_RICH_SCHEMA_OBJECT_BY_METADATA = "301"
 
+    SET_FEES = "20000"
+    GET_FEES = "20001"
+    GET_FEE = "20003"
+
     @staticmethod
     def get_name_from_code(code: str):
         try:
