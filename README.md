@@ -1,18 +1,40 @@
 ![logo](collateral/logos/indy-logo.png)
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/hyperledger/indy-node/tree/ubuntu-20.04-upgrade)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/hyperledger/indy-node/tree/main)
 # Indy Node
-* [About Indy Node](#about-indy-node)
-* [Technical Overview of Indy Blockchain](#technical-overview-of-indy-blockchain)
-* [Indy Node Repository Structure](#indy-node-repository-structure)
-* [Dependent Projects](#dependent-projects)
-* [Contact us](#contact-us)
-* [How to Contribute](#how-to-contribute)
-* [How to Install a Test Network](#how-to-install-a-test-network)
-* [How to Start Working with the Code](#how-to-start-working-with-the-code)
-* [Continuous integration and delivery](https://github.com/hyperledger/indy-node/blob/master/docs/source/ci-cd.md)
-* [How to send a PR](#how-to-send-a-pr)
-* [Docs and links](#docs-and-links)
+- [Indy Node](#indy-node)
+  - [Announcements](#announcements)
+    - [April 12 2023](#april-12-2023)
+  - [About Indy Node](#about-indy-node)
+        - [Relationship with Sovrin](#relationship-with-sovrin)
+        - [Getting Started Guide](#getting-started-guide)
+        - [Hyperledger Wiki-Indy](#hyperledger-wiki-indy)
+  - [Technical Overview of Indy Blockchain](#technical-overview-of-indy-blockchain)
+  - [Indy Node Repository Structure](#indy-node-repository-structure)
+  - [Dependent Projects](#dependent-projects)
+  - [Contact us](#contact-us)
+  - [How to Contribute](#how-to-contribute)
+  - [How to Install a Test Network](#how-to-install-a-test-network)
+  - [How to Start Working with the Code](#how-to-start-working-with-the-code)
+  - [Continuous Integration and Delivery](#continuous-integration-and-delivery)
+  - [How to send a PR](#how-to-send-a-pr)
+      - [How to send a PR to both plenum and node](#how-to-send-a-pr-to-both-plenum-and-node)
+  - [Docs and links](#docs-and-links)
+
+
+## Announcements
+
+### April 12 2023
+
+**_The project branches have changed._**
+
+The `main` branch now contains the Ubuntu 20.04 work stream, and the previous `main` branch containing the Ubuntu 16.04 work stream has been moved to the `ubuntu-16.04` branch.  We encourage everyone to switch to using the new code and appreciate your patience while we stabilize the work flows and documentation on this new branch.
+
+The following changes were made to the branches:
+- `main` (default) renamed to `ubuntu-16.04`
+  - This retargeted the associated PRs.
+- `ubuntu-20.04-upgrade` set as the default branch.
+- `ubuntu-20.04-upgrade` (default) renamed to `main`
 
 ## About Indy Node
 
@@ -33,7 +55,7 @@ with a different network, using whatever conventions a community chooses.
 ##### Getting Started Guide
 
 We recommend that developers should explore
-[Indy Walk through](https://github.com/hyperledger/indy-sdk/blob/master/docs/getting-started/indy-walkthrough.md) to learn about Indy basics 
+[Indy Walk through](https://github.com/hyperledger/indy-sdk/blob/master/docs/getting-started/indy-walkthrough.md) to learn about Indy basics
 or [Getting Started Guide with VCX](https://github.com/hyperledger/indy-sdk/blob/master/vcx/docs/getting-started/getting-started.md) and
 [Getting Started Notebook](https://github.com/hyperledger/indy-sdk/blob/master/docs/getting-started/getting-started.ipynb).
 

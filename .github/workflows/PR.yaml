@@ -6,7 +6,8 @@ on:
       - "!indy_node/__version__.json"
 
     branches:
-      - ubuntu-20.04-upgrade
+      - main
+
   workflow_dispatch:
 
 jobs:
