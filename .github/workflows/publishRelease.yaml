@@ -119,3 +119,34 @@ jobs:
     secrets:
       INDY_ARTIFACTORY_REPO_CONFIG: ${{ secrets.INDY_ARTIFACTORY_REPO_CONFIG }}
       PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+
+  convertPyVersion:
+    name: "Convert to python version flavour"
+    needs: [release-infos, publish_artifacts]
+    uses: hyperledger/indy-shared-gha/.github/workflows/pyVersionConversion.yaml@v1
+    with:
+      VERSIONTAG: ${{ needs.release-infos.outputs.VERSIONTAG }}
+
+  triggerSovrinUpdate:
+    runs-on: ubuntu-latest
+    needs: [release-infos, publish_artifacts, convertPyVersion]
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.BOT_PR_PAT }}
+          repository: sovrin-foundation/sovrin
+          event-type: update-sovrin
+          client-payload: '{"pyVersion": "${{ needs.convertPyVersion.outputs.pyVersion }}", "debVersion": "${{ needs.convertPyVersion.debVersion }}", "email":"${{ github.event.pusher.email }}"}'
+
+  triggerTokenUpdate:
+    runs-on: ubuntu-latest
+    needs: [release-infos, publish_artifacts, convertPyVersion]
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.BOT_PR_PAT }}
+          repository: sovrin-foundation/token-plugin
+          event-type: update-token-plugin
+          client-payload: '{"pyVersion": "${{ needs.convertPyVersion.outputs.pyVersion }}", "debVersion": "${{ steps.conversion.outputs.debVersion }}", "email":"${{ github.event.pusher.email }}"}'
