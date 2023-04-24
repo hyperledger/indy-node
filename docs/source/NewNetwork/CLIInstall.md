@@ -2,6 +2,9 @@
 
 The `indy-cli` is developed under the [indy-sdk](https://github.com/hyperledger/indy-sdk). This documentation may be not up to date.
 
+>As stated in [Installation and configuration of Indy-Node](../installation-and-configuration.md) `indy-cli` can be replaced with [`indy-cli-rs`](https://github.com/hyperledger/indy-cli-rs)
+>This documentation describes the necessarry steps with `indy-cli`, keep in mind that everytime `indy-cli` is mentioned you can also use `indy-cli-rs`. Please refer to the corresponding documentation.
+
 You will need to perform the following once for each `indy-cli` machine you would like to set up (only 1 is required). 
 It is recommended that you install the `indy-cli` in your native work environment if possible, so you always have it available even when traveling. 
 

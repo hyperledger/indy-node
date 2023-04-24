@@ -2,6 +2,9 @@
 
 You will need to perform the following commands once for each `indy-cli` machine that you want to run on. The following commands contain suggestions to save certain values in a secure place.  Please do not share those values or that place with anyone.
 
+>As stated in [Installation and configuration of Indy-Node](../installation-and-configuration.md) `indy-cli` can be replaced with [`indy-cli-rs`](https://github.com/hyperledger/indy-cli-rs)
+>This documentation describes the necessarry steps with `indy-cli`, keep in mind that everytime `indy-cli` is mentioned you can also use `indy-cli-rs`. Please refer to the corresponding documentation.
+
 _If you just need to quickly generate a set of secrets (Seed and wallet key), or a Seed, DID, and Verkey and do not have an `indy-cli` environment already setup, you can use the `indy-cli` features integrated into `von-network`.  Refer to [Generate a set of Secrets](https://github.com/bcgov/von-network/blob/main/docs/Indy-CLI.md#generate-a-set-of-secrets), and [Generate your DID](https://github.com/bcgov/von-network/blob/main/docs/Indy-CLI.md#generate-your-did) for details._
 
 

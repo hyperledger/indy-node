@@ -1,7 +1,11 @@
 # Installation and configuration of Indy-Node
 
 ## 1. Introduction
-The purpose of this document is to describe how to setup a production level Indy-Validator-Node and register it on an existing network using an `indy-cli` machine which you also configure along the way.  This documentation is based heavily on the [Sovrin Steward Validator Preparation Guide v3](https://docs.google.com/document/d/18MNB7nEKerlcyZKof5AvGMy0GP9T82c4SWaxZkPzya4).
+The purpose of this document is to describe how to setup a production level Indy-Validator-Node and register it on an existing network using an `indy-cli` machine which you also configure along the way.
+>Alternativly you can use [`indy-cli-rs`](https://github.com/hyperledger/indy-cli-rs), which is command for command compatible with the existing indy-cli (at least ATM). 
+>This documentation describes the necessarry steps with `indy-cli`, keep in mind that everytime `indy-cli` is mentioned you can also use `indy-cli-rs`. Please refer to the corresponding documentation.
+
+This documentation is based heavily on the [Sovrin Steward Validator Preparation Guide v3](https://docs.google.com/document/d/18MNB7nEKerlcyZKof5AvGMy0GP9T82c4SWaxZkPzya4).
 
 For information on how to setup a new network, refer to [New Network](./NewNetwork/NewNetwork.md)
 
