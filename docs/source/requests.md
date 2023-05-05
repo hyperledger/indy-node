@@ -2466,7 +2466,7 @@ A client will receive NACK for
 - a request with incorrect format;
 - a request with a rule with "ADD" action, but with "old_value";
 - a request with a rule with "EDIT" action without "old_value";
-- a request with a rule with a key that is not in the [auth_rule](auth_rule.md).
+- a request with a rule with a key that is not in the auth_rule ;
 
 - The `rules` field contains a list of auth rules. One rule has the following list of parameters which must match an auth rule from the [auth_rules.md](auth_rules.md):
 
