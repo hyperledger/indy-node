@@ -57,7 +57,7 @@ then have a look at [transactions](transactions.md).
 
 [indy-sdk](https://github.com/hyperledger/indy-sdk) expects the format as specified below.
 
-See [roles and permissions](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md) on the roles and who can create each type of transactions.
+See [roles and permissions](auth_rules.md) on the roles and who can create each type of transactions.
 
 ## Common Request Structure
 
