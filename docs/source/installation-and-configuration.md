@@ -1,9 +1,8 @@
 # Installation and configuration of Indy-Node
 
 ## 1. Introduction
-The purpose of this document is to describe how to setup a production level Indy-Validator-Node and register it on an existing network using an `indy-cli` machine which you also configure along the way.
->Alternativly you can use [`indy-cli-rs`](https://github.com/hyperledger/indy-cli-rs), which is command for command compatible with the existing indy-cli (at least ATM). 
->This documentation describes the necessarry steps with `indy-cli`, keep in mind that everytime `indy-cli` is mentioned you can also use `indy-cli-rs`. Please refer to the corresponding documentation.
+The purpose of this document is to describe how to setup a production level Indy-Validator-Node and register it on an existing network using an `indy-cli-rs` machine which you also configure along the way.
+
 
 This documentation is based heavily on the [Sovrin Steward Validator Preparation Guide v3](https://docs.google.com/document/d/18MNB7nEKerlcyZKof5AvGMy0GP9T82c4SWaxZkPzya4).
 
@@ -38,7 +37,7 @@ As you proceed through these steps, you will be generating data that will be nee
   - A cryptographic check against certain forgeries that can be done with BLS keys.
 
 ### 2.1 Two Machines
-You’ll need two machines: one is your Validator node and the other an `indy-cli` machine to run the `indy-cli` with which you will interact with the ledger. They can be physical machines, virtual machines, or a combination. The machine with the `indy-cli` can be turned on and off at your convenience (refer to [3.1. `indy-cli` Machine Installation](##3.1.-indy-cli-Machine-Installation) for more details), only the Validator node needs to be public and constantly running.
+You’ll need two machines: one is your Validator node and the other an `indy-cli` machine to run the `indy-cli-rs` with which you will interact with the ledger. They can be physical machines, virtual machines, or a combination. The machine with the `indy-cli` can be turned on and off at your convenience (refer to [3.1. `indy-cli` Machine Installation](##3.1.-indy-cli-Machine-Installation) for more details), only the Validator node needs to be public and constantly running.
 
 >Important: for security reasons, you must not use your Validator node as an `indy-cli` client.  If you do, it could expose your Steward credentials needlessly.
 
@@ -73,22 +72,12 @@ Your Validator node will need to have an alias. This will be used later when we 
 
 Some instructions must be executed on the Validator node, and others on the `indy-cli` machine. The command line prompts in the instructions will help remind you which machine should be used for each command.
 
-### 3.1. `indy-cli` Machine Installation
+### 3.1. `indy-cli-rs` Machine Installation
 
-The following instructions describe how to install and configure the `indy-cli` directly on a machine or VM. The other, possibly more convenient, option is to use a containerized `indy-cli` environment like the one included with [von-network](https://github.com/bcgov/von-network).  For information on how to use the containerized `indy-cli` in `von-network`, refer to [Using the containerized indy-cli](https://github.com/bcgov/von-network/blob/main/docs/Indy-CLI.md)
+The following instructions describe how to install and configure the `indy-cli-rs` directly on a machine or VM. The other, possibly more convenient, option is to use a containerized `indy-cli` environment like the one included with [von-network](https://github.com/bcgov/von-network).  For information on how to use the containerized `indy-cli` in `von-network`, refer to [Using the containerized indy-cli](https://github.com/bcgov/von-network/blob/main/docs/Indy-CLI.md)
 
-#### 3.1.1. Install the `indy-cli`
-On the machine you’ve chosen for the `indy-cli`, open a terminal and run the following lines to install the `indy-cli` package.
-
-```
-ubuntu@cli$ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88
-ubuntu@cli$ sudo apt-get install -y software-properties-common python-software-properties
-ubuntu@cli$ sudo add-apt-repository "deb https://repo.sovrin.org/sdk/deb xenial stable"
-ubuntu@cli$ sudo add-apt-repository "deb https://repo.sovrin.org/deb xenial stable"
-ubuntu@cli$ sudo apt-get update -y
-ubuntu@cli$ sudo apt-get upgrade -y
-ubuntu@cli$ sudo apt-get install -y indy-cli
-```
+#### 3.1.1. Install the `indy-cli-rs`
+On the machine you’ve chosen for the `indy-cli-rs` simply donwload the latest release from its release pages and unpack it.
 
 #### 3.1.2. Add an Acceptance Mechanism
 To write to an Indy Node Ledger, you’ll need to sign the Transaction Author Agreement (TAA). You can learn more about the TAA [here](https://github.com/hyperledger/indy-sdk/blob/master/docs/how-tos/transaction-author-agreement.md). This agreement is incorporated into the process of connecting to the node pool and requires an acceptance mechanism. For the `indy-cli`, the default mechanism is “For Session” and the following instructions are required to be able to use “For Session” for your `indy-cli`:
@@ -103,12 +92,12 @@ This example cliconfig.json file contains the line that sets the AML:
 ```
 
 To start the `indy-cli` using your new config file, run the following:
-`ubuntu@cli$ indy-cli --config <path_to_cfg>/cliconfig.json`
+`ubuntu@cli$ indy-cli-rs --config <path_to_cfg>/cliconfig.json`
 
 Now all of the appropriate transactions will have an “Agreement Accepted” authorization attached to them during this `indy-cli` session.
 
 #### 3.1.3. Obtain the Genesis Files
-Obtain the genesis transaction files for the Network with the following steps. For the sake of this documentation, we will use the genesis files from the Sovrin Networks. Information on how to create a genesis file can be found [here](./NewNetwork/NewNetwork.md).  These files contain bootstrap information about some of the Validator nodes, which will be used by your `indy-cli` to connect to the networks.
+Obtain the genesis transaction files for the Network with the following steps. For the sake of this documentation, we will use the genesis files from the Sovrin Networks. Information on how to create a genesis file can be found [here](./NewNetwork/NewNetwork.md).  These files contain bootstrap information about some of the Validator nodes, which will be used by your `indy-cli-rs` to connect to the networks.
 
 If you are at the `indy` prompt, please exit:
 
@@ -152,9 +141,9 @@ ShahXae2ieG1uibeoraepa4eyu6mexei
 Keep this seed in a safe place, such as an encrypted password manager or other secure location designated by your organization. You will need it later in this guide, as well as in the future for other Steward interactions with the ledger. 
 
 ##### Run the `indy-cli` and generate key
-Next we run the `indy-cli` by entering: 
+Next we run the `indy-cli-rs` by entering: 
 
-`ubuntu@cli$ indy-cli --config <path_to_cfg>/cliconfig.json`
+`ubuntu@cli$ indy-cli-rs --config <path_to_cfg>/cliconfig.json`
 
 In the command line, enter the following to create your pool configuration and your wallet locally. In these instructions, we use "buildernet" for the pool name and "buildernet_wallet" for the wallet name, although you may use other names of your choosing, if desired. The encrypted wallet will be used to store important information on this machine, such as your public and private keys. When creating your wallet, you will need to provide a "key" that is any string desired. It will be the encryption key of your local wallet.
 
@@ -351,10 +340,10 @@ dpkg -l | grep indy
 ```
 
 ##### Add Validator Node to Ledger
-On your `indy-cli` machine, if you are not still on the `indy-cli` prompt, you will need to return to it. To get back to where you were, type `indy-cli --config <path_to_cfg>/cliconfig.json`, connect to the network pool, designate the wallet to use (using the same wallet key as before), and enter the DID that was returned earlier, when you typed `did new seed` (then enter your seed) for your Steward user: 
+On your `indy-cli` machine, if you are not still on the `indy-cli-rs` prompt, you will need to return to it. To get back to where you were, type `indy-cli --config <path_to_cfg>/cliconfig.json`, connect to the network pool, designate the wallet to use (using the same wallet key as before), and enter the DID that was returned earlier, when you typed `did new seed` (then enter your seed) for your Steward user: 
 
 ```
-ubuntu@cli$ indy-cli --config <path_to_cfg>/cliconfig.json
+ubuntu@cli$ indy-cli-rs --config <path_to_cfg>/cliconfig.json
 indy> pool connect buildernet
 indy> wallet open buildernet_wallet key=<wallet_key>
 indy> did use <your_steward_DID>

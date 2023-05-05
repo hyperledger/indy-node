@@ -2,12 +2,10 @@
 
 This walkthrough goes through some of the detailed steps mentioned in [Setting up a New Network](../../docs/source/NewNetwork/NewNetwork.md)
 
->As stated in [Installation and configuration of Indy-Node](../../docs/source/installation-and-configuration.md) `indy-cli` can be replaced with [`indy-cli-rs`](https://github.com/hyperledger/indy-cli-rs)
->This documentation describes the necessarry steps with `indy-cli`, keep in mind that everytime `indy-cli` is mentioned you can also use `indy-cli-rs`. Please refer to the corresponding documentation.
 
 For the sake of simplicity this walkthrough runs all of the nodes on the local machine.  As a result it uses the local python install version of some of the commands rather than the production level Debian package install version of the commands documented in the [Setting up a New Network](../../docs/source/NewNetwork/NewNetwork.md) guide.
 
-1. Open indy-cli by executing `indy-cli`
+1. Open indy-cli by executing `indy-cli-rs`
    
    Note that the command prompt changed to `indy>`.
 
