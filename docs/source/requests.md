@@ -57,7 +57,7 @@ then have a look at [transactions](transactions.md).
 
 [indy-sdk](https://github.com/hyperledger/indy-sdk) expects the format as specified below.
 
-See [roles and permissions](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md) on the roles and who can create each type of transactions.
+See [roles and permissions](auth_rules.md) on the roles and who can create each type of transactions.
 
 ## Common Request Structure
 
@@ -2276,7 +2276,7 @@ A client will receive NACK for
 - a request with incorrect format;
 - a request with "ADD" action, but with "old_value";
 - a request with "EDIT" action without "old_value";
-- a request with a key that is not in the [auth_rule](auth_rule.md).
+- a request with a key that is not in the auth_rule;
 
 The following input parameters must match an auth rule from the [auth_rules.md](auth_rules.md):
 - `auth_type` (string enum)
