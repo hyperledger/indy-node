@@ -23,6 +23,8 @@ Each node has its own directory, which stores:
     - `LOCK` - Used to ensure that only one process can access the database at a time.
     - `MANIFEST` - Refers to the system that keeps track of RocksDB state changes in a transactional log.
     - `OPTIONS` - Contains configuration settings for the node's database.
+
+    For more information about database, follow the [link](https://github.com/facebook/rocksdb/wiki).
 - caches:
     - `logBloom` cache for synchronization process optimization.
 - node private keys.
