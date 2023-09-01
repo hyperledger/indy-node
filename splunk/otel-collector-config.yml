@@ -1,0 +1,157 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+  splunk_hec:
+  hostmetrics:
+    collection_interval: 10s
+    scrapers:
+      cpu:
+      disk:
+      filesystem:
+      memory:
+      network:
+      # System load average metrics https://en.wikipedia.org/wiki/Load_(computing)
+      load:
+      # Paging/Swap space utilization and I/O metrics
+      paging:
+      # Aggregated system process count metrics
+      processes:
+      # System processes metrics, disabled by default
+      # process:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'cadvisor'
+          scrape_interval: 5s
+          static_configs:
+            - targets: [ 'cadvisor:8080' ]
+  filelog:
+    include: [ /var/log/*.log, /var/log/syslog ]
+  filelog/quorum:
+    include: [ /var/log-quorum/*.log ]
+    operators:
+      - type: regex_parser
+        regex: '^(?P<loglevel>\w+)\s\[(?P<timestamp_field>.*)\]\s(?P<message>.*)'
+        timestamp:
+          parse_from: timestamp_field
+          layout_type: gotime
+          layout: '01-02|15:04:05.000'
+  filelog/tessera:
+    include: [ /var/log-tessera/*.log ]
+
+
+exporters:
+  splunk_hec/logs:
+    # Splunk HTTP Event Collector token.
+    token: '${SPLUNK_HEC_TOKEN}'
+    # URL to a Splunk instance to send data to.
+    endpoint: 'https://splunk:8088/services/collector'
+    # Optional Splunk source: https://docs.splunk.com/Splexicon:Source
+    source: 'logs'
+    # Optional Splunk source type: https://docs.splunk.com/Splexicon:Sourcetype
+    sourcetype: 'logs'
+    # Splunk index, optional name of the Splunk index targeted.
+    index: 'logs'
+    # Maximum HTTP connections to use simultaneously when sending data. Defaults to 100.
+    max_connections: 20
+    # Whether to disable gzip compression over HTTP. Defaults to false.
+    disable_compression: false
+    # HTTP timeout when sending data. Defaults to 10s.
+    timeout: 10s
+    # Whether to skip checking the certificate of the HEC endpoint when sending data over HTTPS. Defaults to false.
+    # For this demo, we use a self-signed certificate on the Splunk docker instance, so this flag is set to true.
+    insecure_skip_verify: true
+  splunk_hec/traces:
+    # Splunk HTTP Event Collector token.
+    token: '${SPLUNK_HEC_TOKEN}'
+    # URL to a Splunk instance to send data to.
+    endpoint: 'https://splunk:8088/services/collector'
+    # Optional Splunk source: https://docs.splunk.com/Splexicon:Source
+    source: 'besu:traces'
+    # Optional Splunk source type: https://docs.splunk.com/Splexicon:Sourcetype
+    sourcetype: 'otlp'
+    # Splunk index, optional name of the Splunk index targeted.
+    index: 'traces'
+    # Maximum HTTP connections to use simultaneously when sending data. Defaults to 100.
+    max_connections: 20
+    # Whether to disable gzip compression over HTTP. Defaults to false.
+    disable_compression: false
+    # HTTP timeout when sending data. Defaults to 10s.
+    timeout: 10s
+    # Whether to skip checking the certificate of the HEC endpoint when sending data over HTTPS. Defaults to false.
+    # For this demo, we use a self-signed certificate on the Splunk docker instance, so this flag is set to true.
+    insecure_skip_verify: true
+  splunk_hec/metrics:
+    # Splunk HTTP Event Collector token.
+    token: '${SPLUNK_HEC_TOKEN}'
+    # URL to a Splunk instance to send data to.
+    endpoint: 'https://splunk:8088/services/collector'
+    # Optional Splunk source: https://docs.splunk.com/Splexicon:Source
+    source: 'besu:metrics'
+    # Optional Splunk source type: https://docs.splunk.com/Splexicon:Sourcetype
+    sourcetype: 'prometheus'
+    # Splunk index, optional name of the Splunk index targeted.
+    index: 'metrics'
+    # Maximum HTTP connections to use simultaneously when sending data. Defaults to 100.
+    max_connections: 20
+    # Whether to disable gzip compression over HTTP. Defaults to false.
+    disable_compression: false
+    # HTTP timeout when sending data. Defaults to 10s.
+    timeout: 10s
+    # Whether to skip checking the certificate of the HEC endpoint when sending data over HTTPS. Defaults to false.
+    # For this demo, we use a self-signed certificate on the Splunk docker instance, so this flag is set to true.
+    insecure_skip_verify: true
+
+processors:
+  batch:
+  attributes/quorum_log_file:
+    actions:
+      - key: "file_name"
+        pattern: ^geth-(?P<tmp_host>.*)-(?P<ip>.*)\.log
+        action: extract
+      - key: host.name
+        from_attribute: tmp_host
+        action: insert
+      - key: tmp_host
+        action: delete
+  attributes/tessera_log_file:
+    actions:
+      - key: "file_name"
+        pattern: ^tessera-(?P<tmp_host>.*)\.log
+        action: extract
+      - key: host.name
+        from_attribute: tmp_host
+        action: insert
+      - key: tmp_host
+        action: delete
+
+extensions:
+  health_check:
+  pprof:
+  zpages:
+
+service:
+  extensions: [pprof, zpages, health_check]
+  pipelines:
+    logs:
+      receivers: [ splunk_hec, filelog, filelog/tessera ]
+      exporters: [ splunk_hec/logs ]
+      processors: [ batch ]
+    logs/tessera:
+      receivers: [ filelog/tessera ]
+      exporters: [ splunk_hec/logs ]
+      processors: [ batch, attributes/tessera_log_file ]
+    logs/quorum:
+      receivers: [  filelog/quorum ]
+      exporters: [ splunk_hec/logs ]
+      processors: [ batch, attributes/quorum_log_file ]
+    traces:
+      receivers: [otlp]
+      exporters: [splunk_hec/traces]
+      processors: [batch]
+    metrics:
+      receivers: [otlp, hostmetrics, prometheus]
+      exporters: [splunk_hec/metrics]
+      processors: [batch]

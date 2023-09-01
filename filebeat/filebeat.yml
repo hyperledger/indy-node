@@ -1,0 +1,66 @@
+
+filebeat.modules:
+
+# List of inputs to fetch data.
+filebeat.inputs:
+  - paths:
+      - "/var/log/logstash/logstash-*.log"
+    type: log
+    enabled: true
+    document_type: logstash
+    fields_under_root: true
+    fields:
+      service_name: logstash
+      env_name: ${ENV_NAME}
+      ip_address: ${IP_ADDRESS}
+
+  - paths:
+      - "/var/log/besu/*.log"
+    type: log
+    enabled: true
+    document_type: besu
+    fields_under_root: true
+    fields:
+      service_name: besu
+      env_name: ${ENV_NAME}
+      ip_address: ${IP_ADDRESS}
+
+  - paths:
+      - "/var/log/quorum/*.log"
+    type: log
+    enabled: true
+    document_type: quorum
+    fields_under_root: true
+    fields:
+      service_name: quorum
+      env_name: ${ENV_NAME}
+      ip_address: ${IP_ADDRESS}
+
+  - paths:
+      - "/var/log/tessera/*.log"
+    type: log
+    enabled: true
+    document_type: tessera
+    fields_under_root: true
+    fields:
+      service_name: tessera
+      env_name: ${ENV_NAME}
+      ip_address: ${IP_ADDRESS}      
+
+output.redis:
+  enabled: true
+  hosts: ["${REDIS_HOST}:${REDIS_PORT}"]
+  key: filebeat
+
+
+logging:
+  level: error
+  metrics.enabled: false
+  to_files: false
+  json: true
+  files:
+    path: /var/log/filebeat
+    name: filebeat-all.log
+    keepfiles: 0
+    #rotateonstartup: true
+
