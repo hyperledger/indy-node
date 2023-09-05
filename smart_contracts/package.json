@@ -13,7 +13,7 @@
     "async-promise-pool": "^1.0.3",
     "ethers": "^5.6.1",
     "fs-extra": "^10.0.0",
-    "solc": "^0.7.6",
+    "solc": "^0.7.0",
     "web3": "1.5.2",
     "web3js-quorum": "21.7.0-rc1"
   }

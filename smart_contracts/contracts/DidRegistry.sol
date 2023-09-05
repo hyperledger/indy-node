@@ -1,10 +1,9 @@
-pragma solidity ^0.8.0;
+pragma solidity ^0.7.0;
 
 contract DidRegistry {
-    string public did;
-    event CreatedDID(string did);
+  event createdDid(string did);
 
-    function createDID(string memory did) public {  
-        emit CreatedDID(did);
-    }
+  function createDid(string calldata did) public {
+    emit createdDid(did);
+  }
 }
