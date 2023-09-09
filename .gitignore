@@ -2,3 +2,5 @@
 node_modules
 .vscode
 logs
+/config/nodes
+.quorumDevQuickstart.lock
