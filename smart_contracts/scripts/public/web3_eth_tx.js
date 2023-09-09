@@ -9,7 +9,8 @@ const host = besu.rpcnode.url;
 async function main(){
   const web3 = new Web3(host);
   //pre seeded account - test account only
-  const privateKeyA = accounts['0x627306090abaB3A6e1400e9345bC60c78a8BEf57'].privateKey; 
+  
+  const privateKeyA = accounts.a.privateKey; 
   const accountA = web3.eth.accounts.privateKeyToAccount(privateKeyA);
   var accountABalance = web3.utils.fromWei(await web3.eth.getBalance(accountA.address));
   console.log("Account A has balance of: " + accountABalance);

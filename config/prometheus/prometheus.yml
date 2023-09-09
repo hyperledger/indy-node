@@ -91,30 +91,6 @@ scrape_configs:
       static_configs:
         - targets: [ member3besu:9545 ]
 
-    - job_name: member1tessera
-      scrape_interval: 15s
-      scrape_timeout: 10s
-      metrics_path: /metrics
-      scheme: http
-      static_configs:
-        - targets: [ member1tessera:9545 ]
-
-    - job_name: member2tessera
-      scrape_interval: 15s
-      scrape_timeout: 10s
-      metrics_path: /metrics
-      scheme: http
-      static_configs:
-        - targets: [ member2tessera:9545 ]
-
-    - job_name: member3tessera
-      scrape_interval: 15s
-      scrape_timeout: 10s
-      metrics_path: /metrics
-      scheme: http
-      static_configs:
-        - targets: [ member3tessera:9545 ]
-
     # all the nodes override themselves if given the same name
     # so we use dns based lookup and, replace labels to
     # alter the address from 192.168.x.y:9545 to node:192.168.x.y:9545 so they are easier to see in grafana

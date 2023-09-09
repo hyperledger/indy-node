@@ -17,29 +17,8 @@ x-besu-def:
       /opt/besu/bin/besu \
       --config-file=/config/config.toml \
       --p2p-host=$$(hostname -i) \
-      --rpc-http-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PRIV,PERM,${BESU_CONS_ALGO:-QBFT} \
-      --rpc-ws-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PRIV,PERM,${BESU_CONS_ALGO:-QBFT} ;
-
-
-x-tessera-def:
-  &tessera-def
-  build:
-    context: config/tessera
-    args:
-      TESSERA_VERSION: ${TESSERA_VERSION:-latest}
-  environment:
-    TESSERA_MODE: orion
-  expose:
-    - 9000
-    - 9080
-    - 9101
-  restart: "no"
-  healthcheck:
-    test: ["CMD", "wget", "--spider", "--proxy", "off", "http://localhost:9000/upcheck"]
-    interval: 3s
-    timeout: 3s
-    retries: 20
-    start_period: 5s
+      --rpc-http-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PERM,${BESU_CONS_ALGO:-QBFT} \
+      --rpc-ws-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PERM,${BESU_CONS_ALGO:-QBFT} ;
 
 
 
@@ -101,65 +80,6 @@ x-blockscoutpostgres-ref:
     retries: 5
 
 
-
-
-
-x-chainlensapi-ref:
-  &chainlensapi-def
-  image: web3labs/epirus-free-api:latest
-  container_name: chainlensapi
-  environment:
-    - NODE_ENDPOINT=http://rpcnode:8545
-    - MONGO_CLIENT_URI=mongodb://chainlensmongodb:27017
-    - REINDEX_ENDPOINT=http://chainlensingestion/reindex/
-    - MONGO_DB_NAME=epirus
-    - MONGO_CREATE_INDICES=true
-  depends_on:
-    - chainlensmongodb
-
-x-chainlensmongodb-ref:
-  &chainlensmongodb-def
-  image: mongo:5.0.8
-  container_name: chainlensmongodb
-  environment:
-    - COMPOSE_HTTP_TIMEOUT=900
-    - DOCKER_CLIENT_TIMEOUT=900
-  entrypoint: mongod --bind_ip "0.0.0.0"
-
-x-chainlensweb-ref:
-  &chainlensweb-def
-  image: web3labs/epirus-free-web:latest
-  container_name: chainlensweb
-  environment:
-    - API_URL=/api
-    - DISPLAY_NETWORK_TAB=disabled
-  depends_on:
-    - chainlensapi
-
-x-chainlensingestion-ref:
-  &chainlensingestion-def
-  image: web3labs/epirus-free-ingestion:latest
-  container_name: chainlensingestion
-  environment:
-    - NODE_ENDPOINT=http://rpcnode:8545
-    - MONGO_CLIENT_URI=mongodb://chainlensmongodb:27017
-    - MONGO_DB_NAME=epirus
-  depends_on:
-    - chainlensmongodb
-    - chainlensweb
-
-x-chainlensnginx-ref:
-  &chainlensnginx-def
-  image: nginx:latest
-  container_name: chainlensnginx
-  volumes:
-    - ./chainlens/nginx.conf:/etc/nginx/nginx.conf
-    - ./chainlens/5xx.html:/www/error_pages/5xx.html
-  ports:
-    - 8081:80
-  depends_on:
-    - chainlensapi
-    - chainlensweb
 
 
 
@@ -293,149 +213,7 @@ services:
         ipv4_address: 172.16.239.40
 
 
-  member1tessera:
-    << : *tessera-def
-    ports:
-      - 9081:9080
-    volumes:
-      - ./config/nodes/member1:/config/keys
-      - ./logs/tessera:/var/log/tessera/
-    networks:
-      quorum-dev-quickstart:
-        ipv4_address: 172.16.239.26
 
-  member1besu:
-    << : *besu-def
-    environment:
-      - OTEL_RESOURCE_ATTRIBUTES=service.name=member1besu,service.version=${BESU_VERSION:-latest}
-      - NODE_ID=6
-    entrypoint:
-      - /bin/bash
-      - -c
-      - |
-        /opt/besu/bin/besu \
-        --config-file=/config/config.toml \
-        --p2p-host=$$(hostname -i) \
-        --privacy-enabled \
-        --privacy-url=http://member1tessera:9101 \
-        --privacy-public-key-file=/opt/besu/keys/tm.pub \
-        --privacy-onchain-groups-enabled=${PRIVACY_ONCHAIN_GROUPS_ENABLED:-false} \
-        --rpc-http-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PRIV,PERM,${BESU_CONS_ALGO:-QBFT} \
-        --rpc-ws-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PRIV,PERM,${BESU_CONS_ALGO:-QBFT} ;
-    volumes:
-      - ./config/besu/:/config
-      - ./config/nodes/member1:/opt/besu/keys
-      - ./logs/besu:/tmp/besu
-    depends_on:
-      - validator1
-      - member1tessera
-    ports:
-      - 20000:8545/tcp
-      - 20001:8546/tcp
-    networks:
-      quorum-dev-quickstart:
-        ipv4_address: 172.16.239.16
-
-  member2tessera:
-    << : *tessera-def
-    ports:
-      - 9082:9080
-    volumes:
-      - ./config/nodes/member2:/config/keys
-      - ./logs/tessera:/var/log/tessera/
-    networks:
-      quorum-dev-quickstart:
-        ipv4_address: 172.16.239.27
-
-  member2besu:
-    << : *besu-def
-    environment:
-      - OTEL_RESOURCE_ATTRIBUTES=service.name=member2besu,service.version=${BESU_VERSION:-latest}
-      - NODE_ID=7
-    entrypoint:
-      - /bin/bash
-      - -c
-      - |
-        /opt/besu/bin/besu \
-        --config-file=/config/config.toml \
-        --p2p-host=$$(hostname -i) \
-        --privacy-enabled \
-        --privacy-url=http://member2tessera:9101 \
-        --privacy-public-key-file=/opt/besu/keys/tm.pub \
-        --privacy-onchain-groups-enabled=${PRIVACY_ONCHAIN_GROUPS_ENABLED:-false} \
-        --rpc-http-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PRIV,PERM,${BESU_CONS_ALGO:-QBFT} \
-        --rpc-ws-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PRIV,PERM,${BESU_CONS_ALGO:-QBFT} ;
-    volumes:
-      - ./config/besu/:/config
-      - ./config/nodes/member2:/opt/besu/keys
-      - ./logs/besu:/tmp/besu
-    depends_on:
-      - validator1
-      - member2tessera
-    ports:
-      - 20002:8545/tcp
-      - 20003:8546/tcp
-    networks:
-      quorum-dev-quickstart:
-        ipv4_address: 172.16.239.17
-
-  member3tessera:
-    << : *tessera-def
-    ports:
-      - 9083:9080
-    volumes:
-      - ./config/nodes/member3:/config/keys
-      - ./logs/tessera:/var/log/tessera/
-    networks:
-      quorum-dev-quickstart:
-        ipv4_address: 172.16.239.28
-
-  member3besu:
-    << : *besu-def
-    environment:
-      - OTEL_RESOURCE_ATTRIBUTES=service.name=member3besu,service.version=${BESU_VERSION:-latest}
-      - NODE_ID=8
-    entrypoint:
-      - /bin/bash
-      - -c
-      - |
-        /opt/besu/bin/besu \
-        --config-file=/config/config.toml \
-        --p2p-host=$$(hostname -i) \
-        --privacy-enabled \
-        --privacy-url=http://member3tessera:9101 \
-        --privacy-public-key-file=/opt/besu/keys/tm.pub \
-        --privacy-onchain-groups-enabled=${PRIVACY_ONCHAIN_GROUPS_ENABLED:-false} \
-        --rpc-http-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PRIV,PERM,${BESU_CONS_ALGO:-QBFT} \
-        --rpc-ws-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PRIV,PERM,${BESU_CONS_ALGO:-QBFT} ;
-    volumes:
-      - ./config/besu/:/config
-      - ./config/nodes/member3:/opt/besu/keys
-      - ./logs/besu:/tmp/besu
-    depends_on:
-      - validator1
-      - member3tessera
-    ports:
-      - 20004:8545/tcp
-      - 20005:8546/tcp
-    networks:
-      quorum-dev-quickstart:
-        ipv4_address: 172.16.239.18
-
-
-
-  explorer:
-    image: consensys/quorum-explorer:${QUORUM_EXPLORER_VERSION:-latest}
-    volumes:
-      - ./quorum-explorer/config.json:/app/config.json
-      - ./quorum-explorer/env:/app/.env.production
-    depends_on:
-      - rpcnode
-    ports:
-      - 25000:25000/tcp
-    networks:
-      quorum-dev-quickstart:
-        ipv4_address: 172.16.239.31
 
 
 
@@ -452,39 +230,6 @@ services:
         ipv4_address: 172.16.239.52
 
 
-
-
-  chainlensapi:
-    <<: *chainlensapi-def
-    networks:
-      quorum-dev-quickstart:
-        ipv4_address: 172.16.239.53
-
-  chainlensmongodb:
-    <<: *chainlensmongodb-def
-    networks:
-      quorum-dev-quickstart:
-        ipv4_address: 172.16.239.54
-
-  chainlensingestion:
-    <<: *chainlensingestion-def
-    depends_on:
-      - rpcnode
-    networks:
-      quorum-dev-quickstart:
-        ipv4_address: 172.16.239.55
-
-  chainlensweb:
-    <<: *chainlensweb-def
-    networks:
-      quorum-dev-quickstart:
-        ipv4_address: 172.16.239.56
-
-  chainlensnginx:
-    <<: *chainlensnginx-def
-    networks:
-      quorum-dev-quickstart:
-        ipv4_address: 172.16.239.57
 
 
 
@@ -546,7 +291,6 @@ volumes:
   public-keys:
   prometheus:
   grafana:
-  splunk:
   ethlogger:
   blockscoutpostgres:
 

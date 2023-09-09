@@ -32,11 +32,15 @@ const input = {
 
 function compileContracts() {
   const stringifiedJson = JSON.stringify(input);
+	console.log(stringifiedJson)
   const compilationResult = solc.compile(stringifiedJson);
+	console.log(compilationResult)
   const output = JSON.parse(compilationResult);
+	console.log(output)
 	const compiledContracts = output.contracts;
 	for (let contract in compiledContracts) {
 		for(let contractName in compiledContracts[contract]) {
+			console.log(contract)
 			fs.outputJsonSync(
 				path.resolve(contractsPath, `${contractName}.json`),
 				compiledContracts[contract][contractName], { spaces: 2 }

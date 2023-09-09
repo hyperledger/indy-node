@@ -16,9 +16,6 @@ NO_LOCK_REQUIRED=true
 . ./.env
 . ./.common.sh
 
-# create log folders with the user permissions so it won't conflict with container permissions
-mkdir -p logs/besu logs/quorum logs/tessera
-
 # Build and run containers and network
 echo "docker-compose.yml" > ${LOCK_FILE}
 

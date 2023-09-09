@@ -37,24 +37,25 @@ async function createContract(provider, wallet, contractAbi, contractByteCode, c
   const factory = new ethers.ContractFactory(contractAbi, contractByteCode, wallet);
   const contract = await factory.deploy(contractInit);
   // The contract is NOT deployed yet; we must wait until it is mined
-  const deployed = await contract.deployTransaction.wait()
+  const deployed = await contract.waitForDeployment();
   //The contract is deployed now
   return contract
 };
 
 async function main(){
-  const provider = new ethers.providers.JsonRpcProvider(host);
+  const provider = new ethers.JsonRpcProvider(host);
   const wallet = new ethers.Wallet(accountPrivateKey, provider);
 
   createContract(provider, wallet, contractAbi, contractBytecode, 47)
   .then(async function(contract){
-    console.log("Contract deployed at address: " + contract.address);
+    contractAddress = await contract.getAddress();
+    console.log("Contract deployed at address: " + contractAddress);
     console.log("Use the smart contracts 'get' function to read the contract's constructor initialized value .. " )
-    await getValueAtAddress(provider, contractAbi, contract.address);
+    await getValueAtAddress(provider, contractAbi, contractAddress);
     console.log("Use the smart contracts 'set' function to update that value to 123 .. " );
-    await setValueAtAddress(provider, wallet, contractAbi, contract.address, 123 );
+    await setValueAtAddress(provider, wallet, contractAbi, contractAddress, 123 );
     console.log("Verify the updated value that was set .. " )
-    await getValueAtAddress(provider, contractAbi, contract.address);
+    await getValueAtAddress(provider, contractAbi, contractAddress);
     // await getAllPastEvents(host, contractAbi, tx.contractAddress);
   })
   .catch(console.error);
