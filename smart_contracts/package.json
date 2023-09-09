@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "description": "Example smart contracts for trying out Quorum",
   "scripts": {
-    "compile": "node scripts/compile.js",
-    "deploy": "node scripts/deploy.js"
+    "compile": "node scripts/compile.js"
   },
   "license": "Apache-2.0",
   "dependencies": {

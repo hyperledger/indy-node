@@ -20,20 +20,15 @@ NO_LOCK_REQUIRED=true
 echo "docker-compose.yml" > ${LOCK_FILE}
 
 echo "${bold}*************************************"
-echo "Quorum Dev Quickstart"
+echo "Localnet"
 echo "*************************************${normal}"
 echo "Start network"
 echo "--------------------"
 
-if [ -f "docker-compose-deps.yml" ]; then
-    echo "Starting dependencies..."
-    docker compose -f docker-compose-deps.yml up --detach
-    sleep 60
-fi
 
 echo "Starting network..."
-docker compose build --pull
-docker compose up --detach
+docker compose --profile services build --pull
+docker compose --profile services up --detach
 
 
 #list services and endpoints

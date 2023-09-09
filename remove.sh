@@ -23,24 +23,12 @@ removeDockerImage(){
 }
 
 echo "${bold}*************************************"
-echo "Quorum Dev Quickstart "
+echo "Localnet"
 echo "*************************************${normal}"
 echo "Stop and remove network..."
 
-docker compose down -v
-docker compose rm -sfv
-
-if [ -f "docker-compose-deps.yml" ]; then
-    echo "Stopping dependencies..."
-    docker compose -f docker-compose-deps.yml down -v
-    docker compose rm -sfv
-fi
-# pet shop dapp
-if [[ ! -z `docker ps -a | grep quorum-dev-quickstart_pet_shop` ]]; then
-  docker stop quorum-dev-quickstart_pet_shop
-  docker rm quorum-dev-quickstart_pet_shop
-  removeDockerImage quorum-dev-quickstart_pet_shop
-fi
+docker compose --profile services down -v
+docker compose --profile services rm -sfv
 
 rm ${LOCK_FILE}
 echo "Lock file ${LOCK_FILE} removed"

@@ -21,7 +21,7 @@ HOST=${DOCKER_PORT_2375_TCP_ADDR:-"localhost"}
 
 # Displays links to exposed services
 echo "${bold}*************************************"
-echo "Quorum Dev Quickstart "
+echo "Localnet "
 echo "*************************************${normal}"
 
 echo "----------------------------------"
