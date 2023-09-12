@@ -1,0 +1,16 @@
+{
+  "name": "create_qbft_genesis_content",
+  "description": "",
+  "version": "1.0.0",
+  "scripts": {
+    "generate": "npx ts-node createValidatorsGenesisContent.ts"
+  },
+  "author": "",
+  "dependencies": {
+    "bn.js": "^5.2.1",
+    "web3-utils": "^4.0.5"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.1"
+  }
+}

@@ -3,22 +3,40 @@
   "version": "1.0.0",
   "description": "Example smart contracts for trying out Quorum",
   "scripts": {
-    "compile": "node scripts/compile.js"
+    "compile": "hardhat compile",
+    "clean": "hardhat clean",
+    "test": "hardhat test",
+    "typecheck": "yarn compile && yarn test && yarn tsc --noEmit"
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "async-promise-pool": "^1.0.6",
-    "fs-extra": "^10.0.0",
-    "solc": "0.8.10",
+    "@ethereumjs/common": "^4.0.0",
+    "@ethereumjs/tx": "^5.0.0",
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
     "@nomicfoundation/hardhat-verify": "^1.0.0",
-    "ethers": "6.7.1",
+    "async-promise-pool": "^1.0.6",
+    "ethers": "6.4.0",
+    "fs-extra": "^10.0.0",
     "hardhat-gas-reporter": "^1.0.8",
-    "@ethereumjs/common": "^4.0.0",
-    "@ethereumjs/tx": "^5.0.0",
-    "web3js-quorum": "22.4.0",
-    "web3": "1.10.2"
+    "solc": "0.8.10",
+    "web3": "1.10.2",
+    "web3js-quorum": "22.4.0"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.2",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "@typechain/ethers-v6": "^0.5.0",
+    "@typechain/hardhat": "9.0.0",
+    "@types/chai": "^4.3.6",
+    "@types/mocha": "^9.0.0",
+    "chai": "^4.3.0",
+    "hardhat": "^2.17.2",
+    "solidity-coverage": "^0.8.4",
+    "ts-node": "^10.2.1",
+    "typechain": "^8.3.1",
+    "typescript": "^4.4.2"
   }
 }
