@@ -22,8 +22,8 @@ contract RoleControl is IRoleControl {
      */
     mapping(ROLES role => ROLES ownerRole) private _roleOwners;
 
-    constructor(InitialAssignments[] memory initialAssignments) {
-        _initAssignements(initialAssignments);
+    constructor() {
+        _initialTrustee();
         _initRoles();
     }
 
@@ -38,15 +38,10 @@ contract RoleControl is IRoleControl {
     }
 
     /**
-     * @dev Function to set initial trustees
+     * @dev Function to set party deployed the contrat as Trustee
      */
-    function _initAssignements(InitialAssignments[] memory initialAssignments) private {
-        for (uint i = 0; i < initialAssignments.length; i++) {
-            ROLES role = initialAssignments[i].role;
-            address account = initialAssignments[i].account;
-            _roles[account] = role;
-            emit RoleAssigned(role, account, msg.sender);
-        }
+    function _initialTrustee() private {
+        assignRole(ROLES.TRUSTEE, msg.sender);
         return;
     }
 

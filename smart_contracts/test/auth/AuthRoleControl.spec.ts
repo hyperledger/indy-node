@@ -10,11 +10,17 @@ describe('RoleControl', () => {
     let testAccounts: TestAccounts
 
     before('deploy RoleControl', async () => {
-        testAccounts = await getTestAccounts()
-        roleControl = await ethers.deployContract('RoleControl', [ Object.values(testAccounts) ])
+        roleControl = await ethers.deployContract('RoleControl')
+        testAccounts = await getTestAccounts(roleControl)
     })
 
     describe('hasRole', () => {
+        it("should check role properly for an account deployer", async function () {
+            expect(await roleControl.hasRole(ROLES.TRUSTEE, testAccounts.deployer.account)).to.equal(true);
+            expect(await roleControl.hasRole(ROLES.ENDORSER, testAccounts.deployer.account)).to.equal(false);
+            expect(await roleControl.hasRole(ROLES.STEWARD, testAccounts.deployer.account)).to.equal(false);
+        });
+
         it("should check role properly for an account without anu role assigned", async function () {
             expect(await roleControl.hasRole(ROLES.TRUSTEE, testAccounts.noRole.account)).to.equal(false);
             expect(await roleControl.hasRole(ROLES.ENDORSER, testAccounts.noRole.account)).to.equal(false);

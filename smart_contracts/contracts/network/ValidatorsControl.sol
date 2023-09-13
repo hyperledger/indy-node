@@ -5,7 +5,7 @@ import "../auth/RoleControl.sol";
 
 contract ValidatorsControl is IValidatorsControl {
     /**
-     * @dev Event emitting when added a new validator or removed an existing
+     * @dev Event emitting when validator's list change (added/removed validator)
      */
     event Validator(
         address indexed validator,
@@ -15,17 +15,18 @@ contract ValidatorsControl is IValidatorsControl {
     );
 
     /**
-     * @dev Type describing single initial validator
+     * @dev Type describing initial validator details
      */
-    struct InitialValidator {
+    struct InitialValidatorInfo {
         address validator;
         address account;
     }
 
     /**
-     * @dev TODO: CAN WE DROP IT?
+     * @dev Type describing validator details
      */
-    struct AccountInfo {
+    struct ValidatorInfo {
+        address account;
         uint8 validatorIndex;
         bool active;
     }
@@ -45,21 +46,23 @@ contract ValidatorsControl is IValidatorsControl {
      */
     address[] private validators;
 
-    mapping(address account => AccountInfo validatorInfo) private validatorOwners;
-    mapping(address validatorAddress => address account) private validatorToAccount;
+    /**
+     * @dev Mapping of validator address to validator info (owner, index, active)
+     */
+    mapping(address validatorAddress => ValidatorInfo validatorInfo) private validatorInfos;
 
     /**
      * @dev Modifier that checks that an the sender account has Steward role assigned.
      */
     modifier senderIsSteward() {
         require(
-            roleControl.hasRole(RoleControlInterface.ROLES.STEWARD, msg.sender),
+            roleControl.hasRole(IRoleControl.ROLES.STEWARD, msg.sender),
             "Sender does not have STEWARD role assigned"
         );
         _;
     }
 
-    constructor(address roleControlAddress, InitialValidator[] memory initialValidators) {
+    constructor(address roleControlAddress, InitialValidatorInfo[] memory initialValidators) {
         require(initialValidators.length > 0, "List of initial validators cannot be empty");
         require(initialValidators.length < MAX_VALIDATORS, "Number of validators cannot be larger than 256");
 
@@ -67,11 +70,10 @@ contract ValidatorsControl is IValidatorsControl {
             require(initialValidators[i].account != address(0), "Initial validator account cannot be zero");
             require(initialValidators[i].validator != address(0), "Initial validator address cannot be zero");
 
-            InitialValidator memory validator = initialValidators[i];
+            InitialValidatorInfo memory validator = initialValidators[i];
 
             validators.push(validator.validator);
-            validatorToAccount[validator.validator] = validator.account;
-            validatorOwners[validator.account] = AccountInfo(uint8(i), true);
+            validatorInfos[validator.validator] = ValidatorInfo(validator.account, uint8(i), true);
         }
 
         roleControl = RoleControl(roleControlAddress);
@@ -91,15 +93,15 @@ contract ValidatorsControl is IValidatorsControl {
         require(newValidator != address(0), "Cannot add validator with address 0");
         require(validators.length < MAX_VALIDATORS, "Number of validators cannot be larger than 256");
 
-        for (uint i=0; i < validators.length; i++) {
+        uint256 validatorsCount = validators.length;
+        for (uint i=0; i < validatorsCount; i++) {
+            ValidatorInfo memory validatorInfo = validatorInfos[validators[i]];
             require(newValidator != validators[i], "Validator already exists");
+            require(msg.sender != validatorInfo.account, "Sender already has active validator");
         }
 
-        require(validatorOwners[msg.sender].active == true, "Sender already has active validator");
-
-        validatorOwners[msg.sender] = AccountInfo(uint8(validators.length), true);
+        validatorInfos[newValidator] = ValidatorInfo(msg.sender, uint8(validatorsCount), true);
         validators.push(newValidator);
-        validatorToAccount[newValidator] = msg.sender;
 
         // emit success event
         emit Validator(newValidator, msg.sender, validators.length, true);
@@ -111,19 +113,22 @@ contract ValidatorsControl is IValidatorsControl {
     function removeValidator(address validator) external senderIsSteward {
         require(validators.length > 1, "Cannot deactivate last validator");
 
-        uint8 deactivatedValidatorIndex = validatorOwners[validatorToAccount[validator]].validatorIndex;
+        ValidatorInfo memory removedValidatorInfo = validatorInfos[validator];
+        require(removedValidatorInfo.active == true, "Validator does not exist");
+
+        uint8 removedValidatorIndex = removedValidatorInfo.validatorIndex;
 
         // put last validator in the list on place of removed validator
-        address validatorRemoved = validators[deactivatedValidatorIndex];
+        address validatorRemoved = validators[removedValidatorIndex];
         address validatorToBeMoved = validators[validators.length-1];
-        validators[deactivatedValidatorIndex] = validatorToBeMoved;
+        validators[removedValidatorIndex] = validatorToBeMoved;
 
         // update indexes
-        validatorOwners[validatorToAccount[validatorToBeMoved]].validatorIndex = deactivatedValidatorIndex;
+        validatorInfos[validatorToBeMoved].validatorIndex = removedValidatorIndex;
 
         // remove last validator which was copied to new place
         validators.pop();
-        delete(validatorToAccount[validatorRemoved]);
+        delete(validatorInfos[validatorRemoved]);
 
         // emit success event
         emit Validator(validatorRemoved, msg.sender, validators.length, false);
