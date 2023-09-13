@@ -1,6 +1,6 @@
 pragma solidity ^0.8.20;
 
-interface IRoleControl {
+interface RoleControlInterface {
     /**
      * @dev List of available roles.
      * FIXME: Probably using enums is not a best option as they are treated as numbers starting from 0

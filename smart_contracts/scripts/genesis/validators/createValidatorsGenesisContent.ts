@@ -2,26 +2,29 @@ import { BN } from 'bn.js'
 import * as fs from 'fs'
 import { sha3, padLeft } from 'web3-utils'
 
+interface Config {
+    validators: Array<{ account: string, validator: string }>,
+    roleControlContractAddress: string
+}
+
 function main() {
     const data = fs.readFileSync("./initialValidators.json", "utf-8");
-    const validators = JSON.parse(data)
+    const config: Config = JSON.parse(data)
+
+    let records = [];
+
+    for (let i = 0; i < config.validators.length; i++) {
+        records[i] = {
+            account: config.validators[i].account.trim(),
+            validator: config.validators[i].validator.trim(),
+            validatorIndex: i
+        };
+    }
 
     const storage: any = {}
 
-    let validatorIndex = 0;
-    let records = [];
-
-    for (let i = 0; i < validators.length; i++) {
-        records[i] = {
-            account: validators[i].account.trim(),
-            validator: validators[i].validator.trim(),
-            validatorIndex
-        };
-        validatorIndex++;
-    }
-
     // length of the validator array is stored in slot 0
-    storage["0000000000000000000000000000000000000000000000000000000000000000"] = padLeft(validatorIndex, 64).substring(2);
+    storage["0000000000000000000000000000000000000000000000000000000000000000"] = padLeft(config.validators.length, 64).substring(2);
 
     // validator array records are stored beginning at slot sha3(slot(0))
     let slot0 = sha3("0x0000000000000000000000000000000000000000000000000000000000000000")!.substring(2);
@@ -37,6 +40,9 @@ function main() {
         let slot = sha3('0x' + validator + slot1)!.substring(2).toLowerCase();
         storage[padLeft(slot, 64)] = padLeft(records[i].account.substring(2).toLowerCase() + records[i].validatorIndex.toString(16) + "01", 64); // account | validatorIndex(hex) | activeValidator:true(0x01)
     }
+
+    // address of role control contact stored in slot 2
+    storage["0000000000000000000000000000000000000000000000000000000000000002"] = padLeft(config.roleControlContractAddress, 64);
 
     const section = {
         "<Address of Contract>": {

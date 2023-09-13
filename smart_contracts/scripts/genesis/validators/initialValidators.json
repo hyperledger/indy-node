@@ -1,0 +1,25 @@
+{
+  "validators": [
+    {
+      "account": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
+      "validator": "0xb14da80579bc423d0bc7f24b75a73f9c17d14c31"
+    },
+    {
+      "account": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
+      "validator": "0xc8f020a46dc90957c759bc2d1208d74bc0472b62"
+    },
+    {
+      "account": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
+      "validator": "0xd1b840dab36a2a0595553024c275611e68540204"
+    },
+    {
+      "account": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
+      "validator": "0x8e4fd7c247d35f9cbf0aaf4d4b6cb03352486505"
+    },
+    {
+      "account": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
+      "validator": "0x1a80eb5a8a06b4f6a6c9aeaebd596bf53a358fda"
+    }
+  ],
+  "roleControlContractAddress": "0000000000000000000000000000000000006666"
+}

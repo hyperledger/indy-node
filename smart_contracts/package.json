@@ -20,7 +20,7 @@
     "ethers": "6.4.0",
     "fs-extra": "^10.0.0",
     "hardhat-gas-reporter": "^1.0.8",
-    "solc": "0.8.10",
+    "solc": "0.8.20",
     "web3": "1.10.2",
     "web3js-quorum": "22.4.0"
   },

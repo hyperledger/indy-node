@@ -1,8 +1,8 @@
 pragma solidity ^0.8.20;
 
-import { IRoleControl } from "./IRoleControl.sol";
+import { RoleControlInterface } from "./RoleControlInterface.sol";
 
-contract RoleControl is IRoleControl {
+contract RoleControl is RoleControlInterface {
     /**
      * @dev Type describing single initial assignment
      */

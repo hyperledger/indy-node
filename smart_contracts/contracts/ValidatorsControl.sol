@@ -1,9 +1,9 @@
 pragma solidity ^0.8.20;
 
-import "./IValidatorsControl.sol";
-import "../auth/RoleControl.sol";
+import "./ValidatorSmartContractInterface.sol";
+import "./RoleControl.sol";
 
-contract ValidatorsControl is IValidatorsControl {
+contract ValidatorsControl is ValidatorSmartContractInterface {
     /**
      * @dev Event emitting when validator's list change (added/removed validator)
      */
@@ -37,11 +37,6 @@ contract ValidatorsControl is IValidatorsControl {
     uint constant MAX_VALIDATORS = 256;
 
     /**
-     * @dev Reference to the contract managing auth permissions
-     */
-    RoleControl private roleControl;
-
-    /**
      * @dev List of active validators
      */
     address[] private validators;
@@ -50,6 +45,11 @@ contract ValidatorsControl is IValidatorsControl {
      * @dev Mapping of validator address to validator info (owner, index, active)
      */
     mapping(address validatorAddress => ValidatorInfo validatorInfo) private validatorInfos;
+
+    /**
+     * @dev Reference to the contract managing auth permissions
+         */
+    RoleControl private roleControl;
 
     /**
      * @dev Modifier that checks that an the sender account has Steward role assigned.
@@ -62,7 +62,7 @@ contract ValidatorsControl is IValidatorsControl {
         _;
     }
 
-    constructor(address roleControlAddress, InitialValidatorInfo[] memory initialValidators) {
+    constructor(address roleControlContractAddress, InitialValidatorInfo[] memory initialValidators) {
         require(initialValidators.length > 0, "List of initial validators cannot be empty");
         require(initialValidators.length < MAX_VALIDATORS, "Number of validators cannot be larger than 256");
 
@@ -76,7 +76,7 @@ contract ValidatorsControl is IValidatorsControl {
             validatorInfos[validator.validator] = ValidatorInfo(validator.account, uint8(i), true);
         }
 
-        roleControl = RoleControl(roleControlAddress);
+        roleControl = RoleControl(roleControlContractAddress);
     }
 
     /**
