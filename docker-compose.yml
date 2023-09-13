@@ -1,0 +1,315 @@
+---
+version: '3.6'
+
+x-besu-def:
+  &besu-def
+  restart: "on-failure"
+  image: hyperledger/besu:${BESU_VERSION:-latest}
+  env_file:
+    - ./config/besu/.env
+  entrypoint:
+    - /bin/bash
+    - -c
+    - |
+
+      cp "/config/${BESU_CONS_ALGO:-QBFT}genesis.json" /config/genesis.json
+
+      /opt/besu/bin/besu \
+      --config-file=/config/config.toml \
+      --p2p-host=$$(hostname -i) \
+      --rpc-http-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PERM,${BESU_CONS_ALGO:-QBFT} \
+      --rpc-ws-api=EEA,WEB3,ETH,NET,TRACE,DEBUG,ADMIN,TXPOOL,PERM,${BESU_CONS_ALGO:-QBFT} ;
+
+
+
+
+
+
+# Blockchain explorer
+x-blockscout-ref:
+  &blockscout-def
+  image: consensys/blockscout:v4.1.5-beta
+  container_name: blockscout
+  restart: "no"
+  environment:
+    - PORT=4000
+    - ECTO_USE_SSL=false
+    - DATABASE_URL=postgresql://postgres:postgres@blockscoutpostgres:5432/postgres?ssl=false
+    - POSTGRES_PASSWORD=postgres
+    - POSTGRES_USER=postgres
+    - NETWORK=localnet
+    - NETWORK=Dev Localnet
+    - SUBNETWORK=Quorum
+    - CHAIN_ID=1337
+    - COIN=ETH
+    - ETHEREUM_JSONRPC_VARIANT=besu
+    - ETHEREUM_JSONRPC_TRANSPORT=http
+    - ETHEREUM_JSONRPC_HTTP_URL=http://rpcnode:8545
+    - ETHEREUM_JSONRPC_TRACE_URL=http://rpcnode:8545
+    - ETHEREUM_JSONRPC_WS_URL=ws://rpcnode:8546
+  entrypoint:
+    - /bin/sh
+    - -c
+    - |
+      cd /opt/app/;
+      echo $$MIX_ENV && mix do ecto.create, ecto.migrate; mix phx.server;
+  profiles:
+    - "services"
+  depends_on:
+    - blockscoutpostgres
+  links:
+    - blockscoutpostgres
+  ports:
+    - 26000:4000
+
+x-blockscoutpostgres-ref:
+  &blockscoutpostgres-def
+  image: postgres:13.6-alpine
+  restart: "on-failure"
+  container_name: blockscoutpostgres
+  environment:
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=postgres
+    - POSTGRES_HOST_AUTH_METHOD=trust
+  volumes:
+    - blockscoutpostgres:/var/lib/postgresql/data
+  profiles:
+    - "services"
+  ports:
+    - 5432
+  healthcheck:
+    test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+    interval: 5s
+    timeout: 10s
+    retries: 5
+
+
+
+
+
+x-ethsignerProxy-def:
+  &ethsignerProxy-def
+  image: consensys/ethsigner:${ETHSIGNER_VERSION:-latest}
+  command: [
+    "--chain-id=1337",
+    "--http-listen-host=0.0.0.0",
+    "--downstream-http-port=8545",
+    "--downstream-http-host=rpcnode",
+    "file-based-signer",
+    "-k",
+    "/opt/ethsigner/keyfile",
+    "-p",
+    "/opt/ethsigner/passwordfile"
+  ]
+  ports:
+    - 8545
+
+services:
+
+  validator1:
+    << : *besu-def
+    ports:
+      - 21001:8545/tcp
+      - 30303
+      - 9545
+    environment:
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=validator1,service.version=${BESU_VERSION:-latest}
+    labels:
+      - "consensus=besu"
+    volumes:
+      - ./config/besu/:/config
+      - ./config/nodes/validator1:/opt/besu/keys
+      - ./logs/besu:/tmp/besu
+    networks:
+      localnet:
+        ipv4_address: 172.16.239.11
+
+  validator2:
+    << : *besu-def
+    ports:
+      - 21002:8545/tcp
+      - 30303
+      - 9545
+    environment:
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=validator2,service.version=${BESU_VERSION:-latest}
+    labels:
+      - "consensus=besu"
+    volumes:
+      - ./config/besu/:/config
+      - ./config/nodes/validator2:/opt/besu/keys
+      - ./logs/besu:/tmp/besu
+    depends_on:
+      - validator1
+    networks:
+      localnet:
+        ipv4_address: 172.16.239.12
+
+  validator3:
+    << : *besu-def
+    ports:
+      - 21003:8545/tcp
+      - 30303
+      - 9545
+    environment:
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=validator3,service.version=${BESU_VERSION:-latest}
+    labels:
+      - "consensus=besu"
+    volumes:
+      - ./config/besu/:/config
+      - ./config/nodes/validator3:/opt/besu/keys
+      - ./logs/besu:/tmp/besu
+    depends_on:
+      - validator1
+    networks:
+      localnet:
+        ipv4_address: 172.16.239.13
+
+  validator4:
+    << : *besu-def
+    ports:
+      - 21004:8545/tcp
+      - 30303
+      - 9545
+    environment:
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=validator4,service.version=${BESU_VERSION:-latest}
+    labels:
+      - "consensus=besu"
+    volumes:
+      - ./config/besu/:/config
+      - ./config/nodes/validator4:/opt/besu/keys
+      - ./logs/besu:/tmp/besu
+    depends_on:
+      - validator1
+    networks:
+      localnet:
+        ipv4_address: 172.16.239.14
+
+  rpcnode:
+    << : *besu-def
+    container_name: rpcnode
+    environment:
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=rpcnode,service.version=${BESU_VERSION:-latest}
+    volumes:
+      - ./config/besu/:/config
+      - ./config/nodes/rpcnode:/opt/besu/keys
+      - ./logs/besu:/tmp/besu
+    depends_on:
+      - validator1
+    ports:
+      - 8545:8545/tcp
+      - 8546:8546/tcp
+    networks:
+      localnet:
+        ipv4_address: 172.16.239.15
+
+  ethsignerProxy:
+    << : *ethsignerProxy-def
+    volumes:
+      - ./config/ethsigner/password:/opt/ethsigner/passwordfile
+      - ./config/ethsigner/key:/opt/ethsigner/keyfile
+    depends_on:
+      - validator1
+      - rpcnode
+    ports:
+      - 18545:8545/tcp
+    networks:
+      localnet:
+        ipv4_address: 172.16.239.40
+
+
+
+
+
+
+  blockscout:
+    << : *blockscout-def
+    networks:
+      localnet:
+        ipv4_address: 172.16.239.51
+
+  blockscoutpostgres:
+    << : *blockscoutpostgres-def
+    networks:
+      localnet:
+        ipv4_address: 172.16.239.52
+
+
+
+
+
+
+  prometheus:
+    image: "prom/prometheus:v2.46.0"
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    profiles:
+      - "services"
+    ports:
+      - 9090:9090/tcp
+    networks:
+      localnet:
+        ipv4_address: 172.16.239.32
+
+  grafana:
+    image: "grafana/grafana:10.1.0"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_USERS_VIEWERS_CAN_EDIT=true
+    volumes:
+      - ./config/grafana/provisioning/:/etc/grafana/provisioning/
+      - grafana:/var/lib/grafana
+    profiles:
+      - "services"
+    ports:
+      - 3000:3000/tcp
+    networks:
+      localnet:
+        ipv4_address: 172.16.239.33
+
+  loki:
+    image: "grafana/loki:2.8.4"
+    volumes:
+      - ./loki/loki.yml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+    profiles:
+      - "services"
+    ports:
+      - 3100:3100/tcp
+    networks:
+      localnet:
+        ipv4_address: 172.16.239.34
+
+  promtail:
+    image: "grafana/promtail:2.8.4"
+    volumes:
+      - ./logs:/var/log
+      - ./promtail/promtail.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    profiles:
+      - "services"
+    networks:
+      localnet:
+        ipv4_address: 172.16.239.35
+
+
+
+
+
+
+volumes:
+  public-keys:
+  prometheus:
+  grafana:
+  ethlogger:
+  blockscoutpostgres:
+
+networks:
+  localnet:
+    name: localnet
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.239.0/24
