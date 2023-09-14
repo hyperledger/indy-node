@@ -2,23 +2,19 @@
   "validators": [
     {
       "account": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
-      "validator": "0xb14da80579bc423d0bc7f24b75a73f9c17d14c31"
+      "validator": "0x93917cadbace5dfce132b991732c6cda9bcc5b8a"
     },
     {
       "account": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
-      "validator": "0xc8f020a46dc90957c759bc2d1208d74bc0472b62"
+      "validator": "0x27a97c9aaf04f18f3014c32e036dd0ac76da5f18"
     },
     {
       "account": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
-      "validator": "0xd1b840dab36a2a0595553024c275611e68540204"
+      "validator": "0xce412f988377e31f4d0ff12d74df73b51c42d0ca"
     },
     {
       "account": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
-      "validator": "0x8e4fd7c247d35f9cbf0aaf4d4b6cb03352486505"
-    },
-    {
-      "account": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
-      "validator": "0x1a80eb5a8a06b4f6a6c9aeaebd596bf53a358fda"
+      "validator": "0x98c1334496614aed49d2e81526d089f7264fed9c"
     }
   ],
   "roleControlContractAddress": "0000000000000000000000000000000000006666"

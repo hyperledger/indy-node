@@ -25,65 +25,6 @@ x-besu-def:
 
 
 
-# Blockchain explorer
-x-blockscout-ref:
-  &blockscout-def
-  image: consensys/blockscout:v4.1.5-beta
-  container_name: blockscout
-  restart: "no"
-  environment:
-    - PORT=4000
-    - ECTO_USE_SSL=false
-    - DATABASE_URL=postgresql://postgres:postgres@blockscoutpostgres:5432/postgres?ssl=false
-    - POSTGRES_PASSWORD=postgres
-    - POSTGRES_USER=postgres
-    - NETWORK=localnet
-    - NETWORK=Dev Localnet
-    - SUBNETWORK=Quorum
-    - CHAIN_ID=1337
-    - COIN=ETH
-    - ETHEREUM_JSONRPC_VARIANT=besu
-    - ETHEREUM_JSONRPC_TRANSPORT=http
-    - ETHEREUM_JSONRPC_HTTP_URL=http://rpcnode:8545
-    - ETHEREUM_JSONRPC_TRACE_URL=http://rpcnode:8545
-    - ETHEREUM_JSONRPC_WS_URL=ws://rpcnode:8546
-  entrypoint:
-    - /bin/sh
-    - -c
-    - |
-      cd /opt/app/;
-      echo $$MIX_ENV && mix do ecto.create, ecto.migrate; mix phx.server;
-  profiles:
-    - "services"
-  depends_on:
-    - blockscoutpostgres
-  links:
-    - blockscoutpostgres
-  ports:
-    - 26000:4000
-
-x-blockscoutpostgres-ref:
-  &blockscoutpostgres-def
-  image: postgres:13.6-alpine
-  restart: "on-failure"
-  container_name: blockscoutpostgres
-  environment:
-    - POSTGRES_USER=postgres
-    - POSTGRES_PASSWORD=postgres
-    - POSTGRES_HOST_AUTH_METHOD=trust
-  volumes:
-    - blockscoutpostgres:/var/lib/postgresql/data
-  profiles:
-    - "services"
-  ports:
-    - 5432
-  healthcheck:
-    test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-    interval: 5s
-    timeout: 10s
-    retries: 5
-
-
 
 
 
@@ -91,15 +32,15 @@ x-ethsignerProxy-def:
   &ethsignerProxy-def
   image: consensys/ethsigner:${ETHSIGNER_VERSION:-latest}
   command: [
-    "--chain-id=1337",
-    "--http-listen-host=0.0.0.0",
-    "--downstream-http-port=8545",
-    "--downstream-http-host=rpcnode",
-    "file-based-signer",
-    "-k",
-    "/opt/ethsigner/keyfile",
-    "-p",
-    "/opt/ethsigner/passwordfile"
+      "--chain-id=1337",
+      "--http-listen-host=0.0.0.0",
+      "--downstream-http-port=8545",
+      "--downstream-http-host=rpcnode",
+      "file-based-signer",
+      "-k",
+      "/opt/ethsigner/keyfile",
+      "-p",
+      "/opt/ethsigner/passwordfile"
   ]
   ports:
     - 8545
@@ -121,7 +62,7 @@ services:
       - ./config/nodes/validator1:/opt/besu/keys
       - ./logs/besu:/tmp/besu
     networks:
-      localnet:
+      quorum-dev-quickstart:
         ipv4_address: 172.16.239.11
 
   validator2:
@@ -141,7 +82,7 @@ services:
     depends_on:
       - validator1
     networks:
-      localnet:
+      quorum-dev-quickstart:
         ipv4_address: 172.16.239.12
 
   validator3:
@@ -161,7 +102,7 @@ services:
     depends_on:
       - validator1
     networks:
-      localnet:
+      quorum-dev-quickstart:
         ipv4_address: 172.16.239.13
 
   validator4:
@@ -181,7 +122,7 @@ services:
     depends_on:
       - validator1
     networks:
-      localnet:
+      quorum-dev-quickstart:
         ipv4_address: 172.16.239.14
 
   rpcnode:
@@ -199,7 +140,7 @@ services:
       - 8545:8545/tcp
       - 8546:8546/tcp
     networks:
-      localnet:
+      quorum-dev-quickstart:
         ipv4_address: 172.16.239.15
 
   ethsignerProxy:
@@ -213,7 +154,7 @@ services:
     ports:
       - 18545:8545/tcp
     networks:
-      localnet:
+      quorum-dev-quickstart:
         ipv4_address: 172.16.239.40
 
 
@@ -221,77 +162,57 @@ services:
 
 
 
-  blockscout:
-    << : *blockscout-def
-    networks:
-      localnet:
-        ipv4_address: 172.16.239.51
-
-  blockscoutpostgres:
-    << : *blockscoutpostgres-def
-    networks:
-      localnet:
-        ipv4_address: 172.16.239.52
-
 
 
 
 
 
   prometheus:
-    image: "prom/prometheus:v2.46.0"
+    image: "prom/prometheus"
     volumes:
       - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus:/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
-    profiles:
-      - "services"
     ports:
       - 9090:9090/tcp
     networks:
-      localnet:
+      quorum-dev-quickstart:
         ipv4_address: 172.16.239.32
 
   grafana:
-    image: "grafana/grafana:10.1.0"
+    image: "grafana/grafana"
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_USERS_VIEWERS_CAN_EDIT=true
     volumes:
       - ./config/grafana/provisioning/:/etc/grafana/provisioning/
       - grafana:/var/lib/grafana
-    profiles:
-      - "services"
     ports:
       - 3000:3000/tcp
     networks:
-      localnet:
+      quorum-dev-quickstart:
         ipv4_address: 172.16.239.33
 
   loki:
-    image: "grafana/loki:2.8.4"
+    image: "grafana/loki"
     volumes:
       - ./loki/loki.yml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
-    profiles:
-      - "services"
     ports:
       - 3100:3100/tcp
     networks:
-      localnet:
+      quorum-dev-quickstart:
         ipv4_address: 172.16.239.34
 
   promtail:
-    image: "grafana/promtail:2.8.4"
+    image: "grafana/promtail"
     volumes:
       - ./logs:/var/log
       - ./promtail/promtail.yml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
-    profiles:
-      - "services"
     networks:
-      localnet:
+      quorum-dev-quickstart:
         ipv4_address: 172.16.239.35
 
 
@@ -307,8 +228,8 @@ volumes:
   blockscoutpostgres:
 
 networks:
-  localnet:
-    name: localnet
+  quorum-dev-quickstart:
+    name: quorum-dev-quickstart
     driver: bridge
     ipam:
       config:

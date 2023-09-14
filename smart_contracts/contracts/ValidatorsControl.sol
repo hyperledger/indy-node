@@ -56,7 +56,7 @@ contract ValidatorsControl is ValidatorSmartContractInterface {
      */
     modifier senderIsSteward() {
         require(
-            roleControl.hasRole(IRoleControl.ROLES.STEWARD, msg.sender),
+            roleControl.hasRole(RoleControlInterface.ROLES.STEWARD, msg.sender),
             "Sender does not have STEWARD role assigned"
         );
         _;

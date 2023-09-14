@@ -3,7 +3,8 @@
   "description": "",
   "version": "1.0.0",
   "scripts": {
-    "generate": "npx ts-node createValidatorsGenesisContent.ts"
+    "generate-validators": "npx ts-node validators/generate.ts",
+    "generate-roles": "npx ts-node roles/generate.ts"
   },
   "author": "",
   "dependencies": {

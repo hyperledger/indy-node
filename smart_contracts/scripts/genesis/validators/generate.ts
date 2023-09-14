@@ -8,7 +8,7 @@ interface Config {
 }
 
 function main() {
-    const data = fs.readFileSync("./initialValidators.json", "utf-8");
+    const data = fs.readFileSync("./validators/data.json", "utf-8");
     const config: Config = JSON.parse(data)
 
     let records = [];
@@ -17,7 +17,7 @@ function main() {
         records[i] = {
             account: config.validators[i].account.trim(),
             validator: config.validators[i].validator.trim(),
-            validatorIndex: i
+            index: i
         };
     }
 
@@ -29,7 +29,7 @@ function main() {
     // validator array records are stored beginning at slot sha3(slot(0))
     let slot0 = sha3("0x0000000000000000000000000000000000000000000000000000000000000000")!.substring(2);
     for (let i = 0; i < records.length; i++) {
-        let slot = new BN(slot0, 16).add(new BN(records[i].validatorIndex)).toString(16);
+        let slot = new BN(slot0, 16).add(new BN(records[i].index)).toString(16);
         storage[padLeft(slot, 64)] = padLeft(records[i].validator.substring(2).toLowerCase(), 64);
     }
 
@@ -38,7 +38,7 @@ function main() {
     for (let i = 0; i < records.length; i++) {
         let validator = padLeft(records[i].validator.substring(2), 64);
         let slot = sha3('0x' + validator + slot1)!.substring(2).toLowerCase();
-        storage[padLeft(slot, 64)] = padLeft(records[i].account.substring(2).toLowerCase() + records[i].validatorIndex.toString(16) + "01", 64); // account | validatorIndex(hex) | activeValidator:true(0x01)
+        storage[padLeft(slot, 64)] = padLeft(records[i].account.substring(2).toLowerCase() + records[i].index.toString(16) + "01", 64); // account | index(hex) | activeValidator:true(0x01)
     }
 
     // address of role control contact stored in slot 2
@@ -54,7 +54,7 @@ function main() {
     }
 
     let content = JSON.stringify(section, null, "\t");
-    fs.writeFileSync("ValidatorsGenesis.json", content);
+    fs.writeFileSync("ValidatorsControlGenesis.json", content);
 }
 
 if (require.main === module) {

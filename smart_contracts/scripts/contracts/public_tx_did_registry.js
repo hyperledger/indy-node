@@ -3,7 +3,7 @@ const fs = require('fs-extra');
 const Web3 = require('web3');
 
 // rpcnode details
-const { tessera, besu } = require("../keys.js");
+const { tessera, besu } = require("../keys.ts");
 const host = besu.rpcnode.url;
 const accountAddress = besu.rpcnode.accountAddress;
 

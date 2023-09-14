@@ -30,7 +30,7 @@ interface RoleControlInterface {
     /**
      * @dev Function to assign role to an account
      */
-    function assignRole(ROLES role, address account) external returns (bool);
+    function assignRole(ROLES role, address account) external returns (ROLES assignedRole);
 
     /**
      * @dev Function to revoke role from an account

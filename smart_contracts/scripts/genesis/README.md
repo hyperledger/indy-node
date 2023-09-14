@@ -7,10 +7,10 @@ This document describes how to use custom smart contract implementation for mana
 1. Prepare the input file with the genesis validators data: 
    * account - owner account address 
    * validator - address of validator node
-   > Example file: [initialValidators.json](initialValidators.json) 
+   > Example file: [initialValidators.json](validators/data.json) 
 
 2. Execute script that generates the content for the genesis file of the network:
-  * `ValidatorsGenesis.json` file will be generated as the result 
+  * `ValidatorsControlGenesis.json` file will be generated as the result 
   > yarn generate
 
 3. Set values for placeholder variables:
