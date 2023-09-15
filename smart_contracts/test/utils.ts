@@ -1,6 +1,7 @@
 import Web3 from "web3";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { ethers } from "hardhat";
+import { DidRegistry } from "../typechain-types";
 
 export const web3 = new Web3()
 
@@ -58,4 +59,48 @@ export async function getTestAccounts(roleControl: any): Promise<TestAccounts> {
         }
     }
     return testAccounts
+}
+
+export function getBaseDidDocument(did: string): DidRegistry.DidDocumentStruct {
+    const verificationMethod: DidRegistry.VerificationMethodStruct = {
+        id: `${did}#KEY-1`,
+        verificationMethodType: 'Ed25519VerificationKey2018',
+        controller: 'did:indy2:testnet:N22SEp33q43PsdP7nDATyySSH',
+        publicKeyMultibase: 'zAKJP3f7BD6W4iWEQ9jwndVTCBq8ua2Utt8EEjJ6Vxsf',
+        publicKeyJwk: '',
+    }
+
+    const authentication: DidRegistry.VerificationRelationshipStruct = {
+        id: did,
+        verificationMethod: {
+            id: '',
+            verificationMethodType: '',
+            controller: '',
+            publicKeyMultibase: '',
+            publicKeyJwk: '',
+        }
+    }
+
+    const didDocument: DidRegistry.DidDocumentStruct = {
+        context: [],
+        id: did,
+        controller: [],
+        verificationMethod: [verificationMethod],
+        authentication: [authentication],
+        assertionMethod: [],
+        capabilityInvocation: [],
+        capabilityDelegation: [],
+        keyAgreement: [],
+        service: [],
+        alsoKnownAs: [],
+    }
+
+    return didDocument
+}
+
+export function signDidDocument(didDocument: DidRegistry.DidDocumentStruct): DidRegistry.SignatureStruct {
+    return { 
+        id: didDocument.id, 
+        value: '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd' 
+    }
 }

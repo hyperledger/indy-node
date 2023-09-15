@@ -159,7 +159,7 @@ contract DidRegistry {
      * @param document The updated DID Document
      * @param signatures An array of DID Document signatures
      */
-    function updateDidDocument(
+    function updateDid(
         DidDocument calldata document,
         Signature[] calldata signatures
     ) public didExist(document.id) didIsActive(document.id) {
