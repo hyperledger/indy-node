@@ -19,10 +19,6 @@
     {
       "account": "0xca843569e3427144cead5e4d5999a3d0ccf92b8e",
       "role": 1
-    },
-    {
-      "account": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-      "role": 1
     }
   ],
   "roleOwners": {

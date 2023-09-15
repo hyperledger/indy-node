@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 import "./ValidatorSmartContractInterface.sol";
 import "./RoleControl.sol";
 
-contract ValidatorsControl is ValidatorSmartContractInterface {
+contract ValidatorControl is ValidatorSmartContractInterface {
     /**
      * @dev Event emitting when validator's list change (added/removed validator)
      */

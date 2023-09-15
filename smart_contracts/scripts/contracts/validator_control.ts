@@ -1,14 +1,15 @@
-const {getContractInstance} = require("../environment");
-const {environment} = require("../environment");
+import { environment } from '../environment'
+import { getContractInstance } from '../utils'
 
 async function getValidators(contract: any) {
-    const validators = await contract.methods.getValidators().call();
+    const validators = await contract.getValidators();
     console.log(`Validators: \n ${JSON.stringify(validators, null, 2)}`)
 }
 
 async function main() {
-    const contract = await getContractInstance(environment.contracts.roleControl)
-    getValidators(contract).catch(console.error);
+    const sender = environment.accounts.account1
+    const contract = await getContractInstance(sender, environment.contracts.validatorControl)
+    await getValidators(contract);
 }
 
 if (require.main === module) {

@@ -1,11 +1,11 @@
 import { ethers } from "hardhat";
 
 import chai from "chai";
-import { getTestAccounts, ROLES, TestAccounts, web3, ZERO_ADDRESS } from "../utils";
+import { getTestAccounts, TestAccounts, web3, ZERO_ADDRESS } from "../utils";
 
 const {expect} = chai;
 
-describe('ValidatorSmartContract', () => {
+describe('ValidatorControl', () => {
     let roleControl: any
     let validatorControl: any
     let validator1: string
@@ -31,16 +31,15 @@ describe('ValidatorSmartContract', () => {
         ]
         validatorControl =
             await ethers.deployContract(
-                'ValidatorsControl',
+                'ValidatorControl',
                 [ await roleControl.getAddress(), initialValidatorsData ]
             )
     })
 
     describe('getValidators', () => {
         it("should return the list of current validators", async function () {
-            console.assert(true);
-            // const validators = await validatorControl.getValidators()
-            // expect([ ...validators ]).to.have.members([ ...initialValidators ])
+            const validators = await validatorControl.getValidators()
+            expect([ ...validators ]).to.have.members([ ...initialValidators ])
         });
     })
 
