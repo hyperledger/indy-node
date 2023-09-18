@@ -53,7 +53,7 @@ This section describes how to inject a custom smart contract into the genesis st
   * `roleOwners`: mapping of a role to the managing role
 
 2. Execute script generating the contract content for the network genesis file:
-   > yarn generate-roles
+   > yarn generate-roles-genesis
   * `RoleControlGenesis.json` file will be generated as the result
 
 3. Generate runtime contract byte code:

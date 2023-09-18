@@ -61,11 +61,7 @@ contract RoleControl is RoleControlInterface {
      * @dev Function to check if an account has requested role assigned
      */
     function hasRole(ROLES role, address account) public view virtual returns (bool) {
-        if (_roles[account] == role) {
-            return true;
-        } else {
-            return false;
-        }
+        return _roles[account] == role;
     }
 
     /**
@@ -89,10 +85,8 @@ contract RoleControl is RoleControlInterface {
         if (!hasRole(role, account)) {
             _roles[account] = role;
             emit RoleAssigned(role, account, msg.sender);
-            return role;
-        } else {
-            return role;
         }
+        return role;
     }
 
     /**
@@ -102,9 +96,7 @@ contract RoleControl is RoleControlInterface {
         if (hasRole(role, account)) {
             delete _roles[account];
             emit RoleRevoked(role, account, msg.sender);
-            return true;
-        } else {
-            return false;
         }
+        return false;
     }
 }

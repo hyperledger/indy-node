@@ -1,16 +1,19 @@
 import { padLeft, sha3 } from 'web3-utils'
 import { buildSection, readConfig, slots, writeResult } from '../utils'
+import * as path from "path";
 
 interface Config {
   accounts: Array<{ account: string; role: number }>
   roleOwners: Map<string, string>
 }
 
-const inFile = './roles/data.json'
+const inFile = 'data.json'
 const outFile = 'RoleControlGenesis.json'
 
+console.log(__dirname)
+
 function main() {
-  const config: Config = readConfig(inFile)
+  const config: Config = readConfig(path.resolve(__dirname, inFile))
 
   const storage: any = {}
 

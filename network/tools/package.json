@@ -1,8 +1,10 @@
 {
-  "name": "@consensys-software/generate_node_details",
-  "version": "1.0.0",
-  "description": "Example script to create nodekeys and address for a Quorum (Besu or GoQuorum) node",
-  "scripts": {},
+  "name": "@indy-ledger/tools",
+  "version": "0.0.1",
+  "description": "Helper scripts to manage indy network",
+  "scripts": {
+    "generate-node": "node node/generate.js"
+  },
   "license": "Apache-2.0",
   "dependencies": {
     "secp256k1": "^4.0.0",

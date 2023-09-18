@@ -9,7 +9,9 @@
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "format": "prettier --write \"scripts/**/*.ts\" \"test/**/*.ts\"",
     "test-roles": "ts-node scripts/contracts/role-control.ts",
-    "test-validators": "ts-node scripts/contracts/validator-control.ts"
+    "test-validators": "ts-node scripts/contracts/validator-control.ts",
+    "generate-roles-genesis": "ts-node scripts/genesis/roles/generate.ts",
+    "generate-validators-genesis": "ts-node scripts/genesis/validators/generate.ts"
   },
   "license": "Apache-2.0",
   "dependencies": {

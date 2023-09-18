@@ -1,17 +1,18 @@
 import { BN } from 'bn.js'
 import { padLeft, sha3 } from 'web3-utils'
 import { buildSection, readConfig, slots, writeResult } from '../utils'
+import * as path from "path";
 
 interface Config {
   validators: Array<{ account: string; validator: string }>
   roleControlContractAddress: string
 }
 
-const inFile = './validators/data.json'
+const inFile = 'data.json'
 const outFile = 'ValidatorControlGenesis.json'
 
 function main() {
-  const config: Config = readConfig(inFile)
+  const config: Config = readConfig(path.resolve(__dirname, inFile))
 
   const storage: any = {}
 
