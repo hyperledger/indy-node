@@ -51,17 +51,7 @@ export const environment = {
       address: '0xf17f52151EbEF6C7334FAD080c5704D77216b732',
       privateKey: '0xae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f',
     },
-  },
-  contracts: {
-    roleControl: {
-      spec: 'RoleControl.json',
-      address: '0x0000000000000000000000000000000000006666',
-    },
-    validatorControl: {
-      spec: 'ValidatorControl.json',
-      address: '0x0000000000000000000000000000000000007777',
-    },
-  },
+  }
 }
 
 export const host = environment.besu.rpcnode.url

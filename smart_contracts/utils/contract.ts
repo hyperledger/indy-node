@@ -4,14 +4,18 @@ import path from 'path'
 import { host } from "../environment";
 
 export class Contract {
-    public static getInstance(sender: any, config: any) {
-        const contractPath = path.resolve(__dirname, '../', 'contracts', config.spec)
+    public static deploy() {
+
+    }
+
+    public static getInstance(sender: any, name: any, address: string) {
+        const contractPath = path.resolve(__dirname, '../', `artifacts/contracts`, `${name}.sol/${name}.json`)
         const contractJson = JSON.parse(readFileSync(contractPath, 'utf8'))
 
         const provider = new ethers.JsonRpcProvider(host)
         const signer = new ethers.Wallet(sender.privateKey, provider)
 
-        return new ethers.Contract(config.address, contractJson.abi, signer)
+        return new ethers.Contract(address, contractJson.abi, signer)
     }
 }
 

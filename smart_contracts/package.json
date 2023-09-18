@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Smart contracts and helper tools for Indy Ledger",
   "scripts": {
-    "compile": "hardhat compile && ts-node utils/compile.ts",
+    "compile": "hardhat compile",
     "clean": "hardhat clean",
     "test": "hardhat test",
     "lint": "tslint -p tsconfig.json -c tslint.json",
