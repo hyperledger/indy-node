@@ -14,7 +14,7 @@
 NO_LOCK_REQUIRED=false
 
 . ./.env
-. ./.common.sh
+source "$(dirname "$0")/common.sh"
 dots=""
 maxRetryCount=50
 HOST=${DOCKER_PORT_2375_TCP_ADDR:-"localhost"}

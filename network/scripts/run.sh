@@ -14,7 +14,7 @@
 NO_LOCK_REQUIRED=true
 
 . ./.env
-. ./.common.sh
+source "$(dirname "$0")/common.sh"
 
 # Build and run containers and network
 echo "docker-compose.yml" > ${LOCK_FILE}
@@ -32,4 +32,4 @@ docker compose --profile services up --detach
 
 
 #list services and endpoints
-./list.sh
+./$(dirname "$0")/list.sh

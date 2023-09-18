@@ -62,7 +62,7 @@ describe('ValidatorControl', () => {
         validatorControl.connect(testAccounts.noRole.account).addValidator(newValidator.address),
       ).to.be.rejectedWith(
         Error,
-        'VM Exception while processing transaction: reverted with reason string \'Sender does not have STEWARD role assigned\'',
+        "VM Exception while processing transaction: reverted with reason string 'Sender does not have STEWARD role assigned'",
       )
     })
 
@@ -71,14 +71,14 @@ describe('ValidatorControl', () => {
         validatorControl.connect(testAccounts.steward3.account).addValidator(ZERO_ADDRESS),
       ).to.be.rejectedWith(
         Error,
-        'VM Exception while processing transaction: reverted with reason string \'Cannot add validator with address 0\'',
+        "VM Exception while processing transaction: reverted with reason string 'Cannot add validator with address 0'",
       )
     })
 
     it('should fail when adding duplicate validator address', async function () {
       await expect(validatorControl.connect(testAccounts.steward3.account).addValidator(validator1)).to.be.rejectedWith(
         Error,
-        'VM Exception while processing transaction: reverted with reason string \'Validator already exists\'',
+        "VM Exception while processing transaction: reverted with reason string 'Validator already exists'",
       )
     })
   })
@@ -109,7 +109,7 @@ describe('ValidatorControl', () => {
         validatorControl.connect(testAccounts.steward.account).removeValidator(validator1),
       ).to.be.rejectedWith(
         Error,
-        'VM Exception while processing transaction: reverted with reason string \'Cannot deactivate last validator\'',
+        "VM Exception while processing transaction: reverted with reason string 'Cannot deactivate last validator'",
       )
 
       await validatorControl.connect(testAccounts.steward2.account).addValidator(validator2)
@@ -121,7 +121,7 @@ describe('ValidatorControl', () => {
         validatorControl.connect(testAccounts.steward.account).removeValidator(notExisingValidator.address),
       ).to.be.rejectedWith(
         Error,
-        'VM Exception while processing transaction: reverted with reason string \'Validator does not exist\'',
+        "VM Exception while processing transaction: reverted with reason string 'Validator does not exist'",
       )
     })
   })

@@ -6,7 +6,7 @@ x-besu-def:
   restart: "on-failure"
   image: hyperledger/besu:${BESU_VERSION:-latest}
   env_file:
-    - ./config/besu/.env
+    - ./network/config/besu/.env
   entrypoint:
     - /bin/bash
     - -c
@@ -58,9 +58,9 @@ services:
     labels:
       - "consensus=besu"
     volumes:
-      - ./config/besu/:/config
-      - ./config/nodes/validator1:/opt/besu/keys
-      - ./logs/besu:/tmp/besu
+      - ./network/config/besu/:/config
+      - ./network/config/nodes/validator1:/opt/besu/keys
+      - ./network/logs/besu:/tmp/besu
     networks:
       quorum-dev-quickstart:
         ipv4_address: 172.16.239.11
@@ -76,9 +76,9 @@ services:
     labels:
       - "consensus=besu"
     volumes:
-      - ./config/besu/:/config
-      - ./config/nodes/validator2:/opt/besu/keys
-      - ./logs/besu:/tmp/besu
+      - ./network/config/besu/:/config
+      - ./network/config/nodes/validator2:/opt/besu/keys
+      - ./network/logs/besu:/tmp/besu
     depends_on:
       - validator1
     networks:
@@ -96,9 +96,9 @@ services:
     labels:
       - "consensus=besu"
     volumes:
-      - ./config/besu/:/config
-      - ./config/nodes/validator3:/opt/besu/keys
-      - ./logs/besu:/tmp/besu
+      - ./network/config/besu/:/config
+      - ./network/config/nodes/validator3:/opt/besu/keys
+      - ./network/logs/besu:/tmp/besu
     depends_on:
       - validator1
     networks:
@@ -116,9 +116,9 @@ services:
     labels:
       - "consensus=besu"
     volumes:
-      - ./config/besu/:/config
-      - ./config/nodes/validator4:/opt/besu/keys
-      - ./logs/besu:/tmp/besu
+      - ./network/config/besu/:/config
+      - ./network/config/nodes/validator4:/opt/besu/keys
+      - ./network/logs/besu:/tmp/besu
     depends_on:
       - validator1
     networks:
@@ -131,9 +131,9 @@ services:
     environment:
       - OTEL_RESOURCE_ATTRIBUTES=service.name=rpcnode,service.version=${BESU_VERSION:-latest}
     volumes:
-      - ./config/besu/:/config
-      - ./config/nodes/rpcnode:/opt/besu/keys
-      - ./logs/besu:/tmp/besu
+      - ./network/config/besu/:/config
+      - ./network/config/nodes/rpcnode:/opt/besu/keys
+      - ./network/logs/besu:/tmp/besu
     depends_on:
       - validator1
     ports:
@@ -146,8 +146,8 @@ services:
   ethsignerProxy:
     << : *ethsignerProxy-def
     volumes:
-      - ./config/ethsigner/password:/opt/ethsigner/passwordfile
-      - ./config/ethsigner/key:/opt/ethsigner/keyfile
+      - ./network/config/ethsigner/password:/opt/ethsigner/passwordfile
+      - ./network/config/ethsigner/key:/opt/ethsigner/keyfile
     depends_on:
       - validator1
       - rpcnode
@@ -170,7 +170,7 @@ services:
   prometheus:
     image: "prom/prometheus"
     volumes:
-      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./network/config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus:/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
@@ -186,7 +186,7 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_USERS_VIEWERS_CAN_EDIT=true
     volumes:
-      - ./config/grafana/provisioning/:/etc/grafana/provisioning/
+      - ./network/config/grafana/provisioning/:/etc/grafana/provisioning/
       - grafana:/var/lib/grafana
     ports:
       - 3000:3000/tcp
@@ -197,7 +197,7 @@ services:
   loki:
     image: "grafana/loki"
     volumes:
-      - ./loki/loki.yml:/etc/loki/local-config.yaml
+      - ./network/loki/loki.yml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
     ports:
       - 3100:3100/tcp
@@ -209,7 +209,7 @@ services:
     image: "grafana/promtail"
     volumes:
       - ./logs:/var/log
-      - ./promtail/promtail.yml:/etc/promtail/config.yml
+      - ./network/promtail/promtail.yml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
     networks:
       quorum-dev-quickstart:

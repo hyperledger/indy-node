@@ -14,7 +14,7 @@
 NO_LOCK_REQUIRED=false
 
 . ./.env
-. ./.common.sh
+source "$(dirname "$0")/common.sh"
 
 echo "${bold}*************************************"
 echo "Localnet"

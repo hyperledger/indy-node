@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./stop.sh
+./$(dirname "$0")/stop.sh
 echo "Waiting 30s for containers to stop"
 sleep 30
-./resume.sh
+./$(dirname "$0")/resume.sh

@@ -14,21 +14,13 @@
 NO_LOCK_REQUIRED=false
 
 . ./.env
-. ./.common.sh
-
-removeDockerImage(){
-  if [[ ! -z `docker ps -a | grep $1` ]]; then
-    docker image rm $1
-  fi
-}
+source "$(dirname "$0")/common.sh"
 
 echo "${bold}*************************************"
 echo "Localnet"
 echo "*************************************${normal}"
-echo "Stop and remove network..."
+echo "Stopping network"
+echo "----------------------------------"
 
-docker compose --profile services down -v
-docker compose --profile services rm -sfv
 
-rm ${LOCK_FILE}
-echo "Lock file ${LOCK_FILE} removed"
+docker compose --profile services stop

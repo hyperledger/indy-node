@@ -47,7 +47,7 @@ describe('RoleControl', () => {
         roleControl.connect(testAccounts.noRole.account).assignRole(ROLES.ENDORSER, account),
       ).to.be.rejectedWith(
         Error,
-        'VM Exception while processing transaction: reverted with reason string \'Sender does not have required role to perform action',
+        "VM Exception while processing transaction: reverted with reason string 'Sender does not have required role to perform action",
       )
     })
 
@@ -82,7 +82,7 @@ describe('RoleControl', () => {
         roleControl.connect(testAccounts.noRole.account).revokeRole(ROLES.ENDORSER, testAccounts.endorser.account),
       ).to.be.rejectedWith(
         Error,
-        'VM Exception while processing transaction: reverted with reason string \'Sender does not have required role to perform action',
+        "VM Exception while processing transaction: reverted with reason string 'Sender does not have required role to perform action",
       )
     })
   })

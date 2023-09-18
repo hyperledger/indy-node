@@ -1,13 +1,15 @@
 {
-  "name": "indy-ledger-smart-contracts",
+  "name": "@indy-ledger/contracts",
   "version": "1.0.0",
   "description": "Smart contracts and helper tools for Indy Ledger",
   "scripts": {
-    "compile": "hardhat compile && ts-node tools/compile.ts",
+    "compile": "hardhat compile && ts-node scripts/compile.ts",
     "clean": "hardhat clean",
     "test": "hardhat test",
     "lint": "tslint -p tsconfig.json -c tslint.json",
-    "format": "prettier --write \"scripts/**/*.ts\" \"test/**/*.ts\" \"tools/**/*.ts\""
+    "format": "prettier --write \"scripts/**/*.ts\" \"test/**/*.ts\"",
+    "test-roles": "ts-node scripts/contracts/role-control.ts",
+    "test-validators": "ts-node scripts/contracts/validator-control.ts"
   },
   "license": "Apache-2.0",
   "dependencies": {
@@ -42,6 +44,5 @@
     "typechain": "^8.3.1",
     "typescript": "^4.4.2",
     "tslint": "^6.1.3"
-
   }
 }
