@@ -114,21 +114,48 @@ contract DidRegistry {
         _;
     }
 
-     /**
+    /**
      * Validated the DID syntax
      */
     modifier validDid(string memory did) {
         strings.slice memory didSlice = did.toSlice();
         strings.slice memory delimiter = ':'.toSlice();
-        strings.slice[] memory parts = new strings.slice[](didSlice.count(delimiter));
-        for (uint i = 0; i < parts.length; i++) {                              
-           parts[i] = didSlice.split(delimiter);                               
-        }
+
+        strings.slice memory schema = didSlice.split(delimiter);
         
-        require(parts[0].equals("did".toSlice()), "Incorrect DID schema");
-        require(parts[1].equals("indy2".toSlice()) || parts[1].equals("indy".toSlice()) || parts[1].equals("sov".toSlice()), "Unsupported DID method");
+        require(schema.equals("did".toSlice()), "Incorrect DID schema");
+
+        strings.slice memory didMethod = didSlice.split(delimiter);
+
+        require(
+            didMethod.equals("indy2".toSlice()) 
+                || didMethod.equals("indy".toSlice()) 
+                || didMethod.equals("sov".toSlice()), 
+            "Unsupported DID method"
+        );
         _;
     }
+
+    /**
+     * Validated verification keys
+     */
+    modifier validVerificationKey(DidDocument memory didDocument) {
+        require(didDocument.authentication.length != 0, "Authentication key is required");
+        
+         for (uint i = 0; i < didDocument.authentication.length; i++) {
+            if (!didDocument.authentication[i].verificationMethod.id.toSlice().empty()) {
+                continue;
+            }
+
+            require (
+                contains(
+                    didDocument.verificationMethod, didDocument.authentication[i].id), 
+                    string.concat("Authentication key for ID: ", didDocument.authentication[i].id, " is not found")
+            );
+         }
+        _;
+    }
+
 
     /**
      * Сhecks that the DID has not been deactivated
@@ -146,7 +173,7 @@ contract DidRegistry {
     function createDid(
         DidDocument calldata document,
         Signature[] calldata signatures
-    ) public didNotExist(document.id) validDid(document.id) {
+    ) public didNotExist(document.id) validDid(document.id) validVerificationKey(document) {
         dids[document.id].document = document;
         dids[document.id].metadata.created = block.timestamp;
         dids[document.id].metadata.updated = block.timestamp;
@@ -162,7 +189,7 @@ contract DidRegistry {
     function updateDid(
         DidDocument calldata document,
         Signature[] calldata signatures
-    ) public didExist(document.id) didIsActive(document.id) {
+    ) public didExist(document.id) didIsActive(document.id) validVerificationKey(document) {
         dids[document.id].document = document;
         dids[document.id].metadata.updated = block.timestamp;
 
@@ -181,5 +208,17 @@ contract DidRegistry {
         dids[id].metadata.deactivated = true;
 
         emit DIDDeactivated(id);
+    }
+
+    function contains(VerificationMethod[] memory methods, string memory methodId) private pure returns (bool) {
+         strings.slice memory methodIdSlice = methodId.toSlice();
+
+        for (uint i; i < methods.length; i++) {
+            if (methods[i].id.toSlice().equals(methodIdSlice)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

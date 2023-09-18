@@ -61,7 +61,7 @@ export async function getTestAccounts(roleControl: any): Promise<TestAccounts> {
     return testAccounts
 }
 
-export function getBaseDidDocument(did: string): DidRegistry.DidDocumentStruct {
+export function createBaseDidDocument(did: string): DidRegistry.DidDocumentStruct {
     const verificationMethod: DidRegistry.VerificationMethodStruct = {
         id: `${did}#KEY-1`,
         verificationMethodType: 'Ed25519VerificationKey2018',
@@ -71,7 +71,7 @@ export function getBaseDidDocument(did: string): DidRegistry.DidDocumentStruct {
     }
 
     const authentication: DidRegistry.VerificationRelationshipStruct = {
-        id: did,
+        id: `${did}#KEY-1`,
         verificationMethod: {
             id: '',
             verificationMethodType: '',
@@ -98,9 +98,9 @@ export function getBaseDidDocument(did: string): DidRegistry.DidDocumentStruct {
     return didDocument
 }
 
-export function signDidDocument(didDocument: DidRegistry.DidDocumentStruct): DidRegistry.SignatureStruct {
+export function createFakeSignature(did: string): DidRegistry.SignatureStruct {
     return { 
-        id: didDocument.id, 
+        id: did, 
         value: '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd' 
     }
 }
