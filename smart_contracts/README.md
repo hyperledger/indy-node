@@ -19,6 +19,7 @@
 The following folders should be generated: 
 * `artifacts` - completed contract specification
 * `typechain-types` - typescript bindings for contracts
+* `<contract name's>.json` - generated contracts specification
 
 ### Run tests
 
@@ -26,22 +27,15 @@ The following folders should be generated:
 > yarn test
 ```
 
-### Generate contract code for genesis file
-
-* `socl` tool must be installed on the machine.
-
-```
-solc --optimize --bin-runtime --evm-version=byzantium -o . ./<contract_name.sol>
-```
-
 ### Contracts
 
-* `DidRegistry.sol` - DID's registry.
 * `RoleControl.sol` - contract to manage (assign/revoke) account roles.   
-* `ValidatorsControl.sol` - contract to manage network validator nodes.
+* `ValidatorControl.sol` - contract to manage network validator nodes.
 
 ### Scripts
 
-* `genesis/validators` - helper script to generate genesis data for `ValidatorsControl.sol` smart contract.
-* `public` - sample script calling deployed contract.
-* `compile.js` - script to generate contract specification using `socl`  
+* `genesis` - helper scripts to generate genesis blocks for injecting contracts.
+  * Find more details regarding the steps in the genesis's [README.md file](scripts/genesis/README.md).
+* `contracts` - sample scripts of calling deployed contracts.
+* `compile.ts` - script to generate contract specification using `socl` and `hardhat. 
+  * Run with `yarn compile`

@@ -1,20 +1,56 @@
-# Using custom Validator Control smart contracts
+# Using contracts in genesis config
 
-This document describes how to use custom smart contract implementation for managing validator nodes in QBFT consensus protocol implementation in Besu network.
+This document describes how to inject a custom smart contract into the genesis state of the Besu network.
 
-## Create the genesis validators
+## Generate contract code for genesis file
 
-1. Prepare the input file with the genesis validators data: 
-   * account - owner account address 
-   * validator - address of validator node
-   > Example file: [initialValidators.json](validators/data.json) 
+#### Prerequisites 
 
-2. Execute script that generates the content for the genesis file of the network:
-  * `ValidatorsControlGenesis.json` file will be generated as the result 
-  > yarn generate
+* `yarn`
+* `socl` tool must be installed on the machine.
 
-3. Set values for placeholder variables:
-   * `<Address of Contract>` - address of deployed contract. Identical value muse be set for `validatorcontractaddress` field in the `qbft` section of the genesis file.
-   * `<Contract Code>` - generated binary runtime code for used smart contract.
+### Injecting Role control contract into genesis network state
 
-4. Put the whole block of `"<Address of Contract>": {.....` into the `alloc` section of the network genesis file.
+1. Prepare the [input file](roles/data.json) with the initial state of the contract
+   * `accounts`: list of objects containing account addresses and assigned roles
+   * `roleOwners`: mapping of a role to the managing role  
+
+2. Execute script generating the contract content for the network genesis file:
+    > yarn generate-validators
+   * `RoleControl.json` file will be generated as the result
+
+3. Generate runtime contract byte code:
+   ```
+   solc --optimize --bin-runtime --evm-version=byzantium -o . ../../RoleControl.sol
+   ```
+   * `RoleControl.bin-runtime` file will be generated as the result
+
+4. Set values for placeholder variables:
+   * `<Address of Contract>` - address of deployed contract. It can be any predefined address. For example: `0x0000000000000000000000000000000000006666`.
+   * `<Contract Code>` - generated binary runtime code of the smart contract (step 3).
+
+5. Put the whole block of `"<Address of Contract>": {.....` into the `alloc` section of the network genesis file.
+
+### Injecting Validator control contract into genesis network state and using it for QBFT consensus
+
+1. Prepare the [input file](validators/data.json) with the initial state of the contract
+   * `validators`: list of objects containing addresses of a validator owner and validator address
+   * `roleControlContractAddress`: address of RoleControl contract
+
+2. Execute script generating the contract content for the network genesis file:
+   > yarn generate-validators
+   * `ValidatorControl.json` file will be generated as the result
+
+3. Generate runtime contract byte code:
+   ```
+   solc --optimize --bin-runtime --evm-version=byzantium -o . ../../ValidatorControl.sol
+   ```
+   * `ValidatorControl.bin-runtime` file will be generated as the result
+
+4. Set values for placeholder variables:
+   * `<Address of Contract>` - address of deployed contract. It can be any predefined address. For example: `0x0000000000000000000000000000000000007777`.
+   * `<Contract Code>` - generated binary runtime code of the smart contract (step 3).
+
+5. Put the whole block of `"<Address of Contract>": {.....` into the `alloc` section of the network genesis file.
+
+6. Set address of ValidatorControl contract into `validatorcontractaddress` field of the `qbft` section of the genesis file.

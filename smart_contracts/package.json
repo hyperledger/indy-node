@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Example smart contracts for trying out Quorum",
   "scripts": {
-    "compile": "hardhat compile",
+    "compile": "hardhat compile && ts-node scripts/compile.ts",
     "clean": "hardhat clean",
     "test": "hardhat test",
     "typecheck": "yarn compile && yarn test && yarn tsc --noEmit"

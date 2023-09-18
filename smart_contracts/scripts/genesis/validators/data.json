@@ -1,19 +1,19 @@
 {
   "validators": [
     {
-      "account": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
+      "account": "0xed9d02e382b34818e88b88a309c7fe71e65f419d",
       "validator": "0x93917cadbace5dfce132b991732c6cda9bcc5b8a"
     },
     {
-      "account": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
+      "account": "0xb30f304642de3fee4365ed5cd06ea2e69d3fd0ca",
       "validator": "0x27a97c9aaf04f18f3014c32e036dd0ac76da5f18"
     },
     {
-      "account": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
+      "account": "0x0886328869e4e1f401e1052a5f4aae8b45f42610",
       "validator": "0xce412f988377e31f4d0ff12d74df73b51c42d0ca"
     },
     {
-      "account": "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4",
+      "account": "0xf48de4a0c2939e62891f3c6aca68982975477e45",
       "validator": "0x98c1334496614aed49d2e81526d089f7264fed9c"
     }
   ],
