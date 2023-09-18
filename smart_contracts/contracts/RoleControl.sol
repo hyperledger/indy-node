@@ -61,24 +61,32 @@ contract RoleControl is RoleControlInterface {
      * @dev Function to check if an account has requested role assigned
      */
     function hasRole(ROLES role, address account) public view virtual returns (bool) {
-        if (_roles[account] == role) {
-            return true;
-        } else {
-            return false;
-        }
+        return _roles[account] == role;
+    }
+
+    /**
+     * @dev Function to check if an account has requested role assigned
+     */
+    function getRole(address account) public view virtual returns (ROLES role) {
+        return _roles[account];
+    }
+
+    /**
+     * @dev Function to check if an account has requested role assigned
+     */
+    function getRoleOwner(ROLES role) public view virtual returns (ROLES ownerRole) {
+        return _roleOwners[role];
     }
 
     /**
      * @dev Function to assign role to an account
      */
-    function assignRole(ROLES role, address account) public virtual _onlyRoleOwner(role) returns (bool) {
+    function assignRole(ROLES role, address account) public virtual _onlyRoleOwner(role) returns (ROLES assignedRole) {
         if (!hasRole(role, account)) {
             _roles[account] = role;
             emit RoleAssigned(role, account, msg.sender);
-            return true;
-        } else {
-            return false;
         }
+        return role;
     }
 
     /**
@@ -88,9 +96,7 @@ contract RoleControl is RoleControlInterface {
         if (hasRole(role, account)) {
             delete _roles[account];
             emit RoleRevoked(role, account, msg.sender);
-            return true;
-        } else {
-            return false;
         }
+        return false;
     }
 }
