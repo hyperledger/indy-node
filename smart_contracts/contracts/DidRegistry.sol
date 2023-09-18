@@ -150,7 +150,8 @@ contract DidRegistry {
             require (
                 contains(
                     didDocument.verificationMethod, didDocument.authentication[i].id), 
-                    string.concat("Authentication key for ID: ", didDocument.authentication[i].id, " is not found")
+                    string.concat("Authentication key for ID: ", didDocument.authentication[i].id, " is not found"
+                )
             );
          }
         _;

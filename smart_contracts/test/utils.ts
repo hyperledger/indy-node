@@ -2,6 +2,7 @@ import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
 import { ethers } from 'hardhat'
 import Web3 from 'web3'
 import { DidRegistry } from '../typechain-types'
+import { expect } from 'chai'
 
 export const web3 = new Web3()
 
@@ -117,4 +118,62 @@ export function createFakeSignature(did: string): DidRegistry.SignatureStruct {
     id: did,
     value: '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
   }
+}
+
+export function assertDidDocument(
+  actual: DidRegistry.DidDocumentStructOutput,
+  expected: DidRegistry.DidDocumentStruct,
+) {
+  expect(actual.context).to.have.all.members(expected.context)
+  expect(actual.id).to.equals(expected.id)
+  expect(actual.controller).to.have.all.members(expected.controller)
+  expect(actual.alsoKnownAs).to.have.all.members(expected.alsoKnownAs)
+
+  assertArray(actual.verificationMethod, expected.verificationMethod, assetVerificationMethod)
+  assertArray(actual.authentication, expected.authentication, assetVerificationRelationship)
+  assertArray(actual.assertionMethod, expected.assertionMethod, assetVerificationRelationship)
+  assertArray(actual.capabilityInvocation, expected.capabilityInvocation, assetVerificationRelationship)
+  assertArray(actual.capabilityDelegation, expected.capabilityDelegation, assetVerificationRelationship)
+  assertArray(actual.keyAgreement, expected.keyAgreement, assetVerificationRelationship)
+  assertArray(actual.service, expected.service, assetService)
+}
+
+export function assetVerificationMethod(
+  actual: DidRegistry.VerificationMethodStructOutput,
+  expected: DidRegistry.VerificationMethodStruct,
+) {
+  expect(actual.id).to.equals(expected.id)
+  expect(actual.verificationMethodType).to.equals(expected.verificationMethodType)
+  expect(actual.controller).to.equals(expected.controller)
+  expect(actual.publicKeyJwk).to.equals(expected.publicKeyJwk)
+  expect(actual.publicKeyMultibase).to.equals(expected.publicKeyMultibase)
+}
+
+export function assetVerificationRelationship(
+  actual: DidRegistry.VerificationRelationshipStructOutput,
+  expected: DidRegistry.VerificationRelationshipStruct,
+) {
+  expect(actual.id).to.equals(expected.id)
+  assetVerificationMethod(actual.verificationMethod, expected.verificationMethod)
+}
+
+export function assetService(
+  actual: DidRegistry.ServiceStructOutput,
+  expected: DidRegistry.ServiceStruct,
+) {
+  expect(actual.id).to.equals(expected.id)
+  expect(actual.serviceType).to.equals(expected.serviceType)
+  expect(actual.serviceEndpoint).to.have.all.members(expected.serviceEndpoint)
+  expect(actual.accept).to.have.all.members(expected.accept)
+  expect(actual.routingKeys).to.have.all.members(expected.routingKeys)
+}
+
+export function assertArray<A, E>(
+  actualArray: A[],
+  expectedArray: E[],
+  fn: (actual: A, expected: E) => void
+) {
+  expect(actualArray.length).to.equals(expectedArray.length)
+
+  actualArray.every((element, index) => fn(element, expectedArray[index]))
 }

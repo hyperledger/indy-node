@@ -2,7 +2,7 @@ import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
 import { DidRegistry } from '../typechain-types'
-import { createBaseDidDocument, createFakeSignature } from './utils'
+import { assertDidDocument, createBaseDidDocument, createFakeSignature } from './utils'
 
 describe('DIDContract', function () {
   // We define a fixture to reuse the same setup in every test.
@@ -30,20 +30,9 @@ describe('DIDContract', function () {
 
       await didRegistry.createDid(didDocument, [signature])
 
-      const didStorage = await didRegistry.dids(did)
+      const { document } = await didRegistry.dids(did)
 
-      expect(didStorage.document.id).to.equals(didDocument.id)
-      expect(didStorage.document.authentication[0].id).to.equals(didDocument.authentication[0].id)
-      expect(didStorage.document.verificationMethod[0].id).to.equals(didDocument.verificationMethod[0].id)
-      expect(didStorage.document.verificationMethod[0].verificationMethodType).to.equals(
-        didDocument.verificationMethod[0].verificationMethodType,
-      )
-      expect(didStorage.document.verificationMethod[0].controller).to.equals(
-        didDocument.verificationMethod[0].controller,
-      )
-      expect(didStorage.document.verificationMethod[0].publicKeyMultibase).to.equals(
-        didDocument.verificationMethod[0].publicKeyMultibase,
-      )
+      assertDidDocument(document, didDocument)
     })
 
     it('Should fail if the DID being created already exists', async function () {
@@ -137,9 +126,9 @@ describe('DIDContract', function () {
 
       await didRegistry.updateDid(didDocument, [signature])
 
-      const didStorage = await didRegistry.dids(did)
+      const { document } = await didRegistry.dids(did)
 
-      expect(didStorage.document.verificationMethod.length).to.equals(2)
+	  assertDidDocument(document, didDocument)
     })
 
     it('Should fail if the DID being updated does not exists', async function () {
