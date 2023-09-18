@@ -1,5 +1,5 @@
-import { environment } from '../environment'
-import { getContractInstance } from '../utils'
+import { environment } from '../../environment'
+import { Contract } from '../../utils/contract'
 
 async function getValidators(contract: any) {
   const validators = await contract.getValidators()
@@ -8,7 +8,7 @@ async function getValidators(contract: any) {
 
 async function main() {
   const sender = environment.accounts.account1
-  const contract = await getContractInstance(sender, environment.contracts.validatorControl)
+  const contract = await Contract.getInstance(sender, environment.contracts.validatorControl)
   await getValidators(contract)
 }
 

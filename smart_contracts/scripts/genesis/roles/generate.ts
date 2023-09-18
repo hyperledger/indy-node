@@ -1,6 +1,7 @@
 import { padLeft, sha3 } from 'web3-utils'
-import { buildSection, readConfig, slots, writeResult } from '../utils'
-import * as path from "path";
+import { buildSection, slots } from '../helpers'
+import * as path from 'path'
+import { readJson, writeJson } from '../../../utils/file'
 
 interface Config {
   accounts: Array<{ account: string; role: number }>
@@ -13,7 +14,7 @@ const outFile = 'RoleControlGenesis.json'
 console.log(__dirname)
 
 function main() {
-  const config: Config = readConfig(path.resolve(__dirname, inFile))
+  const config: Config = readJson(path.resolve(__dirname, inFile))
 
   const storage: any = {}
 
@@ -36,7 +37,7 @@ function main() {
   }
 
   const section = buildSection('Smart contract to manage account roles', storage)
-  writeResult(section, outFile)
+  writeJson(section, outFile)
 }
 
 if (require.main === module) {

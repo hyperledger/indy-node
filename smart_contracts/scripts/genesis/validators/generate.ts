@@ -1,7 +1,8 @@
 import { BN } from 'bn.js'
 import { padLeft, sha3 } from 'web3-utils'
-import { buildSection, readConfig, slots, writeResult } from '../utils'
-import * as path from "path";
+import { buildSection, slots } from '../helpers'
+import * as path from 'path'
+import { readJson, writeJson } from '../../../utils/file'
 
 interface Config {
   validators: Array<{ account: string; validator: string }>
@@ -12,7 +13,7 @@ const inFile = 'data.json'
 const outFile = 'ValidatorControlGenesis.json'
 
 function main() {
-  const config: Config = readConfig(path.resolve(__dirname, inFile))
+  const config: Config = readJson(path.resolve(__dirname, inFile))
 
   const storage: any = {}
 
@@ -42,7 +43,7 @@ function main() {
   storage[slots['2']] = padLeft(config.roleControlContractAddress, 64)
 
   const section = buildSection('Smart contract to manage validator nodes', storage)
-  writeResult(section, outFile)
+  writeJson(section, outFile)
 }
 
 if (require.main === module) {

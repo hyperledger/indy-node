@@ -1,6 +1,6 @@
-import { web3 } from '../environment'
-import { environment } from '../environment'
-import { getContractInstance } from '../utils'
+import { web3 } from '../../environment'
+import { environment } from '../../environment'
+import { Contract } from '../../utils/contract'
 
 async function getRole(contract: any, account: string) {
   const result = await contract.getRole(account)
@@ -32,7 +32,7 @@ async function revokeRole(contract: any, role: number, account: string) {
 async function main() {
   const sender = environment.accounts.account1
   const newAccount = web3.eth.accounts.create()
-  const contract = await getContractInstance(sender, environment.contracts.roleControl)
+  const contract = await Contract.getInstance(sender, environment.contracts.roleControl)
 
   console.log('1. Get role for the current account')
   await getRole(contract, sender.address)
