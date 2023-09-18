@@ -1,8 +1,8 @@
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
+import { expect } from 'chai'
 import { ethers } from 'hardhat'
 import Web3 from 'web3'
 import { DidRegistry } from '../typechain-types'
-import { expect } from 'chai'
 
 export const web3 = new Web3()
 
@@ -157,10 +157,7 @@ export function assetVerificationRelationship(
   assetVerificationMethod(actual.verificationMethod, expected.verificationMethod)
 }
 
-export function assetService(
-  actual: DidRegistry.ServiceStructOutput,
-  expected: DidRegistry.ServiceStruct,
-) {
+export function assetService(actual: DidRegistry.ServiceStructOutput, expected: DidRegistry.ServiceStruct) {
   expect(actual.id).to.equals(expected.id)
   expect(actual.serviceType).to.equals(expected.serviceType)
   expect(actual.serviceEndpoint).to.have.all.members(expected.serviceEndpoint)
@@ -168,11 +165,7 @@ export function assetService(
   expect(actual.routingKeys).to.have.all.members(expected.routingKeys)
 }
 
-export function assertArray<A, E>(
-  actualArray: A[],
-  expectedArray: E[],
-  fn: (actual: A, expected: E) => void
-) {
+export function assertArray<A, E>(actualArray: A[], expectedArray: E[], fn: (actual: A, expected: E) => void) {
   expect(actualArray.length).to.equals(expectedArray.length)
 
   actualArray.every((element, index) => fn(element, expectedArray[index]))

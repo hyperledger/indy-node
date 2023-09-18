@@ -108,8 +108,8 @@ describe('DIDContract', function () {
       const { didRegistry } = await loadFixture(deployDidContractixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
-      let didDocument = createBaseDidDocument(did)
-      let signature = createFakeSignature(did)
+      const didDocument = createBaseDidDocument(did)
+      const signature = createFakeSignature(did)
 
       await didRegistry.createDid(didDocument, [signature])
 
@@ -122,21 +122,20 @@ describe('DIDContract', function () {
       }
 
       didDocument.verificationMethod.push(verificationMethod)
-      signature = createFakeSignature(did)
 
       await didRegistry.updateDid(didDocument, [signature])
 
       const { document } = await didRegistry.dids(did)
 
-	  assertDidDocument(document, didDocument)
+      assertDidDocument(document, didDocument)
     })
 
     it('Should fail if the DID being updated does not exists', async function () {
       const { didRegistry } = await loadFixture(deployDidContractixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
-      let didDocument = createBaseDidDocument(did)
-      let signature = createFakeSignature(did)
+      const didDocument = createBaseDidDocument(did)
+      const signature = createFakeSignature(did)
 
       await expect(didRegistry.updateDid(didDocument, [signature])).to.be.revertedWith('DID not found')
     })
@@ -145,8 +144,8 @@ describe('DIDContract', function () {
       const { didRegistry } = await loadFixture(deployDidContractixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
-      let didDocument = createBaseDidDocument(did)
-      let signature = createFakeSignature(did)
+      const didDocument = createBaseDidDocument(did)
+      const signature = createFakeSignature(did)
 
       await didRegistry.createDid(didDocument, [signature])
       await didRegistry.deactivateDid(did, [signature])
@@ -158,8 +157,8 @@ describe('DIDContract', function () {
       const { didRegistry } = await loadFixture(deployDidContractixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
-      let didDocument = createBaseDidDocument(did)
-      let signature = createFakeSignature(did)
+      const didDocument = createBaseDidDocument(did)
+      const signature = createFakeSignature(did)
 
       await didRegistry.createDid(didDocument, [signature])
 
@@ -172,8 +171,8 @@ describe('DIDContract', function () {
       const { didRegistry } = await loadFixture(deployDidContractixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
-      let didDocument = createBaseDidDocument(did)
-      let signature = createFakeSignature(did)
+      const didDocument = createBaseDidDocument(did)
+      const signature = createFakeSignature(did)
 
       await didRegistry.createDid(didDocument, [signature])
 
@@ -201,8 +200,8 @@ describe('DIDContract', function () {
       const { didRegistry } = await loadFixture(deployDidContractixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
-      let didDocument = createBaseDidDocument(did)
-      let signature = createFakeSignature(did)
+      const didDocument = createBaseDidDocument(did)
+      const signature = createFakeSignature(did)
 
       await didRegistry.createDid(didDocument, [signature])
       await didRegistry.deactivateDid(did, [signature])
@@ -216,8 +215,8 @@ describe('DIDContract', function () {
       const { didRegistry } = await loadFixture(deployDidContractixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
-      let didDocument = createBaseDidDocument(did)
-      let signature = createFakeSignature(did)
+      const didDocument = createBaseDidDocument(did)
+      const signature = createFakeSignature(did)
 
       await didRegistry.createDid(didDocument, [signature])
       await didRegistry.deactivateDid(did, [signature])
@@ -229,7 +228,7 @@ describe('DIDContract', function () {
       const { didRegistry } = await loadFixture(deployDidContractixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
-      let signature = createFakeSignature(did)
+      const signature = createFakeSignature(did)
 
       await expect(didRegistry.deactivateDid(did, [signature])).to.be.revertedWith('DID not found')
     })
