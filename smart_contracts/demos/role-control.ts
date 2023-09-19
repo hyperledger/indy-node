@@ -22,7 +22,7 @@ async function demo() {
 
     console.log('4. Assign Trustee role to target account')
     const receipt = await contract.assignRole(ROLES.TRUSTEE, newAccount.address)
-    console.log(`Role ${ROLES.TRUSTEE} assigned to account ${newAccount.account} -- ${JSON.stringify(receipt)}`)
+    console.log(`Role ${ROLES.TRUSTEE} assigned to account ${newAccount.address} -- ${JSON.stringify(receipt)}`)
 
     console.log('5. Get role of target account')
     const newAccountAssignedRole = await contract.getRole(newAccount.address)
@@ -30,7 +30,7 @@ async function demo() {
 
     console.log('6. Revoke Trustee role from target account')
     await contract.revokeRole(ROLES.TRUSTEE, newAccount.address)
-    console.log(`Role ${ROLES.TRUSTEE} revoked from account ${newAccount.account} -- ${JSON.stringify(receipt)}`)
+    console.log(`Role ${ROLES.TRUSTEE} revoked from account ${newAccount.address} -- ${JSON.stringify(receipt)}`)
 
     console.log('7. Get role of target account')
     const newAccountRevokeRole = await contract.getRole(newAccount.address)

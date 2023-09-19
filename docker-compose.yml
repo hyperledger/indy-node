@@ -197,7 +197,7 @@ services:
   loki:
     image: "grafana/loki"
     volumes:
-      - ./network/loki/loki.yml:/etc/loki/local-config.yaml
+      - ./network/infra/loki/loki.yml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
     ports:
       - 3100:3100/tcp
@@ -208,8 +208,8 @@ services:
   promtail:
     image: "grafana/promtail"
     volumes:
-      - ./logs:/var/log
-      - ./network/promtail/promtail.yml:/etc/promtail/config.yml
+      - ./network/logs:/var/log
+      - ./network/infra/promtail/promtail.yml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
     networks:
       quorum-dev-quickstart:
