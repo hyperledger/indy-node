@@ -1,17 +1,8 @@
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
 import { ethers } from 'hardhat'
-import Web3 from 'web3'
-
-export const web3 = new Web3()
+import { ROLES } from '../contracts-ts/RoleControl'
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
-
-export enum ROLES {
-  EMPTY,
-  TRUSTEE,
-  ENDORSER,
-  STEWARD,
-}
 
 export interface TestAccountDetails {
   account: HardhatEthersSigner

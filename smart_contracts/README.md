@@ -4,7 +4,6 @@
 
 *  `node` > `v18.15.0` 
 * `yarn`
-* `socl` tool must be installed on the machine.
 
 ### Install dependencies
 
@@ -18,10 +17,9 @@
 > yarn compile
 ```
 
-The following folders should be generated: 
+The following folders should be generated as the result: 
 * `artifacts` - completed contract specification
 * `typechain-types` - typescript bindings for contracts
-* `contracts/<contract name's>.json` - generated contracts specification
 
 ### Run tests
 
@@ -32,28 +30,44 @@ The following folders should be generated:
 ### Contracts
 
 * `contracts/RoleControl.sol` - contract to manage (assign/revoke) account roles.   
+  * [RoleControl TS contract wrapper class](./scripts/contracts/role-control.ts)
 * `contracts//ValidatorControl.sol` - contract to manage network validator nodes.
+  * [ValidatorControl TS contract wrapper class](./scripts/contracts/validator-control.ts)
 
-### Scripts
+### Demos
+
+You can find sample scripts demonstrating the usage of deployed contracts in the [demo folder](./demos).
+* [Roles management](./demos/role-control.ts) - get/assign/revoke role to/from account.
+    ```
+    > yarn demo/roles
+    ```
+* [Validators management](./demos/validator-control.ts) - get list of current validators.
+    ```
+    > yarn demo/validators
+    ```
+
+### Helper Scripts
 
 * `genesis` - helper scripts to generate genesis blocks for injecting contracts.
-  * Find more details regarding the steps in the genesis's [README.md file](scripts/genesis/README.md).
-* `contracts` - sample scripts of calling deployed contracts.
-* `compile.ts` - script to generate contract specification using `socl` and `hardhat. 
-  * Run with `yarn compile`
+    
+    > Find more details regarding the scripts in the [genesis section](#inject-contracts-into-network-genesis) of this document.
 
 ## Inject contracts into network genesis
 
+### Prerequisites
+
+* `socl` tool must be installed on the machine.
+
 This section describes how to inject a custom smart contract into the genesis state of the network.
 
-### Injecting Role control contract into genesis network state
+#### Injecting Role control contract
 
 1. Prepare the [input file](scripts/genesis/roles/data.json) with the initial state of the contract
   * `accounts`: list of objects containing account addresses and assigned roles
   * `roleOwners`: mapping of a role to the managing role
 
 2. Execute script generating the contract content for the network genesis file:
-   > yarn generate-roles-genesis
+   > yarn genesis/roles/generate
   * `RoleControlGenesis.json` file will be generated as the result
 
 3. Generate runtime contract byte code:
@@ -68,14 +82,16 @@ This section describes how to inject a custom smart contract into the genesis st
 
 5. Put the whole block of `"<Address of Contract>": {.....` into the `alloc` section of the network genesis file.
 
-### Injecting Validator control contract into genesis network state and using it for QBFT consensus
+### Injecting Validator control contract and using it for QBFT consensus
+
+**Note that ValidatorControl contract depends on RoleControl, which must be injected as well!**
 
 1. Prepare the [input file](scripts/genesis/validators/data.json) with the initial state of the contract
   * `validators`: list of objects containing addresses of a validator owner and validator address
   * `roleControlContractAddress`: address of RoleControl contract
 
 2. Execute script generating the contract content for the network genesis file:
-   > yarn generate-validators
+   > yarn genesis/validators/generate
   * `ValidatorControlGenesis.json` file will be generated as the result
 
 3. Generate runtime contract byte code:
