@@ -125,6 +125,24 @@ services:
       quorum-dev-quickstart:
         ipv4_address: 172.16.239.14
 
+  validator5:
+    << : *besu-def
+    ports:
+      - 21005:8545/tcp
+      - 30303
+      - 9545
+    environment:
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=validator5,service.version=${BESU_VERSION:-latest}
+    labels:
+      - "consensus=besu"
+    volumes:
+      - ./network/config/besu/:/config
+      - ./network/config/nodes/validator5:/opt/besu/keys
+      - ./network/logs/besu:/tmp/besu
+    networks:
+      quorum-dev-quickstart:
+        ipv4_address: 172.16.239.16
+
   rpcnode:
     << : *besu-def
     container_name: rpcnode
@@ -197,7 +215,7 @@ services:
   loki:
     image: "grafana/loki"
     volumes:
-      - ./network/loki/loki.yml:/etc/loki/local-config.yaml
+      - ./network/infra/loki/loki.yml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
     ports:
       - 3100:3100/tcp
@@ -208,8 +226,8 @@ services:
   promtail:
     image: "grafana/promtail"
     volumes:
-      - ./logs:/var/log
-      - ./network/promtail/promtail.yml:/etc/promtail/config.yml
+      - ./network/logs:/var/log
+      - ./network/infra/promtail/promtail.yml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
     networks:
       quorum-dev-quickstart:

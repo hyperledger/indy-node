@@ -1,12 +1,13 @@
-import { ethers } from 'hardhat'
-
 import chai from 'chai'
-import { getTestAccounts, TestAccounts, web3, ZERO_ADDRESS } from '../utils'
+import { getTestAccounts, TestAccounts, ZERO_ADDRESS } from '../utils'
+import { RoleControl } from '../../contracts-ts/RoleControl'
+import { ValidatorControl } from '../../contracts-ts/ValidatorControl'
+import { Account } from '../../utils/account'
 
 const { expect } = chai
 
 describe('ValidatorControl', () => {
-  let roleControl: any
+  let roleControl: RoleControl
   let validatorControl: any
   let validator1: string
   let validator2: string
@@ -14,10 +15,10 @@ describe('ValidatorControl', () => {
   let initialValidators: Array<String>
 
   before('deploy ValidatorSmartContract', async () => {
-    roleControl = await ethers.deployContract('RoleControl')
+    roleControl = await new RoleControl().deploy()
     testAccounts = await getTestAccounts(roleControl)
-    validator1 = web3.eth.accounts.create().address
-    validator2 = web3.eth.accounts.create().address
+    validator1 = new Account().address
+    validator2 = new Account().address
     initialValidators = [validator1, validator2]
     const initialValidatorsData = [
       {
@@ -29,10 +30,7 @@ describe('ValidatorControl', () => {
         account: testAccounts.steward2.account,
       },
     ]
-    validatorControl = await ethers.deployContract('ValidatorControl', [
-      await roleControl.getAddress(),
-      initialValidatorsData,
-    ])
+    validatorControl = await new ValidatorControl().deploy([roleControl.address, initialValidatorsData])
   })
 
   describe('getValidators', () => {
@@ -43,7 +41,7 @@ describe('ValidatorControl', () => {
   })
 
   describe('addValidator', () => {
-    const newValidator = web3.eth.accounts.create()
+    const newValidator = new Account()
 
     it('should add a new validator by Steward', async function () {
       await validatorControl.connect(testAccounts.steward3.account).addValidator(newValidator.address)
@@ -56,7 +54,7 @@ describe('ValidatorControl', () => {
     })
 
     it('should fail when adding a new validator by an account without Steward role', async function () {
-      const newValidator = web3.eth.accounts.create()
+      const newValidator = new Account()
 
       await expect(
         validatorControl.connect(testAccounts.noRole.account).addValidator(newValidator.address),
@@ -87,7 +85,7 @@ describe('ValidatorControl', () => {
     it('should remove exising validator by Steward', async function () {
       expect((await validatorControl.getValidators()).length).to.be.equal(2)
 
-      const newValidator = web3.eth.accounts.create().address
+      const newValidator = new Account().address
       await validatorControl.connect(testAccounts.steward3.account).addValidator(newValidator)
       expect((await validatorControl.getValidators()).length).to.be.equal(3)
 
@@ -116,7 +114,7 @@ describe('ValidatorControl', () => {
     })
 
     it('should fail when delete not exising validator', async function () {
-      const notExisingValidator = web3.eth.accounts.create()
+      const notExisingValidator = new Account()
       await expect(
         validatorControl.connect(testAccounts.steward.account).removeValidator(notExisingValidator.address),
       ).to.be.rejectedWith(

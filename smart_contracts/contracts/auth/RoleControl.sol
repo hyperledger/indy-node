@@ -72,13 +72,6 @@ contract RoleControl is RoleControlInterface {
     }
 
     /**
-     * @dev Function to check if an account has requested role assigned
-     */
-    function getRoleOwner(ROLES role) public view virtual returns (ROLES ownerRole) {
-        return _roleOwners[role];
-    }
-
-    /**
      * @dev Function to assign role to an account
      */
     function assignRole(ROLES role, address account) public virtual _onlyRoleOwner(role) returns (ROLES assignedRole) {
