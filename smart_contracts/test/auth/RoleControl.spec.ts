@@ -6,10 +6,10 @@ import { Account } from '../../utils/account'
 const { expect } = chai
 
 describe('RoleControl', () => {
-  let roleControl: any
+  let roleControl: RoleControl
   let testAccounts: TestAccounts
 
-  before('deploy RoleControl', async () => {
+  beforeEach('deploy RoleControl', async () => {
     roleControl = await new RoleControl().deploy()
     testAccounts = await getTestAccounts(roleControl)
   })

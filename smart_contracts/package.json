@@ -7,7 +7,7 @@
     "clean": "hardhat clean",
     "test": "hardhat test",
     "lint": "tslint -p tsconfig.json -c tslint.json",
-    "format": "prettier --write \"scripts/**/*.ts\" \"test/**/*.ts\"",
+    "format": "prettier --write \"scripts/**/*.ts\" \"contracts-ts/**/*.ts\" \"demos/**/*.ts\" \"test/**/*.ts\"",
     "demo/roles": "ts-node demos/role-control.ts",
     "demo/validators": "ts-node demos/validator-control.ts",
     "genesis/roles/generate": "ts-node scripts/genesis/roles/generate.ts",

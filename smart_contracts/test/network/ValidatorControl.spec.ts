@@ -6,20 +6,18 @@ import { Account } from '../../utils/account'
 
 const { expect } = chai
 
-describe('ValidatorControl', () => {
+describe('ValidatorControl', function () {
   let roleControl: RoleControl
-  let validatorControl: any
-  let validator1: string
-  let validator2: string
+  let validatorControl: ValidatorControl
   let testAccounts: TestAccounts
-  let initialValidators: Array<String>
 
-  before('deploy ValidatorSmartContract', async () => {
+  const validator1: string = new Account().address
+  const validator2: string = new Account().address
+  const initialValidators: Array<String> = [validator1, validator2]
+
+  beforeEach('deploy ValidatorSmartContract', async () => {
     roleControl = await new RoleControl().deploy()
     testAccounts = await getTestAccounts(roleControl)
-    validator1 = new Account().address
-    validator2 = new Account().address
-    initialValidators = [validator1, validator2]
     const initialValidatorsData = [
       {
         validator: validator1,
