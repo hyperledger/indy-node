@@ -1,10 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { strings } from "./utils/string.sol";
+import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+
+using { toSlice } for string;
 
 contract DidRegistry {
-    using strings for *;
+    string private constant DELIMITER = ":";
+    string private constant DID_PREFIX = "did";
+    string private constant INDY_DID_METHOD = "indy";
+    string private constant INDY_2_DID_METHOD = "indy2";
+    string private constant SOV_DID_METHOD = "sov";
 
     /**
      * @dev DidDocumentStorage holds the DID Document and its associated metadata
@@ -94,7 +100,7 @@ contract DidRegistry {
     event DIDDeactivated(string did);
 
     /**
-     * @dev Mapping DID to its corresponfing DID Document.
+     * @dev Mapping DID to its corresponding DID Document.
      */
     mapping(string => DidDocumentStorage) public dids;
 
@@ -107,7 +113,7 @@ contract DidRegistry {
     }
 
     /**
-     * Сhecks that the DID has not yet been added
+     * Checks that the DID has not yet been added
      */
     modifier didNotExist(string memory did) {
         require(dids[did].metadata.created == 0, "DID has already exist");
@@ -118,19 +124,16 @@ contract DidRegistry {
      * Validated the DID syntax
      */
     modifier validDid(string memory did) {
-        strings.slice memory didSlice = did.toSlice();
-        strings.slice memory delimiter = ':'.toSlice();
+        StrSlice delimiterSlice = DELIMITER.toSlice();
 
-        strings.slice memory schema = didSlice.split(delimiter);
-        
-        require(schema.equals("did".toSlice()), "Incorrect DID schema");
+        ( , StrSlice rest, StrSlice schema) = did.toSlice().splitOnce(delimiterSlice);
+        require(schema.eq(DID_PREFIX.toSlice()), "Incorrect DID schema");
 
-        strings.slice memory didMethod = didSlice.split(delimiter);
-
+        (, , StrSlice didMethod) = rest.splitOnce(delimiterSlice);
         require(
-            didMethod.equals("indy2".toSlice()) 
-                || didMethod.equals("indy".toSlice()) 
-                || didMethod.equals("sov".toSlice()), 
+            didMethod.eq(INDY_DID_METHOD.toSlice())
+                || didMethod.eq(INDY_2_DID_METHOD.toSlice())
+                || didMethod.eq(SOV_DID_METHOD.toSlice()),
             "Unsupported DID method"
         );
         _;
@@ -141,15 +144,15 @@ contract DidRegistry {
      */
     modifier validVerificationKey(DidDocument memory didDocument) {
         require(didDocument.authentication.length != 0, "Authentication key is required");
-        
+
          for (uint i = 0; i < didDocument.authentication.length; i++) {
-            if (!didDocument.authentication[i].verificationMethod.id.toSlice().empty()) {
+            if (!didDocument.authentication[i].verificationMethod.id.toSlice().isEmpty()) {
                 continue;
             }
 
             require (
                 contains(
-                    didDocument.verificationMethod, didDocument.authentication[i].id), 
+                    didDocument.verificationMethod, didDocument.authentication[i].id),
                     string.concat("Authentication key for ID: ", didDocument.authentication[i].id, " is not found"
                 )
             );
@@ -212,10 +215,10 @@ contract DidRegistry {
     }
 
     function contains(VerificationMethod[] memory methods, string memory methodId) private pure returns (bool) {
-         strings.slice memory methodIdSlice = methodId.toSlice();
+         StrSlice methodIdSlice = methodId.toSlice();
 
         for (uint i; i < methods.length; i++) {
-            if (methods[i].id.toSlice().equals(methodIdSlice)) {
+            if (methods[i].id.toSlice().eq(methodIdSlice)) {
                 return true;
             }
         }
