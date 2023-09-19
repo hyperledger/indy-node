@@ -1,7 +1,7 @@
 pragma solidity ^0.8.20;
 
 import "./ValidatorSmartContractInterface.sol";
-import "./RoleControl.sol";
+import "../auth/RoleControl.sol";
 
 contract ValidatorControl is ValidatorSmartContractInterface {
     /**

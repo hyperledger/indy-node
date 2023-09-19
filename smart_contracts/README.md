@@ -72,7 +72,7 @@ This section describes how to inject a custom smart contract into the genesis st
 
 3. Generate runtime contract byte code:
    ```
-   solc --optimize --bin-runtime --evm-version=byzantium -o . ./contracts/RoleControl.sol
+   solc --optimize --bin-runtime --evm-version=byzantium -o . ./contracts/auth/RoleControl.sol
    ```
   * `RoleControl.bin-runtime` file will be generated as the result
 
@@ -96,7 +96,7 @@ This section describes how to inject a custom smart contract into the genesis st
 
 3. Generate runtime contract byte code:
    ```
-   solc --optimize --bin-runtime --evm-version=byzantium -o . ./contracts/ValidatorControl.sol
+   solc --optimize --bin-runtime --evm-version=byzantium -o . ./contracts/network/ValidatorControl.sol
    ```
   * `ValidatorControl.bin-runtime` file will be generated as the result
 
