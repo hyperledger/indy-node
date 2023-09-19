@@ -4,7 +4,7 @@ export class ValidatorControl extends Contract {
   protected static readonly defaultAddress = '0x0000000000000000000000000000000000007777'
 
   constructor(sender?: any, address?: string) {
-    super(ValidatorControl.name, sender, address || ValidatorControl.defaultAddress)
+    super(ValidatorControl.name, 'network', sender, address || ValidatorControl.defaultAddress)
   }
 
   async getValidators() {
@@ -12,7 +12,8 @@ export class ValidatorControl extends Contract {
   }
 
   async addValidator(address: string) {
-    return this.instance.addValidator(address)
+    const tx = await this.instance.addValidator(address)
+    return tx.wait()
   }
 
   async removeValidator(address: string) {

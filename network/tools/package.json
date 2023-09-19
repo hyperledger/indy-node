@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Helper scripts to manage indy network",
   "scripts": {
-    "generate-node": "node node/generate.js"
+    "node/generate": "node node/generate.js"
   },
   "license": "Apache-2.0",
   "dependencies": {
