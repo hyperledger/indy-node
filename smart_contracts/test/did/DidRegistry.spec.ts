@@ -1,8 +1,8 @@
 import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
-import { DidRegistry } from '../typechain-types'
-import { assertDidDocument, createBaseDidDocument, createFakeSignature } from './utils'
+import { DidRegistry } from '../../typechain-types'
+import { assertDidDocument, createBaseDidDocument, createFakeSignature } from '../utils'
 
 describe('DIDContract', function () {
   // We define a fixture to reuse the same setup in every test.

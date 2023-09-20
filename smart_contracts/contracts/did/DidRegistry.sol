@@ -2,10 +2,11 @@
 pragma solidity ^0.8.20;
 
 import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { DidRegistryInterface } from "./DidRegistryInterface.sol";
 
 using { toSlice } for string;
 
-contract DidRegistry {
+contract DidRegistry is DidRegistryInterface {
     string private constant DELIMITER = ":";
     string private constant DID_PREFIX = "did";
     string private constant INDY_DID_METHOD = "indy";
@@ -19,85 +20,6 @@ contract DidRegistry {
         DidDocument document;
         DidMetadata metadata;
     }
-
-    /**
-     * @dev VerificationRelationship links a DID to a verification method
-     */
-    struct DidMetadata {
-        uint256 created;
-        uint256 updated;
-        bool deactivated;
-    }
-
-    /**
-     * @dev DidDocument represent the main DID Document structure.
-     */
-    struct DidDocument {
-        string[] context;
-        string id;
-        string[] controller;
-        VerificationMethod[] verificationMethod;
-        VerificationRelationship[] authentication;
-        VerificationRelationship[] assertionMethod;
-        VerificationRelationship[] capabilityInvocation;
-        VerificationRelationship[] capabilityDelegation;
-        VerificationRelationship[] keyAgreement;
-        Service[] service;
-        string[] alsoKnownAs;
-    }
-
-    /**
-     * @dev VerificationMethod are used to define how to authenticate/authorise interactions with a DID subject or delegates.
-     */
-    struct VerificationMethod {
-        string id;
-        string verificationMethodType;
-        string controller;
-        string publicKeyJwk;
-        string publicKeyMultibase;
-    }
-
-    /**
-     * @dev VerificationRelationship links a DID to a verification method.
-     */
-    struct VerificationRelationship {
-        string id;
-        VerificationMethod verificationMethod;
-    }
-
-    /**
-     * @dev Service describes a service endpoint related to the DID.
-     */
-    struct Service {
-        string id;
-        string serviceType;
-        string[] serviceEndpoint;
-        string[] accept;
-        string[] routingKeys;
-    }
-
-    /**
-     * @dev Signature describes DID Document signature
-     */
-    struct Signature {
-        string id;
-        string value;
-    }
-
-    /**
-     * @dev Event that is sent when a DID Document is created
-     */
-    event DIDCreated(string did);
-
-    /**
-     * @dev Event that is sent when a DID Document is updated
-     */
-    event DIDUpdated(string did);
-
-    /**
-     * @dev Event that is sent when a DID Document is deactivated
-     */
-    event DIDDeactivated(string did);
 
     /**
      * @dev Mapping DID to its corresponding DID Document.
@@ -124,12 +46,13 @@ contract DidRegistry {
      * Validated the DID syntax
      */
     modifier validDid(string memory did) {
+        StrSlice didSlice = did.toSlice();
         StrSlice delimiterSlice = DELIMITER.toSlice();
 
-        ( , StrSlice rest, StrSlice schema) = did.toSlice().splitOnce(delimiterSlice);
+        (, StrSlice schema, StrSlice rest) = didSlice.splitOnce(delimiterSlice);
         require(schema.eq(DID_PREFIX.toSlice()), "Incorrect DID schema");
 
-        (, , StrSlice didMethod) = rest.splitOnce(delimiterSlice);
+        (, StrSlice didMethod, ) = rest.splitOnce(delimiterSlice);
         require(
             didMethod.eq(INDY_DID_METHOD.toSlice())
                 || didMethod.eq(INDY_2_DID_METHOD.toSlice())
@@ -212,6 +135,16 @@ contract DidRegistry {
         dids[id].metadata.deactivated = true;
 
         emit DIDDeactivated(id);
+    }
+
+    /**
+     * @dev Function to resolve DID Document for the given DID
+     * @param id The DID to be resolved
+     */
+    function resolve(
+        string calldata id
+    ) public didExist(id) didIsActive(id) view virtual returns (DidDocument memory didDocument) {
+        return dids[id].document;
     }
 
     function contains(VerificationMethod[] memory methods, string memory methodId) private pure returns (bool) {
