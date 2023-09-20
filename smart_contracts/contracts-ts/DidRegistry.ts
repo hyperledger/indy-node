@@ -1,12 +1,19 @@
 import { Contract } from '../utils/contract'
-import { DidRegistryInterface } from '../typechain-types/did/DidRegistry'
+import { 
+    DidDocumentStorageStruct, 
+    DidDocumentStruct, 
+    VerificationMethodStruct, 
+    VerificationRelationshipStruct, 
+    ServiceStruct, 
+    SignatureStruct 
+} from '../typechain-types/did/DidRegistry'
 
-export type DidDocumentStorage = DidRegistryInterface.DidDocumentStorageStruct
-export type DidDocument = DidRegistryInterface.DidDocumentStruct
-export type VerificationMethod = DidRegistryInterface.VerificationMethodStruct
-export type VerificationRelationship = DidRegistryInterface.VerificationRelationshipStruct
-export type Service = DidRegistryInterface.ServiceStruct
-export type Signature = DidRegistryInterface.SignatureStruct
+export type DidDocumentStorage = DidDocumentStorageStruct
+export type DidDocument = DidDocumentStruct
+export type VerificationMethod = VerificationMethodStruct
+export type VerificationRelationship = VerificationRelationshipStruct
+export type Service = ServiceStruct
+export type Signature = SignatureStruct
 
 export class DidRegistry extends Contract {
     constructor(sender?: any) {

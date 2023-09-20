@@ -1,25 +1,26 @@
 import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers'
 import { expect } from 'chai'
-import { ethers } from 'hardhat'
 import { createBaseDidDocument, createFakeSignature } from '../utils'
 import { DidRegistry, VerificationMethod } from '../../contracts-ts/DidRegistry'
+import { Contract } from '../../utils/contract'
 
 describe('DIDContract', function () {
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
-  async function deployDidContractixture() {
-    // Contracts are deployed using the first signer/account by default
-    const [owner, otherAccount] = await ethers.getSigners()
+  async function deployDidContractFixture() {
+    
+    const validatorLib = new Contract('DidValidator')
+    await validatorLib.deploy();
 
-    const didRegistry = await new DidRegistry().deploy()
+    const didRegistry = await new DidRegistry().deploy({ libraries: { DidValidator: validatorLib.address! } })
 
-    return { didRegistry, owner, otherAccount }
+    return didRegistry
   }
 
   describe('Create DID', function () {
     it('Should create DID document', async function () {
-      const { didRegistry } = await loadFixture(deployDidContractixture)
+      const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
@@ -33,7 +34,7 @@ describe('DIDContract', function () {
     })
 
     it('Should fail if the DID being created already exists', async function () {
-      const { didRegistry } = await loadFixture(deployDidContractixture)
+      const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
@@ -45,7 +46,7 @@ describe('DIDContract', function () {
     })
 
     it('Should fail if an incorrect schema is provided for the DID', async function () {
-      const { didRegistry } = await loadFixture(deployDidContractixture)
+      const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'indy:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
@@ -55,7 +56,7 @@ describe('DIDContract', function () {
     })
 
     it('Should fail if an unsupported DID method is provided', async function () {
-      const { didRegistry } = await loadFixture(deployDidContractixture)
+      const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy3:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
@@ -65,7 +66,7 @@ describe('DIDContract', function () {
     })
 
     it('Should fail if an authentication key is not provided', async function () {
-      const { didRegistry } = await loadFixture(deployDidContractixture)
+      const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
@@ -76,7 +77,7 @@ describe('DIDContract', function () {
     })
 
     it('Should fail if an authentication key is not found in the verification methods', async function () {
-      const { didRegistry } = await loadFixture(deployDidContractixture)
+      const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
@@ -102,7 +103,7 @@ describe('DIDContract', function () {
 
   describe('Update DID', function () {
     it('Should update DID document', async function () {
-      const { didRegistry } = await loadFixture(deployDidContractixture)
+      const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
@@ -128,7 +129,7 @@ describe('DIDContract', function () {
     })
 
     it('Should fail if the DID being updated does not exists', async function () {
-      const { didRegistry } = await loadFixture(deployDidContractixture)
+      const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
@@ -138,7 +139,7 @@ describe('DIDContract', function () {
     })
 
     it('Should fail if the DID being updated is deactivated', async function () {
-      const { didRegistry } = await loadFixture(deployDidContractixture)
+      const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
@@ -151,7 +152,7 @@ describe('DIDContract', function () {
     })
 
     it('Should fail if an authentication key is not provided', async function () {
-      const { didRegistry } = await loadFixture(deployDidContractixture)
+      const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
@@ -165,7 +166,7 @@ describe('DIDContract', function () {
     })
 
     it('Should fail if an authentication key is not found in the verification methods', async function () {
-      const { didRegistry } = await loadFixture(deployDidContractixture)
+      const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
@@ -194,7 +195,7 @@ describe('DIDContract', function () {
 
   describe('Deactivate DID', function () {
     it('Should deactivate DID document', async function () {
-      const { didRegistry } = await loadFixture(deployDidContractixture)
+      const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
@@ -209,7 +210,7 @@ describe('DIDContract', function () {
     })
 
     it('Should fail if the DID has already been deactivated', async function () {
-      const { didRegistry } = await loadFixture(deployDidContractixture)
+      const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
@@ -222,7 +223,7 @@ describe('DIDContract', function () {
     })
 
     it('Should fail if the DID being deactivated does not exists', async function () {
-      const { didRegistry } = await loadFixture(deployDidContractixture)
+      const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const signature = createFakeSignature(did)
