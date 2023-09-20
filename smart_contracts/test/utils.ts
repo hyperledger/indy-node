@@ -1,9 +1,7 @@
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
-import { expect } from 'chai'
 import { ethers } from 'hardhat'
 import { ROLES } from '../contracts-ts/RoleControl'
-import Web3 from 'web3'
-import { DidRegistry } from '../typechain-types'
+import { DidDocument, Signature, VerificationMethod, VerificationRelationship } from '../contracts-ts/DidRegistry'
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -68,8 +66,8 @@ export async function getTestAccounts(roleControl: any): Promise<TestAccounts> {
   return testAccounts
 }
 
-export function createBaseDidDocument(did: string): DidRegistry.DidDocumentStruct {
-  const verificationMethod: DidRegistry.VerificationMethodStruct = {
+export function createBaseDidDocument(did: string): DidDocument {
+  const verificationMethod: VerificationMethod = {
     id: `${did}#KEY-1`,
     verificationMethodType: 'Ed25519VerificationKey2018',
     controller: 'did:indy2:testnet:N22SEp33q43PsdP7nDATyySSH',
@@ -77,7 +75,7 @@ export function createBaseDidDocument(did: string): DidRegistry.DidDocumentStruc
     publicKeyJwk: '',
   }
 
-  const authentication: DidRegistry.VerificationRelationshipStruct = {
+  const authentication: VerificationRelationship = {
     id: `${did}#KEY-1`,
     verificationMethod: {
       id: '',
@@ -88,7 +86,7 @@ export function createBaseDidDocument(did: string): DidRegistry.DidDocumentStruc
     },
   }
 
-  const didDocument: DidRegistry.DidDocumentStruct = {
+  const didDocument: DidDocument = {
     context: [],
     id: did,
     controller: [],
@@ -105,60 +103,9 @@ export function createBaseDidDocument(did: string): DidRegistry.DidDocumentStruc
   return didDocument
 }
 
-export function createFakeSignature(did: string): DidRegistry.SignatureStruct {
+export function createFakeSignature(did: string): Signature {
   return {
     id: did,
     value: '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
   }
-}
-
-export function assertDidDocument(
-  actual: DidRegistry.DidDocumentStructOutput,
-  expected: DidRegistry.DidDocumentStruct,
-) {
-  expect(actual.context).to.have.all.members(expected.context)
-  expect(actual.id).to.equals(expected.id)
-  expect(actual.controller).to.have.all.members(expected.controller)
-  expect(actual.alsoKnownAs).to.have.all.members(expected.alsoKnownAs)
-
-  assertArray(actual.verificationMethod, expected.verificationMethod, assetVerificationMethod)
-  assertArray(actual.authentication, expected.authentication, assetVerificationRelationship)
-  assertArray(actual.assertionMethod, expected.assertionMethod, assetVerificationRelationship)
-  assertArray(actual.capabilityInvocation, expected.capabilityInvocation, assetVerificationRelationship)
-  assertArray(actual.capabilityDelegation, expected.capabilityDelegation, assetVerificationRelationship)
-  assertArray(actual.keyAgreement, expected.keyAgreement, assetVerificationRelationship)
-  assertArray(actual.service, expected.service, assetService)
-}
-
-export function assetVerificationMethod(
-  actual: DidRegistry.VerificationMethodStructOutput,
-  expected: DidRegistry.VerificationMethodStruct,
-) {
-  expect(actual.id).to.equals(expected.id)
-  expect(actual.verificationMethodType).to.equals(expected.verificationMethodType)
-  expect(actual.controller).to.equals(expected.controller)
-  expect(actual.publicKeyJwk).to.equals(expected.publicKeyJwk)
-  expect(actual.publicKeyMultibase).to.equals(expected.publicKeyMultibase)
-}
-
-export function assetVerificationRelationship(
-  actual: DidRegistry.VerificationRelationshipStructOutput,
-  expected: DidRegistry.VerificationRelationshipStruct,
-) {
-  expect(actual.id).to.equals(expected.id)
-  assetVerificationMethod(actual.verificationMethod, expected.verificationMethod)
-}
-
-export function assetService(actual: DidRegistry.ServiceStructOutput, expected: DidRegistry.ServiceStruct) {
-  expect(actual.id).to.equals(expected.id)
-  expect(actual.serviceType).to.equals(expected.serviceType)
-  expect(actual.serviceEndpoint).to.have.all.members(expected.serviceEndpoint)
-  expect(actual.accept).to.have.all.members(expected.accept)
-  expect(actual.routingKeys).to.have.all.members(expected.routingKeys)
-}
-
-export function assertArray<A, E>(actualArray: A[], expectedArray: E[], fn: (actual: A, expected: E) => void) {
-  expect(actualArray.length).to.equals(expectedArray.length)
-
-  actualArray.every((element, index) => fn(element, expectedArray[index]))
 }

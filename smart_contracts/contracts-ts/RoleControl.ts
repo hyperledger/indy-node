@@ -9,9 +9,10 @@ export enum ROLES {
 
 export class RoleControl extends Contract {
   protected static readonly defaultAddress = '0x0000000000000000000000000000000000006666'
+  protected static readonly path = 'auth'
 
   constructor(sender?: any, address?: string) {
-    super(RoleControl.name, 'auth', sender, address || RoleControl.defaultAddress)
+    super(RoleControl.name, RoleControl.path, sender, address || RoleControl.defaultAddress)
   }
 
   async getRole(account: string) {

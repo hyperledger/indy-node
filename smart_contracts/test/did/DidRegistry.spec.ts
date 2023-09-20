@@ -1,8 +1,8 @@
 import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
-import { DidRegistry } from '../../typechain-types'
-import { assertDidDocument, createBaseDidDocument, createFakeSignature } from '../utils'
+import { createBaseDidDocument, createFakeSignature } from '../utils'
+import { DidRegistry, VerificationMethod } from '../../contracts-ts/DidRegistry'
 
 describe('DIDContract', function () {
   // We define a fixture to reuse the same setup in every test.
@@ -12,10 +12,7 @@ describe('DIDContract', function () {
     // Contracts are deployed using the first signer/account by default
     const [owner, otherAccount] = await ethers.getSigners()
 
-    const DidRegistry = await ethers.getContractFactory('DidRegistry')
-    const didRegistry = await DidRegistry.deploy()
-
-    ethers.deployContract('DidRegistry')
+    const didRegistry = await new DidRegistry().deploy()
 
     return { didRegistry, owner, otherAccount }
   }
@@ -30,9 +27,9 @@ describe('DIDContract', function () {
 
       await didRegistry.createDid(didDocument, [signature])
 
-      const { document } = await didRegistry.dids(did)
+      const { document } = await didRegistry.resolve(did)
 
-      assertDidDocument(document, didDocument)
+      expect(document).to.be.deep.equal(didDocument)
     })
 
     it('Should fail if the DID being created already exists', async function () {
@@ -113,7 +110,7 @@ describe('DIDContract', function () {
 
       await didRegistry.createDid(didDocument, [signature])
 
-      const verificationMethod: DidRegistry.VerificationMethodStruct = {
+      const verificationMethod: VerificationMethod = {
         id: `${did}#KEY-2`,
         verificationMethodType: 'X25519KeyAgreementKey2019',
         controller: 'did:indy2:testnet:N22SEp33q43PsdP7nDATyySSH',
@@ -125,9 +122,9 @@ describe('DIDContract', function () {
 
       await didRegistry.updateDid(didDocument, [signature])
 
-      const { document } = await didRegistry.dids(did)
+      const { document } = await didRegistry.resolve(did)
 
-      assertDidDocument(document, didDocument)
+      expect(document).to.be.deep.equal(didDocument)
     })
 
     it('Should fail if the DID being updated does not exists', async function () {
@@ -206,7 +203,7 @@ describe('DIDContract', function () {
       await didRegistry.createDid(didDocument, [signature])
       await didRegistry.deactivateDid(did, [signature])
 
-      const didStorage = await didRegistry.dids(did)
+      const didStorage = await didRegistry.resolve(did)
 
       expect(didStorage.metadata.deactivated).is.true
     })

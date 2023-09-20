@@ -14,14 +14,6 @@ contract DidRegistry is DidRegistryInterface {
     string private constant SOV_DID_METHOD = "sov";
 
     /**
-     * @dev DidDocumentStorage holds the DID Document and its associated metadata
-     */
-    struct DidDocumentStorage {
-        DidDocument document;
-        DidMetadata metadata;
-    }
-
-    /**
      * @dev Mapping DID to its corresponding DID Document.
      */
     mapping(string => DidDocumentStorage) public dids;
@@ -143,8 +135,8 @@ contract DidRegistry is DidRegistryInterface {
      */
     function resolve(
         string calldata id
-    ) public didExist(id) didIsActive(id) view virtual returns (DidDocument memory didDocument) {
-        return dids[id].document;
+    ) public didExist(id) view virtual returns (DidDocumentStorage memory didDocumentStorage) {
+        return dids[id];
     }
 
     function contains(VerificationMethod[] memory methods, string memory methodId) private pure returns (bool) {

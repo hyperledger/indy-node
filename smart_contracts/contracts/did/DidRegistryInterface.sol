@@ -3,6 +3,14 @@ pragma solidity ^0.8.20;
 
 interface DidRegistryInterface {
     /**
+     * @dev DidDocumentStorage holds the DID Document and its associated metadata
+     */
+    struct DidDocumentStorage {
+        DidDocument document;
+        DidMetadata metadata;
+    }
+
+    /**
      * @dev VerificationRelationship links a DID to a verification method
      */
     struct DidMetadata {
@@ -106,5 +114,5 @@ interface DidRegistryInterface {
      * @dev Function to resolve DID Document for the given DID
      * @param id The DID to be resolved
      */
-    function resolve(string calldata id) external returns (DidDocument memory didDocument);
+    function resolve(string calldata id) external returns (DidDocumentStorage memory didDocumentStorage);
 }
