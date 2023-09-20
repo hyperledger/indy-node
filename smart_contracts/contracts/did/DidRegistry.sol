@@ -16,7 +16,7 @@ contract DidRegistry is DidRegistryInterface {
     /**
      * @dev Mapping DID to its corresponding DID Document.
      */
-    mapping(string => DidDocumentStorage) public dids;
+    mapping(string => DidDocumentStorage) private dids;
 
     /**
      * Checks that DID already exists

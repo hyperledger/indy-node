@@ -10,11 +10,6 @@ const config: HardhatUserConfig = {
                 runs: 200
             },
         },
-    },
-    networks: {
-        hardhat: {
-            allowUnlimitedContractSize: true,
-        }
     }
 };
 
