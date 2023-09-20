@@ -9,10 +9,8 @@ export type Service = DidRegistryInterface.ServiceStruct
 export type Signature = DidRegistryInterface.SignatureStruct
 
 export class DidRegistry extends Contract {
-    protected static readonly path = 'did'
-
-    constructor(sender?: any, address?: string) {
-        super(DidRegistry.name, DidRegistry.path, sender, address)
+    constructor(sender?: any) {
+        super(DidRegistry.name, sender)
     }
 
     async createDid(didDocument: DidDocument, signatures: Array<Signature>) {

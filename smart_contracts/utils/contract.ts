@@ -1,6 +1,4 @@
-import { readFileSync } from 'fs-extra'
 import { ethers } from 'hardhat'
-import { resolve } from 'path'
 import { host } from "../environment";
 import { Signer } from "ethers";
 
@@ -8,14 +6,11 @@ export class Contract {
     public address?: string
 
     protected readonly name: string
-    protected readonly path: string
     protected readonly signer?: Signer
     protected instance: any
 
-    constructor(name: string, path: string, sender?: any, address?: string) {
+    constructor(name: string, sender?: any) {
         this.name = name
-        this.path = path
-        this.address = address
         if (sender) {
             const provider = new ethers.JsonRpcProvider(host)
             this.signer = new ethers.Wallet(sender.privateKey, provider)
@@ -28,11 +23,9 @@ export class Contract {
         return this
     }
 
-    public getInstance() {
-        const contractPath = resolve(__dirname, '../', `artifacts/contracts`, this.path, `${this.name}.sol/${this.name}.json`)
-        const contractJson = JSON.parse(readFileSync(contractPath, 'utf8'))
-        this.address = this.address || '0x0000000000000000000000000000000000001111'
-        this.instance = new ethers.Contract(this.address, contractJson.abi, this.signer)
+    public async getInstance(address: string) {
+        this.instance = await ethers.getContractAt(this.name, address, this.signer)
+        this.address = address
         return this
     }
 

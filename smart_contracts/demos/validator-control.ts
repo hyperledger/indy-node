@@ -21,8 +21,8 @@ async function demo() {
     const steward = environment.accounts.account2
     const nodeAddress = '0xdf2aa4dfb7be2d4de6f9b1a4574248502ea198b1'
 
-    const roleContract = new RoleControl(sender).getInstance()
-    const validatorContract = new ValidatorControl(steward).getInstance()
+    const roleContract = await new RoleControl(sender).getInstance(RoleControl.defaultAddress)
+    const validatorContract = await new ValidatorControl(steward).getInstance(ValidatorControl.defaultAddress)
 
     console.log('1. Get the lst of current validate nodes')
     let validators = await validatorContract.getValidators()
