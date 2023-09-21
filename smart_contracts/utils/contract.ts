@@ -1,6 +1,6 @@
 import { ethers } from 'hardhat'
-import { host } from "../environment";
-import { Signer } from "ethers";
+import { host } from '../environment'
+import { Signer } from 'ethers'
 
 export class Contract {
     public address?: string
@@ -21,14 +21,21 @@ export class Contract {
         const { params, libraries } = options || {}
 
         const libraryObject = libraries?.reduce<{ [libraryName: string]: string }>((acc, library) => {
-            acc[library.name] = library.address!;
-            return acc;
-          }, {});
+            acc[library.name] = library.address!
+            return acc
+          }, {})
         
         if (params) {
-            this.instance = await ethers.deployContract(this.name, params, { signer: this.signer, libraries: libraryObject })
+            this.instance = await ethers.deployContract(
+                this.name, 
+                params, 
+                { signer: this.signer, libraries: libraryObject }
+            )
         } else {
-            this.instance = await ethers.deployContract(this.name, { signer: this.signer, libraries: libraryObject })
+            this.instance = await ethers.deployContract(
+                this.name, 
+                { signer: this.signer, libraries: libraryObject }
+            )
         }
 
         this.address = await this.instance.getAddress()
@@ -46,4 +53,3 @@ export class Contract {
         return this
     }
 }
-
