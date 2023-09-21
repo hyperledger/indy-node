@@ -6,7 +6,7 @@ export const slots = {
 
 export function buildSection(comment: string, storage: Record<string, string>) {
   return {
-    '<Address of Contract>': {
+    [`<Address of Contract> ${comment}`]: {
       comment,
       balance: '0',
       code: '0x<Contract Code>',

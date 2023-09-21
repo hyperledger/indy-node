@@ -10,6 +10,8 @@
     "format": "prettier --write \"scripts/**/*.ts\" \"contracts-ts/**/*.ts\" \"demos/**/*.ts\" \"test/**/*.ts\"",
     "demo/roles": "ts-node demos/role-control.ts",
     "demo/validators": "ts-node demos/validator-control.ts",
+    "demo/flow": "ts-node demos/flow.ts",
+    "genesis/generate": "ts-node scripts/genesis/generate.ts",
     "genesis/roles/generate": "ts-node scripts/genesis/roles/generate.ts",
     "genesis/validators/generate": "ts-node scripts/genesis/validators/generate.ts"
   },

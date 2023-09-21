@@ -13,7 +13,7 @@ const outFile = 'RoleControlGenesis.json'
 
 console.log(__dirname)
 
-function main() {
+export function generate() {
   const config: Config = readJson(path.resolve(__dirname, inFile))
 
   const storage: any = {}
@@ -22,8 +22,8 @@ function main() {
   for (let i = 0; i < config.accounts.length; i++) {
     const account = padLeft(config.accounts[i].account.substring(2), 64)
     const slot = sha3('0x' + account + slots['0'])!
-      .substring(2)
-      .toLowerCase()
+        .substring(2)
+        .toLowerCase()
     storage[padLeft(slot, 64)] = padLeft(config.accounts[i].role.toString(16), 64)
   }
 
@@ -31,12 +31,16 @@ function main() {
   for (const [role, owner] of Object.entries(config.roleOwners)) {
     const role_ = padLeft(parseInt(role).toString(16), 64)
     const slot = sha3('0x' + role_ + slots['1'])!
-      .substring(2)
-      .toLowerCase()
+        .substring(2)
+        .toLowerCase()
     storage[padLeft(slot, 64)] = padLeft(parseInt(owner).toString(16), 64)
   }
 
-  const section = buildSection('Smart contract to manage account roles', storage)
+  return buildSection('Smart contract to manage account roles', storage)
+}
+
+function main() {
+  const section = generate()
   writeJson(section, outFile)
 }
 

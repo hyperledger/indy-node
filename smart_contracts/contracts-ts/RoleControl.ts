@@ -1,4 +1,5 @@
 import { Contract } from '../utils/contract'
+import { Account } from "../utils/account";
 
 export enum ROLES {
   EMPTY,
@@ -10,7 +11,7 @@ export enum ROLES {
 export class RoleControl extends Contract {
   public static readonly defaultAddress = '0x0000000000000000000000000000000000006666'
 
-  constructor(sender?: any) {
+  constructor(sender?: Account) {
     super(RoleControl.name, sender)
   }
 

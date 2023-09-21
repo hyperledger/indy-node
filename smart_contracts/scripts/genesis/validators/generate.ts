@@ -12,7 +12,7 @@ interface Config {
 const inFile = 'data.json'
 const outFile = 'ValidatorControlGenesis.json'
 
-function main() {
+export function generate() {
   const config: Config = readJson(path.resolve(__dirname, inFile))
 
   const storage: any = {}
@@ -31,18 +31,22 @@ function main() {
   for (let i = 0; i < config.validators.length; i++) {
     const validator = padLeft(config.validators[i].validator.substring(2), 64)
     const slot = sha3('0x' + validator + slots['1'])!
-      .substring(2)
-      .toLowerCase()
+        .substring(2)
+        .toLowerCase()
     storage[padLeft(slot, 64)] = padLeft(
-      config.validators[i].account.substring(2).toLowerCase() + i.toString(16) + '01',
-      64,
+        config.validators[i].account.substring(2).toLowerCase() + i.toString(16) + '01',
+        64,
     ) // account | index(hex) | activeValidator:true(0x01)
   }
 
   // address of role control contact stored in slot 2
   storage[slots['2']] = padLeft(config.roleControlContractAddress, 64)
 
-  const section = buildSection('Smart contract to manage validator nodes', storage)
+  return buildSection('Smart contract to manage validator nodes', storage)
+}
+
+function main() {
+  const section = generate()
   writeJson(section, outFile)
 }
 
