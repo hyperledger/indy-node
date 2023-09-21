@@ -30,7 +30,7 @@ describe('ValidatorControl', () => {
         account: testAccounts.steward2.account,
       },
     ]
-    validatorControl = await new ValidatorControl().deploy([roleControl.address, initialValidatorsData])
+    validatorControl = await new ValidatorControl().deploy({ params: [roleControl.address, initialValidatorsData] })
   })
 
   describe('getValidators', () => {

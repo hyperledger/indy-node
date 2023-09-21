@@ -9,11 +9,10 @@ describe('DIDContract', function () {
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
   async function deployDidContractFixture() {
-    
     const validatorLib = new Contract('DidValidator')
-    await validatorLib.deploy();
+    await validatorLib.deploy()
 
-    const didRegistry = await new DidRegistry().deploy({ libraries: { DidValidator: validatorLib.address! } })
+    const didRegistry = await new DidRegistry().deploy({ libraries: [validatorLib] })
 
     return didRegistry
   }
