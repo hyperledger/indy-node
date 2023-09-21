@@ -1,7 +1,7 @@
 import environment from '../environment'
-import { ROLES } from '../contracts-ts/RoleControl'
-import { Account } from '../utils/account'
-import { Actor } from "./utils/actor";
+import { ROLES } from '../contracts-ts'
+import { Account } from '../utils'
+import { Actor } from './utils/actor'
 
 // Change it with the new node address!!
 const nodeAddress = '0xdf2aa4dfb7be2d4de6f9b1a4574248502ea198b1'

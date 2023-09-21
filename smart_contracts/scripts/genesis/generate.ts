@@ -1,23 +1,18 @@
-import { writeJson } from "../../utils/file";
-import { generate as credentialDefinitions } from "./credentialDefinitions/generate";
-import { generate as dids } from "./dids/generate";
-import { generate as roles } from "./roles/generate";
-import { generate as schemas } from "./schemas/generate";
-import { generate as validators } from "./validators/generate";
-
-const outFile = 'ContractsGenesis.json'
+import { writeJson } from '../../utils'
+import { outFile } from './config'
+import { credentialDefinitions, dids, roles, schemas, validators } from './contracts'
 
 function main() {
-    const contracts = {
-        ...credentialDefinitions(),
-        ...dids(),
-        ...roles(),
-        ...schemas(),
-        ...validators(),
-    }
-    writeJson(contracts, outFile)
+  const contracts = {
+    ...roles(),
+    ...validators(),
+    ...dids(),
+    ...schemas(),
+    ...credentialDefinitions(),
+  }
+  writeJson(contracts, outFile)
 }
 
 if (require.main === module) {
-    main()
+  main()
 }

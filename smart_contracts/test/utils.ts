@@ -1,7 +1,6 @@
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
 import { ethers } from 'hardhat'
-import { ROLES } from '../contracts-ts/RoleControl'
-import { DidDocument, Signature, VerificationMethod, VerificationRelationship } from '../contracts-ts/DidRegistry'
+import { DidDocument, ROLES, Signature, VerificationMethod, VerificationRelationship } from '../contracts-ts'
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 

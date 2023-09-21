@@ -1,5 +1,5 @@
-import { Contract } from '../utils/contract'
 import { DidRegistryInterface } from '../typechain-types/did/DidRegistry'
+import { Contract } from '../utils/contract'
 
 export type DidDocumentStorage = DidRegistryInterface.DidDocumentStorageStruct
 export type DidDocument = DidRegistryInterface.DidDocumentStruct
@@ -9,26 +9,28 @@ export type Service = DidRegistryInterface.ServiceStruct
 export type Signature = DidRegistryInterface.SignatureStruct
 
 export class DidRegistry extends Contract {
+  public static readonly defaultAddress = '0x0000000000000000000000000000000000003333'
+
   constructor(sender?: any) {
     super(DidRegistry.name, sender)
   }
 
-  async createDid(didDocument: DidDocument, signatures: Array<Signature>) {
+  public async createDid(didDocument: DidDocument, signatures: Array<Signature>) {
     const tx = await this.instance.createDid(didDocument, signatures)
     return tx.wait()
   }
 
-  async updateDid(didDocument: DidDocument, signatures: Array<Signature>) {
+  public async updateDid(didDocument: DidDocument, signatures: Array<Signature>) {
     const tx = await this.instance.updateDid(didDocument, signatures)
     return tx.wait()
   }
 
-  async deactivateDid(id: string, signatures: Array<Signature>) {
+  public async deactivateDid(id: string, signatures: Array<Signature>) {
     const tx = await this.instance.deactivateDid(id, signatures)
     return tx.wait()
   }
 
-  async resolve(id: string): Promise<DidDocumentStorage> {
+  public async resolve(id: string): Promise<DidDocumentStorage> {
     const didDocumentStorage = await this.instance.resolve(id)
     return {
       document: {

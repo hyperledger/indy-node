@@ -1,6 +1,6 @@
-import { ROLES } from '../contracts-ts/RoleControl'
+import { ROLES } from '../contracts-ts'
 import environment from '../environment'
-import { Actor } from "./utils/actor";
+import { Actor } from './utils/actor'
 
 async function demo() {
   const trustee = await new Actor(environment.accounts.account1).init()
@@ -42,7 +42,6 @@ async function demo() {
   console.log('9. Get role of target account')
   const newAccountRevokeRole = await trustee.roleControl.getRole(newAccount.address)
   console.log(`Account ${newAccount.address} has ${newAccountRevokeRole} role assigned`)
-
 }
 
 if (require.main === module) {

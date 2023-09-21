@@ -6,14 +6,12 @@
     "compile": "hardhat compile",
     "clean": "hardhat clean",
     "test": "hardhat test",
-    "lint": "tslint -p tsconfig.json -c tslint.json",
+    "lint": "tslint --fix -p tsconfig.json -c tslint.json",
     "format": "prettier --write \"scripts/**/*.ts\" \"contracts-ts/**/*.ts\" \"demos/**/*.ts\" \"test/**/*.ts\"",
     "demo/roles": "ts-node demos/role-control.ts",
     "demo/validators": "ts-node demos/validator-control.ts",
     "demo/flow": "ts-node demos/flow.ts",
-    "genesis/generate": "ts-node scripts/genesis/generate.ts",
-    "genesis/roles/generate": "ts-node scripts/genesis/roles/generate.ts",
-    "genesis/validators/generate": "ts-node scripts/genesis/validators/generate.ts"
+    "genesis/generate": "ts-node scripts/genesis/generate.ts"
   },
   "license": "Apache-2.0",
   "dependencies": {
@@ -43,6 +41,7 @@
     "@types/mocha": "^9.0.0",
     "chai": "^4.3.0",
     "hardhat": "^2.17.2",
+    "hardhat-storage-layout": "^0.1.7",
     "prettier": "^2.7.1",
     "solidity-coverage": "^0.8.4",
     "ts-node": "^10.2.1",

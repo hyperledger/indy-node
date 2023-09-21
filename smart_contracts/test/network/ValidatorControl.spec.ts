@@ -1,8 +1,7 @@
 import chai from 'chai'
+import { RoleControl, ValidatorControl } from '../../contracts-ts'
+import { Account } from '../../utils'
 import { getTestAccounts, TestAccounts, ZERO_ADDRESS } from '../utils'
-import { RoleControl } from '../../contracts-ts/RoleControl'
-import { ValidatorControl } from '../../contracts-ts/ValidatorControl'
-import { Account } from '../../utils/account'
 
 const { expect } = chai
 
@@ -13,7 +12,7 @@ describe('ValidatorControl', function () {
 
   const validator1: string = new Account().address
   const validator2: string = new Account().address
-  const initialValidators: Array<String> = [validator1, validator2]
+  const initialValidators: Array<string> = [validator1, validator2]
 
   beforeEach('deploy ValidatorSmartContract', async () => {
     roleControl = await new RoleControl().deploy()
@@ -52,8 +51,6 @@ describe('ValidatorControl', function () {
     })
 
     it('should fail when adding a new validator by an account without Steward role', async function () {
-      const newValidator = new Account()
-
       await expect(
         validatorControl.connect(testAccounts.noRole.account).addValidator(newValidator.address),
       ).to.be.revertedWith('Sender does not have STEWARD role assigned')

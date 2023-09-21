@@ -1,6 +1,7 @@
-import { host, web3 } from "../environment";
-import { ethers } from "hardhat";
-import { Signer } from "ethers";
+import { Signer } from 'ethers';
+import { ethers } from 'hardhat';
+import { environment, host, web3 } from '../environment';
+import { createBaseDidDocument } from '../test/utils';
 
 export interface AccountInfo {
     address: string,
@@ -24,5 +25,13 @@ export class Account {
             this.address = account.address
             this.privateKey = account.privateKey
         }
+    }
+
+    public get did() {
+        return `did:${environment.did.method}:${environment.network.name}:${this.address.substring(0, 16)}`
+    }
+
+    public get didDocument() {
+        return createBaseDidDocument(this.did)
     }
 }

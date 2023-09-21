@@ -125,6 +125,7 @@ services:
       quorum-dev-quickstart:
         ipv4_address: 172.16.239.14
 
+  # additional validator node required for testing of adding a new validator into the consensus
   validator5:
     << : *besu-def
     ports:

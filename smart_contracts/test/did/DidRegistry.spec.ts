@@ -1,8 +1,8 @@
 import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
+import { DidRegistry, VerificationMethod } from '../../contracts-ts'
 import { createBaseDidDocument, createFakeSignature } from '../utils'
-import { DidRegistry, VerificationMethod } from '../../contracts-ts/DidRegistry'
 
 describe('DIDContract', function () {
   async function deployDidContractixture() {
