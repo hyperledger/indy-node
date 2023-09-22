@@ -1,5 +1,5 @@
 import { DidRegistryInterface } from '../typechain-types/did/DidRegistry'
-import { Contract } from '../utils/contract'
+import { Contract } from '../utils'
 
 export type DidDocumentStorage = DidRegistryInterface.DidDocumentStorageStruct
 export type DidDocument = DidRegistryInterface.DidDocumentStruct
