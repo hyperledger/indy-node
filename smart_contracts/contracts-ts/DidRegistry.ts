@@ -1,12 +1,19 @@
-import { DidRegistryInterface } from '../typechain-types/did/DidRegistry'
-import { Contract } from '../utils'
+import {
+  DidDocumentStorageStruct,
+  DidDocumentStruct,
+  ServiceStruct,
+  SignatureStruct,
+  VerificationMethodStruct,
+  VerificationRelationshipStruct,
+} from '../typechain-types/did/DidRegistry'
+import { Contract } from '../utils/contract'
 
-export type DidDocumentStorage = DidRegistryInterface.DidDocumentStorageStruct
-export type DidDocument = DidRegistryInterface.DidDocumentStruct
-export type VerificationMethod = DidRegistryInterface.VerificationMethodStruct
-export type VerificationRelationship = DidRegistryInterface.VerificationRelationshipStruct
-export type Service = DidRegistryInterface.ServiceStruct
-export type Signature = DidRegistryInterface.SignatureStruct
+export type DidDocumentStorage = DidDocumentStorageStruct
+export type DidDocument = DidDocumentStruct
+export type VerificationMethod = VerificationMethodStruct
+export type VerificationRelationship = VerificationRelationshipStruct
+export type Service = ServiceStruct
+export type Signature = SignatureStruct
 
 export class DidRegistry extends Contract {
   public static readonly defaultAddress = '0x0000000000000000000000000000000000003333'

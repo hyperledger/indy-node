@@ -1,7 +1,6 @@
 import { Signer } from 'ethers';
 import { ethers } from 'hardhat'
 import { host } from '../environment';
-import { Account } from './account';
 
 export class Contract {
     public address?: string
@@ -10,7 +9,7 @@ export class Contract {
     protected readonly signer?: Signer
     protected instance: any
 
-    constructor(name: string, sender?: Account) {
+    constructor(name: string, sender?: any) {
         this.name = name
         if (sender) {
             const provider = new ethers.JsonRpcProvider(host)
