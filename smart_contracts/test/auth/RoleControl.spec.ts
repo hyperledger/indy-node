@@ -45,10 +45,7 @@ describe('RoleControl', () => {
       const account = new Account()
       await expect(
         roleControl.connect(testAccounts.noRole.account).assignRole(ROLES.ENDORSER, account.address),
-      ).to.be.rejectedWith(
-        Error,
-        "VM Exception while processing transaction: reverted with reason string 'Sender does not have required role to perform action",
-      )
+      ).to.be.revertedWith('Sender does not have required role to perform action')
     })
 
     it('should override an assigned role by trustee', async function () {
@@ -82,10 +79,7 @@ describe('RoleControl', () => {
         roleControl
           .connect(testAccounts.noRole.account)
           .revokeRole(ROLES.ENDORSER, testAccounts.endorser.account.address),
-      ).to.be.rejectedWith(
-        Error,
-        "VM Exception while processing transaction: reverted with reason string 'Sender does not have required role to perform action",
-      )
+      ).to.be.revertedWith('Sender does not have required role to perform action')
     })
   })
 })

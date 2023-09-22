@@ -6,7 +6,7 @@ async function demo() {
     const sender = environment.accounts.account1
     const newAccount = new Account()
 
-    const contract = new RoleControl(sender).getInstance()
+    const contract = await new RoleControl(sender).getInstance(RoleControl.defaultAddress)
 
     console.log('1. Get role for the current account')
     const senderRole = await contract.getRole(sender.address)

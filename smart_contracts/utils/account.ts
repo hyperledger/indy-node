@@ -1,5 +1,5 @@
-import { web3 } from "../environment";
-import { Account as Web3Account } from "web3-core";
+import { web3 } from '../environment';
+import { Account as Web3Account } from 'web3-core';
 
 export class Account {
     account: Web3Account

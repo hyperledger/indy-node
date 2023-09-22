@@ -1,6 +1,7 @@
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
 import { ethers } from 'hardhat'
 import { ROLES } from '../contracts-ts/RoleControl'
+import { DidDocument, Signature, VerificationMethod, VerificationRelationship } from '../contracts-ts/DidRegistry'
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -63,4 +64,48 @@ export async function getTestAccounts(roleControl: any): Promise<TestAccounts> {
     }
   }
   return testAccounts
+}
+
+export function createBaseDidDocument(did: string): DidDocument {
+  const verificationMethod: VerificationMethod = {
+    id: `${did}#KEY-1`,
+    verificationMethodType: 'Ed25519VerificationKey2018',
+    controller: 'did:indy2:testnet:N22SEp33q43PsdP7nDATyySSH',
+    publicKeyMultibase: 'zAKJP3f7BD6W4iWEQ9jwndVTCBq8ua2Utt8EEjJ6Vxsf',
+    publicKeyJwk: '',
+  }
+
+  const authentication: VerificationRelationship = {
+    id: `${did}#KEY-1`,
+    verificationMethod: {
+      id: '',
+      verificationMethodType: '',
+      controller: '',
+      publicKeyMultibase: '',
+      publicKeyJwk: '',
+    },
+  }
+
+  const didDocument: DidDocument = {
+    context: [],
+    id: did,
+    controller: [],
+    verificationMethod: [verificationMethod],
+    authentication: [authentication],
+    assertionMethod: [],
+    capabilityInvocation: [],
+    capabilityDelegation: [],
+    keyAgreement: [],
+    service: [],
+    alsoKnownAs: [],
+  }
+
+  return didDocument
+}
+
+export function createFakeSignature(did: string): Signature {
+  return {
+    id: did,
+    value: '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
+  }
 }

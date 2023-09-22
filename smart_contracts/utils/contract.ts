@@ -1,37 +1,50 @@
-import { readFileSync } from 'fs-extra'
 import { ethers } from 'hardhat'
-import path from 'path'
-import { host } from "../environment";
-import { Signer } from "ethers";
+import { host } from '../environment'
+import { Signer } from 'ethers'
 
 export class Contract {
-    protected readonly folder: string
+    public address?: string
+
     protected readonly name: string
     protected readonly signer?: Signer
-    public address?: string
     protected instance: any
 
-    constructor(name: string, folder: string, sender?: any, address?: string) {
+    constructor(name: string, sender?: any) {
         this.name = name
-        this.folder = folder
-        this.address = address
         if (sender) {
             const provider = new ethers.JsonRpcProvider(host)
             this.signer = new ethers.Wallet(sender.privateKey, provider)
         }
     }
 
-    public async deploy(params?: any) {
-        this.instance = await ethers.deployContract(this.name, params, this.signer)
+    public async deploy(options?: { params?: any, libraries?: [Contract] }) {
+        const { params, libraries } = options || {}
+
+        const libraryObject = libraries?.reduce<{ [libraryName: string]: string }>((acc, library) => {
+            acc[library.name] = library.address!
+            return acc
+          }, {})
+        
+        if (params) {
+            this.instance = await ethers.deployContract(
+                this.name, 
+                params, 
+                { signer: this.signer, libraries: libraryObject }
+            )
+        } else {
+            this.instance = await ethers.deployContract(
+                this.name, 
+                { signer: this.signer, libraries: libraryObject }
+            )
+        }
+
         this.address = await this.instance.getAddress()
         return this
     }
 
-    public getInstance() {
-        const contractPath = path.resolve(__dirname, '../', `artifacts/contracts`, this.folder, `${this.name}.sol/${this.name}.json`)
-        const contractJson = JSON.parse(readFileSync(contractPath, 'utf8'))
-        this.address = this.address || '0x0000000000000000000000000000000000001111'
-        this.instance = new ethers.Contract(this.address, contractJson.abi, this.signer)
+    public async getInstance(address: string) {
+        this.instance = await ethers.getContractAt(this.name, address, this.signer)
+        this.address = address
         return this
     }
 
@@ -40,4 +53,3 @@ export class Contract {
         return this
     }
 }
-

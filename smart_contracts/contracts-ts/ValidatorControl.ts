@@ -1,10 +1,10 @@
 import { Contract } from '../utils/contract'
 
 export class ValidatorControl extends Contract {
-  protected static readonly defaultAddress = '0x0000000000000000000000000000000000007777'
+  public static readonly defaultAddress = '0x0000000000000000000000000000000000007777'
 
-  constructor(sender?: any, address?: string) {
-    super(ValidatorControl.name, 'network', sender, address || ValidatorControl.defaultAddress)
+  constructor(sender?: any) {
+    super(ValidatorControl.name, sender)
   }
 
   async getValidators() {
