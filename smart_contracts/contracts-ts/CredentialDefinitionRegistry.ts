@@ -10,12 +10,12 @@ export class CredentialDefinitionRegistry extends Contract {
     super(CredentialDefinitionRegistry.name, sender)
   }
 
-  public async create(id: string, credDef: CredentialDefinition) {
+  public async createCredentialDefinition(id: string, credDef: CredentialDefinition) {
     const tx = await this.instance.create(id, credDef)
     return tx.wait()
   }
 
-  public async resolve(id: string): Promise<CredentialDefinition> {
+  public async resolveCredentialDefinition(id: string): Promise<CredentialDefinition> {
     const credDef = await this.instance.resolve(id)
     return {
       name: credDef.name,

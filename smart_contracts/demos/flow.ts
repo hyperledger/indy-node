@@ -30,22 +30,22 @@ async function demo() {
 
   console.log('5. Faber creates Test Schema')
   const schema = new Schema()
-  receipt = await faber.schemaRegistry.create(schema.id, schema.data)
+  receipt = await faber.schemaRegistry.createSchema(schema.id, schema.data)
   console.log(`Schema created for id ${schema.id}. Receipt: ${JSON.stringify(receipt)}`)
   await delay(2000)
 
   console.log('6. Faber resolves Test Schema to ensure its written')
-  const resolvedSchema = await faber.schemaRegistry.resolve(schema.id)
+  const resolvedSchema = await faber.schemaRegistry.resolveSchema(schema.id)
   console.log(`Schema resolved for ${schema.id}. Schema: ${JSON.stringify(resolvedSchema)}`)
 
   console.log('7. Faber create Test Credential Definition')
   const credentialDefinition = new CredentialDefinition()
-  receipt = await faber.credentialDefinitionRegistry.create(credentialDefinition.id, credentialDefinition.data)
+  receipt = await faber.credentialDefinitionRegistry.createCredentialDefinition(credentialDefinition.id, credentialDefinition.data)
   console.log(`Credential Definition created for id ${schema.id}. Receipt: ${JSON.stringify(receipt)}`)
   await delay(2000)
 
   console.log('8. Trustee resolves Test Credential Definition to ensure its written')
-  const resolvedCredentialDefinition = await faber.credentialDefinitionRegistry.resolve(credentialDefinition.id)
+  const resolvedCredentialDefinition = await faber.credentialDefinitionRegistry.resolveCredentialDefinition(credentialDefinition.id)
   console.log(
     `Credential Definition resolved for ${credentialDefinition.id}. Credential Definition: ${JSON.stringify(
       resolvedCredentialDefinition,
@@ -58,11 +58,11 @@ async function demo() {
   console.log(`Did Document resolved for ${faber.did}. DID Document: ${JSON.stringify(faberDidDocument?.document)}`)
 
   console.log('10. Alice resolves Test Schema')
-  const testSchema = await alice.schemaRegistry.resolve(schema.id)
+  const testSchema = await alice.schemaRegistry.resolveSchema(schema.id)
   console.log(`Schema resolved for ${schema.id}. Schema: ${JSON.stringify(testSchema)}`)
 
   console.log('11. Alice resolves Test Credential Definition')
-  const testCredentialDefinition = await alice.credentialDefinitionRegistry.resolve(credentialDefinition.id)
+  const testCredentialDefinition = await alice.credentialDefinitionRegistry.resolveCredentialDefinition(credentialDefinition.id)
   console.log(
     `Credential Definition resolved for ${credentialDefinition.id}. Credential Definition: ${JSON.stringify(
       testCredentialDefinition,

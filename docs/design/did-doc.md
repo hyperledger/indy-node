@@ -1,8 +1,6 @@
 # Indy 2.0 DID Method
 
-## Specification
-
-### DID Syntax
+## DID Syntax
 | parameter          | value                                                   |
 |--------------------|---------------------------------------------------------|
 | did                | “did:” method-name “:” namespace “:” method-specific-id |
@@ -13,81 +11,100 @@
 
 ## Storage format
 
-```
-type DidDocStorage struct {
-	didDocument DidDoc,
-	didDocumentMetadata DidMetadata
-}
+* DID Records collection:
+  * Description: Mapping holding the list of DID's to their DID Document and metadata. 
+  * Format:
+      ```
+      mapping(string DID => DidDocumentStorage didWithMeta);
 
-type DidMetadata struct {
-    created Timestamp
-    updated Timestamp
-    deactivated bool
-}
+      struct DidDocStorage {
+           DidDocument document;
+           DidMetadata metadata;
+      }
 
-type DidDoc struct {
-    context []string 
-    id string
-    controller []string 
-    verificationMethod []VerificationMethod
-    authentication []VerificationRelationship
-	assertionMethod []VerificationRelationship
-	capabilityInvocation []VerificationRelationship
-	capabilityDelegation []VerificationRelationship
-	keyAgreement []VerificationRelationship
-	service []Service
-    alsoKnownAs []string
-}
+      struct DidMetadata {
+          uint256 created;
+          uint256 updated;
+          bool deactivated;
+      }
 
-type VerificationMethod struct {
-	id string,
-	verificationMethodType string,
-	controller string,
- 	publicKeyJwk string,
-	publicKeyMultibase string
-	
-}
+      struct DidDocument {
+          string[] context;
+          string id;
+          string[] controller;
+          VerificationMethod[] verificationMethod;
+          VerificationRelationship[] authentication;
+          VerificationRelationship[] assertionMethod;
+          VerificationRelationship[] capabilityInvocation;
+          VerificationRelationship[] capabilityDelegation;
+          VerificationRelationship[] keyAgreement;
+          Service[] service;
+          string[] alsoKnownAs;
+      }
 
-type VerificationRelationship struct {
-	id string,
-    verificationMethod VerificationMethod
-}
+      struct VerificationMethod {
+          string id;
+          string verificationMethodType;
+          string controller;
+          string publicKeyJwk;
+          string publicKeyMultibase;
+      }
 
-type Service struct {
-	id string,
-	serviceType string,
-	serviceEndpoint []string
-}
+      struct VerificationRelationship {
+          string id;
+          VerificationMethod verificationMethod;
+      }
 
-type Signature struct {
-	id string,
-	value string
-}
-```
+      struct Service {
+          string id;
+          string serviceType;
+          string[] serviceEndpoint;
+          string[] accept;
+          string[] routingKeys;
+      }
 
-### DID Document metadata
-
-Each DID Document MUST have a metadata section when a representation is produced. It can have the following properties:
-
-* created (timestamp): Time of a block ordered a transaction for DID Doc creation
-* updated (timestamp): The updated field is null if an Update operation has never been performed on the DID document. Time of a block ordered a transaction changed a DID Doc last time
-* deactivated (string): If DID has been deactivated, DID document metadata MUST include this property with the boolean value true. By default this is set to false.
-
-### DidDocument
+      struct Signature {
+          string id;
+          string value;
+      }
+      ```
+  * Example:
+    ```
+    {
+        "did:indy2:testnet:SEp33q43PsdP7nDATyySSH": {
+            document: DidDoc, 
+            metadata: {
+                created: 1234,
+                updated: 1234,
+                deactivated: false
+            }, 
+        },
+        ...
+    }
+    ```
+    
+### Types definition
+  
+#### DidDocument
 
 * context (optional): A list of strings with links or JSONs for describing specifications that this DID Document is following to.
 * id: Target DID with indy DID Method prefix did:[indy2|indy|sov]:<namespace>: and a unique-id identifier.
 * controller (optional): A list of fully qualified DID strings. Contains one or more DIDs who can update this DIDdoc. All DIDs must exist.
 * verificationMethod (optional): A list of Verification Methods
 * authentication (optional): A set of VerificationRelationship objects. That means a set of strings with Verification Method IDs (DID URL) or full described Verification method objects.
+  > **Note, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
 * assertionMethod (optional): A set of VerificationRelationship objects. That means a set of strings with Verification Method IDs (DID URL) or full described Verification method objects.
+  > **Note, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
 * capabilityInvocation (optional): A set of VerificationRelationship objects. That means a set of strings with Verification Method IDs (DID URL) or full described Verification method objects.
+  > **Note, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
 * capabilityDelegation (optional): A set of VerificationRelationship objects. That means a set of strings with Verification Method IDs (DID URL) or full described Verification method objects.
+  > **Note, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
 * keyAgreement (optional): A set of VerificationRelationship objects. That means a set of strings with Verification Method IDs (DID URL) or full described Verification method objects.
+  > **Note, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
 * service (optional): A list of Services
 * alsoKnownAs (optional): A list of strings. A DID subject can have multiple identifiers for different purposes, or at different times. The assertion that two or more DIDs refer to the same DID subject can be made using the alsoKnownAs property.
 
-### Verification Method
+#### Verification Method
 
 Verification methods are used to define how to authenticate / authorise interactions with a DID subject or delegates. Verification method is an OPTIONAL property.
 
@@ -95,18 +112,19 @@ Verification methods are used to define how to authenticate / authorise interact
 * controller: A string with fully qualified DID. DID must exist.
 * type (string)
 * publicKeyJwk (string, optional): A map representing a JSON Web Key that conforms to RFC7517. See definition of publicKeyJwk for additional constraints.
+  > **Note, that `publicKeyJwk` string representation does not match to the specification and should be converted into object on the VDR level.**
 * publicKeyMultibase (string, optional): A base58-encoded string that conforms to a MULTIBASE encoded public key.
 
 Note: A single verification method entry cannot contain both publicKeyJwk and publicKeyMultibase, but must contain at least one of them.
 
-### Verification Relationship
+#### Verification Relationship
 
 Verification relationship expresses the relationship between the DID subject and a verification method. This property is optional.
 
 * id (optional): reference to verification method's id.
 * verificationMethod (optional): contains full information about verification method.
 
-### Services
+#### Services
 
 Services can be defined in a DIDDoc to express means of communicating with the DID subject or associated entities.
 
@@ -116,11 +134,19 @@ Services can be defined in a DIDDoc to express means of communicating with the D
 * accept ([string], optional): An array of media types in the order of preference for sending a message to the endpoint. These identify a profile of DIDComm Messaging that the endpoint supports.
 * routingKeys ([string], optional): An ordered array of strings referencing keys to be used when preparing the message for transmission as specified in Sender Process to Enable Forwarding, above.
 
-### Signature
+#### DID Document metadata
+
+Each DID Document MUST have a metadata section when a representation is produced. It can have the following properties:
+
+* created (timestamp): Time of a block ordered a transaction for DID Doc creation
+* updated (timestamp): The updated field is null if an Update operation has never been performed on the DID document. Time of a block ordered a transaction changed a DID Doc last time
+* deactivated (string): If DID has been deactivated, DID document metadata MUST include this property with the boolean value true. By default this is set to false.
+
+#### Signature
 
 Information regarding the document signature must be signed with the key specified in either the "authentication" or "controller" DID document field.
 
-* id: DID of the key used to sign the document.
+* id: `kid` of the key used to sign the document.
 * value: DID Document signature.
 
 ## Transactions (Smart Contract's methods)
@@ -129,10 +155,12 @@ Contract name: **DidRegistry**
 
 ### Create DID
 
-Transaction to create DidDocStorage entry (DID Document and corresponding DID Doc Metadata)
-
 * Method: **createDid**
-* Format
+* Description: Transaction to createCredentialDefinition DidDocStorage entry (DID Document and corresponding DID Doc Metadata)
+* Restrictions: 
+  * DID must not exist
+  * Valid DID Document must be provided
+* Format:
     ```
     DidRegistry.createDid(
       didDoc DidDoc,
@@ -165,12 +193,16 @@ Transaction to create DidDocStorage entry (DID Document and corresponding DID Do
       ]
     )
     ```
-
+* Raised Event:
+  * DIDCreated(id)
+  
 ### Update DID
 
-Transaction to update an existing DidDocStorage entry
-
 * Method: **updateDid**
+* Description: Transaction to update an existing DidDocStorage entry
+* Restrictions:
+  * DID must exist
+  * DID must be active
 * Format:
     ```
     DidRegistry.updateDid(
@@ -182,12 +214,16 @@ Transaction to update an existing DidDocStorage entry
     ```
   
     ```
+* Raised Event:
+  * DIDUpdated(id)
 
 ### Deactivate DID
 
-Transaction to deactivate an existing DID
-
 * Method: **deactivateDid**
+* Description: Transaction to deactivate an existing DID
+* Restrictions:
+  * DID must exist
+  * DID must be active
 * Format:
     ```
     DidRegistry.deactivateDid( 
@@ -199,7 +235,28 @@ Transaction to deactivate an existing DID
     ```
   
     ```
+* Raised Event:
+  * DIDDeactivated(id)
 
+### Resolve DID Document with Meta
+
+* Method: **resolveCredentialDefinition**
+* Description: Transaction to resolveCredentialDefinition DidDocStorage entry (DID Document and corresponding DID Doc Metadata)
+* Restrictions:
+  * DID must exist
+* Format:
+    ```
+    DidRegistry.resolveCredentialDefinition(
+      string id,
+    ) returns (DidDocumentStorage)
+    ```
+* Example:
+    ```
+    DidRegistry.resolveCredentialDefinition(
+      "did:indy2:testnet:SEp33q43PsdP7nDATyySSH"
+    )
+    ```
+* Raised Event: None
 
 
 

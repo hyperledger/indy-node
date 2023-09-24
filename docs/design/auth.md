@@ -1,6 +1,6 @@
-## Auth model
+# Auth model
 
-### Roles
+## Roles
 
 | Label    | Value     |
 |----------|-----------|
@@ -8,7 +8,7 @@
 | Endorser | 2         |
 | Steward  | 3         |
 
-### Account role management
+## Account role management
 
 | Contract    | Method     | Value      | Required Role | Action Description                       |
 |-------------|------------|------------|---------------|------------------------------------------|
@@ -21,7 +21,7 @@
 | RoleControl | revokeRole | Endorser   | Trustee       | Assign Endorser role to an account       |
 | RoleControl | revokeRole | Steward    | Trustee       | Assign Steward role to an account        |
 
-### Validator nodes management
+## Validator nodes management
 
 | Contract         | Method          | Required Role | Action Description                      |
 |------------------|-----------------|---------------|-----------------------------------------|
@@ -29,26 +29,23 @@
 | ValidatorControl | addValidator    | Steward       | Add new validator node                  |
 | ValidatorControl | removeValidator | Steward       | Remove validator node                   |
 
-
-### DID Document management
+## DID Document management
 
 | Contract      | Method        | Required Role | Action Description              |
 |---------------|---------------|---------------|---------------------------------|
 | DidRegistry   | createDid     | any           | Create a new DID Document       |
 | DidRegistry   | updateDid     | DID owner     | Update DID an existing Document |
 | DidRegistry   | deactivateDid | DID owner     | Deactivate an existing DID      |
-| DidRegistry   | resolve       | any           | Resolve DID Document for a DID  |
+| DidRegistry   | resolveCredentialDefinition       | any           | Resolve DID Document for a DID  |
 
+## CL Registry management
 
-### CL Registry management
-
-| Contract                     | Method  | Required Role | Action Description                   |
-|------------------------------|---------|---------------|--------------------------------------|
-| SchemaRegistry               | create  | any           | Create a new Schema                  |
-| SchemaRegistry               | resolve | any           | Resolve Schema by id                 |
-| CredentialDefinitionRegistry | create  | any           | Create a new Credential Definition   |
-| CredentialDefinitionRegistry | resolve | any           | Resolve Credential Definition by id  |
-
+| Contract                     | Method                      | Required Role     | Action Description                       |
+|------------------------------|-----------------------------|-------------------|------------------------------------------|
+| SchemaRegistry               | createCredentialDefinition  | any               | Create a new Schema                      |
+| SchemaRegistry               | resolveCredentialDefinition | any               | Resolve Schema by id                     |
+| CredentialDefinitionRegistry | createCredentialDefinition  | any               | Create a new Credential Definition       |
+| CredentialDefinitionRegistry | resolveCredentialDefinition | any               | Resolve Credential Definition by id      |
 
 ## Storage format
 
@@ -56,7 +53,7 @@
   * Description: Mapping holding the list of accounts with roles assigned to them. Accounts which does not have any role assigned are not present in the list. 
   * Format:
       ```
-      Map<address account, number role>
+      mapping(address account => ROLES role);
       ```
   * Example: 
     ```
@@ -72,7 +69,7 @@
   * Description: Mapping holding relationship between existing roles and roles who can manage (assign/revoke) them. 
   * Format:
       ```
-      Map<number role, number ownerRole>
+      mapping(ROLES role => ROLES ownerRole);
       ```
   * Example: 
     ```
@@ -83,8 +80,7 @@
         ...
     }
     ```
-
-
+  
 ## Transactions (Smart Contract's methods)
 
 Contract name: **RoleControl**
@@ -115,7 +111,7 @@ Contract name: **RoleControl**
 * Method: **getRole**
 * Description: Transaction to get the role assigned to an account 
 * Restrictions: None
-* Format
+* Format:
     ```
     RoleControl.getRole(
       address account
@@ -135,7 +131,7 @@ Contract name: **RoleControl**
 * Description: Transaction to assign role to an account
 * Restrictions: 
   * Sender must have assigned role owning the target role - for example be default TRUSTEE owns ENDORSER role. In order to assign ENDORSER role to an account sender must have TRUSTEE role.  
-* Format
+* Format:
     ```
     RoleControl.assignRole(
       ROLES role,
@@ -157,7 +153,7 @@ Contract name: **RoleControl**
 * Description: Transaction to revive role from an account
 * Restrictions: 
   * Sender must have assigned role owning the target role - for example be default TRUSTEE owns ENDORSER role. In order to revoke ENDORSER role to an account sender must have TRUSTEE role.  
-* Format
+* Format:
     ```
     RoleControl.revokeRole(
       ROLES role,

@@ -13,8 +13,8 @@ describe('SchemaRegistry', function () {
 
   describe('Add/Resolve Schema', function () {
     it('Should create DID document', async function () {
-      await schemaRegistry.create(schemaId, schema)
-      const resolvedSchema = await schemaRegistry.resolve(schemaId)
+      await schemaRegistry.createSchema(schemaId, schema)
+      const resolvedSchema = await schemaRegistry.resolveSchema(schemaId)
 
       expect(resolvedSchema).to.be.deep.equal(schema)
     })

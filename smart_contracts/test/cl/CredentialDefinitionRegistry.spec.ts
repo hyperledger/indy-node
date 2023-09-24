@@ -13,8 +13,8 @@ describe('CredentialDefinitionRegistry', function () {
 
   describe('Add/Resolve Credential Definition', function () {
     it('Should create DID document', async function () {
-      await credentialDefinitionRegistry.create(credentialDefinitionId, credentialDefinition)
-      const resolvedCredentialDefinition = await credentialDefinitionRegistry.resolve(credentialDefinitionId)
+      await credentialDefinitionRegistry.createCredentialDefinition(credentialDefinitionId, credentialDefinition)
+      const resolvedCredentialDefinition = await credentialDefinitionRegistry.resolveCredentialDefinition(credentialDefinitionId)
 
       expect(resolvedCredentialDefinition).to.be.deep.equal(credentialDefinition)
     })

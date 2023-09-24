@@ -8,12 +8,12 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
 
     constructor() { }
 
-    function create(string calldata id, CredentialDefinition calldata credDef) public virtual returns (string memory outId) {
+    function createCredentialDefinition(string calldata id, CredentialDefinition calldata credDef) public virtual returns (string memory outId) {
         _credDefs[id] = credDef;
         return id;
     }
 
-    function resolve(string calldata id) public view virtual returns (CredentialDefinition memory credDef) {
+    function resolveCredentialDefinition(string calldata id) public view virtual returns (CredentialDefinition memory credDef) {
         return _credDefs[id];
     }
 }

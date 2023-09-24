@@ -21,12 +21,11 @@
     * Description: Mapping holding information about validator nodes
     * Format:
         ```
-        Map<address validatorAddress, ValidatorInfo validatorInfo>
+        mapping(address validatorAddress => ValidatorInfo validatorInfo);
 
         struct ValidatorInfo {
             address account; // validator owner accoutn address
             uint8 validatorIndex; // index of valdiator in the array
-            bool active; // flag to check validator existance
         }
         ```
       * Example:
@@ -34,19 +33,12 @@
         {
             "0x93917cadbace5dfce132b991732c6cda9bcc5b8a": {
                 "account": "0xed9d02e382b34818e88b88a309c7fe71e65f419d",
-                "validatorIndex": 0,
-                "active": true
+                "validatorIndex": 0
             },
             "0x27a97c9aaf04f18f3014c32e036dd0ac76da5f18": {
                 "account": "0xb30f304642de3fee4365ed5cd06ea2e69d3fd0ca",
-                "validatorIndex": 1,
-                "active": true
+                "validatorIndex": 1
             },
-            "0xce412f988377e31f4d0ff12d74df73b51c42d0ca": {
-                "account": "0x0886328869e4e1f401e1052a5f4aae8b45f42610",
-                "validatorIndex": 2,
-                "active": true
-            }
             ...
         }
         ```
