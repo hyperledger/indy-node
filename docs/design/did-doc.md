@@ -134,14 +134,14 @@ Transaction to create DidDocStorage entry (DID Document and corresponding DID Do
 * Method: **createDid**
 * Format
     ```
-    CreateDID { 
+    DidRegistry.createDid(
       didDoc DidDoc,
       signatures []Signature 
-    }
+    )
     ```
 * Example:
     ```
-    CreateDID [
+    DidRegistry.createDid(
       didDoc: {
         id:"did:indy2:testnet:SEp33q43PsdP7nDATyySSH",
         verificationMethod: [
@@ -156,14 +156,14 @@ Transaction to create DidDocStorage entry (DID Document and corresponding DID Do
           did:indy2:testnet:SEp33q43PsdP7nDATyySSH#key1
        ],
        "alsoKnownAs": "Alice"
-      }
+      },
       "signatures": [
         {
           id: "did:indy2:testnet:SEp33q43PsdP7nDATyySSH",
           value: "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
         }
       ]
-    ]
+    )
     ```
 
 ### Update DID
@@ -173,10 +173,10 @@ Transaction to update an existing DidDocStorage entry
 * Method: **updateDid**
 * Format:
     ```
-    UpdateDID { 
+    DidRegistry.updateDid(
       didDoc DidDoc,
       signatures []Signature
-    } 
+    )
     ```
 * Example:
     ```
@@ -190,10 +190,10 @@ Transaction to deactivate an existing DID
 * Method: **deactivateDid**
 * Format:
     ```
-    DeactivateDID { 
+    DidRegistry.deactivateDid( 
       string did,
       signatures []Signature
-    } 
+    )
     ```
 * Example:
     ```

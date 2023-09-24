@@ -83,3 +83,93 @@
         ...
     }
     ```
+
+
+## Transactions (Smart Contract's methods)
+
+Contract name: **RoleControl**
+
+### Check if account has role assigned
+
+* Method: **hasRole**
+* Description: Transaction to check if an account has requested role assigned.
+* Restrictions: None
+* Format
+    ```
+    RoleControl.hasRole(
+      ROLES role,
+      address account
+    ) returns (bool)
+    ```
+* Example:
+    ```
+    RoleControl.hasRole(
+      ROLES.TRUSTEE,  
+      "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73"
+    )
+    ```
+* Raised Event: None
+
+### Get account role
+
+* Method: **getRole**
+* Description: Transaction to get the role assigned to an account 
+* Restrictions: None
+* Format
+    ```
+    RoleControl.getRole(
+      address account
+    ) returns (ROLES)
+    ```
+* Example:
+    ```
+    RoleControl.getRole(
+      "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73"
+    )
+    ```
+* Raised Event: None
+
+### Assign role to an account 
+
+* Method: **assignRole**
+* Description: Transaction to assign role to an account
+* Restrictions: 
+  * Sender must have assigned role owning the target role - for example be default TRUSTEE owns ENDORSER role. In order to assign ENDORSER role to an account sender must have TRUSTEE role.  
+* Format
+    ```
+    RoleControl.assignRole(
+      ROLES role,
+      address account
+    )
+    ```
+* Example:
+    ```
+    RoleControl.assignRole(
+      ROLES.TRUSTEE,
+      "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73"
+    )
+* Raised Event: 
+  * RoleAssigned(ROLE, account, sender)
+
+### Revoke role from an account 
+
+* Method: **revokeRole**
+* Description: Transaction to revive role from an account
+* Restrictions: 
+  * Sender must have assigned role owning the target role - for example be default TRUSTEE owns ENDORSER role. In order to revoke ENDORSER role to an account sender must have TRUSTEE role.  
+* Format
+    ```
+    RoleControl.revokeRole(
+      ROLES role,
+      address account
+    )
+    ```
+* Example:
+    ```
+    RoleControl.revokeRole(
+      ROLES.TRUSTEE,
+      "0xfe3b557e8fb62b89f4916b721be55ceb828dbd73"
+    )
+* Raised Event: 
+  * RoleRevoked(ROLE, account, sender)
+
