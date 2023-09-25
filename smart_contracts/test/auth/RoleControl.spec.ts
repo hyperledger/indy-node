@@ -1,15 +1,15 @@
 import chai from 'chai'
+import { RoleControl, ROLES } from '../../contracts-ts'
+import { Account } from '../../utils'
 import { getTestAccounts, TestAccounts } from '../utils'
-import { RoleControl, ROLES } from '../../contracts-ts/RoleControl'
-import { Account } from '../../utils/account'
 
 const { expect } = chai
 
 describe('RoleControl', () => {
-  let roleControl: any
+  let roleControl: RoleControl
   let testAccounts: TestAccounts
 
-  before('deploy RoleControl', async () => {
+  beforeEach('deploy RoleControl', async () => {
     roleControl = await new RoleControl().deploy()
     testAccounts = await getTestAccounts(roleControl)
   })

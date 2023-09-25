@@ -1,3 +1,4 @@
+import { Account } from '../utils/account'
 import { Contract } from '../utils/contract'
 
 export enum ROLES {
@@ -10,24 +11,24 @@ export enum ROLES {
 export class RoleControl extends Contract {
   public static readonly defaultAddress = '0x0000000000000000000000000000000000006666'
 
-  constructor(sender?: any) {
+  constructor(sender?: Account) {
     super(RoleControl.name, sender)
   }
 
-  async getRole(account: string) {
+  public async getRole(account: string) {
     return this.instance.getRole(account)
   }
 
-  async hasRole(role: number, account: string) {
+  public async hasRole(role: number, account: string) {
     return this.instance.hasRole(role, account)
   }
 
-  async assignRole(role: number, account: string) {
+  public async assignRole(role: number, account: string) {
     const tx = await this.instance.assignRole(role, account)
     return tx.wait()
   }
 
-  async revokeRole(role: number, account: string) {
+  public async revokeRole(role: number, account: string) {
     const tx = await this.instance.revokeRole(role, account)
     return await tx.wait()
   }

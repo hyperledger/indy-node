@@ -7,16 +7,16 @@ export class ValidatorControl extends Contract {
     super(ValidatorControl.name, sender)
   }
 
-  async getValidators() {
+  public async getValidators() {
     return this.instance.getValidators()
   }
 
-  async addValidator(address: string) {
+  public async addValidator(address: string) {
     const tx = await this.instance.addValidator(address)
     return tx.wait()
   }
 
-  async removeValidator(address: string) {
+  public async removeValidator(address: string) {
     return this.instance.removeValidator(address)
   }
 }

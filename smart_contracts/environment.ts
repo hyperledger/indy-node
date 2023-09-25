@@ -1,4 +1,4 @@
-const Web3 = require('web3')
+import Web3 from 'web3'
 
 export const environment = {
   besu: {
@@ -51,6 +51,12 @@ export const environment = {
       address: '0xf17f52151EbEF6C7334FAD080c5704D77216b732',
       privateKey: '0xae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f',
     },
+  },
+  network: {
+    name: 'testnet'
+  },
+  did: {
+    method: 'indy2'
   }
 }
 

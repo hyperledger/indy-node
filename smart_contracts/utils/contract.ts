@@ -1,6 +1,6 @@
+import { Signer } from 'ethers';
 import { ethers } from 'hardhat'
-import { host } from '../environment'
-import { Signer } from 'ethers'
+import { host } from '../environment';
 
 export class Contract {
     public address?: string
@@ -24,16 +24,16 @@ export class Contract {
             acc[library.name] = library.address!
             return acc
           }, {})
-        
+
         if (params) {
             this.instance = await ethers.deployContract(
-                this.name, 
-                params, 
+                this.name,
+                params,
                 { signer: this.signer, libraries: libraryObject }
             )
         } else {
             this.instance = await ethers.deployContract(
-                this.name, 
+                this.name,
                 { signer: this.signer, libraries: libraryObject }
             )
         }

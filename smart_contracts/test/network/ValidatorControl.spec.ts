@@ -1,25 +1,22 @@
 import chai from 'chai'
+import { RoleControl, ValidatorControl } from '../../contracts-ts'
+import { Account } from '../../utils'
 import { getTestAccounts, TestAccounts, ZERO_ADDRESS } from '../utils'
-import { RoleControl } from '../../contracts-ts/RoleControl'
-import { ValidatorControl } from '../../contracts-ts/ValidatorControl'
-import { Account } from '../../utils/account'
 
 const { expect } = chai
 
-describe('ValidatorControl', () => {
+describe('ValidatorControl', function () {
   let roleControl: RoleControl
-  let validatorControl: any
-  let validator1: string
-  let validator2: string
+  let validatorControl: ValidatorControl
   let testAccounts: TestAccounts
-  let initialValidators: Array<String>
 
-  before('deploy ValidatorSmartContract', async () => {
+  const validator1: string = new Account().address
+  const validator2: string = new Account().address
+  const initialValidators: Array<string> = [validator1, validator2]
+
+  beforeEach('deploy ValidatorSmartContract', async () => {
     roleControl = await new RoleControl().deploy()
     testAccounts = await getTestAccounts(roleControl)
-    validator1 = new Account().address
-    validator2 = new Account().address
-    initialValidators = [validator1, validator2]
     const initialValidatorsData = [
       {
         validator: validator1,
@@ -54,8 +51,6 @@ describe('ValidatorControl', () => {
     })
 
     it('should fail when adding a new validator by an account without Steward role', async function () {
-      const newValidator = new Account()
-
       await expect(
         validatorControl.connect(testAccounts.noRole.account).addValidator(newValidator.address),
       ).to.be.revertedWith('Sender does not have STEWARD role assigned')
