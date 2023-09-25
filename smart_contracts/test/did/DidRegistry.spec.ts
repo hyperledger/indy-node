@@ -2,19 +2,18 @@ import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers'
 import { expect } from 'chai'
 import { DidRegistry, VerificationMethod } from '../../contracts-ts/DidRegistry'
 import { createBaseDidDocument, createFakeSignature } from '../utils'
+import { Contract } from '../../utils'
 
 describe('DIDContract', function () {
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
   async function deployDidContractFixture() {
-    // FIXME: Using libraries binding allows us to reduce the size of contract
-    //  !!BUT!! we faced an issue with adding DidRegistry contract into the genesis state of network
-    //  There is no clear way to pass DidValidator. We need to research it
-    // const validatorLib = new Contract('DidValidator')
-    // await validatorLib.deploy()
-    // const didRegistry = await new DidRegistry().deploy({ libraries: [validatorLib] })
-    return new DidRegistry().deploy()
+    
+    const validatorLib = new Contract('DidValidator')
+    await validatorLib.deploy()
+    
+    return new DidRegistry().deploy({ libraries: [validatorLib] })
   }
 
   describe('Create DID', function () {

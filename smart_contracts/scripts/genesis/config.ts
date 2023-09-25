@@ -1,5 +1,6 @@
 import { CredentialDefinitionsConfig } from './contracts/credentialDefinitions'
 import { DidsConfig } from './contracts/dids'
+import { DidValidatorConfig } from './contracts/didValidator'
 import { RolesConfig } from './contracts/roles'
 import { SchemasConfig } from './contracts/schemas'
 import { ValidatorsConfig } from './contracts/validators'
@@ -10,6 +11,7 @@ export const outFile = 'ContractsGenesis.json'
 
 export interface Config {
   credentialDefinitions: CredentialDefinitionsConfig
+  didValidator: DidValidatorConfig
   dids: DidsConfig
   roles: RolesConfig
   schemas: SchemasConfig
@@ -25,10 +27,16 @@ export const config: Config = {
       credentialDefinitions: [],
     },
   },
+  didValidator: {
+    name: 'DidValidator',
+    address: '0x0000000000000000000000000000000000002222',
+    description: 'Library to validate DID',
+  },
   dids: {
     name: 'DidRegistry',
     address: '0x0000000000000000000000000000000000003333',
     description: 'Smart contract to manage DIDs',
+    libraries: { 'contracts/did/DidValidator.sol:DidValidator': '0x0000000000000000000000000000000000002222' },
     data: {
       dids: [],
     },
