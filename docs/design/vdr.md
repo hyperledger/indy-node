@@ -1,10 +1,61 @@
 ## VDR
 
+### Client
+
+```
+/// Create Indy2.0 client
+///
+/// #Params
+///  param: node_address - RPC node address 
+/// 
+/// #Returns
+///   client - client to use for sending transactions (web3?)
+client = indy_vdr_build_create_did_transaction(
+    node_address: string,
+): Client
+```
+
+### Wallet: Transaction signing
+
+* **Algorithm:** `ECDSA` - elliptic curve digital signature.
+    * `recoverable`?  - public key can be recovered from the signature
+* **Key Types:** - `Secp256k1`
+* Steps:
+    * `hash = keccak256.Hash(data)`
+    * `signature = Secp256k1.sign(hash).`
+    * `hex(signature)`
+
+```
+/// Create Indy2.0 client
+///
+/// #Params
+///  param: mnemonic - string (Optional) seed used for deterministic account generation 
+/// 
+/// #Returns
+///   wallet - wallet used for signing transactions (web3?)
+client = external_wallet_method_to_create_wallet_with_ethr_account(
+    mnemonic: Option<string>,
+): Client
+
+/// Sign input message using elliptic curve digital signature algorithm.  
+///
+/// #Params
+///  param: message: bytes - message to sign (hashed message according to EIP-191)
+///  param: private_key: bytes - key to use for signing 
+/// 
+/// #Returns
+///   signature: bytes - generated signature
+signature = external_wallet_method_to_sign_ethr_transaction(
+    message: bytes,
+    private_key: bytes
+): Signature
+```
+
 ### DID Document
 
 #### Create
 
-##### Option 1: Strait creation of fully compatible DID Document.
+##### Option 1: Strait creation of a fully compatible DID Document.
 
 ```
 /// Prepare transaction executing `DidRegistry.createDid` smart contract method 
@@ -15,7 +66,7 @@
 ///  param: signatures - list of signatures to prove DID Document ownership
 ///         [
 ///            {
-///               kid: string - id of the key used to generate signature
+///               kid: string - id of the key used to generate a signature
 ///               signature: string - base58 encoded signature 
 ///            }
 ///         ]
@@ -36,7 +87,7 @@ transaction = indy_vdr_build_create_did_transaction(
     options: Option<BuildTxnOptions>,
 ): Transaction
 
-signed_transaction = external_web3_method_to_sign_ethr_transaction(
+signed_transaction = external_wallet_method_to_sign_ethr_transaction(
     transaction: Transaction,
     private_key: bytes
 ): SignedTransaction
@@ -54,7 +105,7 @@ signed_transaction = external_web3_method_to_sign_ethr_transaction(
 ///      }
 /// 
 /// #Returns
-///   result - transaction execution result (receipt or data itself??)  
+///   result - transaction execution results (receipt or data itself??)  
 ///
 receipt = indy_vdr_submit_transaction(
     client: LedgerClient,
@@ -66,23 +117,23 @@ receipt = indy_vdr_submit_transaction(
 ##### Option 2: Backward compatible way consisting of two steps
 
 1. Assemble basic DID Document according to the steps [here](https://hyperledger.github.io/indy-did-method/#diddoc-assembly-steps).
-     > DID Doc will not contain any `service` set. Service will be added by separate ATTRIB operation.
-   * Publish DID Document using `DidRegistry.createDid(didDocument, signatures)`
+   > DID Doc will not contain any `service` set. Service will be added by a separate ATTRIB operation.
+    * Publish DID Document using `DidRegistry.createDid(didDocument, signatures)`
 2. Assemble basic DID Document containing only `id` and `service`.  DID Document itself must be already published using NYM operation.
-   * Update exising DID Document using `DidRegistry.updateDid(didDocument, signatures)`
+    * Update existing DID Document using `DidRegistry.updateDid(didDocument, signatures)`
 
 ```
 /// Prepare transaction executing `DidRegistry.createDid` smart contract method 
-///   Build basic DID Doucment using provided parameters
+///   Build a basic DID Document using the provided parameters
 ///   https://hyperledger.github.io/indy-did-method/#diddoc-assembly-steps
 ///
 /// #Params
-///  param: from - BREACKING CHANGE? must be ethereum account not a DID as before
+///  param: from - BREACKING CHANGE? must be Ethereum account not a DID as before
 ///  param: dest, verkey, alias, role, diddoc_content, version - same as before. Data to build DID Document.
 ///  param: signatures - BREAKING CHANGE? list of signatures to prove DID Document ownership
 ///         [
 ///            {
-///               kid: string - id of the key used to generate signature
+///               kid: string - id of the key used to generate a signature
 ///               signature: string - base58 encoded signature 
 ///            }
 ///         ]
@@ -106,7 +157,7 @@ transaction = indy_vdr_build_nym_transaction(
     options: Option<BuildTxnOptions>,
 ): Transaction
 
-signed_transaction = external_web3_method_to_sign_ethr_transaction(
+signed_transaction = external_wallet_method_to_sign_ethr_transaction(
     transaction: Transaction,
     private_key: bytes
 ): SignedTransaction
@@ -118,16 +169,16 @@ receipt = indy_vdr_submit_transaction(
 ): Receipt
 
 /// Prepare transaction executing `DidRegistry.updateDid` smart contract method 
-///   Build basic DID Doucment using provided parameters
+///   Build a basic DID Document using provided parameters
 ///   https://hyperledger.github.io/indy-did-method/#diddoc-assembly-steps
 ///
 /// #Params
-///  param: submitter_did - BREACKING CHANGE? must be ethereum account not a DID as before
+///  param: submitter_did - BREACKING CHANGE? must be Ethereum account not a DID as before
 ///  param: target_did, hash, raw, enc - same as before. Data to build DID Document.
 ///  param: signatures - BREAKING CHANGE? list of signatures to prove DID Document ownership
 ///         [
 ///            {
-///               kid: string - id of the key used to generate signature
+///               kid: string - id of the key used to generate a signature
 ///               signature: string - base58 encoded signature 
 ///            }
 ///         ]
@@ -149,7 +200,7 @@ transaction = indy_vdr_build_attrib_transaction(
     options: Option<BuildTxnOptions>,
 ): Transaction
 
-signed_transaction = external_web3_method_to_sign_ethr_transaction(
+signed_transaction = external_wallet_method_to_sign_ethr_transaction(
     transaction: Transaction,
     private_key: bytes
 ): SignedTransaction
@@ -192,7 +243,7 @@ result = indy_vdr_submit_transaction(
 ```
 
 ```
-/// Single step fucntion executing DidRegistry.resolve smart contract method to resolve DID Document with metadata
+/// Single step function executing DidRegistry.resolve smart contract method to resolve DID Document with metadata
 ///
 /// #Params
 ///  param: client - Ledger  client (Ethereum client - for example web3::Http)
@@ -225,7 +276,7 @@ indy_vdr_resolve_did(
 ///  param: signatures - BREAKING CHANGE? list of signatures to prove Schema Issuer DID ownership?
 ///         [
 ///            {
-///               kid: string - id of the key used to generate signature
+///               kid: string - id of the key used to generate a signature
 ///               signature: string - base58 encoded signature 
 ///            }
 ///         ]
@@ -246,7 +297,7 @@ transaction = indy_vdr_build_create_schema_transaction(
     options: Option<BuildTxnOptions>,
 ): Transaction
 
-signed_transaction = external_web3_method_to_sign_ethr_transaction(
+signed_transaction = external_wallet_method_to_sign_ethr_transaction(
     transaction: Transaction,
     private_key: bytes
 ): SignedTransaction
@@ -289,7 +340,7 @@ result = indy_vdr_submit_transaction(
 ```
 
 ```
-/// Single step fucntion executing SchemaRegistry.resolveSchema smart contract method to resolve Schema
+/// Single step function executing SchemaRegistry.resolveSchema smart contract method to resolve Schema
 ///
 /// #Params
 ///  param: client - Ledger client (Ethereum client - for example web3::Http)
@@ -322,7 +373,7 @@ indy_vdr_resolve_schema(
 ///  param: signatures - BREAKING CHANGE? list of signatures to prove Credential Definition Issuer DID ownership?
 ///         [
 ///            {
-///               kid: string - id of the key used to generate signature
+///               kid: string - id of the key used to generate a signature
 ///               signature: string - base58 encoded signature 
 ///            }
 ///         ]
@@ -343,7 +394,7 @@ transaction = indy_vdr_build_cred_def_transaction(
     options: Option<BuildTxnOptions>,
 ): Transaction
 
-signed_transaction = external_web3_method_to_sign_ethr_transaction(
+signed_transaction = external_wallet_method_to_sign_ethr_transaction(
     transaction: Transaction,
     private_key: bytes
 ): SignedTransaction
@@ -386,7 +437,7 @@ result = indy_vdr_submit_transaction(
 ```
 
 ```
-/// Single step fucntion executing CredentialDefinitionRegistry.resolveCredentialDefinition smart contract method to resolve Credential Definition
+/// Single step function executing CredentialDefinitionRegistry.resolveCredentialDefinition smart contract method to resolve Credential Definition
 ///
 /// #Params
 ///  param: client - Ledger  client (Ethereum client - for example web3::Http)
