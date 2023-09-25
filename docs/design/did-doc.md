@@ -92,15 +92,15 @@
 * controller (optional): A list of fully qualified DID strings. Contains one or more DIDs who can update this DIDdoc. All DIDs must exist.
 * verificationMethod (optional): A list of Verification Methods
 * authentication (optional): A set of VerificationRelationship objects. That means a set of strings with Verification Method IDs (DID URL) or full described Verification method objects.
-  > **Note, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
+  > **NOTE, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
 * assertionMethod (optional): A set of VerificationRelationship objects. That means a set of strings with Verification Method IDs (DID URL) or full described Verification method objects.
-  > **Note, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
+  > **NOTE, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
 * capabilityInvocation (optional): A set of VerificationRelationship objects. That means a set of strings with Verification Method IDs (DID URL) or full described Verification method objects.
-  > **Note, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
+  > **NOTE, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
 * capabilityDelegation (optional): A set of VerificationRelationship objects. That means a set of strings with Verification Method IDs (DID URL) or full described Verification method objects.
-  > **Note, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
+  > **NOTE, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
 * keyAgreement (optional): A set of VerificationRelationship objects. That means a set of strings with Verification Method IDs (DID URL) or full described Verification method objects.
-  > **Note, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
+  > **NOTE, that `VerificationRelationship` structure does not match to the specification and should be converted on the VDR level.**
 * service (optional): A list of Services
 * alsoKnownAs (optional): A list of strings. A DID subject can have multiple identifiers for different purposes, or at different times. The assertion that two or more DIDs refer to the same DID subject can be made using the alsoKnownAs property.
 
@@ -112,7 +112,7 @@ Verification methods are used to define how to authenticate / authorise interact
 * controller: A string with fully qualified DID. DID must exist.
 * type (string)
 * publicKeyJwk (string, optional): A map representing a JSON Web Key that conforms to RFC7517. See definition of publicKeyJwk for additional constraints.
-  > **Note, that `publicKeyJwk` string representation does not match to the specification and should be converted into object on the VDR level.**
+  > **NOTE, that `publicKeyJwk` string representation does not match to the specification and should be converted into object on the VDR level.**
 * publicKeyMultibase (string, optional): A base58-encoded string that conforms to a MULTIBASE encoded public key.
 
 Note: A single verification method entry cannot contain both publicKeyJwk and publicKeyMultibase, but must contain at least one of them.

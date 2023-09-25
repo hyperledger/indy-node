@@ -1,21 +1,44 @@
-## VDR
+# VDR Design
 
-### Client
+## Client
 
 ```
 /// Create Indy2.0 client
 ///
 /// #Params
-///  param: node_address - RPC node address 
+///  param: node_address - RPC node address
+///  contracts_path: sting - Path to folder containing contracts abi files
 /// 
 /// #Returns
 ///   client - client to use for sending transactions (web3?)
-client = indy_vdr_build_create_did_transaction(
+client = indy_vdr_create_client(
     node_address: string,
+    contracts_path: string
 ): Client
+
+/// Submit transaction to the ledger
+///   
+///  param: client - Ledger  client (Ethereum client)
+///
+/// #Params
+///  param: client - Ledger  client (Ethereum client - for example web3::Http)
+///  param: signed_transaction - Signed transaction
+///  param: options - (Optional) extra data required for transaction submitting
+///      { 
+///         ?      
+///      }
+/// 
+/// #Returns
+///   result - transaction execution results (receipt or data itself??)  
+///
+receipt = indy_vdr_submit_transaction(
+    client: LedgerClient,
+    signed_transaction: SignedTransaction
+    options: SubmitTransactionOptions
+): Receipt
 ```
 
-### Wallet: Transaction signing
+## Wallet: Transaction signing
 
 * **Algorithm:** `ECDSA` - elliptic curve digital signature.
     * `recoverable`?  - public key can be recovered from the signature
@@ -51,6 +74,37 @@ signature = external_wallet_method_to_sign_ethr_transaction(
 ): Signature
 ```
 
+### Contracts execution
+
+```
+client = indy_vdr_create_client(node_address, contracts_path)
+
+did_document = {}
+signatures = sign_ed25519(did_document, kud)
+
+// build only contract data??? or the wholde transaction
+//  if contract data only
+    transaction = indy_vdr_build_create_did_transaction(did_document, signatures, options)
+//  if transaction
+        transaction = indy_vdr_build_create_did_transaction(client.contract, did_document, signatures, options)
+
+Transaction {
+    type: write/read - need signing or not + what method to use send_transaction or call
+    data: TransactionData
+}
+
+TransactionData {
+    to: Some(self.address), // need to set contract address befor doing ethereum signing. So builders neeed to have access to client??
+    data: Bytes(fn_data), // contract parameters
+    ..Default::default()
+}
+
+signed_transaction = external_wallet_method_to_sign_ethr_transaction(transaction_data, priv_key_bytes)
+indy_vdr_submit_transaction(client, signed_transaction)
+
+
+```
+
 ### DID Document
 
 #### Create
@@ -61,7 +115,7 @@ signature = external_wallet_method_to_sign_ethr_transaction(
 /// Prepare transaction executing `DidRegistry.createDid` smart contract method 
 ///
 /// #Params
-///  param: from - Sender account address
+///  param: from - Sender account address   Not needed?
 ///  param: did_document - DID Document matching to the specification: https://www.w3.org/TR/did-core/
 ///  param: signatures - list of signatures to prove DID Document ownership
 ///         [
@@ -78,7 +132,8 @@ signature = external_wallet_method_to_sign_ethr_transaction(
 /// #Returns
 ///   transaction - prepared transaction object 
 ///      {
-///         txn: object
+///         contract: string - name of contract or some id??? not an address?
+///         data: object - preparaed data required for the contract execution
 ///      }
 transaction = indy_vdr_build_create_did_transaction(
     from: string,
