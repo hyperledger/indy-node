@@ -1,18 +1,17 @@
 import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers'
 import { expect } from 'chai'
 import { DidRegistry, VerificationMethod } from '../../contracts-ts/DidRegistry'
-import { createBaseDidDocument, createFakeSignature } from '../utils'
 import { Contract } from '../../utils'
+import { createBaseDidDocument, createFakeSignature } from '../utils'
 
 describe('DIDContract', function () {
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
   async function deployDidContractFixture() {
-    
     const validatorLib = new Contract('DidValidator')
     await validatorLib.deploy()
-    
+
     return new DidRegistry().deploy({ libraries: [validatorLib] })
   }
 

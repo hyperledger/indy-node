@@ -2,6 +2,7 @@ import * as fs from 'fs-extra'
 import path from 'path'
 import { compiledContractsFolder } from './config'
 
+// tslint:disable-next-line: no-var-requires
 const linker = require('solc/linker')
 
 export const slots = {
