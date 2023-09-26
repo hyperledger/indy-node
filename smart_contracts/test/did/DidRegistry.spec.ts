@@ -9,8 +9,11 @@ describe('DIDContract', function () {
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
   async function deployDidContractFixture() {
+    const didRegex = new Contract('DidRegex')
+    await didRegex.deploy();
+
     const validatorLib = new Contract('DidValidator')
-    await validatorLib.deploy()
+    await validatorLib.deploy({ libraries: [didRegex] })
 
     return new DidRegistry().deploy({ libraries: [validatorLib] })
   }
@@ -20,6 +23,20 @@ describe('DIDContract', function () {
       const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
+      const didDocument = createBaseDidDocument(did)
+      const signature = createFakeSignature(did)
+
+      await didRegistry.createDid(didDocument, [signature])
+
+      const { document } = await didRegistry.resolve(did)
+
+      expect(document).to.be.deep.equal(didDocument)
+    })
+
+    it('Should create DID document when UUID is provided as DID method-specific-id', async function () {
+      const didRegistry = await loadFixture(deployDidContractFixture)
+
+      const did: string = 'did:indy2:testnet:03043e53-4d36-44f2-9996-a839634f48f9'
       const didDocument = createBaseDidDocument(did)
       const signature = createFakeSignature(did)
 
@@ -49,7 +66,7 @@ describe('DIDContract', function () {
       const didDocument = createBaseDidDocument(did)
       const signature = createFakeSignature(did)
 
-      await expect(didRegistry.createDid(didDocument, [signature])).to.be.revertedWith('Incorrect DID schema')
+      await expect(didRegistry.createDid(didDocument, [signature])).to.be.revertedWith('Incorrect DID')
     })
 
     it('Should fail if an unsupported DID method is provided', async function () {
@@ -59,7 +76,17 @@ describe('DIDContract', function () {
       const didDocument = createBaseDidDocument(did)
       const signature = createFakeSignature(did)
 
-      await expect(didRegistry.createDid(didDocument, [signature])).to.be.revertedWith('Unsupported DID method')
+      await expect(didRegistry.createDid(didDocument, [signature])).to.be.revertedWith('Incorrect DID')
+    })
+
+    it('Should fail if an incorrect DID method-specific-id is provided', async function () {
+      const didRegistry = await loadFixture(deployDidContractFixture)
+
+      const did: string = 'did:indy3:testnet:123456789'
+      const didDocument = createBaseDidDocument(did)
+      const signature = createFakeSignature(did)
+
+      await expect(didRegistry.createDid(didDocument, [signature])).to.be.revertedWith('Incorrect DID')
     })
 
     it('Should fail if an authentication key is not provided', async function () {
