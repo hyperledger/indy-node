@@ -1,20 +1,33 @@
 # VDR Design
 
+**Disclaimer:** popular packages for working with Ethereum network are very close to `indy-sdk`: their provide tide modules for the whole flow execution.
+
 ## Client
 
 ```
 /// Create Indy2.0 client
 ///
 /// #Params
-///  param: node_address - RPC node address
-///  contracts_path: sting - Path to folder containing contracts abi files
+///  param: node_address: string - RPC node address
+///  contract_specs: Vec<ContractSpec> - specifications for deployed contracts
 /// 
 /// #Returns
 ///   client - client to use for sending transactions (web3?)
 client = indy_vdr_create_client(
     node_address: string,
-    contracts_path: string
+    contract_specs: Vec<ContractSpec>,
 ): Client
+
+struct ContractSpec {
+    name: String,
+    address: String,
+    abi_path: String,
+}
+
+struct Client {
+    eth_client: EthereumCLient,
+    contracts: Map<string, Contract>
+}
 
 /// Submit transaction to the ledger
 ///   
@@ -56,9 +69,19 @@ receipt = indy_vdr_submit_transaction(
 /// 
 /// #Returns
 ///   wallet - wallet used for signing transactions (web3?)
-client = external_wallet_method_to_create_wallet_with_ethr_account(
+wallet = external_wallet_method_to_create_wallet_with_ethr_account(
     mnemonic: Option<string>,
-): Client
+): Wallet
+
+struct Wallet {
+    keys: Vec<Key>
+}
+
+struct Key {
+    type: string,
+    public_key: Vec<bytes>,
+    private_key: Vec<bytes>
+}
 
 /// Sign input message using elliptic curve digital signature algorithm.  
 ///
@@ -68,7 +91,7 @@ client = external_wallet_method_to_create_wallet_with_ethr_account(
 /// 
 /// #Returns
 ///   signature: bytes - generated signature
-signature = external_wallet_method_to_sign_ethr_transaction(
+signature = external_wallet_method_to_Secp256k1_sign(
     message: bytes,
     private_key: bytes
 ): Signature
@@ -80,29 +103,30 @@ signature = external_wallet_method_to_sign_ethr_transaction(
 client = indy_vdr_create_client(node_address, contracts_path)
 
 did_document = {}
-signatures = sign_ed25519(did_document, kud)
+signatures = sign_ed25519(did_document, private_key)
 
 // build only contract data??? or the wholde transaction
 //  if contract data only
-    transaction = indy_vdr_build_create_did_transaction(did_document, signatures, options)
+    transaction = indy_vdr_build_create_did_transaction(did_document, signatures, options): TransactionSpec
 //  if transaction
-        transaction = indy_vdr_build_create_did_transaction(client.contract, did_document, signatures, options)
+    transaction = indy_vdr_build_create_did_transaction(client.contract, did_document, signatures, options): TransactionSpec
 
-Transaction {
+TransactionSpec {
+    // need signing or not ---> call or send_transaction
     type: write/read - need signing or not + what method to use send_transaction or call
-    data: TransactionData
+    // raw transaction to sign? and send
+    data: Transaction
 }
 
-TransactionData {
+Transaction {
     to: Some(self.address), // need to set contract address befor doing ethereum signing. So builders neeed to have access to client??
     data: Bytes(fn_data), // contract parameters
+    // rest not important fields 
     ..Default::default()
 }
 
-signed_transaction = external_wallet_method_to_sign_ethr_transaction(transaction_data, priv_key_bytes)
+signed_transaction = external_wallet_method_to_Secp256k1_sign(transaction.data, private_key)
 indy_vdr_submit_transaction(client, signed_transaction)
-
-
 ```
 
 ### DID Document
@@ -176,6 +200,8 @@ receipt = indy_vdr_submit_transaction(
     * Publish DID Document using `DidRegistry.createDid(didDocument, signatures)`
 2. Assemble basic DID Document containing only `id` and `service`.  DID Document itself must be already published using NYM operation.
     * Update existing DID Document using `DidRegistry.updateDid(didDocument, signatures)`
+
+> In fact, it's not really backward compatible as we require passing of additional signature for nym and attrib  
 
 ```
 /// Prepare transaction executing `DidRegistry.createDid` smart contract method 
@@ -265,6 +291,74 @@ receipt = indy_vdr_submit_transaction(
     signed_transaction: SignedTransaction
     options: SubmitTransactionOptions
 ): Receipt
+```
+
+> Issue: We cannot build the whole DID Document at ATTRIB step. So we need to allow partial update on DidRegistry.updateDid method.
+
+##### Option 3: Combine NYM and Attrib method into single function
+
+Use single function accepting same parameters as previous two but doing DID Document publishing as single step opertion. 
+
+```
+/// Prepare transaction executing `DidRegistry.createDid` smart contract method 
+///
+/// #Params
+///  param: from - BREACKING CHANGE? must be Ethereum account not a DID as before
+///  param: dest, verkey, alias, role, diddoc_content, version - same as before. Data to build DID Document.
+///  param: hash, raw, end - Attrib transaction parameters
+///  param: signatures - BREAKING CHANGE? list of signatures to prove DID Document ownership
+///         [
+///            {
+///               kid: string - id of the key used to generate a signature
+///               signature: string - base58 encoded signature 
+///            }
+///         ]
+///  param: options -  BREAKING CHANGE? (Optional) extra data required for transaction preparation
+///      { 
+///         ?      
+///      }
+/// 
+/// #Returns
+///   transaction - prepared transaction object 
+///
+transaction = indy_vdr_build_nym_transaction(
+    from: string, 
+    dest: string, 
+    verkey: string, 
+    alias: Option<string>,
+    role: Option<ROLES>,
+    diddoc_content: Option<String>,
+    version: Option<string>,
+    hash: Option<string>,
+    raw: Option<ROLES>,
+    enc: Option<String>,
+    signatures: Array<DidDoc>,
+    options: Option<BuildTxnOptions>,
+): Transaction
+
+signed_transaction = external_wallet_method_to_sign_ethr_transaction(
+    transaction: Transaction,
+    private_key: bytes
+): SignedTransaction
+
+receipt = indy_vdr_submit_transaction(
+    client: LedgerClient,
+    signed_transaction: SignedTransaction
+    options: SubmitTransactionOptions
+): Receipt
+```
+
+##### Option 4: Extra smart contract for LegacyDidRegistry fully supporting previous API 
+
+Create and deploy one more smart contract on top of DidRegistry.
+This contract will follow legacy API.
+Two steps DidDocument publishing. 
+
+```
+contract LegacyDidRegistry is DidRegistry {
+    function nym() {}
+    function attrib() {}
+}
 ```
 
 #### Resolve
