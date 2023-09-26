@@ -1,6 +1,30 @@
 # VDR Design
 
 **Disclaimer:** popular packages for working with Ethereum network are very close to `indy-sdk`: their provide tide modules for the whole flow execution.
+It may be difficult to reuse only particular functions without full integration. 
+In the same, time Indy community follows to idea of splitting complex library into components.
+
+> Rust client library to work with Web3, Solidity smart contracts: https://github.com/tomusdrw/rust-web3
+
+## TO DISCUSS
+* VDR implementation approach: independent vdr library + integration into existing indy-vdr?
+* Request builders issue: tied to network 
+* Request signing: Double signing for writes?
+* Roles and permissions: account or did
+* Level of validation
+* Storage format for DID Document, Schema, CredDef
+
+## VDR library
+
+### Option 1: module in existing indy-vdr 
+
+* Valuable for arise frameworks which are still not ledger agnostic (indy tied) like Aca-py or Aries-vcx.
+  * Such frameworks will be able to support Ledger 2.0 after simple migration.
+* Can be difficult to preserve approach and logic separation as in Indy-VDR. 
+
+### Option 2: independent library 
+
+* ?
 
 ## Client
 
@@ -97,13 +121,11 @@ signature = external_wallet_method_to_Secp256k1_sign(
 ): Signature
 ```
 
-### Contracts execution
+## Transaction building
+
+Issue: In order to build transaction we need to know an address of the corresponding contract. Request builders cannot be network agnostic.  
 
 ```
-client = indy_vdr_create_client(node_address, contracts_path)
-
-did_document = {}
-signatures = sign_ed25519(did_document, private_key)
 
 // build only contract data??? or the wholde transaction
 //  if contract data only
@@ -129,11 +151,31 @@ signed_transaction = external_wallet_method_to_Secp256k1_sign(transaction.data, 
 indy_vdr_submit_transaction(client, signed_transaction)
 ```
 
-### DID Document
+### Writes
 
-#### Create
+```
+client = indy_vdr_create_client(node_address, contracts_path)
+did_document = {}
+signatures = sign_ed25519(did_document, private_key)
+transaction = indy_vdr_build_create_did_transaction(client.contract, did_document, signatures, options): TransactionSpec
+signed_transaction = external_wallet_method_to_Secp256k1_sign(transaction.data, private_key)
+indy_vdr_submit_transaction(client, signed_transaction)
+```
 
-##### Option 1: Strait creation of a fully compatible DID Document.
+### Reads
+
+```
+client = indy_vdr_create_client(node_address, contracts_path)
+did_document = {}
+transaction = indy_vdr_build_resolve_did_transaction(client.contract, did_document, options): TransactionSpec
+indy_vdr_submit_transaction(client, transaction)
+```
+
+## DID Document
+
+### Create
+
+#### Option 1: Strait creation of a fully compatible DID Document.
 
 ```
 /// Prepare transaction executing `DidRegistry.createDid` smart contract method 
@@ -193,7 +235,7 @@ receipt = indy_vdr_submit_transaction(
 ): Receipt
 ```
 
-##### Option 2: Backward compatible way consisting of two steps
+#### Option 2: Backward compatible way consisting of two steps
 
 1. Assemble basic DID Document according to the steps [here](https://hyperledger.github.io/indy-did-method/#diddoc-assembly-steps).
    > DID Doc will not contain any `service` set. Service will be added by a separate ATTRIB operation.
@@ -295,7 +337,7 @@ receipt = indy_vdr_submit_transaction(
 
 > Issue: We cannot build the whole DID Document at ATTRIB step. So we need to allow partial update on DidRegistry.updateDid method.
 
-##### Option 3: Combine NYM and Attrib method into single function
+#### Option 3: Combine NYM and Attrib method into single function
 
 Use single function accepting same parameters as previous two but doing DID Document publishing as single step opertion. 
 
@@ -348,7 +390,7 @@ receipt = indy_vdr_submit_transaction(
 ): Receipt
 ```
 
-##### Option 4: Extra smart contract for LegacyDidRegistry fully supporting previous API 
+#### Option 4: Extra smart contract for LegacyDidRegistry fully supporting previous API 
 
 Create and deploy one more smart contract on top of DidRegistry.
 This contract will follow legacy API.
@@ -361,7 +403,7 @@ contract LegacyDidRegistry is DidRegistry {
 }
 ```
 
-#### Resolve
+### Resolve
 
 ```
 /// Prepare transaction executing `DidRegistry.resolve` smart contract method 
@@ -412,9 +454,9 @@ indy_vdr_resolve_did(
 ): DidDocument 
 ```
 
-### Schema
+## Schema
 
-#### Create
+### Create
 
 ```
 /// Prepare transaction executing SchemaRegistry.createSchema smart contract method
@@ -458,7 +500,7 @@ receipt = indy_vdr_submit_transaction(
 ): Receipt
 ```
 
-#### Resolve
+### Resolve
 
 ```
 /// Prepare transaction executing `SchemaRegistry.resolveSchema` smart contract method 
@@ -509,9 +551,9 @@ indy_vdr_resolve_schema(
 ): Schema 
 ```
 
-### Credential Definition
+## Credential Definition
 
-#### Create
+### Create
 
 ```
 /// Prepare transaction executing CredentialDefinitionRegistry.createCredentialDefinition smart contract method
@@ -555,7 +597,7 @@ receipt = indy_vdr_submit_transaction(
 ): Receipt
 ```
 
-#### Resolve
+### Resolve
 
 ```
 /// Prepare transaction executing CredentialDefinitionRegistry.resolveCredentialDefinition smart contract method

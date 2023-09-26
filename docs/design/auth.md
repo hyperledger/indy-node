@@ -31,12 +31,12 @@
 
 ## DID Document management
 
-| Contract      | Method        | Required Role | Action Description              |
-|---------------|---------------|---------------|---------------------------------|
-| DidRegistry   | createDid     | any           | Create a new DID Document       |
-| DidRegistry   | updateDid     | DID owner     | Update DID an existing Document |
-| DidRegistry   | deactivateDid | DID owner     | Deactivate an existing DID      |
-| DidRegistry   | resolveCredentialDefinition       | any           | Resolve DID Document for a DID  |
+| Contract      | Method                         | Required Role | Action Description              |
+|---------------|--------------------------------|---------------|---------------------------------|
+| DidRegistry   | createDid                      | any           | Create a new DID Document       |
+| DidRegistry   | updateDid                      | DID owner     | Update DID an existing Document |
+| DidRegistry   | deactivateDid                  | DID owner     | Deactivate an existing DID      |
+| DidRegistry   | resolveCredentialDefinition    | any           | Resolve DID Document for a DID  |
 
 ## CL Registry management
 
