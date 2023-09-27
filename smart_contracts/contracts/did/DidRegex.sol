@@ -10,7 +10,7 @@ library DidRegex {
     function (uint8) pure internal returns (State memory) func;
   }
 
-  string public constant regex = "did:(indy2|indy|sov):([a-zA-Z0-9]+:)+([1-9A-HJ-NP-Za-km-z]{22}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})";
+  string public constant regex = "did:(indy2|indy|sov):([a-zA-Z0-9]+:)+([1-9A-HJ-NP-Za-km-z]{21,22}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})";
 
   function s0(uint8 c) pure internal returns (State memory) {
     // silence unused var warning
@@ -851,7 +851,7 @@ library DidRegex {
       return State(false, s24);
     }
     if (c >= 49 && c <= 57 || c >= 65 && c <= 72 || c >= 74 && c <= 78 || c >= 80 && c <= 90 || c >= 97 && c <= 107 || c >= 109 && c <= 122) {
-      return State(false, s70);
+      return State(true, s70);
     }
     if (c == 58) {
       return State(false, s23);
