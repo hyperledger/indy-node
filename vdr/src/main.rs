@@ -27,16 +27,17 @@
 
 use std::collections::HashMap;
 use std::str::FromStr;
+use std::thread;
+use std::time::Duration;
 use web3::api::{Accounts, Eth, Namespace};
 use web3::contract::Contract;
 use web3::ethabi::{Address, Param, ParamType, Token};
-use secp256k1::{PublicKey, Secp256k1, SecretKey};
-use web3::{ethabi, signing, Web3};
+use secp256k1::{All, Message, PublicKey, Secp256k1, SecretKey};
+use web3::{ethabi, helpers, signing, Web3};
 use web3::contract::tokens::Tokenize;
-use web3::ethabi::ParamType::Address;
-use web3::signing::{Key, Signature, SigningError};
+use web3::signing::{keccak256, Key, Signature, SigningError};
 use web3::transports::Http;
-use web3::types::{Bytes, CallRequest, Transaction, TransactionParameters};
+use web3::types::{Bytes, CallRequest, H256, RawTransaction, SignedTransaction, Transaction, TransactionParameters};
 
 struct Client {
     network: String,
@@ -74,10 +75,19 @@ impl Client {
         };
     }
 
-    fn submit() {}
+    async fn sign_transaction(&self, transaction: TransactionParameters, wallet: &Wallet) -> SignedTransaction {
+        return self.client.accounts().sign_transaction(transaction, wallet).await.unwrap();
+    }
+
+    async fn submit(&self, transaction: Bytes) -> String {
+        let result = self.client.eth().send_raw_transaction(transaction).await.unwrap();
+        let hash = helpers::serialize(&result);
+        hash.as_str().unwrap().to_string()
+    }
 }
 
 struct Wallet {
+    secp: Secp256k1<All>,
     public_key: PublicKey,
     private_key: SecretKey,
 }
@@ -85,9 +95,10 @@ struct Wallet {
 impl Wallet {
     fn new() -> Wallet {
         let secp = Secp256k1::new();
-        let private_key = SecretKey::from_str("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX").unwrap();
+        let private_key = SecretKey::from_str("8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63").unwrap();
         let public_key = PublicKey::from_secret_key(&secp, &private_key);
         return Wallet {
+            secp: Secp256k1::new(),
             public_key,
             private_key,
         };
@@ -102,17 +113,43 @@ impl Wallet {
     }
 }
 
-impl signing::Key for &Wallet {
+impl Key for &Wallet {
     fn sign(&self, message: &[u8], chain_id: Option<u64>) -> Result<Signature, SigningError> {
-        todo!()
+        let message = Message::from_slice(message).map_err(|_| SigningError::InvalidMessage)?;
+        let (recovery_id, signature) = self.secp.sign_ecdsa_recoverable(
+            &message,
+            &self.private_key
+        ).serialize_compact();
+
+        let standard_v = recovery_id.to_i32() as u64;
+        let v = if let Some(chain_id) = chain_id {
+            // When signing with a chain ID, add chain replay protection.
+            standard_v + 35 + chain_id * 2
+        } else {
+            // Otherwise, convert to 'Electrum' notation.
+            standard_v + 27
+        };
+        let r = H256::from_slice(&signature[..32]);
+        let s = H256::from_slice(&signature[32..]);
+
+        Ok(Signature { v, r, s })
     }
 
     fn sign_message(&self, message: &[u8]) -> Result<Signature, SigningError> {
-        todo!()
+        let message = Message::from_slice(message).map_err(|_| SigningError::InvalidMessage)?;
+        let (recovery_id, signature) = self.secp.sign_ecdsa_recoverable(&message, &self.private_key).serialize_compact();
+
+        let v = recovery_id.to_i32() as u64;
+        let r = H256::from_slice(&signature[..32]);
+        let s = H256::from_slice(&signature[32..]);
+
+        Ok(Signature { v, r, s })
     }
 
     fn address(&self) -> web3::types::Address {
-        todo!()
+        let public_key = self.public_key.serialize_uncompressed();
+        let hash = keccak256(&public_key[1..]);
+        Address::from_slice(&hash[12..])
     }
 }
 
@@ -140,15 +177,27 @@ impl Signatures {
 
 struct Ledger;
 
+struct Schema {
+    name: String
+}
+
 impl Ledger {
-    fn build_create_did_transaction(client: &Client, did_document: &DidDocument, signatures: &[Signatures]) -> TransactionParameters {
-        let contract = client.contracts.get("DidRegistry").unwrap();
+    fn build_create_schema_transaction(client: &Client, id: &str, schema: &Schema) -> TransactionParameters {
+        let contract = client.contracts.get("SchemaRegistry").unwrap();
 
-        let params: Vec<Token> = vec![];
+        let params: Vec<Token> = vec![
+            Token::String(
+                id.to_string()
+            ),
+            Token::Tuple(
+                vec![Token::String(schema.name.to_string())]
+            )
+        ];
 
-        let function = contract.abi().function("createDid").unwrap();
-
-        let data = function.encode_input(&params.into_tokens()).unwrap();
+        let function = contract.abi().function("createSchema").unwrap();
+        let data = function
+            .encode_input(&params)
+            .unwrap();
 
         return TransactionParameters {
             to: Some(contract.address()),
@@ -156,35 +205,76 @@ impl Ledger {
             ..Default::default()
         };
     }
+
+    fn build_resolve_schema_transaction(client: &Client, did: &str) -> TransactionParameters {
+        let contract = client.contracts.get("SchemaRegistry").unwrap();
+        let function = contract.abi().function("resolveSchema").unwrap();
+
+        let data = function
+            .encode_input(
+                &[Token::String(did.into())]
+            ).unwrap();
+
+        return TransactionParameters {
+            to: Some(contract.address()),
+            data: Bytes(data),
+            ..Default::default()
+        };
+    }
+
+    fn parse_resolve_schema_result(client: &Client, bytes: &[u8]) -> Vec<Token> {
+        let contract = client.contracts.get("SchemaRegistry").unwrap();
+
+        let function = contract.abi().function("resolveSchema").unwrap();
+
+        let data = function.decode_output(bytes).unwrap();
+
+        data
+    }
+
 }
 
 #[tokio::main]
 async fn main() -> web3::Result<()> {
-    let client = Client::new("http://localhost:8545", &vec![]);
+    let client = Client::new("http://127.0.0.1:8545", &vec![
+        ContractSpec {
+            name: "SchemaRegistry".to_string(),
+            address: "0x0000000000000000000000000000000000005555".to_string(),
+            abi_path: "/Users/artem/indy-ledger/smart_contracts/artifacts/contracts/cl/SchemaRegistry.sol/spec.json".to_string(),
+        }
+    ]);
     let wallet = Wallet::new();
 
-    let did_document = DidDocument::new();
-    let signature = wallet.sign_ed();
-    let signatures = vec![
-        Signatures::new(String::from("kid"), signature)
-    ];
-
-
-    /// call
-    let request = CallRequest::builder()
-        .from(Address::from_str(&contract_spec.address).unwrap())
-        .build();
-    let result = client.client.eth().call(request, None).await.unwrap();
-
-
+    /// write
     /// sign and send
-    let transaction = Ledger::build_create_did_transaction(&client, &did_document, &signatures);
-    let signed_transaction = client.client.accounts().sign_transaction(transaction, &wallet).await.unwrap();
-    let result = client.client.eth().send_raw_transaction(signed_transaction.raw_transaction).await.unwrap();
-    let receipt = client.client.eth()
-        .transaction_receipt(result)
-        .await.unwrap().unwrap();
-    println!("receipt {:?}", receipt);
+    /// 1. build
+    let id = "did:test:2:3:2";
+    let schema = Schema {name: "test".to_string()};
+    let transaction = Ledger::build_create_schema_transaction(&client, id, &schema);
+
+    /// 2. sign
+    let signed_transaction = client.sign_transaction(transaction, &wallet).await;
+
+    /// 3. submit
+    let result = client.submit(signed_transaction.raw_transaction).await;
+    println!("result {:?}", result);
+
+    /// 4. parse?
+
+    thread::sleep(Duration::from_millis(4000));
+
+    /// read
+    /// call
+    /// 1. build
+    let transaction = Ledger::build_resolve_schema_transaction(&client, id);
+    let request = CallRequest::builder()
+        .to(transaction.to.unwrap())
+        .data(transaction.data)
+        .build();
+    /// 2. submit
+    let result = client.client.eth().call(request, None).await.unwrap();
+    /// 3. parse
+    println!("result {:?}", Ledger::parse_resolve_schema_result(&client, &result.0));
 
     Ok(())
 }
