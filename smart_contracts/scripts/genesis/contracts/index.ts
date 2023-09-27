@@ -1,5 +1,6 @@
 export * from './credentialDefinitions'
 export * from './dids'
+export * from './didRegex'
 export * from './didValidator'
 export * from './roles'
 export * from './schemas'

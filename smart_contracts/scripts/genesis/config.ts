@@ -1,4 +1,5 @@
 import { CredentialDefinitionsConfig } from './contracts/credentialDefinitions'
+import { DidRegexConfig } from './contracts/didRegex'
 import { DidsConfig } from './contracts/dids'
 import { DidValidatorConfig } from './contracts/didValidator'
 import { RolesConfig } from './contracts/roles'
@@ -11,6 +12,7 @@ export const outFile = 'ContractsGenesis.json'
 
 export interface Config {
   credentialDefinitions: CredentialDefinitionsConfig
+  didRegex: DidRegexConfig
   didValidator: DidValidatorConfig
   dids: DidsConfig
   roles: RolesConfig
@@ -27,10 +29,16 @@ export const config: Config = {
       credentialDefinitions: [],
     },
   },
+  didRegex: {
+    name: 'DidRegex',
+    address: '0x0000000000000000000000000000000000001111',
+    description: 'Regex library to validate DID syntax',
+  },
   didValidator: {
     name: 'DidValidator',
     address: '0x0000000000000000000000000000000000002222',
-    description: 'Library to validate DID',
+    description: 'Library to validate DID and DID Document',
+    libraries: { 'contracts/did/DidRegex.sol:DidRegex': '0x0000000000000000000000000000000000001111' },
   },
   dids: {
     name: 'DidRegistry',

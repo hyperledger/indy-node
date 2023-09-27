@@ -2,14 +2,10 @@ import { ContractConfig } from '../contractConfig'
 import { config } from '../config'
 import { buildSection } from '../helpers'
 
-export interface SchemasConfig extends ContractConfig {
-  data: {
-    schemas: Array<{ id: string; data: { name: string } }>
-  }
-}
+export interface DidRegexConfig extends ContractConfig {}
 
-export function schemas() {
-  const { name, address, description } = config.schemas
+export function didRegex() {
+  const { name, address, description } = config.didRegex
   const storage: any = {}
   return buildSection(name, address, description, storage)
 }

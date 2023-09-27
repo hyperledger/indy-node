@@ -1,14 +1,13 @@
+import { ContractConfig } from '../contractConfig'
 import { config } from '../config'
 import { buildSection } from '../helpers'
 
-export interface DidValidatorConfig {
-  name: string
-  address: string
-  description: string
+export interface DidValidatorConfig extends ContractConfig {
+  libraries: { [libraryName: string]: string }
 }
 
 export function didValidator() {
-  const { name, address, description } = config.didValidator
+  const { name, address, description, libraries } = config.didValidator
   const storage: any = {}
-  return buildSection(name, address, description, storage)
+  return buildSection(name, address, description, storage, libraries)
 }

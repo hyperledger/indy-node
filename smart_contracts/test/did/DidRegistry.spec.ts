@@ -10,7 +10,7 @@ describe('DIDContract', function () {
   // and reset Hardhat Network to that snapshot in every test.
   async function deployDidContractFixture() {
     const didRegex = new Contract('DidRegex')
-    await didRegex.deploy();
+    await didRegex.deploy()
 
     const validatorLib = new Contract('DidValidator')
     await validatorLib.deploy({ libraries: [didRegex] })

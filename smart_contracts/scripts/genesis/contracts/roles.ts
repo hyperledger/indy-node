@@ -1,11 +1,9 @@
 import { padLeft, sha3 } from 'web3-utils'
+import { ContractConfig } from '../contractConfig'
 import { config } from '../config'
 import { buildSection, slots } from '../helpers'
 
-export interface RolesConfig {
-  name: string
-  address: string
-  description: string
+export interface RolesConfig extends ContractConfig {
   data: {
     accounts: Array<{ account: string; role: number }>
     roleOwners: Record<string, string>

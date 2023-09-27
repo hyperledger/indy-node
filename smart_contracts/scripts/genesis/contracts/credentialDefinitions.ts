@@ -1,10 +1,8 @@
+import { ContractConfig } from '../contractConfig'
 import { config } from '../config'
 import { buildSection } from '../helpers'
 
-export interface CredentialDefinitionsConfig {
-  name: string
-  address: string
-  description: string
+export interface CredentialDefinitionsConfig extends ContractConfig {
   data: {
     credentialDefinitions: Array<{ id: string; data: { name: string } }>
   }

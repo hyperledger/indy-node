@@ -1,10 +1,8 @@
+import { ContractConfig } from '../contractConfig'
 import { config } from '../config'
 import { buildSection } from '../helpers'
 
-export interface DidsConfig {
-  name: string
-  address: string
-  description: string
+export interface DidsConfig extends ContractConfig {
   libraries: { [libraryName: string]: string }
   data: {
     dids: Array<{ id: string; data: any }>
