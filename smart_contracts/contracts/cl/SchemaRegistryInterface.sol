@@ -6,7 +6,7 @@ interface SchemaRegistryInterface {
         string name;
     }
 
-    function create(string calldata id, Schema calldata schema) external returns (string memory outId);
+    function createSchema(string calldata id, Schema calldata schema) external returns (string memory outId);
 
-    function resolve(string calldata id) external returns (Schema memory schema);
+    function resolveSchema(string calldata id) external returns (Schema memory schema);
 }

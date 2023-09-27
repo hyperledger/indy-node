@@ -240,19 +240,19 @@ Contract name: **DidRegistry**
 
 ### Resolve DID Document with Meta
 
-* Method: **resolveCredentialDefinition**
-* Description: Transaction to resolveCredentialDefinition DidDocStorage entry (DID Document and corresponding DID Doc Metadata)
+* Method: **resolveDid**
+* Description: Transaction to resolve DidDocStorage entry (DID Document and corresponding DID Doc Metadata)
 * Restrictions:
   * DID must exist
 * Format:
     ```
-    DidRegistry.resolveCredentialDefinition(
+    DidRegistry.resolveDid(
       string id,
     ) returns (DidDocumentStorage)
     ```
 * Example:
     ```
-    DidRegistry.resolveCredentialDefinition(
+    DidRegistry.resolveDid(
       "did:indy2:testnet:SEp33q43PsdP7nDATyySSH"
     )
     ```

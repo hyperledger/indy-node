@@ -6,7 +6,7 @@ interface CredentialDefinitionRegistryInterface {
         string name;
     }
 
-    function create(string calldata id, CredentialDefinition calldata credDef) external returns (string memory outId);
+    function createCredentialDefinition(string calldata id, CredentialDefinition calldata credDef) external returns (string memory outId);
 
-    function resolve(string calldata id) external returns (CredentialDefinition memory credDef);
+    function resolveCredentialDefinition(string calldata id) external returns (CredentialDefinition memory credDef);
 }

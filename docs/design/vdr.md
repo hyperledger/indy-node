@@ -415,7 +415,7 @@ contract LegacyDidRegistry is DidRegistry {
 ### Resolve
 
 ```
-/// Prepare transaction executing `DidRegistry.resolve` smart contract method 
+/// Prepare transaction executing `DidRegistry.resolveDid` smart contract method 
 ///
 /// #Params
 ///  param: from - Optional<account address> BREAKING CHANGE? - submitter account address
@@ -443,7 +443,7 @@ result = indy_vdr_submit_transaction(
 ```
 
 ```
-/// Single step function executing DidRegistry.resolve smart contract method to resolve DID Document with metadata
+/// Single step function executing DidRegistry.resolveDid smart contract method to resolve DID Document with metadata
 ///
 /// #Params
 ///  param: client - Ledger  client (Ethereum client - for example web3::Http)

@@ -37,8 +37,8 @@ export class DidRegistry extends Contract {
     return tx.wait()
   }
 
-  public async resolve(id: string): Promise<DidDocumentStorage> {
-    const didDocumentStorage = await this.instance.resolve(id)
+  public async resolveDid(id: string): Promise<DidDocumentStorage> {
+    const didDocumentStorage = await this.instance.resolveDid(id)
     return {
       document: {
         context: didDocumentStorage.document.context.map((context: string) => context),

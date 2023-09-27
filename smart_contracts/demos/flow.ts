@@ -4,6 +4,7 @@ import { delay } from '../utils'
 import { ROLES } from '../contracts-ts'
 import { Schema } from './utils/schema'
 import { CredentialDefinition } from './utils/credentialDefinition'
+import { sleep } from '@nomicfoundation/hardhat-verify/internal/utilities'
 
 async function demo() {
   let receipt: any
@@ -17,7 +18,7 @@ async function demo() {
   console.log(`Did Document created for DID ${trustee.did}. Receipt: ${JSON.stringify(receipt)}`)
 
   console.log('2. Trustee resolve DID Document to ensure its written')
-  const didDocument = await trustee.didRegistry.resolve(trustee.did)
+  const didDocument = await trustee.didRegistry.resolveDid(trustee.did)
   console.log(`Did Document resolved for ${trustee.did}. DID Document: ${JSON.stringify(didDocument.document)}`)
 
   console.log('3. Trustee assign ENDORSER role to Faber')
