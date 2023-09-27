@@ -6,25 +6,34 @@ In the same, time Indy community follows to idea of splitting complex library in
 
 > Rust client library to work with Web3, Solidity smart contracts: https://github.com/tomusdrw/rust-web3
 
-## TO DISCUSS
-* VDR implementation approach: independent vdr library + integration into existing indy-vdr?
-* Request builders issue: tied to network 
-* Request signing: Double signing for writes?
-* Roles and permissions: account or did
-* Level of validation
-* Storage format for DID Document, Schema, CredDef
-
 ## VDR library
 
-### Option 1: module in existing indy-vdr 
+### TO DISCUSS
 
-* Valuable for arise frameworks which are still not ledger agnostic (indy tied) like Aca-py or Aries-vcx.
-  * Such frameworks will be able to support Ledger 2.0 after simple migration.
-* Can be difficult to preserve approach and logic separation as in Indy-VDR. 
-
-### Option 2: independent library 
-
-* ?
+* VDR implementation Rust approach:
+    * step 1: independent vdr library
+    * step 2?:
+        * option 1: integration into existing indy-vdr
+            * Valuable for arise frameworks which are still not ledger agnostic (indy tied) like Aca-py or Aries-vcx.
+                * Such frameworks will be able to support Ledger 2.0 after simple migration.
+            * Can be difficult to preserve approach and logic separation like in Indy-VDR.
+            * Can be still difficult to integrate into aries frameworks
+        * option 2: direct integration into aries frameworks
+            * Not all Frameworks can be
+    * step 3: integration into aries frameworks
+* Request builders issue: tied to network
+    * Request builders cannot be network agnostic: In order to build transaction we need to know an address of the corresponding contract. 
+    * Looks like rust libraries provides higher lever functions to execute contract methods
+* Request signing: Double signing for writes?
+    * Sign DID Document / Schema / Credential Definition with ed key
+    * Sign transaction with secp256k1 key
+* How to derive secp256k1 key from old-fashioned seed? while migrating / while creating DID Document
+* Roles and permissions: account or did tied?
+* Level of validation inside of contracts
+    * Contracts are limited by the size
+    * Take gas into account for public network option  
+* Storage format for DID Document, Schema, CredDef
+    * Object will be different comparing to the specification. VDR will do conversions.   
 
 ## Client
 
