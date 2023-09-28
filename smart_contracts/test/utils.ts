@@ -1,6 +1,13 @@
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
 import { ethers } from 'hardhat'
-import { DidDocument, ROLES, Signature, VerificationMethod, VerificationRelationship } from '../contracts-ts'
+import {
+  DidDocument,
+  ROLES,
+  SchemaData,
+  Signature,
+  VerificationMethod,
+  VerificationRelationship,
+} from '../contracts-ts'
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -63,6 +70,21 @@ export async function getTestAccounts(roleControl: any): Promise<TestAccounts> {
     }
   }
   return testAccounts
+}
+
+export function createSchemaData(
+  issuerId: string,
+  name: string = 'BasicSchema',
+  version: string = '1.0.0',
+  attrNames: string[] = ['First Name', 'Last Name'],
+): SchemaData {
+  return {
+    id: `${issuerId}/anoncreds/v0/SCHEMA/${name}/${version}`,
+    issuerId,
+    name,
+    version,
+    attrNames,
+  }
 }
 
 export function createBaseDidDocument(did: string): DidDocument {
