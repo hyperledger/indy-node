@@ -4,36 +4,12 @@
 
 ### ID Syntax
 
-#### Indy 1.0 style
-
-| parameter          | value                                           |
-|--------------------|-------------------------------------------------|
-| id                 | method-specific-id                              |
-| indy-id            | <issuer_did>:<2>:<schema_name>:<schema_version> |
-
-```
-Example: Y6LRXGU3ZCpm7yzjVRSaGu:2:BasicIdentity:1.0.0
-```
-
-#### Indy 1.0 qualified
-
-| parameter          | value                                                   |
-|--------------------|---------------------------------------------------------|
-| id                 | “did:” method-name “:” namespace “:” method-specific-id |
-| method-name        | “indy” / "sov"                                          |
-| namespace          | “testnet”/"mainnet"                                     |
-| indy-id            | <issuer_did>:<2>:<schema_name>:<schema_version>         |
-
-```
-Example: did:indy:sovrin:Y6LRXGU3ZCpm7yzjVRSaGu:2:BasicIdentity:1.0.0
-```
-
 #### AnonCreds Spec style
 
 | parameter          | value                                                           |
 |--------------------|-----------------------------------------------------------------|
 | id                 | “did:” method-name “:” namespace “:” method-specific-id         |
-| method-name        | “indy2”                                                 |
+| method-name        | “indy2”                                                         |
 | namespace          | “testnet”/"mainnet"                                             |
 | indy-id            | <issuer_did>/anoncreds/v0/SCHEMA/<schema_name>/<schema_version> |
 
@@ -161,30 +137,6 @@ Contract name: **SchemaRegistry**
 ## Credential Definition
 
 ### ID Syntax
-
-#### Indy 1.0 style
-
-| parameter          | value                                     |
-|--------------------|-------------------------------------------|
-| id                 | method-specific-id                        |
-| indy-id            | <issuer_did>:<3>:<type>:<schema_id>:<tag> |
-
-```
-Example: Gs6cQcvrtWoZKsbBhD3dQJ:3:CL:140384:mctc
-```
-
-#### Indy 1.0 qualified
-
-| parameter          | value                                                   |
-|--------------------|---------------------------------------------------------|
-| id                 | “did:” method-name “:” namespace “:” method-specific-id |
-| method-name        | “indy” / "sov"                                          |
-| namespace          | “testnet”/"mainnet"                                     |
-| indy-id            | <issuer_did>:<3>:<type>:<schema_id>:<tag>               |
-
-```
-Example: did:indy:sovrin:Gs6cQcvrtWoZKsbBhD3dQJ:3:CL:140384:mctc
-```
 
 #### AnonCreds Spec style
 

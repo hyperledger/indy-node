@@ -4,7 +4,7 @@
 | parameter          | value                                                   |
 |--------------------|---------------------------------------------------------|
 | did                | “did:” method-name “:” namespace “:” method-specific-id |
-| method-name        | "indy2" / “indy” / "sov"                                |
+| method-name        | "indy2"                                                 |
 | namespace          | “testnet”/"mainnet"                                     |
 | method-specific-id | indy-id / UUID                                          |
 | indy-id            | Base58(Truncate_msb(16(SHA256(publicKey))))             |
