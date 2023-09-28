@@ -19,8 +19,8 @@ In the same, time Indy community follows to idea of splitting complex library in
 
 ## Client
 
-```
-/// Create Indy2.0 client incteracting with ledger
+```rust
+/// Create Indy2.0 client interacting with ledger
 ///
 /// #Params
 ///  param: chain_id: u64 - chain id of network (chain ID is part of the transaction signing process to protect against transaction replay attack)
@@ -30,12 +30,14 @@ In the same, time Indy community follows to idea of splitting complex library in
 /// 
 /// #Returns
 ///  client - client to use for building and sending transactions
-client = indy_vdr_create_client(
-    chain_id: string,
-    node_address: string,
+fn indy_vdr_create_client(
+    chain_id: String,
+    node_address: String,
     contract_specs: Vec<ContractSpec>,
     signer: Option<Signer>
-): Client
+) -> Client {
+    unimpltemented!()
+}
 
 struct ContractSpec {
     name: String, // name of the contract
@@ -44,7 +46,7 @@ struct ContractSpec {
 }
 
 trait Signer {
-    fn sign(&self, message: bytes, key: bytes) -> TransactionSpec;
+    fn sign(&self, message: &[u8], key: &[u8]) -> TransactionSpec;
 }
 
 trait EthClient {}
@@ -53,12 +55,13 @@ trait Contract {}
 struct Web3Client {
     eth: Web3<Http>
 }
-imple EthClient for Web3Client {}
+
+impl EthClient for Web3Client {}
 
 struct Web3Contract {
     contract: Contract<Http>
 }
-imple Contract for Web3Client {}
+impl Contract for Web3Client {}
 
 struct Client {
     client: EthClient, // ethereum client library
@@ -74,11 +77,13 @@ struct Client {
 /// #Returns
 ///   status: object - ping status
 ///
-receipt = indy_vdr_ping(
-    client: LedgerClient,
-): StatusResult
+fn indy_vdr_ping(
+    client: Client,
+) -> StatusResult {
+    unimplemented!();
+}
 
-strunct StatusResult {
+struct  StatusResult {
     status: Status
 }
 
@@ -98,15 +103,17 @@ enum Status {
 /// #Returns
 ///   result - transaction execution results (receipt or hash or data itself?? - need to clarify)  
 ///
-receipt = indy_vdr_submit_transaction(
-    client: LedgerClient,
+fn indy_vdr_submit_transaction(
+    client: Client,
     transaction: TransactionSpec
     options: Option<SubmitTransactionOptions>
-): Receipt
+) -> Receipt {
+    unimplemented!()
+}
 
 struct TransactionSpec {
-    type: TransactionType
-    txn: TransactionParams
+    type_: TransactionType,
+    txn: Transaction
 }
 
 enum TransactionType {
@@ -114,8 +121,16 @@ enum TransactionType {
     Write
 }
 
-strunct SubmitTransactionOptions {
+struct Transaction {
 
+}
+
+struct SubmitTransactionOptions {
+
+}
+
+struct Receipt {
+    
 }
 ```
 
@@ -127,14 +142,14 @@ strunct SubmitTransactionOptions {
 
 ##### Request builder
 
-```
+```rust
 // Probably we do no even need it
 struct BuildTxnOptions {
 
 }
 ```
 
-```
+```rust
 /// Prepare transaction executing `DidRegistry.createDid` smart contract method to create a new DID on the Ledger
 ///
 /// #Params
@@ -145,77 +160,19 @@ struct BuildTxnOptions {
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_create_did_transaction(
+fn indy_vdr_build_create_did_transaction(
     client: Client,
-    from: string,
+    from: String,
     did_document: DidDoc,
     options: Option<BuildTxnOptions>,
-): TransactionSpec
+) -> TransactionSpec {
+    unimplemented!();
+}
 ```
-
-##### Option 2:  Backward compatible way consisting of two steps - Will be done later!
-
-1. Assemble basic DID Document according to the steps [here](https://hyperledger.github.io/indy-did-method/#diddoc-assembly-steps).
-   > DID Doc will not contain any `service` set. Service will be added by a separate ATTRIB operation.
-    * Publish DID Document using `DidRegistry.createDid(didDocument, signatures)`
-2. Assemble basic DID Document containing only `id` and `service`.  DID Document itself must be already published using NYM operation.
-    * Update existing DID Document using `DidRegistry.updateDid(didDocument, signatures)`
-
-> In fact, it's not really backward compatible as we require passing of additional signature for nym and attrib
-
-```
-/// Prepare transaction executing `DidRegistry.createDid` smart contract method 
-///   Build a basic DID Document using the provided parameters
-///   https://hyperledger.github.io/indy-did-method/#diddoc-assembly-steps
-///
-/// #Params
-///  param: client: Ledger client
-///  param: from: string - sender account address
-///  param: dest: string, verkey, alias, role, diddoc_content, version - same as before. Data to build DID Document.
-///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
-/// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_nym_transaction(
-    client: Client,
-    from: string, 
-    dest: string, 
-    verkey: string, 
-    alias: Option<string>,
-    role: Option<ROLES>,
-    diddoc_content: Option<String>,
-    version: Option<string>,
-    options: Option<BuildTxnOptions>,
-): TransactionSpec
-
-/// Prepare transaction executing `DidRegistry.updateDid` smart contract method 
-///   Build a basic DID Document using provided parameters
-///   https://hyperledger.github.io/indy-did-method/#diddoc-assembly-steps
-///
-/// #Params
-///  param: client: Ledger - client (Ethereum client - for example web3::Http)
-///  param: from: string - sender account address
-///  param: target_did, hash, raw, enc - same as before. Data to build DID Document.
-///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
-/// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_attrib_transaction(
-    client: Client,
-    from: string, 
-    target_did: string, 
-    hash: Option<string>,
-    raw: Option<ROLES>,
-    enc: Option<String>,
-    options: Option<BuildTxnOptions>,
-): TransactionSpec
-```
-
-> Issue: We cannot build the whole DID Document at ATTRIB step. So we need to allow partial update on DidRegistry.updateDid method.
 
 ##### Single step contract execution
 
-```
+```rust
 /// Single step function executing DidRegistry.createDid smart contract method to publish a new DID Document
 ///
 /// #Params
@@ -226,19 +183,19 @@ transaction = indy_vdr_build_attrib_transaction(
 /// 
 /// #Returns
 ///   receipt - transaction Receipt
-indy_vdr_create_did(
+fn indy_vdr_create_did(
     client: LedgerClient,
-    from: string,
+    from: String,
     did_document: DidDocument,
     options: Option<BuildTxnOptions>,
-): Receipt 
+) -> Receipt; 
 ```
 
-#### Update
+#### Update DID
 
 ##### Request builder
 
-```
+```rust
 /// Prepare transaction executing `DidRegistry.updateDid` smart contract method to update an existing DID Document
 ///
 /// #Params
@@ -249,17 +206,17 @@ indy_vdr_create_did(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_update_did_transaction(
+fn indy_vdr_build_update_did_transaction(
     client: Client,
-    from: string,
+    from: String,
     did_document: DidDoc,
     options: Option<BuildTxnOptions>,
-): TransactionSpec
+) -> TransactionSpec;
 ```
 
 ##### Single step contract execution
 
-```
+```rust
 /// Single step function executing DidRegistry.updateDid smart contract method to publish DID Document
 ///
 /// #Params
@@ -270,19 +227,19 @@ transaction = indy_vdr_build_update_did_transaction(
 /// 
 /// #Returns
 ///   receipt - transaction Receipt
-indy_vdr_update_did(
+fn indy_vdr_update_did(
     client: LedgerClient,
-    from: string,
+    from: String,
     did_document: DidDocument,
     options: Option<ResolveDidOptions>,
-): Receipt 
+) -> Receipt; 
 ```
 
-#### Deactivate
+#### Deactivate DID
 
 ##### Request builder
 
-```
+```rust
 /// Prepare transaction executing `DidRegistry.deactivateDid` smart contract method to deactivate an existing DID
 ///
 /// #Params
@@ -293,17 +250,17 @@ indy_vdr_update_did(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_deactivate_did_transaction(
+fn indy_vdr_build_deactivate_did_transaction(
     client: Client,
-    from: string,
-    did: string,
+    from: String,
+    did: String,
     options: Option<BuildTxnOptions>,
-): TransactionSpec
+) -> TransactionSpec;
 ```
 
 ##### Single step contract execution
 
-```
+```rust
 /// Single step function executing DidRegistry.deactivateDid smart contract method to publish DID Document
 ///
 /// #Params
@@ -314,19 +271,19 @@ transaction = indy_vdr_build_deactivate_did_transaction(
 /// 
 /// #Returns
 ///   receipt - transaction Receipt
-indy_vdr_deactivate_did(
+fn indy_vdr_deactivate_did(
     client: LedgerClient,
-    from: string,
-    did: string,
+    from: String,
+    did: String,
     options: Option<ResolveDidOptions>,
-): Receipt 
+) -> Receipt; 
 ```
 
-#### Resolve
+#### Resolve DID
 
 ##### Request builder
 
-```
+```rust
 /// Prepare transaction executing `DidRegistry.resolveDid` smart contract method to resolve a DID
 ///
 /// #Params
@@ -336,14 +293,14 @@ indy_vdr_deactivate_did(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_resolve_did_transaction(
+fn indy_vdr_build_resolve_did_transaction(
     client: Client,
-    did: string,
+    did: String,
     options: Option<BuildTransactionOptions>,
-): TransactionSpec
+) -> TransactionSpec;
 ```
 
-```
+```rust
 /// Parse response for of `DidRegistry.resolveDid` smart contract 
 ///
 /// #Params
@@ -352,15 +309,15 @@ transaction = indy_vdr_build_resolve_did_transaction(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_parse_resolve_did_response(
+fn indy_vdr_parse_resolve_did_response(
     client: Client,
     response: bytes,
-): DidDocumentWithMeta
+) -> DidDocumentWithMeta;
 ```
 
 ##### Single step contract execution
 
-```
+```rust
 /// Single step function executing DidRegistry.resolveDid smart contract method to resolve DID Document with metadata
 ///
 /// #Params
@@ -370,14 +327,14 @@ transaction = indy_vdr_parse_resolve_did_response(
 /// 
 /// #Returns
 ///   did_document_with_meta - resolved DID Document
-indy_vdr_resolve_did(
+fn indy_vdr_resolve_did(
     client: LedgerClient,
-    did: string,
+    did: String,
     options: Option<ResolveDidOptions>,
-): DidDocumentWithMeta 
+) -> DidDocumentWithMeta; 
 ```
 
-```
+```rust
 /// Single step function executing dereferencing DID-URL and DidRegistry.resolveDid smart contract method to resolve DID Document with metadata
 ///
 /// #Params
@@ -387,20 +344,20 @@ indy_vdr_resolve_did(
 /// 
 /// #Returns
 ///   did_document_with_meta - resolved DID Document
-indy_vdr_dereference_did(
+fn indy_vdr_dereference_did(
     client: LedgerClient,
-    did_url: string,
+    did_url: String,
     options: Option<ResolveDidOptions>,
-): DidDocumentWithMeta 
+) -> DidDocumentWithMeta; 
 ```
 
 ### Schema
 
-#### Create
+#### Create Schema
 
 ##### Request builder
 
-```
+```rust
 /// Prepare transaction executing SchemaRegistry.createSchema smart contract method
 ///
 /// #Params
@@ -411,17 +368,17 @@ indy_vdr_dereference_did(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_create_schema_transaction(
+fn indy_vdr_build_create_schema_transaction(
     client: Client,
-    from: string,
+    from: String,
     schema: Schema,
     options: Option<BuildTxnOptions>,
-): TransactionSpec
+) -> TransactionSpec;
 ```
 
 ##### Single step contract execution
 
-```
+```rust
 /// Single step function executing SchemaRegistry.createSchema smart contract method to publish Schema
 ///
 /// #Params
@@ -432,19 +389,19 @@ transaction = indy_vdr_build_create_schema_transaction(
 /// 
 /// #Returns
 ///   receipt - transaction Receipt
-indy_vdr_create_schema(
+fn indy_vdr_create_schema(
     client: LedgerClient,
-    from: string,
+    from: String,
     schema: Schema,
     options: Option<ResolveDidOptions>,
-): Receipt 
+) -> Receipt; 
 ```
 
-#### Resolve
+#### Resolve Schema
 
 ##### Request builder
 
-```
+```rust
 /// Prepare transaction executing `SchemaRegistry.resolveSchema` smart contract method 
 ///
 /// #Params
@@ -454,14 +411,14 @@ indy_vdr_create_schema(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_resolve_schema_transaction(
+fn indy_vdr_build_resolve_schema_transaction(
     client: Client,
-    id: string,
+    id: String,
     options: Option<BuildTransactionOptions>,
-): TransactionSpec
+) -> TransactionSpec;
 ```
 
-```
+```rust
 /// Parse response for of `SchemaRegistry.resolveSchema` smart contract 
 ///
 /// #Params
@@ -470,15 +427,15 @@ transaction = indy_vdr_build_resolve_schema_transaction(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_parse_resolve_schema_response(
+fn indy_vdr_parse_resolve_schema_response(
     client: Client,
     response: bytes,
-): SchemaWithMeta
+) -> SchemaWithMeta;
 ```
 
 ##### Single step contract execution
 
-```
+```rust
 /// Single step function executing SchemaRegistry.resolveSchema smart contract method to resolve Schema
 ///
 /// #Params
@@ -488,20 +445,20 @@ transaction = indy_vdr_parse_resolve_schema_response(
 /// 
 /// #Returns
 ///   schema_with_meta - resolved Schema
-indy_vdr_resolve_schema(
+fn indy_vdr_resolve_schema(
     client: LedgerClient,
-    id: string,
+    id: String,
     options: Option<ResolveDidOptions>,
-): SchemaWithMeta 
+) -> SchemaWithMeta; 
 ```
 
 ### Credential Definition
 
-#### Create
+#### Create Credential Definition
 
 ##### Request builder
 
-```
+```rust
 /// Prepare transaction executing CredentialDefinitionRegistry.createCredentialDefinition smart contract method
 ///
 /// #Params
@@ -512,17 +469,17 @@ indy_vdr_resolve_schema(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_create_schema_transaction(
+fn indy_vdr_build_create_schema_transaction(
     client: Client,
-    from: string,
+    from: String,
     cred_def: CredentialDefinition,
     options: Option<BuildTxnOptions>,
-): TransactionSpec
+) -> TransactionSpec;
 ```
 
 ##### Single step contract execution
 
-```
+```rust
 /// Single step function executing CredentialDefinitionRegistry.createCredentialDefinition smart contract method to piblish Credential Definition
 ///
 /// #Params
@@ -533,19 +490,19 @@ transaction = indy_vdr_build_create_schema_transaction(
 /// 
 /// #Returns
 ///   receipt - transaction Receipt
-indy_vdr_create_credential_definition(
+fn indy_vdr_create_credential_definition(
     client: LedgerClient,
-    from: string,
+    from: String,
     cred_def: CredentialDefinition,
     options: Option<BuildTxnOptions>,
-): Receipt 
+) -> Receipt;
 ```
 
-#### Resolve
+#### Resolve Credential DefinitionCredential Definition
 
 ##### Request builder
 
-```
+```rust
 /// Prepare transaction executing CredentialDefinitionRegistry.resolveCredentialDefinition smart contract method
 ///
 /// #Params
@@ -555,14 +512,14 @@ indy_vdr_create_credential_definition(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_resolve_credential_definition_transaction(
+fn indy_vdr_build_resolve_credential_definition_transaction(
     client: Client,
-    id: string,
+    id: String,
     options: Option<BuildTransactionOptions>,
-): TransactionSpec
+) -> TransactionSpec;
 ```
 
-```
+```rust
 /// Parse response for of `CredentialDefinitionRegistry.resolveCredentialDefinition` smart contract 
 ///
 /// #Params
@@ -571,15 +528,15 @@ transaction = indy_vdr_build_resolve_credential_definition_transaction(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_parse_resolve_credential_definition_response(
+fn indy_vdr_parse_resolve_credential_definition_response(
     client: Client,
     response: bytes,
-): CredentialDefinitionWithMeta
+) -> CredentialDefinitionWithMeta;
 ```
 
 ##### Single step contract execution
 
-```
+```rust
 /// Single step function executing CredentialDefinitionRegistry.resolveCredentialDefinition smart contract method to resolve Credential Definition
 ///
 /// #Params
@@ -589,11 +546,11 @@ transaction = indy_vdr_parse_resolve_credential_definition_response(
 /// 
 /// #Returns
 ///   cred_def_with_meta - resolved Schema
-indy_vdr_resolve_schema(
+fn indy_vdr_resolve_schema(
     client: LedgerClient,
-    id: string,
+    id: String,
     options: Option<ResolveDidOptions>,
-): CredentialDefinitionWithMeta 
+) -> CredentialDefinitionWithMeta;
 ```
 
 ### Auth
@@ -602,7 +559,7 @@ indy_vdr_resolve_schema(
 
 ##### Request builder
 
-```
+```rust
 /// Prepare transaction executing RoleControl.assignRole smart contract method
 ///
 /// #Params
@@ -614,18 +571,18 @@ indy_vdr_resolve_schema(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_assign_role_transaction(
+fn indy_vdr_build_assign_role_transaction(
     client: Client,
-    from: string,
-    to: string,
-    role: string,
+    from: String,
+    to: String,
+    role: String,
     options: Option<BuildTxnOptions>,
-): TransactionSpec
+) -> TransactionSpec;
 ```
 
 ##### Single step contract execution
 
-```
+```rust
 /// Single step function executing RoleControl.assignRole smart contract method to assign account role
 ///
 /// #Params
@@ -637,20 +594,20 @@ transaction = indy_vdr_build_assign_role_transaction(
 /// 
 /// #Returns
 ///   receipt - transaction Receipt
-indy_vdr_assign_role(
+fn indy_vdr_assign_role(
     client: LedgerClient,
-    from: string,
-    to: string,
-    role: string,
+    from: String,
+    to: String,
+    role: String,
     options: Option<ResolveDidOptions>,
-): Receipt 
+) -> Receipt; 
 ```
 
-#### Revoke
+#### Revoke role
 
 ##### Request builder
 
-```
+```rust
 /// Prepare transaction executing RoleControl.revokeRole smart contract method
 ///
 /// #Params
@@ -662,18 +619,18 @@ indy_vdr_assign_role(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_revoke_role_transaction(
+fn indy_vdr_build_revoke_role_transaction(
     client: Client,
-    from: string,
-    to: string,
-    role: string,
+    from: String,
+    to: String,
+    role: String,
     options: Option<BuildTxnOptions>,
-): TransactionSpec
+) -> TransactionSpec;
 ```
 
 ##### Single step contract execution
 
-```
+```rust
 /// Single step function executing RoleControl.revokeRole smart contract method to revoke account role
 ///
 /// #Params
@@ -685,20 +642,20 @@ transaction = indy_vdr_build_revoke_role_transaction(
 /// 
 /// #Returns
 ///   receipt - transaction Receipt
-indy_vdr_revoke_role(
+fn indy_vdr_revoke_role(
     client: LedgerClient,
-    from: string,
-    to: string,
-    role: string,
+    from: String,
+    to: String,
+    role: String,
     options: Option<BuildTxnOptions>,
-): Receipt 
+) -> Receipt; 
 ```
 
 #### Get role
 
 ##### Request builder
 
-```
+```rust
 /// Prepare transaction executing RoleControl.getRole smart contract method
 ///
 /// #Params
@@ -708,14 +665,14 @@ indy_vdr_revoke_role(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_get_role_transaction(
+fn indy_vdr_build_get_role_transaction(
     client: Client,
-    account: string,
+    account: String,
     options: Option<BuildTransactionOptions>,
-): TransactionSpec
+) -> TransactionSpec;
 ```
 
-```
+```rust
 /// Parse response for of `RoleControl.getRole` smart contract 
 ///
 /// #Params
@@ -724,15 +681,15 @@ transaction = indy_vdr_build_get_role_transaction(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_parse_get_role_response(
+fn indy_vdr_parse_get_role_response(
     client: Client,
     response: bytes,
-): AccountRole
+) -> AccountRole;
 ```
 
 ##### Single step contract execution
 
-```
+```rust
 /// Single step function executing RoleControl.getRole smart contract method to get current validators
 ///
 /// #Params
@@ -742,20 +699,20 @@ transaction = indy_vdr_parse_get_role_response(
 /// 
 /// #Returns
 ///   validators - list of current validators
-indy_vdr_get_role(
+fn indy_vdr_get_role(
     client: LedgerClient,
-    account: string,
+    account: String,
     options: Option<ResolveDidOptions>,
-): ValidatorList 
+) -> ValidatorList;
 ```
 
 ### Validator
 
-#### Create
+#### Add validator
 
 ##### Request builder
 
-```
+```rust
 /// Prepare transaction executing ValidatorControl.addValidator smart contract method
 ///
 /// #Params
@@ -766,17 +723,17 @@ indy_vdr_get_role(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_add_validator_transaction(
+fn indy_vdr_build_add_validator_transaction(
     client: Client,
-    from: string,
-    validator: string,
+    from: String,
+    validator: String,
     options: Option<BuildTxnOptions>,
-): TransactionSpec
+) -> TransactionSpec;
 ```
 
 ##### Single step contract execution
 
-```
+```rust
 /// Single step function executing ValidatorControl.addValidato smart contract method to add new validator node
 ///
 /// #Params
@@ -787,19 +744,19 @@ transaction = indy_vdr_build_add_validator_transaction(
 /// 
 /// #Returns
 ///   receipt - transaction Receipt
-indy_vdr_add_validator(
+fn indy_vdr_add_validator(
     client: LedgerClient,
-    from: string,
-    validator: string,
+    from: String,
+    validator: String,
     options: Option<BuildTxnOptions>,
-): Receipt 
+) -> Receipt; 
 ```
 
-#### Remove
+#### Remove validator
 
 ##### Request builder
 
-```
+```rust
 /// Prepare transaction executing ValidatorControl.removeValidator smart contract method
 ///
 /// #Params
@@ -810,17 +767,17 @@ indy_vdr_add_validator(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_remove_validator_transaction(
+fn indy_vdr_build_remove_validator_transaction(
     client: Client,
-    from: string,
-    validator: string,
+    from: String,
+    validator: String,
     options: Option<BuildTxnOptions>,
-): TransactionSpec
+) -> TransactionSpec;
 ```
 
 ##### Single step contract execution
 
-```
+```rust
 /// Single step function executing ValidatorControl.removeValidator smart contract method to remove validator node
 ///
 /// #Params
@@ -831,19 +788,19 @@ transaction = indy_vdr_build_remove_validator_transaction(
 /// 
 /// #Returns
 ///   receipt - transaction Receipt
-indy_vdr_remove_validator(
+fn indy_vdr_remove_validator(
     client: LedgerClient,
-    from: string,
-    validator: string,
+    from: String,
+    validator: String,
     options: Option<BuildTxnOptions>,
-): Receipt 
+) -> Receipt; 
 ```
 
-#### Get
+#### Get validators
 
 ##### Request builder
 
-```
+```rust
 /// Prepare transaction executing ValidatorControl.getValdiators smart contract method
 ///
 /// #Params
@@ -852,13 +809,13 @@ indy_vdr_remove_validator(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_build_get_validators_transaction(
+fn indy_vdr_build_get_validators_transaction(
     client: Client,
     options: Option<BuildTransactionOptions>,
-): TransactionSpec
+) -> TransactionSpec;
 ```
 
-```
+```rust
 /// Parse response for of `ValidatorControl.getValdiators` smart contract 
 ///
 /// #Params
@@ -867,15 +824,19 @@ transaction = indy_vdr_build_get_validators_transaction(
 /// 
 /// #Returns
 ///   transaction: TransactionSpec - prepared transaction object 
-transaction = indy_vdr_parse_get_validators_response(
+fn indy_vdr_parse_get_validators_response(
     client: Client,
     response: bytes,
-): AccountRole
+) -> ValidatorList;
+
+struct ValidatorList {
+    validators: Vec<string>
+}
 ```
 
 ##### Single step contract execution
 
-```
+```rust
 /// Single step function executing CredentialDefinitionRegistry.getValdiators smart contract method to get current validators
 ///
 /// #Params
@@ -884,15 +845,26 @@ transaction = indy_vdr_parse_get_validators_response(
 /// 
 /// #Returns
 ///   validators - list of current validators
-indy_vdr_get_validators(
+fn indy_vdr_get_validators(
     client: LedgerClient,
     options: Option<ResolveDidOptions>,
-): ValidatorList 
+) -> ValidatorList; 
 ```
 
 ## Transaction Spec methods
 
-```
+```rust
+/// Get bytes to sign
+///
+/// #Params
+///  param: transaction: TransactionSpec - preparaed transaction 
+///
+/// #Returns
+///   bytes_to_sign - bytes need to be signed
+fn indy_vdr_transaction_spec_get_bytes_to_sign(
+    transaction: TransactionSpec,
+) -> bytes;
+
 /// Set signature for transaction spec.
 ///
 /// #Params
@@ -901,10 +873,10 @@ indy_vdr_get_validators(
 ///
 /// #Returns
 ///   did_document_with_meta - resolved DID Document
-indy_vdr_transaction_spec_set_signature(
+fn indy_vdr_transaction_spec_set_signature(
     transaction: TransactionSpec,
     signature: bytes,
-)
+);
 ```
 
 ????
@@ -940,7 +912,7 @@ indy_vdr_submit_transaction(client, transaction)
     * `signature = Secp256k1.sign(hash).`
     * `hex(signature)`
 
-```
+```rust
 /// Create Indy2.0 client
 ///
 /// #Params
@@ -948,9 +920,9 @@ indy_vdr_submit_transaction(client, transaction)
 /// 
 /// #Returns
 ///   wallet - wallet used for signing transactions (web3?)
-wallet = external_wallet_method_to_create_wallet_with_ethr_account(
-    mnemonic: Option<string>,
-): Wallet
+fn external_wallet_method_to_create_wallet_with_ethr_account(
+    mnemonic: Option<String>,
+) -> Wallet;
 
 struct Wallet {
     keys: Vec<Key>
@@ -970,8 +942,72 @@ struct Key {
 /// 
 /// #Returns
 ///   signature: bytes - generated signature
-signature = external_wallet_method_to_Secp256k1_sign(
+fn external_wallet_method_to_Secp256k1_sign(
     message: bytes,
     private_key: bytes
-): Signature
+) -> Signature;
 ```
+
+## Backward compatibility
+
+### DID creation and resolving
+
+#### Backward compatible way consisting of two steps - Will be done later!
+
+1. Assemble basic DID Document according to the steps [here](https://hyperledger.github.io/indy-did-method/#diddoc-assembly-steps).
+   > DID Doc will not contain any `service` set. Service will be added by a separate ATTRIB operation.
+    * Publish DID Document using `DidRegistry.createDid(didDocument, signatures)`
+2. Assemble basic DID Document containing only `id` and `service`.  DID Document itself must be already published using NYM operation.
+    * Update existing DID Document using `DidRegistry.updateDid(didDocument, signatures)`
+
+> In fact, it's not really backward compatible as we require passing of additional signature for nym and attrib
+
+```rust
+/// Prepare transaction executing `DidRegistry.createDid` smart contract method 
+///   Build a basic DID Document using the provided parameters
+///   https://hyperledger.github.io/indy-did-method/#diddoc-assembly-steps
+///
+/// #Params
+///  param: client: Ledger client
+///  param: from: string - sender account address
+///  param: dest: string, verkey, alias, role, diddoc_content, version - same as before. Data to build DID Document.
+///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
+/// 
+/// #Returns
+///   transaction: TransactionSpec - prepared transaction object 
+fn indy_vdr_build_nym_transaction(
+    client: Client,
+    from: String, 
+    dest: String, 
+    verkey: String, 
+    alias: Option<String>,
+    role: Option<String>,
+    diddoc_content: Option<String>,
+    version: Option<String>,
+    options: Option<BuildTxnOptions>,
+) -> TransactionSpec;
+
+/// Prepare transaction executing `DidRegistry.updateDid` smart contract method 
+///   Build a basic DID Document using provided parameters
+///   https://hyperledger.github.io/indy-did-method/#diddoc-assembly-steps
+///
+/// #Params
+///  param: client: Ledger - client (Ethereum client - for example web3::Http)
+///  param: from: string - sender account address
+///  param: target_did, hash, raw, enc - same as before. Data to build DID Document.
+///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
+/// 
+/// #Returns
+///   transaction: TransactionSpec - prepared transaction object 
+fn indy_vdr_build_attrib_transaction(
+    client: Client,
+    from: String, 
+    target_did: String, 
+    hash: Option<String>,
+    raw: Option<String>,
+    enc: Option<String>,
+    options: Option<BuildTxnOptions>,
+) -> TransactionSpec;
+```
+
+> Issue: We cannot build the whole DID Document at ATTRIB step. So we need to allow partial update on DidRegistry.updateDid method.
