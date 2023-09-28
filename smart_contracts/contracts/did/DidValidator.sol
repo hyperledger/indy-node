@@ -16,7 +16,7 @@ library DidValidator {
     /**
      * @dev Validates the DID syntax
      */
-    function validateDid(string memory did) internal pure {
+    function validateDid(string memory did) public pure {
         StrSlice didSlice = did.toSlice();
         StrSlice delimiterSlice = DELIMITER.toSlice();
 
@@ -35,7 +35,7 @@ library DidValidator {
     /**
      * @dev Validates verification keys
      */
-    function validateVerificationKey(DidDocument memory didDocument) internal pure {
+    function validateVerificationKey(DidDocument memory didDocument) public pure {
         require(didDocument.authentication.length != 0, "Authentication key is required");
 
         for (uint i = 0; i < didDocument.authentication.length; i++) {
