@@ -28,7 +28,19 @@ export class Account {
     }
 
     public get did() {
-        return `did:${environment.did.method}:${environment.network.name}:${this.address.substring(0, 16)}`
+        return `did:${environment.did.method}:${environment.network.name}:${this.methodSpeceficId}`
+    }
+
+    public get methodSpeceficId() {
+        const parts = [
+            this.address.substring(2, 10),
+            this.address.substring(10, 14),
+            this.address.substring(14, 18),
+            this.address.substring(18, 22),
+            this.address.substring(22, 34),
+        ]
+
+        return parts.join('-')
     }
 
     public get didDocument() {
