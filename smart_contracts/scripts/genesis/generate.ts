@@ -1,11 +1,12 @@
 import { writeJson } from '../../utils'
 import { outFile } from './config'
-import { credentialDefinitions, dids, roles, schemas, validators } from './contracts'
+import { credentialDefinitions, dids, didValidator, roles, schemas, validators } from './contracts'
 
 function main() {
   const contracts = {
     ...roles(),
     ...validators(),
+    ...didValidator(),
     ...dids(),
     ...schemas(),
     ...credentialDefinitions(),
