@@ -10,13 +10,13 @@ export class SchemaRegistry extends Contract {
     super(SchemaRegistry.name, sender)
   }
 
-  public async create(id: string, schema: Schema) {
-    const tx = await this.instance.create(id, schema)
+  public async createSchema(id: string, schema: Schema) {
+    const tx = await this.instance.createSchema(id, schema)
     return tx.wait()
   }
 
-  public async resolve(id: string): Promise<Schema> {
-    const schema = await this.instance.resolve(id)
+  public async resolveSchema(id: string): Promise<Schema> {
+    const schema = await this.instance.resolveSchema(id)
     return {
       name: schema.name,
     }

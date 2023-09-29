@@ -44,5 +44,5 @@ interface DidRegistryInterface {
      * @dev Function to resolve DID Document for the given DID
      * @param id The DID to be resolved
      */
-    function resolve(string calldata id) external returns (DidDocumentStorage memory didDocumentStorage);
+    function resolveDid(string calldata id) external returns (DidDocumentStorage memory didDocumentStorage);
 }

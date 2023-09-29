@@ -8,12 +8,12 @@ contract SchemaRegistry is SchemaRegistryInterface {
 
     constructor() {}
 
-    function create(string calldata id, Schema calldata schema) public virtual returns (string memory outId) {
+    function createSchema(string calldata id, Schema calldata schema) public virtual returns (string memory outId) {
         _schemas[id] = schema;
         return id;
     }
 
-    function resolve(string calldata id) public view virtual returns (Schema memory schema) {
+    function resolveSchema(string calldata id) public view virtual returns (Schema memory schema) {
         return _schemas[id];
     }
 }

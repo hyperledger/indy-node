@@ -89,7 +89,7 @@ contract DidRegistry is DidRegistryInterface {
      * @dev Function to resolve DID Document for the given DID
      * @param id The DID to be resolved
      */
-    function resolve(
+    function resolveDid(
         string calldata id
     ) public didExist(id) view virtual returns (DidDocumentStorage memory didDocumentStorage) {
         return dids[id];
