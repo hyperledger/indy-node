@@ -1,4 +1,4 @@
-## Validator
+## Validators node management
 
 ### Storage format
 

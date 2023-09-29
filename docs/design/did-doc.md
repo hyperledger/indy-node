@@ -1,4 +1,4 @@
-# Indy 2.0 DID Method
+# DID Method
 
 ## DID Syntax
 | parameter          | value                                                   |
