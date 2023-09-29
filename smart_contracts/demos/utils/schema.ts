@@ -1,13 +1,22 @@
-import { randomString } from '../../utils'
+import { SchemaData } from '../../contracts-ts'
+interface CreateShemaParams {
+  issuerId: string
+  name?: string
+  version?: string
+  attrNames?: string[]
+}
 
-export class Schema {
-  public id: string
-  public data: { name: string }
-
-  constructor() {
-    this.id = `did:2:${randomString()}:1.0`
-    this.data = {
-      name: randomString(),
-    }
+export function createSchemaData({
+  issuerId,
+  name = 'BasicIdentity',
+  version = '1.0.0',
+  attrNames = ['First Name', 'Last Name'],
+}: CreateShemaParams): SchemaData {
+  return {
+    id: `${issuerId}/anoncreds/v0/SCHEMA/${name}/${version}`,
+    issuerId,
+    name,
+    version,
+    attrNames,
   }
 }

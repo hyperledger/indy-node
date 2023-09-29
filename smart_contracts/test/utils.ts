@@ -83,7 +83,7 @@ interface CreateShemaParams {
 
 export function createSchemaData({
   issuerId,
-  name = 'BasicSchema',
+  name = 'BasicIdentity',
   version = '1.0.0',
   attrNames = ['First Name', 'Last Name'],
 }: CreateShemaParams): SchemaData {
