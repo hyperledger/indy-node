@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import { DidRegistryInterface } from "../did/DidRegistry.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
-import { Schema, SchemaData } from "./SchemaTypes.sol";
+import { Schema, SchemaData} from "./SchemaTypes.sol";
 import { SchemaValidator } from "./SchemaValidator.sol";
 
 using SchemaValidator for SchemaData;
@@ -19,12 +19,12 @@ contract SchemaRegistry is SchemaRegistryInterface {
     }
 
     modifier _uniqueSchemaId(string memory id) {
-        require(_schemas[id].metadata.created == 0, 'Scheam ID already exist');
+        if (_schemas[id].metadata.created != 0) revert SchemaIdExist(id);
         _;
     }
 
     modifier _schemaExist(string memory id) {
-        require(_schemas[id].metadata.created != 0, 'Schema not found');
+        if (_schemas[id].metadata.created == 0) revert SchemaNotFound(id);
         _;
     }
 
@@ -32,7 +32,11 @@ contract SchemaRegistry is SchemaRegistryInterface {
         try _didRegistry.resolveDid(id) {
             _;
         } catch Error(string memory reason) {
-            revert(string.concat('Failed to resolve Issuer: ', reason));
+            if (isEqual(reason, 'DID not found')) {
+                revert IssuerNotFound(id);
+            }
+
+            revert(reason);
         }
     }
 
@@ -55,5 +59,12 @@ contract SchemaRegistry is SchemaRegistryInterface {
 
     function resolveSchema(string calldata id) public view virtual _schemaExist(id) returns (Schema memory schema) {
         return _schemas[id];
+    }
+
+    function isEqual(string memory str1, string memory str2) public pure returns (bool) {
+        if (bytes(str1).length != bytes(str2).length) {
+            return false;
+        }
+        return keccak256(abi.encodePacked(str1)) == keccak256(abi.encodePacked(str2));
     }
 }

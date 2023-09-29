@@ -4,10 +4,12 @@ import {
   DidDocument,
   ROLES,
   SchemaData,
+  SchemaRegistry,
   Signature,
   VerificationMethod,
   VerificationRelationship,
 } from '../contracts-ts'
+import { Contract } from '../utils'
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -72,12 +74,19 @@ export async function getTestAccounts(roleControl: any): Promise<TestAccounts> {
   return testAccounts
 }
 
-export function createSchemaData(
-  issuerId: string,
-  name: string = 'BasicSchema',
-  version: string = '1.0.0',
-  attrNames: string[] = ['First Name', 'Last Name'],
-): SchemaData {
+interface CreateShemaParams {
+  issuerId: string
+  name?: string
+  version?: string
+  attrNames?: string[]
+}
+
+export function createSchemaData({
+  issuerId,
+  name = 'BasicSchema',
+  version = '1.0.0',
+  attrNames = ['First Name', 'Last Name'],
+}: CreateShemaParams): SchemaData {
   return {
     id: `${issuerId}/anoncreds/v0/SCHEMA/${name}/${version}`,
     issuerId,
