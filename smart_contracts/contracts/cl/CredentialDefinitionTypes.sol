@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-struct CredentialDefinition {
-    CredentialDefinitionData data;
+struct CredentialDefinitionWithMetadata {
+    CredentialDefinition credDef;
     CredentialDefinitionMetadata metadata;
 }
 
-struct CredentialDefinitionData {
+struct CredentialDefinition {
     string id;
     string issuerId;
     string schemaId;

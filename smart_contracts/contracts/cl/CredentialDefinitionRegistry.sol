@@ -2,19 +2,26 @@
 pragma solidity ^0.8.20;
 
 import { DidRegistryInterface } from "../did/DidRegistry.sol";
-import { CredentialDefinition, CredentialDefinitionData } from "./CredentialDefinitionTypes.sol";
+import { CredentialDefinition, CredentialDefinitionWithMetadata } from "./CredentialDefinitionTypes.sol";
 import { CredentialDefinitionRegistryInterface } from "./CredentialDefinitionRegistryInterface.sol";
 import { CredentialDefinitionValidator } from "./CredentialDefinitionValidator.sol";
-import { CredentialDefinitionIdExist, CredentialDefinitionNotFound, IssuerNotFound } from "./ErrorTypes.sol";
+import {
+    CredentialDefinitionIdExist, 
+    CredentialDefinitionNotFound,
+    DID_NOT_FOUND_ERROR_MESSAGE,
+    IssuerNotFound 
+} from "./ErrorTypes.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
+import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
-using CredentialDefinitionValidator for CredentialDefinitionData;
+using CredentialDefinitionValidator for CredentialDefinition;
+using { toSlice } for string;
 
 contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
     DidRegistryInterface _didRegistry;
     SchemaRegistryInterface _schemaRegistry;
 
-    mapping(string id => CredentialDefinition credDef) private _credDefs;
+    mapping(string id => CredentialDefinitionWithMetadata credDef) private _credDefs;
 
     modifier _uniqueCredDefId(string memory id) {
         if (_credDefs[id].metadata.created != 0) revert CredentialDefinitionIdExist(id);
@@ -35,7 +42,7 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
         try _didRegistry.resolveDid(id) {
             _;
         } catch Error(string memory reason) {
-            if (isEqual(reason, 'DID not found')) {
+            if (reason.toSlice().eq(DID_NOT_FOUND_ERROR_MESSAGE.toSlice())) {
                 revert IssuerNotFound(id);
             }
 
@@ -53,35 +60,28 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
         _schemaRegistry = SchemaRegistryInterface(schemaRegistryAddress);
     }
 
-    function createCredentialDefinition(CredentialDefinitionData calldata data) 
+    function createCredentialDefinition(CredentialDefinition calldata credDef) 
         public virtual 
-        _uniqueCredDefId(data.id)
-        _schemaExist(data.schemaId) 
-        _issuerExist(data.issuerId) 
-        _issuerActive(data.issuerId) 
+        _uniqueCredDefId(credDef.id)
+        _schemaExist(credDef.schemaId) 
+        _issuerExist(credDef.issuerId) 
+        _issuerActive(credDef.issuerId) 
         returns (string memory outId) 
     {
-        data.requireValidId();
-        data.requireValidType();
-        data.requireTag();
-        data.requireValue();
+        credDef.requireValidId();
+        credDef.requireValidType();
+        credDef.requireTag();
+        credDef.requireValue();
 
-        _credDefs[data.id].data = data;
-        return data.id;
+        _credDefs[credDef.id].credDef = credDef;
+        return credDef.id;
     }
 
     function resolveCredentialDefinition(string calldata id)
         public view virtual 
         _credDefExist(id) 
-        returns (CredentialDefinition memory credDef) 
+        returns (CredentialDefinitionWithMetadata memory credDef) 
     {
         return _credDefs[id];
-    }
-
-    function isEqual(string memory str1, string memory str2) public pure returns (bool) {
-        if (bytes(str1).length != bytes(str2).length) {
-            return false;
-        }
-        return keccak256(abi.encodePacked(str1)) == keccak256(abi.encodePacked(str2));
     }
 }

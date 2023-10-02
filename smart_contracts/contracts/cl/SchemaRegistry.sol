@@ -2,12 +2,14 @@
 pragma solidity ^0.8.20;
 
 import { DidRegistryInterface } from "../did/DidRegistry.sol";
-import { IssuerNotFound, SchemaIdExist, SchemaNotFound } from "./ErrorTypes.sol";
+import { DID_NOT_FOUND_ERROR_MESSAGE, IssuerNotFound, SchemaIdExist, SchemaNotFound } from "./ErrorTypes.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { Schema, SchemaData} from "./SchemaTypes.sol";
 import { SchemaValidator } from "./SchemaValidator.sol";
+import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
 using SchemaValidator for SchemaData;
+using { toSlice } for string;
 
 contract SchemaRegistry is SchemaRegistryInterface {
 
@@ -29,7 +31,7 @@ contract SchemaRegistry is SchemaRegistryInterface {
         try _didRegistry.resolveDid(id) {
             _;
         } catch Error(string memory reason) {
-            if (isEqual(reason, 'DID not found')) {
+            if (reason.toSlice().eq(DID_NOT_FOUND_ERROR_MESSAGE.toSlice())) {
                 revert IssuerNotFound(id);
             }
 

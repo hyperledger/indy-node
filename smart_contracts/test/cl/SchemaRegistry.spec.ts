@@ -20,15 +20,12 @@ describe('SchemaRegistry', function () {
     const didRegistry = new DidRegistry()
     await didRegistry.deploy({ libraries: [didValidator] })
 
-    const schemaValidator = new Contract('SchemaValidator')
-    await schemaValidator.deploy()
-
     const didDocument = createBaseDidDocument(issuerId)
     const signature = createFakeSignature(issuerId)
 
     await didRegistry.createDid(didDocument, [signature])
 
-    return new TestableSchemaRegistry().deploy({ params: [didRegistry.address], libraries: [schemaValidator] })
+    return new TestableSchemaRegistry().deploy({ params: [didRegistry.address] })
   }
 
   describe('Add/Resolve Schema', function () {
