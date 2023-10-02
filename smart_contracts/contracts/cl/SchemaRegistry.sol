@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import { DidRegistryInterface } from "../did/DidRegistry.sol";
+import { IssuerNotFound, SchemaIdExist, SchemaNotFound } from "./ErrorTypes.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { Schema, SchemaData} from "./SchemaTypes.sol";
 import { SchemaValidator } from "./SchemaValidator.sol";
@@ -13,10 +14,6 @@ contract SchemaRegistry is SchemaRegistryInterface {
     DidRegistryInterface _didRegistry;
 
     mapping(string id => Schema schema) private _schemas;
-
-    constructor(address didRegistryAddress) { 
-        _didRegistry = DidRegistryInterface(didRegistryAddress);
-    }
 
     modifier _uniqueSchemaId(string memory id) {
         if (_schemas[id].metadata.created != 0) revert SchemaIdExist(id);
@@ -45,11 +42,15 @@ contract SchemaRegistry is SchemaRegistryInterface {
          _;
     }
 
+    constructor(address didRegistryAddress) { 
+        _didRegistry = DidRegistryInterface(didRegistryAddress);
+    }
+
     function createSchema(SchemaData calldata data) public virtual _uniqueSchemaId(data.id) _issuerExist(data.issuerId) _issuerActive(data.issuerId) returns (string memory outId) {
+        data.requireValidId();
         data.requireName();
         data.requireVersion();
         data.requireAttributes();
-        data.requireValidSchemaId();
 
         _schemas[data.id].data = data;
         _schemas[data.id].metadata.created = block.timestamp;
