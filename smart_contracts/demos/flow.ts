@@ -55,7 +55,7 @@ async function demo() {
   await delay(2000)
 
   console.log("9. ALice resolves Faber's Did Document")
-  const faberDidDocument = await alice.didRegistry.resolve(faber.did)
+  const faberDidDocument = await alice.didRegistry.resolveDid(faber.did)
   console.log(`Did Document resolved for ${faber.did}. DID Document: ${JSON.stringify(faberDidDocument?.document)}`)
 
   console.log('10. Alice resolves Test Schema')
