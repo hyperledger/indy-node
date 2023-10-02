@@ -23,14 +23,14 @@ Example: did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu/anoncreds/v0/SCHEMA/BasicIdent
     * Description: Mapping holding the list of Schema ID's to their data and metadata.
     * Format:
         ```
-        mapping(string id => Schema schema);
+        mapping(string id => SchemaWithMetadata schemaWithMetada);
   
-        struct Schema {
+        struct SchemaWithMetadata {
             SchemaData data;
             SchemaMetadata metadata;
         }
 
-        struct SchemaData {
+        struct Schema {
             string id;
             string issuerId;
             string name;
@@ -46,7 +46,7 @@ Example: did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu/anoncreds/v0/SCHEMA/BasicIdent
       ```
       {
           "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu/anoncreds/v0/SCHEMA/BasicIdentity/1.0.0": {
-              data: {
+              schema: {
                   id: "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu/anoncreds/v0/SCHEMA/BasicIdentity/1.0.0",                 
                   issuerId: "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu",
                   name: "BasicIdentity",
@@ -85,15 +85,13 @@ Contract name: **SchemaRegistry**
 * Description: Transaction to create a new AnonCreds Schema
 * Restrictions:
     * Schema must be unique.
+    * Schema must have name.
     * Schema must contain at least on attribute.
-    * Schema version must match to semantic versioning specification.
+    * Schema must have version.
     * Corresponding issuer DID must exist and be active.
 * Format:
     ```
-    SchemaRegistry.createSchema(
-      SchemaData data,
-      Signature signature
-    )
+    SchemaRegistry.createSchema(Schema schema)
     ```
 * Example:
     ```
@@ -104,10 +102,6 @@ Contract name: **SchemaRegistry**
         name: "BasicIdentity",
         version: "1.0.0",
         attrNames: ["First Name", "Last Name"]
-      },
-      {
-        id: "did:indy2:testnet:SEp33q43PsdP7nDATyySSH#1",
-        value: "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
       }
     )
 * Raised Event:
@@ -124,7 +118,7 @@ Contract name: **SchemaRegistry**
     ```
     SchemaRegistry.resolveSchema(
       string id
-    ) returns (SchemaData)
+    ) returns (SchemaWithMetadata)
     ```
 * Example:
     ```
@@ -159,12 +153,12 @@ Example: did:indy2:sovrin:Gs6cQcvrtWoZKsbBhD3dQJ/anoncreds/v0/CLAIM_DEF/56495/mc
         ```
         mapping(string id => CredentialDefinition credentialDefinition);
 
-        struct CredentialDefinition {
-            CredentialDefinitionData data;
+        struct CredentialDefinitionWithMetadata {
+            CredentialDefinition credDef;
             CredentialDefinitionMetadata metadata;
         }
 
-        struct CredentialDefinitionData {
+        struct CredentialDefinition {
             string id;
             string issuerId;
             string schemaId;
@@ -181,7 +175,7 @@ Example: did:indy2:sovrin:Gs6cQcvrtWoZKsbBhD3dQJ/anoncreds/v0/CLAIM_DEF/56495/mc
       ```
       {
           "did:indy2:sovrin:Gs6cQcvrtWoZKsbBhD3dQJ/anoncreds/v0/CLAIM_DEF/56495/mctc": {
-              data: {
+              credDef: {
                   id: "did:indy2:sovrin:Gs6cQcvrtWoZKsbBhD3dQJ/anoncreds/v0/CLAIM_DEF/56495/mctc",                 
                   issuerId: "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu",
                   schemaId: "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu/anoncreds/v0/SCHEMA/BasicIdentity/1.0.0",
@@ -227,10 +221,7 @@ Contract name: **CredentialDefinitionRegistry**
     * Corresponding schema must exist.
 * Format:
     ```
-    CredentialDefinitionRegistry.createCredentialDefinition(
-      CredentialDefinitionData data,
-      Signature signature
-    )
+    CredentialDefinitionRegistry.createCredentialDefinition(CredentialDefinitionData data)
     ```
 * Example:
     ```
@@ -242,10 +233,6 @@ Contract name: **CredentialDefinitionRegistry**
         type: "CL",
         tag: "BasicIdentity",
         value: "{.......}",
-      },
-      {
-        id: "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu#1",
-        value: "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
       }
     )
 * Raised Event:
@@ -262,7 +249,7 @@ Contract name: **CredentialDefinitionRegistry**
     ```
     CredentialDefinitionRegistry.resolveCredentialDefinition(
       string id
-    ) returns (CredentialDefinitionData)
+    ) returns (CredentialDefinitionWithMetadata)
     ```
 * Example:
     ```

@@ -10,5 +10,5 @@ interface CredentialDefinitionRegistryInterface {
 
     function resolveCredentialDefinition(string calldata id) 
         external 
-        returns (CredentialDefinitionWithMetadata memory credDef);
+        returns (CredentialDefinitionWithMetadata memory credDefWithMetadata);
 }

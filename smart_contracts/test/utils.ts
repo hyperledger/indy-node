@@ -1,9 +1,11 @@
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
 import { ethers } from 'hardhat'
 import {
+  CredentialDefinition,
+  CredentialDefinitionRegistry,
   DidDocument,
   ROLES,
-  SchemaData,
+  Schema,
   SchemaRegistry,
   Signature,
   VerificationMethod,
@@ -32,6 +34,18 @@ export interface TestAccounts {
   noRole: TestAccountDetails
   noRole2: TestAccountDetails
   noRole3: TestAccountDetails
+}
+
+export class TestableSchemaRegistry extends SchemaRegistry {
+  public get baseInstance() {
+    return this.instance
+  }
+}
+
+export class TestableCredentialDefinitionRegistry extends CredentialDefinitionRegistry {
+  public get baseInstance() {
+    return this.instance
+  }
 }
 
 export async function getTestAccounts(roleControl: any): Promise<TestAccounts> {
@@ -72,28 +86,6 @@ export async function getTestAccounts(roleControl: any): Promise<TestAccounts> {
     }
   }
   return testAccounts
-}
-
-interface CreateShemaParams {
-  issuerId: string
-  name?: string
-  version?: string
-  attrNames?: string[]
-}
-
-export function createSchemaData({
-  issuerId,
-  name = 'BasicIdentity',
-  version = '1.0.0',
-  attrNames = ['First Name', 'Last Name'],
-}: CreateShemaParams): SchemaData {
-  return {
-    id: `${issuerId}/anoncreds/v0/SCHEMA/${name}/${version}`,
-    issuerId,
-    name,
-    version,
-    attrNames,
-  }
 }
 
 export function createBaseDidDocument(did: string): DidDocument {
@@ -137,5 +129,52 @@ export function createFakeSignature(did: string): Signature {
   return {
     id: did,
     value: '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
+  }
+}
+
+interface CreateShemaParams {
+  issuerId: string
+  name?: string
+  version?: string
+  attrNames?: string[]
+}
+
+export function createSchema({
+  issuerId,
+  name = 'BasicIdentity',
+  version = '1.0.0',
+  attrNames = ['First Name', 'Last Name'],
+}: CreateShemaParams): Schema {
+  return {
+    id: `${issuerId}/anoncreds/v0/SCHEMA/${name}/${version}`,
+    issuerId,
+    name,
+    version,
+    attrNames,
+  }
+}
+
+interface CreateCredentialDefinitionParams {
+  issuerId: string
+  schemaId: string
+  entityType?: string
+  tag?: string
+  value?: string
+}
+
+export function createCredentialDefinition({
+  issuerId,
+  schemaId,
+  entityType = 'CL',
+  tag = 'BasicIdentity',
+  value = '{ "n": "779...397", "rctxt": "774...977", "s": "750..893", "z": "632...005" }',
+}: CreateCredentialDefinitionParams): CredentialDefinition {
+  return {
+    id: `${issuerId}/anoncreds/v0/CLAIM_DEF/56495/${tag}`,
+    issuerId,
+    schemaId,
+    entityType,
+    tag,
+    value,
   }
 }

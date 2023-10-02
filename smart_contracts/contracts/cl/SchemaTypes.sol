@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-struct Schema {
-    SchemaData data;
+struct SchemaWithMetadata {
+    Schema schema;
     SchemaMetadata metadata;
 }
 
-struct SchemaData {
+struct Schema {
     string id;
     string issuerId;
     string name;

@@ -4,18 +4,18 @@ pragma solidity ^0.8.20;
 import { DidRegistryInterface } from "../did/DidRegistry.sol";
 import { DID_NOT_FOUND_ERROR_MESSAGE, IssuerNotFound, SchemaIdExist, SchemaNotFound } from "./ErrorTypes.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
-import { Schema, SchemaData} from "./SchemaTypes.sol";
+import { Schema, SchemaWithMetadata} from "./SchemaTypes.sol";
 import { SchemaValidator } from "./SchemaValidator.sol";
 import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
-using SchemaValidator for SchemaData;
+using SchemaValidator for Schema;
 using { toSlice } for string;
 
 contract SchemaRegistry is SchemaRegistryInterface {
 
     DidRegistryInterface _didRegistry;
 
-    mapping(string id => Schema schema) private _schemas;
+    mapping(string id => SchemaWithMetadata schemaWithMetadata) private _schemas;
 
     modifier _uniqueSchemaId(string memory id) {
         if (_schemas[id].metadata.created != 0) revert SchemaIdExist(id);
@@ -48,26 +48,29 @@ contract SchemaRegistry is SchemaRegistryInterface {
         _didRegistry = DidRegistryInterface(didRegistryAddress);
     }
 
-    function createSchema(SchemaData calldata data) public virtual _uniqueSchemaId(data.id) _issuerExist(data.issuerId) _issuerActive(data.issuerId) returns (string memory outId) {
-        data.requireValidId();
-        data.requireName();
-        data.requireVersion();
-        data.requireAttributes();
+    function createSchema(Schema calldata schema) 
+        public virtual 
+        _uniqueSchemaId(schema.id) 
+        _issuerExist(schema.issuerId) 
+        _issuerActive(schema.issuerId) 
+        returns (string memory outId)
+    {
+        schema.requireValidId();
+        schema.requireName();
+        schema.requireVersion();
+        schema.requireAttributes();
 
-        _schemas[data.id].data = data;
-        _schemas[data.id].metadata.created = block.timestamp;
+        _schemas[schema.id].schema = schema;
+        _schemas[schema.id].metadata.created = block.timestamp;
 
-        return data.id;
+        return schema.id;
     }
 
-    function resolveSchema(string calldata id) public view virtual _schemaExist(id) returns (Schema memory schema) {
+    function resolveSchema(string calldata id) 
+        public view virtual 
+        _schemaExist(id) 
+        returns (SchemaWithMetadata memory schemaWithMetadata) 
+    {
         return _schemas[id];
-    }
-
-    function isEqual(string memory str1, string memory str2) public pure returns (bool) {
-        if (bytes(str1).length != bytes(str2).length) {
-            return false;
-        }
-        return keccak256(abi.encodePacked(str1)) == keccak256(abi.encodePacked(str2));
     }
 }

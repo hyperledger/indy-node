@@ -21,7 +21,7 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
     DidRegistryInterface _didRegistry;
     SchemaRegistryInterface _schemaRegistry;
 
-    mapping(string id => CredentialDefinitionWithMetadata credDef) private _credDefs;
+    mapping(string id => CredentialDefinitionWithMetadata credDefWithMetadata) private _credDefs;
 
     modifier _uniqueCredDefId(string memory id) {
         if (_credDefs[id].metadata.created != 0) revert CredentialDefinitionIdExist(id);
@@ -74,13 +74,15 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
         credDef.requireValue();
 
         _credDefs[credDef.id].credDef = credDef;
+        _credDefs[credDef.id].metadata.created = block.timestamp;
+
         return credDef.id;
     }
 
     function resolveCredentialDefinition(string calldata id)
         public view virtual 
         _credDefExist(id) 
-        returns (CredentialDefinitionWithMetadata memory credDef) 
+        returns (CredentialDefinitionWithMetadata memory credDefWithMetadata) 
     {
         return _credDefs[id];
     }

@@ -1,14 +1,8 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
-import { DidRegistry, SchemaRegistry } from '../../contracts-ts'
+import { DidRegistry } from '../../contracts-ts'
 import { Contract } from '../../utils'
-import { createBaseDidDocument, createFakeSignature, createSchemaData } from '../utils'
-
-class TestableSchemaRegistry extends SchemaRegistry {
-  public get baseInstance() {
-    return this.instance
-  }
-}
+import { TestableSchemaRegistry, createBaseDidDocument, createFakeSignature, createSchema } from '../utils'
 
 describe('SchemaRegistry', function () {
   const issuerId = 'did:indy2:mainnet:SEp33q43PsdP7nDATyySSH'
@@ -32,18 +26,18 @@ describe('SchemaRegistry', function () {
     it('Should create and resolve Schema', async function () {
       const schemaRegistry = await loadFixture(deploySchemaContractFixture)
 
-      const schemaData = createSchemaData({ issuerId: issuerId })
+      const schemaData = createSchema({ issuerId: issuerId })
 
       await schemaRegistry.createSchema(schemaData)
-      const resolvedSchema = await schemaRegistry.resolveSchema(schemaData.id)
+      const result = await schemaRegistry.resolveSchema(schemaData.id)
 
-      expect(resolvedSchema.data).to.be.deep.equal(schemaData)
+      expect(result.schema).to.be.deep.equal(schemaData)
     })
 
     it('Should fail if the Schema ID already exists', async function () {
       const schemaRegistry = await loadFixture(deploySchemaContractFixture)
   
-      const schemaData = createSchemaData({ issuerId: issuerId })
+      const schemaData = createSchema({ issuerId: issuerId })
   
       await schemaRegistry.createSchema(schemaData)
   
@@ -55,7 +49,7 @@ describe('SchemaRegistry', function () {
     it('Should fail if Schema is being created with non-existing Issuer ID', async function () {
       const schemaRegistry = await loadFixture(deploySchemaContractFixture)
   
-      const schemaData = createSchemaData({ issuerId: 'did:indy2:mainnet:GEzcdDLhCpGCYRHW82kjHd' })
+      const schemaData = createSchema({ issuerId: 'did:indy2:mainnet:GEzcdDLhCpGCYRHW82kjHd' })
   
       await expect(schemaRegistry.createSchema(schemaData))
         .to.be.revertedWithCustomError(schemaRegistry.baseInstance, 'IssuerNotFound')
@@ -65,7 +59,7 @@ describe('SchemaRegistry', function () {
     it('Should fail if Schema is being created with empty name', async function () {
       const schemaRegistry = await loadFixture(deploySchemaContractFixture)
   
-      const schemaData = createSchemaData({ issuerId: issuerId, name: "" })
+      const schemaData = createSchema({ issuerId: issuerId, name: "" })
   
       await expect(schemaRegistry.createSchema(schemaData))
         .to.be.revertedWithCustomError(schemaRegistry.baseInstance, 'FieldRequired')
@@ -75,7 +69,7 @@ describe('SchemaRegistry', function () {
     it('Should fail if Schema is being created with empty version', async function () {
       const schemaRegistry = await loadFixture(deploySchemaContractFixture)
   
-      const schemaData = createSchemaData({ issuerId: issuerId, version: "" })
+      const schemaData = createSchema({ issuerId: issuerId, version: "" })
   
       await expect(schemaRegistry.createSchema(schemaData))
         .to.be.revertedWithCustomError(schemaRegistry.baseInstance, 'FieldRequired')
@@ -85,7 +79,7 @@ describe('SchemaRegistry', function () {
     it('Should fail if Schema is being created without attributes', async function () {
       const schemaRegistry = await loadFixture(deploySchemaContractFixture)
   
-      const schemaData = createSchemaData({ issuerId: issuerId, attrNames: [] })
+      const schemaData = createSchema({ issuerId: issuerId, attrNames: [] })
   
       await expect(schemaRegistry.createSchema(schemaData))
         .to.be.revertedWithCustomError(schemaRegistry.baseInstance, 'FieldRequired')
@@ -95,7 +89,7 @@ describe('SchemaRegistry', function () {
     it('Should fail if Schema is being created with invalid Schema ID', async function () {
       const schemaRegistry = await loadFixture(deploySchemaContractFixture)
   
-      const schemaData = createSchemaData({ issuerId: issuerId })
+      const schemaData = createSchema({ issuerId: issuerId })
       schemaData.id = "SEp33q43PsdP7nDATyySSH:2:BasicSchema:1.0.0"
   
       await expect(schemaRegistry.createSchema(schemaData))
