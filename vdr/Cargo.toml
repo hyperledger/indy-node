@@ -1,10 +1,22 @@
 [package]
-name = "vdr"
-version = "0.1.0"
+name = "indy2_vdr"
+description = "A client library for interacting with Indy Ledger 2.0."
+version = "0.0.1"
+authors = [
+    "Artem Ivanov <artem.ivanov@dsr-corporation.com>",
+]
 edition = "2021"
+license = "Apache-2.0"
+readme = "./README.md"
+
+[lib]
+name = "indy2_vdr"
+path = "src/lib.rs"
+crate-type = ["staticlib", "rlib", "cdylib"]
 
 [dependencies]
-web3 = "0.19.0"
+async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
+async-trait = "0.1.73"
+futures = "0.3.28"
 secp256k1 = "0.27.0"
-tokio = { version = "1", features = ["full"] }
-bs58 = "0.5.0"
+web3 = "0.19.0"
