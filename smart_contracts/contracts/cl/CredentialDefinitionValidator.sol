@@ -17,8 +17,8 @@ library CredentialDefinitionValidator {
     }
 
     function requireValidType(CredentialDefinition memory self) internal pure {
-        if (!self.entityType.toSlice().eq(ANONCREDS_TYPE.toSlice())) {
-            revert UnsupportedCredentialDefintionType(self.entityType);
+        if (!self.credDefType.toSlice().eq(ANONCREDS_TYPE.toSlice())) {
+            revert UnsupportedCredentialDefintionType(self.credDefType);
         }
     }
 

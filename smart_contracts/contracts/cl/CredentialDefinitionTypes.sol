@@ -10,7 +10,7 @@ struct CredentialDefinition {
     string id;
     string issuerId;
     string schemaId;
-    string entityType;
+    string credDefType;
     string tag;
     string value;
 }

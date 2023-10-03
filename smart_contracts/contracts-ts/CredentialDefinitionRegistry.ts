@@ -1,4 +1,7 @@
-import { CredentialDefinitionStruct, CredentialDefinitionWithMetadataStruct } from '../typechain-types/cl/CredentialDefinitionRegistryInterface'
+import {
+  CredentialDefinitionStruct,
+  CredentialDefinitionWithMetadataStruct,
+} from '../typechain-types/cl/CredentialDefinitionRegistryInterface'
 import { Contract } from '../utils/contract'
 
 export type CredentialDefinition = CredentialDefinitionStruct
@@ -23,7 +26,7 @@ export class CredentialDefinitionRegistry extends Contract {
         id: result.credDef.id,
         issuerId: result.credDef.issuerId,
         schemaId: result.credDef.schemaId,
-        entityType: result.credDef.entityType,
+        credDefType: result.credDef.credDefType,
         tag: result.credDef.tag,
         value: result.credDef.value,
       },

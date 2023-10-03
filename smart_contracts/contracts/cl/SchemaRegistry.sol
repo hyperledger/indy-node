@@ -2,7 +2,13 @@
 pragma solidity ^0.8.20;
 
 import { DidRegistryInterface } from "../did/DidRegistry.sol";
-import { DID_NOT_FOUND_ERROR_MESSAGE, IssuerNotFound, SchemaIdExist, SchemaNotFound } from "./ErrorTypes.sol";
+import { 
+    DID_NOT_FOUND_ERROR_MESSAGE,
+    IssuerHasBeenDeactivated,
+    IssuerNotFound, 
+    SchemaAlreadyExist, 
+    SchemaNotFound 
+} from "./ErrorTypes.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { Schema, SchemaWithMetadata} from "./SchemaTypes.sol";
 import { SchemaValidator } from "./SchemaValidator.sol";
@@ -18,7 +24,7 @@ contract SchemaRegistry is SchemaRegistryInterface {
     mapping(string id => SchemaWithMetadata schemaWithMetadata) private _schemas;
 
     modifier _uniqueSchemaId(string memory id) {
-        if (_schemas[id].metadata.created != 0) revert SchemaIdExist(id);
+        if (_schemas[id].metadata.created != 0) revert SchemaAlreadyExist(id);
         _;
     }
 
@@ -40,7 +46,7 @@ contract SchemaRegistry is SchemaRegistryInterface {
     }
 
     modifier _issuerActive(string memory id) {
-        require(!_didRegistry.resolveDid(id).metadata.deactivated, 'Issuer has beed deactivated');
+        if (_didRegistry.resolveDid(id).metadata.deactivated) revert IssuerHasBeenDeactivated(id);
          _;
     }
 

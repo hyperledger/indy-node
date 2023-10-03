@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
-import { FieldRequired, InvalidSchemId } from "./ErrorTypes.sol";
+import { FieldRequired, InvalidSchemaId } from "./ErrorTypes.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { Schema, SchemaWithMetadata } from "./SchemaTypes.sol";
 
@@ -27,6 +27,6 @@ library SchemaValidator {
     function requireValidId(Schema memory self) internal pure {
         string memory schemaId = string.concat(self.issuerId, SCHEMA_ID_MIDDLE_PART, self.name, DELIMITER, self.version);
 
-        if (!schemaId.toSlice().eq(self.id.toSlice())) revert InvalidSchemId(self.id);
+        if (!schemaId.toSlice().eq(self.id.toSlice())) revert InvalidSchemaId(self.id);
     }
 }

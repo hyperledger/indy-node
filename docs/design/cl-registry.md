@@ -86,7 +86,7 @@ Contract name: **SchemaRegistry**
 * Restrictions:
     * Schema must be unique.
     * Schema must have name.
-    * Schema must contain at least on attribute.
+    * Schema must contain at least one attribute.
     * Schema must have version.
     * Corresponding issuer DID must exist and be active.
 * Format:

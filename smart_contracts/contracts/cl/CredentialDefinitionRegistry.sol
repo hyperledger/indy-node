@@ -6,9 +6,10 @@ import { CredentialDefinition, CredentialDefinitionWithMetadata } from "./Creden
 import { CredentialDefinitionRegistryInterface } from "./CredentialDefinitionRegistryInterface.sol";
 import { CredentialDefinitionValidator } from "./CredentialDefinitionValidator.sol";
 import {
-    CredentialDefinitionIdExist, 
+    CredentialDefinitionAlreadyExist, 
     CredentialDefinitionNotFound,
     DID_NOT_FOUND_ERROR_MESSAGE,
+    IssuerHasBeenDeactivated,
     IssuerNotFound 
 } from "./ErrorTypes.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
@@ -24,7 +25,7 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
     mapping(string id => CredentialDefinitionWithMetadata credDefWithMetadata) private _credDefs;
 
     modifier _uniqueCredDefId(string memory id) {
-        if (_credDefs[id].metadata.created != 0) revert CredentialDefinitionIdExist(id);
+        if (_credDefs[id].metadata.created != 0) revert CredentialDefinitionAlreadyExist(id);
         _;
     }
 
@@ -51,7 +52,7 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
     }
 
     modifier _issuerActive(string memory id) {
-        require(!_didRegistry.resolveDid(id).metadata.deactivated, 'Issuer has beed deactivated');
+        if (_didRegistry.resolveDid(id).metadata.deactivated) revert IssuerHasBeenDeactivated(id);
          _;
     }
 

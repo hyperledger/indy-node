@@ -139,7 +139,7 @@ interface CreateShemaParams {
   attrNames?: string[]
 }
 
-export function createSchema({
+export function createSchemaObject({
   issuerId,
   name = 'BasicIdentity',
   version = '1.0.0',
@@ -157,23 +157,23 @@ export function createSchema({
 interface CreateCredentialDefinitionParams {
   issuerId: string
   schemaId: string
-  entityType?: string
+  credDefType?: string
   tag?: string
   value?: string
 }
 
-export function createCredentialDefinition({
+export function createCredentialDefinitionObject({
   issuerId,
   schemaId,
-  entityType = 'CL',
+  credDefType = 'CL',
   tag = 'BasicIdentity',
   value = '{ "n": "779...397", "rctxt": "774...977", "s": "750..893", "z": "632...005" }',
 }: CreateCredentialDefinitionParams): CredentialDefinition {
   return {
-    id: `${issuerId}/anoncreds/v0/CLAIM_DEF/56495/${tag}`,
+    id: `${issuerId}/anoncreds/v0/CLAIM_DEF/${schemaId}/${tag}`,
     issuerId,
     schemaId,
-    entityType,
+    credDefType,
     tag,
     value,
   }
