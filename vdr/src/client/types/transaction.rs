@@ -1,7 +1,6 @@
 use crate::client::types::{Address, Bytes, U256, U64};
-use web3::types::TransactionParameters;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Transaction {
     pub nonce: Option<U256>,
     pub to: Address,
@@ -11,29 +10,27 @@ pub struct Transaction {
     pub transaction_type: Option<U64>,
 }
 
-impl Default for Transaction {
+#[derive(Clone, Debug, PartialEq)]
+pub enum TransactionType {
+    Read,
+    Write,
+}
+
+impl Default for TransactionType {
     fn default() -> Self {
-        Transaction {
-            nonce: None,
-            to: Default::default(),
-            value: Default::default(),
-            data: Default::default(),
-            chain_id: None,
-            transaction_type: None,
-        }
+        TransactionType::Read
     }
 }
 
-impl Into<TransactionParameters> for Transaction {
-    fn into(self) -> TransactionParameters {
-        TransactionParameters {
-            nonce: self.nonce,
-            to: Some(self.to),
-            value: self.value,
-            data: Bytes::from(self.data),
-            chain_id: self.chain_id,
-            transaction_type: self.transaction_type,
-            ..Default::default()
-        }
+#[derive(Debug, Default, PartialEq)]
+pub struct TransactionSpec {
+    pub transaction_type: TransactionType,
+    pub transaction: Transaction,
+    pub signed_transaction: Option<Vec<u8>>,
+}
+
+impl TransactionSpec {
+    pub fn set_signature(&mut self, signed_transaction: Vec<u8>) {
+        self.signed_transaction = Some(signed_transaction)
     }
 }

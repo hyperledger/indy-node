@@ -1,3 +1,4 @@
+use crate::{client::TransactionSpec, error::VdrResult};
 use secp256k1::{All, Message, PublicKey, Secp256k1, SecretKey};
 use std::str::FromStr;
 use web3::{
@@ -5,6 +6,8 @@ use web3::{
     signing::{keccak256, Key, Signature, SigningError},
     types::H256,
 };
+
+pub trait SignerT: Key {}
 
 pub struct Signer {
     secp: Secp256k1<All>,

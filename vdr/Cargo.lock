@@ -901,6 +901,7 @@ dependencies = [
  "async-trait",
  "futures",
  "secp256k1",
+ "thiserror",
  "web3",
 ]
 
