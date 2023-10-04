@@ -12,21 +12,33 @@ library SchemaValidator {
     string private constant DELIMITER = "/";
     string private constant SCHEMA_ID_MIDDLE_PART = "/anoncreds/v0/SCHEMA/";
 
+    /**
+     * @dev Validates the Schema syntax
+     */
+     function requireValidId(Schema memory self) internal pure {
+        string memory schemaId = string.concat(self.issuerId, SCHEMA_ID_MIDDLE_PART, self.name, DELIMITER, self.version);
+
+        if (!schemaId.toSlice().eq(self.id.toSlice())) revert InvalidSchemaId(self.id);
+    }
+
+    /**
+     * @dev Validates that the Schema name is provided
+     */
     function requireName(Schema memory self) internal pure {
         if (self.name.toSlice().isEmpty()) revert FieldRequired("name");
     }
 
+    /**
+     * @dev Validates that the Schema version is provided
+     */
     function requireVersion(Schema memory self) internal pure {
         if (self.version.toSlice().isEmpty()) revert FieldRequired("version");
     }
 
+    /**
+     * @dev Validates that the Schema attributes are provided
+     */
     function requireAttributes(Schema memory self) internal pure {
         if (self.attrNames.length == 0) revert FieldRequired("attributes");
-    }
-
-    function requireValidId(Schema memory self) internal pure {
-        string memory schemaId = string.concat(self.issuerId, SCHEMA_ID_MIDDLE_PART, self.name, DELIMITER, self.version);
-
-        if (!schemaId.toSlice().eq(self.id.toSlice())) revert InvalidSchemaId(self.id);
     }
 }

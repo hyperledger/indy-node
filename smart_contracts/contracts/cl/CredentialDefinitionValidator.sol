@@ -13,23 +13,35 @@ library CredentialDefinitionValidator {
     string private constant CRED_DEF_ID_MIDDLE_PART = "/anoncreds/v0/CLAIM_DEF/";
     string private constant ANONCREDS_TYPE = "CL";
     
+    /**
+     * @dev Validates the Credential Definition syntax
+     */
     function requireValidId(CredentialDefinition memory self) internal pure {
         string memory credDefId = string.concat(self.issuerId, CRED_DEF_ID_MIDDLE_PART, self.schemaId, DELIMITER, self.tag);
 
         if (!credDefId.toSlice().eq(self.id.toSlice())) revert InvalidCredentialDefinitionId(self.id);
     }
 
+    /**
+     * @dev Validates the Credential Definition type
+     */
     function requireValidType(CredentialDefinition memory self) internal pure {
         if (!self.credDefType.toSlice().eq(ANONCREDS_TYPE.toSlice())) {
             revert UnsupportedCredentialDefintionType(self.credDefType);
         }
     }
 
+    /**
+     * @dev Validates that the Credential Definition tag is provided
+     */
     function requireTag(CredentialDefinition memory self) internal pure {
         if (self.tag.toSlice().isEmpty()) revert FieldRequired("tag"); 
     }
 
-     function requireValue(CredentialDefinition memory self) internal pure {
+     /**
+     * @dev Validates that the Credential Definition value is provided
+     */
+    function requireValue(CredentialDefinition memory self) internal pure {
         if (self.value.toSlice().isEmpty()) revert FieldRequired("value"); 
     }
 }

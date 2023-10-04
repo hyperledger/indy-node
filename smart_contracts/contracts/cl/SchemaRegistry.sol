@@ -22,18 +22,30 @@ contract SchemaRegistry is SchemaRegistryInterface {
 
     DidRegistryInterface _didRegistry;
 
+    /**
+     * Mapping Scheman ID to its Schema Details and Metadata.
+     */
     mapping(string id => SchemaWithMetadata schemaWithMetadata) private _schemas;
 
+    /**
+     * Checks the uniqness of the Schema ID
+     */
     modifier _uniqueSchemaId(string memory id) {
         if (_schemas[id].metadata.created != 0) revert SchemaAlreadyExist(id);
         _;
     }
 
+    /**
+     * Сhecks that the Schema exist
+     */
     modifier _schemaExist(string memory id) {
         if (_schemas[id].metadata.created == 0) revert SchemaNotFound(id);
         _;
     }
 
+    /**
+     * Сhecks that the Issuer exist and active
+     */
     modifier _issuerActive(string memory id) {
         try _didRegistry.resolveDid(id) returns (DidDocumentStorage memory didDocumentStorage) {
             if (didDocumentStorage.metadata.deactivated) revert IssuerHasBeenDeactivated(id);
@@ -51,15 +63,11 @@ contract SchemaRegistry is SchemaRegistryInterface {
         _didRegistry = DidRegistryInterface(didRegistryAddress);
     }
 
-    /**
-     * @dev Creates a new Schema
-     * @param schema The new Schema
-     */
+    /// @inheritdoc SchemaRegistryInterface
     function createSchema(Schema calldata schema) 
         public virtual 
         _uniqueSchemaId(schema.id)
-        _issuerActive(schema.issuerId) 
-        returns (string memory outId)
+        _issuerActive(schema.issuerId)
     {
         schema.requireValidId();
         schema.requireName();
@@ -69,13 +77,10 @@ contract SchemaRegistry is SchemaRegistryInterface {
         _schemas[schema.id].schema = schema;
         _schemas[schema.id].metadata.created = block.timestamp;
 
-        return schema.id;
+         emit SchemaCreated(schema.id, msg.sender);
     }
 
-    /**
-     * @dev Resolves Schema for the given Schema ID
-     * @param id The Schema ID to be resolved
-     */
+    /// @inheritdoc SchemaRegistryInterface
     function resolveSchema(string calldata id) 
         public view virtual 
         _schemaExist(id) 

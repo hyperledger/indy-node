@@ -23,23 +23,38 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
     DidRegistryInterface _didRegistry;
     SchemaRegistryInterface _schemaRegistry;
 
+    /**
+     * Mapping Credential Definition ID to its Credential Definition Details and Metadata.
+     */
     mapping(string id => CredentialDefinitionWithMetadata credDefWithMetadata) private _credDefs;
 
+    /**
+     * Checks the uniqness of the credential definition ID
+     */
     modifier _uniqueCredDefId(string memory id) {
         if (_credDefs[id].metadata.created != 0) revert CredentialDefinitionAlreadyExist(id);
         _;
     }
 
+    /**
+     * Сhecks that the credential definition exist
+     */
     modifier _credDefExist(string memory id) {
          if (_credDefs[id].metadata.created == 0) revert CredentialDefinitionNotFound(id);
          _;
     }
 
+     /**
+     * Сhecks that the schema exist
+     */
     modifier _schemaExist(string memory id) {
         _schemaRegistry.resolveSchema(id);
         _;
     }
 
+    /**
+     * Сhecks that the Issuer exist and active
+     */
     modifier _issuerActive(string memory id) {
         try _didRegistry.resolveDid(id) returns (DidDocumentStorage memory didDocumentStorage) {
             if (didDocumentStorage.metadata.deactivated) revert IssuerHasBeenDeactivated(id);
@@ -53,17 +68,17 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
         }
     }
 
-     constructor(address didRegistryAddress, address schemaRegistryAddress) { 
+    constructor(address didRegistryAddress, address schemaRegistryAddress) { 
         _didRegistry = DidRegistryInterface(didRegistryAddress);
         _schemaRegistry = SchemaRegistryInterface(schemaRegistryAddress);
     }
 
+    /// @inheritdoc CredentialDefinitionRegistryInterface
     function createCredentialDefinition(CredentialDefinition calldata credDef) 
         public virtual 
         _uniqueCredDefId(credDef.id)
         _schemaExist(credDef.schemaId) 
         _issuerActive(credDef.issuerId) 
-        returns (string memory outId) 
     {
         credDef.requireValidId();
         credDef.requireValidType();
@@ -73,9 +88,10 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
         _credDefs[credDef.id].credDef = credDef;
         _credDefs[credDef.id].metadata.created = block.timestamp;
 
-        return credDef.id;
+        emit CredentialDefinitionCreated(credDef.id, msg.sender);
     }
 
+    /// @inheritdoc CredentialDefinitionRegistryInterface
     function resolveCredentialDefinition(string calldata id)
         public view virtual 
         _credDefExist(id) 
