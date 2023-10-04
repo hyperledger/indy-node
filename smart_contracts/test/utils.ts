@@ -1,6 +1,17 @@
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
 import { ethers } from 'hardhat'
-import { DidDocument, ROLES, Signature, VerificationMethod, VerificationRelationship } from '../contracts-ts'
+import {
+  CredentialDefinition,
+  CredentialDefinitionRegistry,
+  DidDocument,
+  ROLES,
+  Schema,
+  SchemaRegistry,
+  Signature,
+  VerificationMethod,
+  VerificationRelationship,
+} from '../contracts-ts'
+import { Contract } from '../utils'
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -23,6 +34,18 @@ export interface TestAccounts {
   noRole: TestAccountDetails
   noRole2: TestAccountDetails
   noRole3: TestAccountDetails
+}
+
+export class TestableSchemaRegistry extends SchemaRegistry {
+  public get baseInstance() {
+    return this.instance
+  }
+}
+
+export class TestableCredentialDefinitionRegistry extends CredentialDefinitionRegistry {
+  public get baseInstance() {
+    return this.instance
+  }
 }
 
 export async function getTestAccounts(roleControl: any): Promise<TestAccounts> {
@@ -106,5 +129,52 @@ export function createFakeSignature(did: string): Signature {
   return {
     id: did,
     value: '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
+  }
+}
+
+interface CreateShemaParams {
+  issuerId: string
+  name?: string
+  version?: string
+  attrNames?: string[]
+}
+
+export function createSchemaObject({
+  issuerId,
+  name = 'BasicIdentity',
+  version = '1.0.0',
+  attrNames = ['First Name', 'Last Name'],
+}: CreateShemaParams): Schema {
+  return {
+    id: `${issuerId}/anoncreds/v0/SCHEMA/${name}/${version}`,
+    issuerId,
+    name,
+    version,
+    attrNames,
+  }
+}
+
+interface CreateCredentialDefinitionParams {
+  issuerId: string
+  schemaId: string
+  credDefType?: string
+  tag?: string
+  value?: string
+}
+
+export function createCredentialDefinitionObject({
+  issuerId,
+  schemaId,
+  credDefType = 'CL',
+  tag = 'BasicIdentity',
+  value = '{ "n": "779...397", "rctxt": "774...977", "s": "750..893", "z": "632...005" }',
+}: CreateCredentialDefinitionParams): CredentialDefinition {
+  return {
+    id: `${issuerId}/anoncreds/v0/CLAIM_DEF/${schemaId}/${tag}`,
+    issuerId,
+    schemaId,
+    credDefType,
+    tag,
+    value,
   }
 }

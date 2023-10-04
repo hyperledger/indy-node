@@ -6,16 +6,6 @@ import "../auth/RoleControl.sol";
 
 contract ValidatorControl is ValidatorSmartContractInterface {
     /**
-     * @dev Event emitting when validator's list change (added/removed validator)
-     */
-    event Validator(
-        address indexed validator,
-        address indexed byAccount,
-        uint numValidators,
-        bool activated
-    );
-
-    /**
      * @dev Type describing initial validator details
      */
     struct InitialValidatorInfo {
@@ -29,7 +19,6 @@ contract ValidatorControl is ValidatorSmartContractInterface {
     struct ValidatorInfo {
         address account;
         uint8 validatorIndex;
-        bool active;
     }
 
     /**
@@ -74,7 +63,7 @@ contract ValidatorControl is ValidatorSmartContractInterface {
             InitialValidatorInfo memory validator = initialValidators[i];
 
             validators.push(validator.validator);
-            validatorInfos[validator.validator] = ValidatorInfo(validator.account, uint8(i), true);
+            validatorInfos[validator.validator] = ValidatorInfo(validator.account, uint8(i));
         }
 
         roleControl = RoleControl(roleControlContractAddress);
@@ -101,11 +90,11 @@ contract ValidatorControl is ValidatorSmartContractInterface {
             require(msg.sender != validatorInfo.account, "Sender already has active validator");
         }
 
-        validatorInfos[newValidator] = ValidatorInfo(msg.sender, uint8(validatorsCount), true);
+        validatorInfos[newValidator] = ValidatorInfo(msg.sender, uint8(validatorsCount));
         validators.push(newValidator);
 
         // emit success event
-        emit Validator(newValidator, msg.sender, validators.length, true);
+        emit ValidatorAdded(newValidator, msg.sender, validators.length);
     }
 
     /**
@@ -115,7 +104,7 @@ contract ValidatorControl is ValidatorSmartContractInterface {
         require(validators.length > 1, "Cannot deactivate last validator");
 
         ValidatorInfo memory removedValidatorInfo = validatorInfos[validator];
-        require(removedValidatorInfo.active == true, "Validator does not exist");
+        require(removedValidatorInfo.account != address(0), "Validator does not exist");
 
         uint8 removedValidatorIndex = removedValidatorInfo.validatorIndex;
 
@@ -132,6 +121,6 @@ contract ValidatorControl is ValidatorSmartContractInterface {
         delete(validatorInfos[validatorRemoved]);
 
         // emit success event
-        emit Validator(validatorRemoved, msg.sender, validators.length, false);
+        emit ValidatorRemoved(validatorRemoved, msg.sender, validators.length);
     }
 }

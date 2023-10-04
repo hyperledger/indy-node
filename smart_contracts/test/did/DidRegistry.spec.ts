@@ -28,7 +28,7 @@ describe('DIDContract', function () {
 
       await didRegistry.createDid(didDocument, [signature])
 
-      const { document } = await didRegistry.resolve(did)
+      const { document } = await didRegistry.resolveDid(did)
 
       expect(document).to.be.deep.equal(didDocument)
     })
@@ -147,7 +147,7 @@ describe('DIDContract', function () {
 
       await didRegistry.updateDid(didDocument, [signature])
 
-      const { document } = await didRegistry.resolve(did)
+      const { document } = await didRegistry.resolveDid(did)
 
       expect(document).to.be.deep.equal(didDocument)
     })
@@ -228,7 +228,7 @@ describe('DIDContract', function () {
       await didRegistry.createDid(didDocument, [signature])
       await didRegistry.deactivateDid(did, [signature])
 
-      const didStorage = await didRegistry.resolve(did)
+      const didStorage = await didRegistry.resolveDid(did)
 
       expect(didStorage.metadata.deactivated).is.true
     })

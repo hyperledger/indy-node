@@ -27,6 +27,8 @@ export const config: Config = {
     description: 'Smart contract to manage credential definitions',
     data: {
       credentialDefinitions: [],
+      didRegistryAddress: '0x0000000000000000000000000000000000003333',
+      schemaRegistryAddress: '0x0000000000000000000000000000000000005555',
     },
   },
   didRegex: {
@@ -89,6 +91,7 @@ export const config: Config = {
     description: 'Smart contract to manage schemas',
     data: {
       schemas: [],
+      didRegistryAddress: '0x0000000000000000000000000000000000003333',
     },
   },
   validators: {
