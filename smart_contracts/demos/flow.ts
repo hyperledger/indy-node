@@ -2,9 +2,8 @@ import environment from '../environment'
 import { Actor } from './utils/actor'
 import { delay } from '../utils'
 import { ROLES } from '../contracts-ts'
-import { Schema } from './utils/schema'
-import { CredentialDefinition } from './utils/credentialDefinition'
-import { sleep } from '@nomicfoundation/hardhat-verify/internal/utilities'
+import { createSchemaObject } from './utils/schema'
+import { createCredentialDefinitionObject } from './utils/credentialDefinition'
 
 async function demo() {
   let receipt: any
@@ -30,8 +29,8 @@ async function demo() {
   console.log(`Did Document created for DID ${faber.did}. Receipt: ${JSON.stringify(receipt)}`)
 
   console.log('5. Faber creates Test Schema')
-  const schema = new Schema()
-  receipt = await faber.schemaRegistry.createSchema(schema.id, schema.data)
+  const schema = createSchemaObject({ issuerId: faber.did })
+  receipt = await faber.schemaRegistry.createSchema(schema)
   console.log(`Schema created for id ${schema.id}. Receipt: ${JSON.stringify(receipt)}`)
   await delay(2000)
 
@@ -40,13 +39,15 @@ async function demo() {
   console.log(`Schema resolved for ${schema.id}. Schema: ${JSON.stringify(resolvedSchema)}`)
 
   console.log('7. Faber create Test Credential Definition')
-  const credentialDefinition = new CredentialDefinition()
-  receipt = await faber.credentialDefinitionRegistry.createCredentialDefinition(credentialDefinition.id, credentialDefinition.data)
+  const credentialDefinition = createCredentialDefinitionObject({ issuerId: faber.did, schemaId: schema.id })
+  receipt = await faber.credentialDefinitionRegistry.createCredentialDefinition(credentialDefinition)
   console.log(`Credential Definition created for id ${schema.id}. Receipt: ${JSON.stringify(receipt)}`)
   await delay(2000)
 
   console.log('8. Trustee resolves Test Credential Definition to ensure its written')
-  const resolvedCredentialDefinition = await faber.credentialDefinitionRegistry.resolveCredentialDefinition(credentialDefinition.id)
+  const resolvedCredentialDefinition = await faber.credentialDefinitionRegistry.resolveCredentialDefinition(
+    credentialDefinition.id,
+  )
   console.log(
     `Credential Definition resolved for ${credentialDefinition.id}. Credential Definition: ${JSON.stringify(
       resolvedCredentialDefinition,
@@ -63,7 +64,9 @@ async function demo() {
   console.log(`Schema resolved for ${schema.id}. Schema: ${JSON.stringify(testSchema)}`)
 
   console.log('11. Alice resolves Test Credential Definition')
-  const testCredentialDefinition = await alice.credentialDefinitionRegistry.resolveCredentialDefinition(credentialDefinition.id)
+  const testCredentialDefinition = await alice.credentialDefinitionRegistry.resolveCredentialDefinition(
+    credentialDefinition.id,
+  )
   console.log(
     `Credential Definition resolved for ${credentialDefinition.id}. Credential Definition: ${JSON.stringify(
       testCredentialDefinition,
