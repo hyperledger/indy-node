@@ -2,24 +2,18 @@ import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers'
 import { expect } from 'chai'
 import { DidRegistry, VerificationMethod } from '../../contracts-ts/DidRegistry'
 import { Contract } from '../../utils'
-import { createBaseDidDocument, createFakeSignature } from '../utils'
+import { createBaseDidDocument, createFakeSignature, deployDidRegistry } from '../utils'
 
 describe('DIDContract', function () {
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
   async function deployDidContractFixture() {
-    const didRegex = new Contract('DidRegex')
-    await didRegex.deploy()
-
-    const validatorLib = new Contract('DidValidator')
-    await validatorLib.deploy({ libraries: [didRegex] })
-
-    return new DidRegistry().deploy({ libraries: [validatorLib] })
+    return deployDidRegistry()
   }
 
   describe('Create DID', function () {
-    it('Should create DID document', async function () {
+    it('Should create and resolve DID document', async function () {
       const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
@@ -33,6 +27,14 @@ describe('DIDContract', function () {
       expect(document).to.be.deep.equal(didDocument)
     })
 
+    it('Should fail if resolving DID does not exist', async function () {
+      const didRegistry = await loadFixture(deployDidContractFixture)
+
+      const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
+
+      await expect(didRegistry.resolveDid(did)).to.be.revertedWith('DID not found')
+    })
+
     it('Should create DID document when UUID is provided as DID method-specific-id', async function () {
       const didRegistry = await loadFixture(deployDidContractFixture)
 
@@ -42,7 +44,7 @@ describe('DIDContract', function () {
 
       await didRegistry.createDid(didDocument, [signature])
 
-      const { document } = await didRegistry.resolve(did)
+      const { document } = await didRegistry.resolveDid(did)
 
       expect(document).to.be.deep.equal(didDocument)
     })

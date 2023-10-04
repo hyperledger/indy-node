@@ -4,6 +4,7 @@ import {
   CredentialDefinition,
   CredentialDefinitionRegistry,
   DidDocument,
+  DidRegistry,
   ROLES,
   Schema,
   SchemaRegistry,
@@ -36,6 +37,12 @@ export interface TestAccounts {
   noRole3: TestAccountDetails
 }
 
+export class TestableDidRegistry extends DidRegistry {
+  public get baseInstance() {
+    return this.instance
+  }
+}
+
 export class TestableSchemaRegistry extends SchemaRegistry {
   public get baseInstance() {
     return this.instance
@@ -46,6 +53,37 @@ export class TestableCredentialDefinitionRegistry extends CredentialDefinitionRe
   public get baseInstance() {
     return this.instance
   }
+}
+
+export async function deployDidRegistry() {
+  const didRegex = new Contract('DidRegex')
+  await didRegex.deploy()
+
+  const didValidator = new Contract('DidValidator')
+  await didValidator.deploy({ libraries: [didRegex] })
+
+  const didRegistry = new TestableDidRegistry()
+  await didRegistry.deploy({ libraries: [didValidator] })
+
+  return didRegistry
+}
+
+export async function deploySchemaRegistry() {
+  const didRegistry = await deployDidRegistry()
+
+  const schemaRegistry = new TestableSchemaRegistry()
+  await schemaRegistry.deploy({ params: [didRegistry.address] })
+
+  return { didRegistry, schemaRegistry }
+}
+
+export async function deployCredentialDefinitionRegistry() {
+  const { didRegistry, schemaRegistry } = await deploySchemaRegistry()
+
+  const credentialDefinitionRegistry = new TestableCredentialDefinitionRegistry()
+  await credentialDefinitionRegistry.deploy({ params: [didRegistry.address, schemaRegistry.address] })
+
+  return { credentialDefinitionRegistry, didRegistry, schemaRegistry }
 }
 
 export async function getTestAccounts(roleControl: any): Promise<TestAccounts> {

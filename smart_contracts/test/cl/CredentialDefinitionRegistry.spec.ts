@@ -8,6 +8,7 @@ import {
   createCredentialDefinitionObject,
   createFakeSignature,
   createSchemaObject,
+  deployCredentialDefinitionRegistry,
   TestableCredentialDefinitionRegistry,
   TestableSchemaRegistry,
 } from '../utils'
@@ -16,25 +17,15 @@ describe('CredentialDefinitionRegistry', function () {
   const issuerId = 'did:indy2:mainnet:SEp33q43PsdP7nDATyySSH'
 
   async function deployCredDefContractFixture() {
-    const didValidator = new Contract('DidValidator')
-    await didValidator.deploy()
-
-    const didRegistry = new DidRegistry()
-    await didRegistry.deploy({ libraries: [didValidator] })
+    const { credentialDefinitionRegistry, didRegistry, schemaRegistry } = await deployCredentialDefinitionRegistry()
 
     const didDocument = createBaseDidDocument(issuerId)
     const signature = createFakeSignature(issuerId)
 
     await didRegistry.createDid(didDocument, [signature])
 
-    const schemaRegistry = new TestableSchemaRegistry()
-    await schemaRegistry.deploy({ params: [didRegistry.address] })
-
     const schema = createSchemaObject({ issuerId })
     await schemaRegistry.createSchema(schema)
-
-    const credentialDefinitionRegistry = new TestableCredentialDefinitionRegistry()
-    await credentialDefinitionRegistry.deploy({ params: [didRegistry.address, schemaRegistry.address] })
 
     return {
       didRegistry,
