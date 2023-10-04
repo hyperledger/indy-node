@@ -900,7 +900,11 @@ dependencies = [
  "async-std",
  "async-trait",
  "futures",
+ "rand",
  "secp256k1",
+ "serde",
+ "serde_derive",
+ "serde_json",
  "thiserror",
  "web3",
 ]

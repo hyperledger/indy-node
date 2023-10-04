@@ -1,13 +1,8 @@
-use crate::client::types::{Address, Bytes, U256, U64};
-
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Transaction {
-    pub nonce: Option<U256>,
-    pub to: Address,
-    pub value: U256,
+    pub to: String,
+    pub chain_id: u64,
     pub data: Vec<u8>,
-    pub chain_id: Option<u64>,
-    pub transaction_type: Option<U64>,
 }
 
 #[derive(Clone, Debug, PartialEq)]

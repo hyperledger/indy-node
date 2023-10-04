@@ -1,3 +1,3 @@
 mod common;
 
-pub use common::sleep;
+pub use common::{rand_string, sleep};

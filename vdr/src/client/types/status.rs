@@ -1,6 +1,6 @@
 #[derive(Debug, PartialEq)]
 pub struct StatusResult {
-    status: Status,
+    pub status: Status,
 }
 
 #[derive(Debug, PartialEq)]

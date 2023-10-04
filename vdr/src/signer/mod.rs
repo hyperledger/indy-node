@@ -1,3 +1,3 @@
 mod signer;
 
-pub use signer::{Signer, SignerT};
+pub use signer::{BasicSigner, Signer};

@@ -27,7 +27,13 @@ impl From<web3::ethabi::Error> for VdrError {
 }
 
 impl From<std::io::Error> for VdrError {
-    fn from(value: std::io::Error) -> Self {
+    fn from(_value: std::io::Error) -> Self {
+        VdrError::Unexpected
+    }
+}
+
+impl From<secp256k1::Error> for VdrError {
+    fn from(_value: secp256k1::Error) -> Self {
         VdrError::Unexpected
     }
 }
