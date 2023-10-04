@@ -1,4 +1,4 @@
-import { CredentialDefinition } from "../../contracts-ts"
+import { CredentialDefinition } from '../../contracts-ts'
 
 interface CreateCredentialDefinitionParams {
   issuerId: string

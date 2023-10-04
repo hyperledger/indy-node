@@ -41,7 +41,7 @@ describe('SchemaRegistry', function () {
     it('Should fail if resolving a non-existing schema', async function () {
       const { schemaRegistry } = await loadFixture(deploySchemaContractFixture)
 
-      const schema = createSchemaObject({ issuerId: issuerId })
+      const schema = createSchemaObject({ issuerId })
 
       await expect(schemaRegistry.resolveSchema(schema.id))
         .to.be.revertedWithCustomError(schemaRegistry.baseInstance, ClErrors.SchemaNotFound)

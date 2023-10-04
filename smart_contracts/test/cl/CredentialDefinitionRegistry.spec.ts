@@ -126,7 +126,10 @@ describe('CredentialDefinitionRegistry', function () {
       const credDef = createCredentialDefinitionObject({ issuerId, schemaId, credDefType: 'CL2' })
 
       await expect(credentialDefinitionRegistry.createCredentialDefinition(credDef))
-        .to.be.revertedWithCustomError(credentialDefinitionRegistry.baseInstance, ClErrors.UnsupportedCredentialDefintionType)
+        .to.be.revertedWithCustomError(
+          credentialDefinitionRegistry.baseInstance,
+          ClErrors.UnsupportedCredentialDefintionType,
+        )
         .withArgs(credDef.credDefType)
     })
 
@@ -157,9 +160,11 @@ describe('CredentialDefinitionRegistry', function () {
       credDef.id = 'Gs6cQcvrtWoZKsbBhD3dQJ:3:CL:140384:mctc'
 
       await expect(credentialDefinitionRegistry.createCredentialDefinition(credDef))
-        .to.be.revertedWithCustomError(credentialDefinitionRegistry.baseInstance, ClErrors.InvalidCredentialDefinitionId)
+        .to.be.revertedWithCustomError(
+          credentialDefinitionRegistry.baseInstance,
+          ClErrors.InvalidCredentialDefinitionId,
+        )
         .withArgs(credDef.id)
-
     })
   })
 })
