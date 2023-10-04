@@ -1,13 +1,26 @@
-import { randomString } from '../../utils'
+import { CredentialDefinition } from "../../contracts-ts"
 
-export class CredentialDefinition {
-  public id: string
-  public data: { name: string }
+interface CreateCredentialDefinitionParams {
+  issuerId: string
+  schemaId: string
+  credDefType?: string
+  tag?: string
+  value?: string
+}
 
-  constructor() {
-    this.id = `did:2:${randomString()}:1.0`
-    this.data = {
-      name: randomString(),
-    }
+export function createCredentialDefinitionObject({
+  issuerId,
+  schemaId,
+  credDefType = 'CL',
+  tag = 'BasicIdentity',
+  value = '{ "n": "779...397", "rctxt": "774...977", "s": "750..893", "z": "632...005" }',
+}: CreateCredentialDefinitionParams): CredentialDefinition {
+  return {
+    id: `${issuerId}/anoncreds/v0/CLAIM_DEF/${schemaId}/${tag}`,
+    issuerId,
+    schemaId,
+    credDefType,
+    tag,
+    value,
   }
 }

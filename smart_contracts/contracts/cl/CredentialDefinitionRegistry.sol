@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import { DidRegistryInterface } from "../did/DidRegistry.sol";
+import { DidDocumentStorage } from "../did/DidTypes.sol";
 import { CredentialDefinition, CredentialDefinitionWithMetadata } from "./CredentialDefinitionTypes.sol";
 import { CredentialDefinitionRegistryInterface } from "./CredentialDefinitionRegistryInterface.sol";
 import { CredentialDefinitionValidator } from "./CredentialDefinitionValidator.sol";
@@ -39,8 +40,9 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
         _;
     }
 
-    modifier _issuerExist(string memory id) {
-        try _didRegistry.resolveDid(id) {
+    modifier _issuerActive(string memory id) {
+        try _didRegistry.resolveDid(id) returns (DidDocumentStorage memory didDocumentStorage) {
+            if (didDocumentStorage.metadata.deactivated) revert IssuerHasBeenDeactivated(id);
             _;
         } catch Error(string memory reason) {
             if (reason.toSlice().eq(DID_NOT_FOUND_ERROR_MESSAGE.toSlice())) {
@@ -49,11 +51,6 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
 
             revert(reason);
         }
-    }
-
-    modifier _issuerActive(string memory id) {
-        if (_didRegistry.resolveDid(id).metadata.deactivated) revert IssuerHasBeenDeactivated(id);
-         _;
     }
 
      constructor(address didRegistryAddress, address schemaRegistryAddress) { 
@@ -65,7 +62,6 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
         public virtual 
         _uniqueCredDefId(credDef.id)
         _schemaExist(credDef.schemaId) 
-        _issuerExist(credDef.issuerId) 
         _issuerActive(credDef.issuerId) 
         returns (string memory outId) 
     {

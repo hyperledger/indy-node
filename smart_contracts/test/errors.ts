@@ -9,7 +9,7 @@ export namespace ClErrors {
   export const SchemaNotFound = 'SchemaNotFound'
 
   // CredDef errors
-  export const InvalidCredentialDefinitioId = 'InvalidCredentialDefinitioId'
+  export const InvalidCredentialDefinitionId = 'InvalidCredentialDefinitionId'
   export const UnsupportedCredentialDefintionType = 'UnsupportedCredentialDefintionType'
   export const CredentialDefinitionAlreadyExist = 'CredentialDefinitionAlreadyExist'
   export const CredentialDefinitionNotFound = 'CredentialDefinitionNotFound'

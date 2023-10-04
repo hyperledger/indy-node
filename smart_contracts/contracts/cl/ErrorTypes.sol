@@ -13,7 +13,7 @@ error SchemaAlreadyExist(string id);
 error SchemaNotFound(string id);
 
 // CredDef errors
-error InvalidCredentialDefinitioId(string id);
+error InvalidCredentialDefinitionId(string id);
 error UnsupportedCredentialDefintionType(string credDefType);
 error CredentialDefinitionAlreadyExist(string id);
 error CredentialDefinitionNotFound(string id);

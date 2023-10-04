@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import { DidRegistryInterface } from "../did/DidRegistry.sol";
+import { DidDocumentStorage } from "../did/DidTypes.sol";
 import { 
     DID_NOT_FOUND_ERROR_MESSAGE,
     IssuerHasBeenDeactivated,
@@ -33,8 +34,9 @@ contract SchemaRegistry is SchemaRegistryInterface {
         _;
     }
 
-    modifier _issuerExist(string memory id) {
-        try _didRegistry.resolveDid(id) {
+    modifier _issuerActive(string memory id) {
+        try _didRegistry.resolveDid(id) returns (DidDocumentStorage memory didDocumentStorage) {
+            if (didDocumentStorage.metadata.deactivated) revert IssuerHasBeenDeactivated(id);
             _;
         } catch Error(string memory reason) {
             if (reason.toSlice().eq(DID_NOT_FOUND_ERROR_MESSAGE.toSlice())) {
@@ -45,19 +47,17 @@ contract SchemaRegistry is SchemaRegistryInterface {
         }
     }
 
-    modifier _issuerActive(string memory id) {
-        if (_didRegistry.resolveDid(id).metadata.deactivated) revert IssuerHasBeenDeactivated(id);
-         _;
-    }
-
     constructor(address didRegistryAddress) { 
         _didRegistry = DidRegistryInterface(didRegistryAddress);
     }
 
+    /**
+     * @dev Creates a new Schema
+     * @param schema The new Schema
+     */
     function createSchema(Schema calldata schema) 
         public virtual 
-        _uniqueSchemaId(schema.id) 
-        _issuerExist(schema.issuerId) 
+        _uniqueSchemaId(schema.id)
         _issuerActive(schema.issuerId) 
         returns (string memory outId)
     {
@@ -72,6 +72,10 @@ contract SchemaRegistry is SchemaRegistryInterface {
         return schema.id;
     }
 
+    /**
+     * @dev Resolves Schema for the given Schema ID
+     * @param id The Schema ID to be resolved
+     */
     function resolveSchema(string calldata id) 
         public view virtual 
         _schemaExist(id) 

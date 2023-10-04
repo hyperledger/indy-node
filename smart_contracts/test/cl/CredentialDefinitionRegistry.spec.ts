@@ -150,5 +150,16 @@ describe('CredentialDefinitionRegistry', function () {
         .withArgs('value')
     })
 
+    it('Should fail if Credential Definition is being with invalid ID', async function () {
+      const { credentialDefinitionRegistry, schemaId } = await loadFixture(deployCredDefContractFixture)
+
+      const credDef = createCredentialDefinitionObject({ issuerId, schemaId })
+      credDef.id = 'Gs6cQcvrtWoZKsbBhD3dQJ:3:CL:140384:mctc'
+
+      await expect(credentialDefinitionRegistry.createCredentialDefinition(credDef))
+        .to.be.revertedWithCustomError(credentialDefinitionRegistry.baseInstance, ClErrors.InvalidCredentialDefinitionId)
+        .withArgs(credDef.id)
+
+    })
   })
 })
