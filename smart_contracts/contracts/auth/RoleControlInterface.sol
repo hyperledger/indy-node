@@ -25,7 +25,7 @@ interface RoleControlInterface {
     /**
      * @dev Function to check if an account has requested role assigned
      */
-    function hasRole(ROLES role, address account) external returns (bool);
+    function hasRole(ROLES role, address account) external view returns (bool);
 
     /**
      * @dev Function to assign role to an account
