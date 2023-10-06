@@ -21,6 +21,7 @@ describe('DIDContract', function () {
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
+      console.log(JSON.stringify(didDocument))
       const signature = createFakeSignature(did)
 
       await didRegistry.createDid(didDocument, [signature])

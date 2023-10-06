@@ -4,7 +4,8 @@ use crate::{
     client::{
         implementation::web3::{client::Web3Client, contract::Web3Contract},
         types::{ContractParam, TransactionSpec},
-        ContractConfig, ContractSpec, Status, StatusResult, Transaction, TransactionType,
+        ContractConfig, ContractOutput, ContractSpec, Status, StatusResult, Transaction,
+        TransactionType,
     },
     error::{VdrError, VdrResult},
     signer::Signer,
@@ -21,7 +22,7 @@ pub trait Client {
 pub trait Contract {
     fn address(&self) -> String;
     fn encode_input(&self, method: &str, params: &[ContractParam]) -> VdrResult<Vec<u8>>;
-    fn decode_output(&self, method: &str, output: &[u8]) -> VdrResult<Vec<ContractParam>>;
+    fn decode_output(&self, method: &str, output: &[u8]) -> VdrResult<ContractOutput>;
 }
 
 pub struct LedgerClient {

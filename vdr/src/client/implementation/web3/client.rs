@@ -8,7 +8,7 @@ use std::str::FromStr;
 use web3::{
     api::Eth,
     transports::Http,
-    types::{Address, Bytes, CallRequest, TransactionParameters, H256},
+    types::{Address, Bytes, CallRequest, TransactionParameters, H256, U256},
     Web3,
 };
 
@@ -45,6 +45,8 @@ impl Client for Web3Client {
             to: Some(address),
             data: Bytes::from(transaction.clone().data),
             chain_id: Some(transaction.chain_id),
+            gas: U256([9_007_199_254_719_927, 0, 0, 0]),
+            gas_price: Some(U256([0, 0, 0, 0])),
             ..Default::default()
         };
         let signed_transaction = self

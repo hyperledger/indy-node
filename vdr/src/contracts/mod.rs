@@ -1,3 +1,5 @@
-mod schema;
+mod cl;
+mod did;
 
-pub use schema::{Schema, SchemaRegistry};
+pub use cl::*;
+pub use did::*;

@@ -1,14 +1,10 @@
 use crate::{
     client::{ContractParam, LedgerClient, Transaction, TransactionSpec, TransactionType},
+    contracts::{cl::schema::Schema, schema::SchemaWithMeta},
     error::{VdrError, VdrResult},
 };
 
 pub struct SchemaRegistry;
-
-#[derive(Debug)]
-pub struct Schema {
-    pub name: String,
-}
 
 impl SchemaRegistry {
     const CONTRACT_NAME: &'static str = "SchemaRegistry";
@@ -17,15 +13,11 @@ impl SchemaRegistry {
 
     pub fn build_create_schema_transaction(
         client: &LedgerClient,
-        id: &str,
         schema: &Schema,
     ) -> VdrResult<TransactionSpec> {
         let contract = client.contract(SchemaRegistry::CONTRACT_NAME)?;
 
-        let params: Vec<ContractParam> = vec![
-            ContractParam::String(id.to_string()),
-            ContractParam::Tuple(vec![ContractParam::String(schema.name.to_string())]),
-        ];
+        let params: Vec<ContractParam> = vec![schema.clone().into()];
 
         let data = contract.encode_input(Self::METHOD_CREATE_SCHEMA, &params)?;
 
@@ -66,23 +58,20 @@ impl SchemaRegistry {
 
     pub fn parse_resolve_schema_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<Schema> {
         let contract = client.contract(Self::CONTRACT_NAME)?;
-        let values = contract.decode_output(Self::METHOD_RESOLVE_SCHEMA, bytes)?;
-        let name = values[0]
-            .clone()
-            .into_tuple()
-            .ok_or(VdrError::Unexpected)?
-            .get(0)
-            .ok_or(VdrError::Unexpected)?
-            .to_string();
-        Ok(Schema { name })
+        let output = contract.decode_output(Self::METHOD_RESOLVE_SCHEMA, bytes)?;
+        if output.is_empty() {
+            return Err(VdrError::Common(
+                "Unable to parse Schema: Empty data".to_string(),
+            ));
+        }
+
+        let schema_data = output.get_tuple(0)?;
+        let schema_with_meta = SchemaWithMeta::try_from(schema_data)?;
+        Ok(schema_with_meta.schema)
     }
 
-    pub async fn create_schema(
-        client: &LedgerClient,
-        id: &str,
-        schema: &Schema,
-    ) -> VdrResult<Vec<u8>> {
-        let mut transaction_spec = Self::build_create_schema_transaction(client, id, schema)?;
+    pub async fn create_schema(client: &LedgerClient, schema: &Schema) -> VdrResult<Vec<u8>> {
+        let mut transaction_spec = Self::build_create_schema_transaction(client, schema)?;
         let signed_transaction = client.sign_transaction(&transaction_spec).await?;
         transaction_spec.set_signature(signed_transaction);
         client.submit_transaction(&transaction_spec).await

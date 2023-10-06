@@ -1,5 +1,7 @@
 use crate::{
-    client::{client::Contract, implementation::web3::client::Web3Client, ContractSpec},
+    client::{
+        client::Contract, implementation::web3::client::Web3Client, ContractOutput, ContractSpec,
+    },
     error::{VdrError, VdrResult},
 };
 use std::str::FromStr;
@@ -10,6 +12,7 @@ use web3::{
 };
 
 pub struct Web3Contract {
+    address: String,
     contract: Web3ContractImpl<Http>,
 }
 
@@ -25,10 +28,14 @@ impl Web3Contract {
                 err.to_string()
             ))
         })?;
-        let address =
+        let parsed_address =
             Address::from_str(address).map_err(|err| VdrError::Common(err.to_string()))?;
-        let contract = Web3ContractImpl::from_json(web3_client.eth(), address, abi.as_slice())?;
-        Ok(Web3Contract { contract })
+        let contract =
+            Web3ContractImpl::from_json(web3_client.eth(), parsed_address, abi.as_slice())?;
+        Ok(Web3Contract {
+            contract,
+            address: address.to_string(),
+        })
     }
 
     fn function(&self, name: &str) -> VdrResult<&Function> {
@@ -38,7 +45,7 @@ impl Web3Contract {
 
 impl Contract for Web3Contract {
     fn address(&self) -> String {
-        self.contract.address().to_string()
+        self.address.to_string()
     }
 
     fn encode_input(&self, method: &str, params: &[Token]) -> VdrResult<Vec<u8>> {
@@ -47,9 +54,10 @@ impl Contract for Web3Contract {
             .map_err(VdrError::from)
     }
 
-    fn decode_output(&self, method: &str, output: &[u8]) -> VdrResult<Vec<Token>> {
+    fn decode_output(&self, method: &str, output: &[u8]) -> VdrResult<ContractOutput> {
         self.function(method)?
             .decode_output(output)
             .map_err(VdrError::from)
+            .map(ContractOutput::from)
     }
 }
