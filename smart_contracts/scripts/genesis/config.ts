@@ -1,3 +1,4 @@
+import { AccountControlConfig } from './contracts/accountControl'
 import { CredentialDefinitionsConfig } from './contracts/credentialDefinitions'
 import { DidsConfig } from './contracts/dids'
 import { DidValidatorConfig } from './contracts/didValidator'
@@ -10,6 +11,7 @@ export const inFile = 'config.json'
 export const outFile = 'ContractsGenesis.json'
 
 export interface Config {
+  accountControl: AccountControlConfig
   credentialDefinitions: CredentialDefinitionsConfig
   didValidator: DidValidatorConfig
   dids: DidsConfig
@@ -19,6 +21,14 @@ export interface Config {
 }
 
 export const config: Config = {
+  accountControl: {
+    name: 'AccountControl',
+    address: '0x0000000000000000000000000000000000008888',
+    description: 'Account permissioning smart contract',
+    data: {
+      roleControlContractAddress: '0000000000000000000000000000000000006666',
+    }
+  },
   credentialDefinitions: {
     name: 'CredentialDefinitionRegistry',
     address: '0x0000000000000000000000000000000000004444',

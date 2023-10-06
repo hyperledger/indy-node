@@ -1,3 +1,4 @@
+export * from './accountControl'
 export * from './credentialDefinitions'
 export * from './dids'
 export * from './didValidator'
