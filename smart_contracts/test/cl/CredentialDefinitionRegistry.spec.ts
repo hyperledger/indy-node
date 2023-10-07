@@ -6,7 +6,6 @@ import { ClErrors } from '../errors'
 import {
   createBaseDidDocument,
   createCredentialDefinitionObject,
-  createFakeSignature,
   createSchemaObject,
   TestableCredentialDefinitionRegistry,
   TestableSchemaRegistry,
@@ -23,9 +22,8 @@ describe('CredentialDefinitionRegistry', function () {
     await didRegistry.deploy({ libraries: [didValidator] })
 
     const didDocument = createBaseDidDocument(issuerId)
-    const signature = createFakeSignature(issuerId)
 
-    await didRegistry.createDid(didDocument, [signature])
+    await didRegistry.createDid(didDocument)
 
     const schemaRegistry = new TestableSchemaRegistry()
     await schemaRegistry.deploy({ params: [didRegistry.address] })
@@ -97,8 +95,7 @@ describe('CredentialDefinitionRegistry', function () {
     it('Should fail if Credential Definition is being created with inactive Issuer', async function () {
       const { didRegistry, credentialDefinitionRegistry, schemaId } = await loadFixture(deployCredDefContractFixture)
 
-      const signature = createFakeSignature(issuerId)
-      didRegistry.deactivateDid(issuerId, [signature])
+      didRegistry.deactivateDid(issuerId)
 
       const credDef = createCredentialDefinitionObject({ issuerId, schemaId })
 

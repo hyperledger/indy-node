@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import { DidRegistry } from '../../contracts-ts'
 import { Contract } from '../../utils'
 import { ClErrors } from '../errors'
-import { createBaseDidDocument, createFakeSignature, createSchemaObject, TestableSchemaRegistry } from '../utils'
+import { createBaseDidDocument, createSchemaObject, TestableSchemaRegistry } from '../utils'
 
 describe('SchemaRegistry', function () {
   const issuerId = 'did:indy2:mainnet:SEp33q43PsdP7nDATyySSH'
@@ -16,9 +16,8 @@ describe('SchemaRegistry', function () {
     await didRegistry.deploy({ libraries: [didValidator] })
 
     const didDocument = createBaseDidDocument(issuerId)
-    const signature = createFakeSignature(issuerId)
 
-    await didRegistry.createDid(didDocument, [signature])
+    await didRegistry.createDid(didDocument)
 
     const schemaRegistry = new TestableSchemaRegistry()
     await schemaRegistry.deploy({ params: [didRegistry.address] })
@@ -73,8 +72,7 @@ describe('SchemaRegistry', function () {
     it('Should fail if Schema is being created with inactive Issuer', async function () {
       const { didRegistry, schemaRegistry } = await loadFixture(deploySchemaContractFixture)
 
-      const signature = createFakeSignature(issuerId)
-      didRegistry.deactivateDid(issuerId, [signature])
+      didRegistry.deactivateDid(issuerId)
 
       const schema = createSchemaObject({ issuerId })
 

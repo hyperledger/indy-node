@@ -7,7 +7,6 @@ import {
   ROLES,
   Schema,
   SchemaRegistry,
-  Signature,
   Transaction,
   VerificationMethod,
   VerificationRelationship,
@@ -124,13 +123,6 @@ export function createBaseDidDocument(did: string): DidDocument {
   }
 
   return didDocument
-}
-
-export function createFakeSignature(did: string): Signature {
-  return {
-    id: did,
-    value: '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-  }
 }
 
 interface CreateShemaParams {

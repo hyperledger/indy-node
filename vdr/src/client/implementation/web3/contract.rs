@@ -1,9 +1,8 @@
 use crate::{
-    client::{
-        client::Contract, implementation::web3::client::Web3Client, ContractOutput, ContractSpec,
-    },
+    client::{implementation::web3::client::Web3Client, Contract, ContractOutput, ContractSpec},
     error::{VdrError, VdrResult},
 };
+
 use std::str::FromStr;
 use web3::{
     contract::Contract as Web3ContractImpl,

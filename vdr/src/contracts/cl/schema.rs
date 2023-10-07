@@ -2,6 +2,7 @@ use crate::{
     client::{ContractOutput, ContractParam},
     error::VdrError,
 };
+
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -77,5 +78,68 @@ impl TryFrom<ContractOutput> for SchemaWithMeta {
             schema: Schema::try_from(schema)?,
             metadata: SchemaMetadata::try_from(metadata)?,
         })
+    }
+}
+
+#[cfg(test)]
+pub mod test {
+    use super::*;
+    use crate::{contracts::did::test::DID, rand_string};
+
+    pub const SCHEMA_NAME: &'static str = "m1DQly1FxUPs";
+    pub const SCHEMA_VERSION: &'static str = "1.0.0";
+    pub const SCHEMA_ATTRIBUTE_FIRST_NAME: &'static str = "First Name";
+    pub const SCHEMA_ATTRIBUTE_LAST_NAME: &'static str = "Last Name";
+
+    pub fn schema_id(issuer_id: &str, name: &str) -> String {
+        format!("{}/anoncreds/v0/SCHEMA/{}/1.0.0", issuer_id, name)
+    }
+
+    pub fn schema(issuer_id: &str, name: Option<&str>) -> Schema {
+        let name = name.map(String::from).unwrap_or_else(|| rand_string());
+        Schema {
+            id: schema_id(issuer_id, name.as_str()),
+            issuer_id: issuer_id.to_string(),
+            name,
+            version: SCHEMA_VERSION.to_string(),
+            attr_names: vec![
+                SCHEMA_ATTRIBUTE_FIRST_NAME.to_string(),
+                SCHEMA_ATTRIBUTE_LAST_NAME.to_string(),
+            ],
+        }
+    }
+
+    fn schema_param() -> ContractParam {
+        ContractParam::Tuple(vec![
+            ContractParam::String(schema_id(DID, SCHEMA_NAME)),
+            ContractParam::String(DID.to_string()),
+            ContractParam::String(SCHEMA_NAME.to_string()),
+            ContractParam::String(SCHEMA_VERSION.to_string()),
+            ContractParam::Array(vec![
+                ContractParam::String(SCHEMA_ATTRIBUTE_FIRST_NAME.to_string()),
+                ContractParam::String(SCHEMA_ATTRIBUTE_LAST_NAME.to_string()),
+            ]),
+        ])
+    }
+
+    mod convert_into_contract_param {
+        use super::*;
+
+        #[test]
+        fn convert_schema_into_contract_param_test() {
+            let param: ContractParam = schema(DID, Some(SCHEMA_NAME)).into();
+            assert_eq!(schema_param(), param);
+        }
+    }
+
+    mod convert_into_object {
+        use super::*;
+
+        #[test]
+        fn convert_contract_output_into_schema() {
+            let data = ContractOutput::new(schema_param().into_tuple().unwrap());
+            let converted = Schema::try_from(data).unwrap();
+            assert_eq!(schema(DID, Some(SCHEMA_NAME)), converted);
+        }
     }
 }

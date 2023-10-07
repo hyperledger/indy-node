@@ -14,6 +14,10 @@ name = "indy2_vdr"
 path = "src/lib.rs"
 crate-type = ["staticlib", "rlib", "cdylib"]
 
+[features]
+default = ["ledger_test"]
+ledger_test = []
+
 [dependencies]
 async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
 async-trait = "0.1.73"

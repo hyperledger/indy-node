@@ -1,4 +1,5 @@
 use crate::error::{VdrError, VdrResult};
+
 use serde::Deserialize;
 use web3::ethabi::Token;
 
@@ -21,6 +22,10 @@ pub type ContractParam = Token;
 pub struct ContractOutput(Vec<ContractParam>);
 
 impl ContractOutput {
+    pub fn new(data: Vec<ContractParam>) -> ContractOutput {
+        ContractOutput(data)
+    }
+
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }

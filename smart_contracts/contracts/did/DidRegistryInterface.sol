@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { DidDocument, DidDocumentStorage, Signature } from "./DidTypes.sol";
+import { DidDocument, DidDocumentStorage } from "./DidTypes.sol";
 
 interface DidRegistryInterface {
     /**
@@ -22,23 +22,20 @@ interface DidRegistryInterface {
     /**
      * Creates a new DID
      * @param document The new DID Document
-     * @param signatures An array of DID Document signatures
      */
-    function createDid(DidDocument calldata document, Signature[] calldata signatures) external;
+    function createDid(DidDocument calldata document) external;
 
     /**
      * Updates an existing DID
      * @param document The updated DID Document
-     * @param signatures An array of DID Document signatures
      */
-    function updateDid(DidDocument calldata document, Signature[] calldata signatures) external;
+    function updateDid(DidDocument calldata document) external;
 
     /**
      * Deactivates a DID
      * @param id The DID to be deactivated
-     * @param signatures An array of DID Document signatures
      */
-    function deactivateDid(string calldata id, Signature[] calldata signatures) external;
+    function deactivateDid(string calldata id) external;
 
     /**
      * @dev Function to resolve DID Document for the given DID

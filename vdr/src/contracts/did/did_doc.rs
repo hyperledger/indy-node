@@ -2,6 +2,7 @@ use crate::{
     client::{ContractOutput, ContractParam},
     error::{VdrError, VdrResult},
 };
+
 use serde_derive::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
@@ -497,5 +498,175 @@ impl TryFrom<ContractOutput> for DidDocumentWithMeta {
             document: DidDocument::try_from(document)?,
             metadata: DidMetadata::try_from(metadata)?,
         })
+    }
+}
+
+#[cfg(test)]
+pub mod test {
+    use super::*;
+    use crate::rand_string;
+
+    pub const DID: &'static str = "did:indy2:testnet:tbNMu6x0wI9e";
+    pub const CONTEXT: &'static str = "https://www.w3.org/ns/did/v1";
+    pub const MULTIBASE_KEY: &'static str = "zAKJP3f7BD6W4iWEQ9jwndVTCBq8ua2Utt8EEjJ6Vxsf";
+    pub const SERVICE_ENDPOINT: &'static str = "https://example.com/path";
+    pub const SERVICE_TYPE: &'static str = "DIDCommMessaging";
+    pub const KEY_1: &'static str = "KEY-1";
+
+    pub fn verification_method(id: &str) -> VerificationMethod {
+        VerificationMethod {
+            id: format!("{}#{}", id, KEY_1),
+            type_: VerificationKeyType::Ed25519VerificationKey2018,
+            controller: id.to_string(),
+            verification_key: VerificationKey::Multibase {
+                public_key_multibase: MULTIBASE_KEY.to_string(),
+            },
+        }
+    }
+
+    pub fn verification_relationship(id: &str) -> VerificationMethodOrReference {
+        VerificationMethodOrReference::String(format!("{}#{}", id, KEY_1))
+    }
+
+    pub fn service(id: &str) -> Service {
+        Service {
+            id: format!("{}#didcomm-1", id),
+            type_: SERVICE_TYPE.to_string(),
+            service_endpoint: ServiceEndpoint::Object(ServiceEndpointObject {
+                uri: SERVICE_ENDPOINT.to_string(),
+                accept: vec![],
+                routing_keys: vec![],
+            }),
+        }
+    }
+
+    pub fn new_id() -> String {
+        format!("did:indy2:testnet:{}", rand_string())
+    }
+
+    pub fn did_doc(id: Option<&str>) -> DidDocument {
+        let id = id.map(String::from).unwrap_or_else(|| new_id());
+        DidDocument {
+            context: StringOrVector::Vector(vec![CONTEXT.to_string()]),
+            id: id.clone(),
+            controller: StringOrVector::Vector(vec![]),
+            verification_method: vec![verification_method(&id)],
+            authentication: vec![verification_relationship(&id)],
+            assertion_method: vec![],
+            capability_invocation: vec![],
+            capability_delegation: vec![],
+            key_agreement: vec![],
+            service: vec![],
+            also_known_as: Some(vec![]),
+        }
+    }
+
+    fn did_doc_param() -> ContractParam {
+        ContractParam::Tuple(vec![
+            ContractParam::Array(vec![ContractParam::String(CONTEXT.to_string())]),
+            ContractParam::String(DID.to_string()),
+            ContractParam::Array(vec![]),
+            ContractParam::Array(vec![verification_method_param()]),
+            ContractParam::Array(vec![verification_relationship_param()]),
+            ContractParam::Array(vec![]),
+            ContractParam::Array(vec![]),
+            ContractParam::Array(vec![]),
+            ContractParam::Array(vec![]),
+            ContractParam::Array(vec![]),
+            ContractParam::Array(vec![]),
+        ])
+    }
+
+    fn verification_relationship_param() -> ContractParam {
+        ContractParam::Tuple(vec![
+            ContractParam::String(format!("{}#KEY-1", DID)),
+            ContractParam::Tuple(vec![
+                ContractParam::String("".to_string()),
+                ContractParam::String("".to_string()),
+                ContractParam::String("".to_string()),
+                ContractParam::String("".to_string()),
+                ContractParam::String("".to_string()),
+            ]),
+        ])
+    }
+
+    fn verification_method_param() -> ContractParam {
+        ContractParam::Tuple(vec![
+            ContractParam::String(format!("{}#KEY-1", DID)),
+            ContractParam::String(VerificationKeyType::Ed25519VerificationKey2018.to_string()),
+            ContractParam::String(DID.to_string()),
+            ContractParam::String("".to_string()),
+            ContractParam::String(MULTIBASE_KEY.to_string()),
+        ])
+    }
+
+    fn service_param() -> ContractParam {
+        ContractParam::Tuple(vec![
+            ContractParam::String(format!("{}#didcomm-1", DID)),
+            ContractParam::String(SERVICE_TYPE.to_string()),
+            ContractParam::String(SERVICE_ENDPOINT.to_string()),
+            ContractParam::Array(vec![]),
+            ContractParam::Array(vec![]),
+        ])
+    }
+
+    mod convert_into_contract_param {
+        use super::*;
+
+        #[test]
+        fn convert_did_doc_into_contract_param_test() {
+            let param: ContractParam = did_doc(Some(DID)).into();
+            assert_eq!(did_doc_param(), param);
+        }
+
+        #[test]
+        fn convert_verification_method_into_contract_param_test() {
+            let param: ContractParam = verification_method(DID).into();
+            assert_eq!(verification_method_param(), param);
+        }
+
+        #[test]
+        fn convert_verification_relationship_into_contract_param_test() {
+            let param: ContractParam = verification_relationship(DID).into();
+            assert_eq!(verification_relationship_param(), param);
+        }
+
+        #[test]
+        fn convert_service_into_contract_param_test() {
+            let param: ContractParam = service(DID).into();
+            assert_eq!(service_param(), param);
+        }
+    }
+
+    mod convert_into_object {
+        use super::*;
+
+        #[test]
+        fn convert_contract_output_into_did_doc() {
+            let data = ContractOutput::new(did_doc_param().into_tuple().unwrap());
+            let converted = DidDocument::try_from(data).unwrap();
+            assert_eq!(did_doc(Some(DID)), converted);
+        }
+
+        #[test]
+        fn convert_contract_output_into_verification_method() {
+            let data = ContractOutput::new(verification_method_param().into_tuple().unwrap());
+            let converted = VerificationMethod::try_from(data).unwrap();
+            assert_eq!(verification_method(DID), converted);
+        }
+
+        #[test]
+        fn convert_contract_output_into_verification_relationship() {
+            let data = ContractOutput::new(verification_relationship_param().into_tuple().unwrap());
+            let converted = VerificationMethodOrReference::try_from(data).unwrap();
+            assert_eq!(verification_relationship(DID), converted);
+        }
+
+        #[test]
+        fn convert_contract_output_into_service() {
+            let data = ContractOutput::new(service_param().into_tuple().unwrap());
+            let converted = Service::try_from(data).unwrap();
+            assert_eq!(service(DID), converted);
+        }
     }
 }

@@ -64,11 +64,3 @@ struct Service {
     string[] accept;
     string[] routingKeys;
 }
-
-/**
- * @dev Signature describes DID Document signature
- */
-struct Signature {
-    string id;
-    string value;
-}

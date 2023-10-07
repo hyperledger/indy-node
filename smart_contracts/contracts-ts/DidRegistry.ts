@@ -2,7 +2,6 @@ import {
   DidDocumentStorageStruct,
   DidDocumentStruct,
   ServiceStruct,
-  SignatureStruct,
   VerificationMethodStruct,
   VerificationRelationshipStruct,
 } from '../typechain-types/did/DidRegistry'
@@ -13,7 +12,6 @@ export type DidDocument = DidDocumentStruct
 export type VerificationMethod = VerificationMethodStruct
 export type VerificationRelationship = VerificationRelationshipStruct
 export type Service = ServiceStruct
-export type Signature = SignatureStruct
 
 export class DidRegistry extends Contract {
   public static readonly defaultAddress = '0x0000000000000000000000000000000000003333'
@@ -22,18 +20,18 @@ export class DidRegistry extends Contract {
     super(DidRegistry.name, sender)
   }
 
-  public async createDid(didDocument: DidDocument, signatures: Array<Signature>) {
-    const tx = await this.instance.createDid(didDocument, signatures)
+  public async createDid(didDocument: DidDocument) {
+    const tx = await this.instance.createDid(didDocument)
     return tx.wait()
   }
 
-  public async updateDid(didDocument: DidDocument, signatures: Array<Signature>) {
-    const tx = await this.instance.updateDid(didDocument, signatures)
+  public async updateDid(didDocument: DidDocument) {
+    const tx = await this.instance.updateDid(didDocument)
     return tx.wait()
   }
 
-  public async deactivateDid(id: string, signatures: Array<Signature>) {
-    const tx = await this.instance.deactivateDid(id, signatures)
+  public async deactivateDid(id: string,) {
+    const tx = await this.instance.deactivateDid(id)
     return tx.wait()
   }
 
