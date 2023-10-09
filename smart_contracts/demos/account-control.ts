@@ -72,17 +72,20 @@ async function demo() {
 
   console.log('8. Call the update contact method by an endorser')
   simpleContract = simpleContract.connect(endorser.account.signer)
-  receipt = await simpleContract.update('endorser')
+  let tx = await simpleContract.update('endorser')
+  receipt = await tx.wait()
   console.log(`Message updated by endorser -- ${JSON.stringify(receipt)}`)
 
   console.log('9. Call the update contact method by a steward')
   simpleContract = simpleContract.connect(steward.account.signer)
-  receipt = await simpleContract.update('steward')
+  tx = await simpleContract.update('steward')
+  receipt = await tx.wait()
   console.log(`Message updated by steward -- ${JSON.stringify(receipt)}`)
 
   console.log('10. Call the update contact method by a trustee')
   simpleContract = simpleContract.connect(trustee.account.signer)
-  receipt = await simpleContract.update('trustee')
+  tx = await simpleContract.update('trustee')
+  receipt = await tx.wait()
   console.log(`Message updated by trustee -- ${JSON.stringify(receipt)}`)
 }
 
