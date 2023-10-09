@@ -3,7 +3,14 @@ pragma solidity ^0.8.20;
 
 interface AccountControlInterface {
     /**
-     * @dev Determine whether to accept atransaction received from a given Ethereum account.
+     * @dev Determine whether to accept a transaction received from a given Ethereum account.
+     * 
+     * This function enforces the following restrictions:
+     * - Only senders with the Trustee role are permitted to deploy transactions.
+     * - Senders with not-empty roles (Trustee, Steward and Endorser) can invoke state modifying contract methods.
+     * 
+     *  Note: This function does not impose any restrictions to reading state values
+     * 
      * @param sender The address of the account that created this transaction.
      * @param target The address of the account or contract that this transaction is directed at.
      * @param value The eth value being transferred in this transaction, specified in Wei.

@@ -31,21 +31,28 @@
 
 ## DID Document management
 
-| Contract      | Method                         | Required Role | Action Description              |
-|---------------|--------------------------------|---------------|---------------------------------|
-| DidRegistry   | createDid                      | any           | Create a new DID Document       |
-| DidRegistry   | updateDid                      | DID owner     | Update DID an existing Document |
-| DidRegistry   | deactivateDid                  | DID owner     | Deactivate an existing DID      |
-| DidRegistry   | resolveCredentialDefinition    | any           | Resolve DID Document for a DID  |
+| Contract      | Method                         | Required Role               | Action Description              |
+|---------------|--------------------------------|-----------------------------|---------------------------------|
+| DidRegistry   | createDid                      | Trustee, Endorser, Steward  | Create a new DID Document       |
+| DidRegistry   | updateDid                      | DID owner                   | Update DID an existing Document |
+| DidRegistry   | deactivateDid                  | DID owner                   | Deactivate an existing DID      |
+| DidRegistry   | resolveCredentialDefinition    | any                         | Resolve DID Document for a DID  |
 
 ## CL Registry management
 
-| Contract                     | Method                      | Required Role     | Action Description                       |
-|------------------------------|-----------------------------|-------------------|------------------------------------------|
-| SchemaRegistry               | createCredentialDefinition  | any               | Create a new Schema                      |
-| SchemaRegistry               | resolveCredentialDefinition | any               | Resolve Schema by id                     |
-| CredentialDefinitionRegistry | createCredentialDefinition  | any               | Create a new Credential Definition       |
-| CredentialDefinitionRegistry | resolveCredentialDefinition | any               | Resolve Credential Definition by id      |
+| Contract                     | Method                      | Required Role               | Action Description                       |
+|------------------------------|-----------------------------|-----------------------------|------------------------------------------|
+| SchemaRegistry               | createCredentialDefinition  | Trustee, Endorser, Steward  | Create a new Schema                      |
+| SchemaRegistry               | resolveCredentialDefinition | any                         | Resolve Schema by id                     |
+| CredentialDefinitionRegistry | createCredentialDefinition  | Trustee, Endorser, Steward  | Create a new Credential Definition       |
+| CredentialDefinitionRegistry | resolveCredentialDefinition | any                         | Resolve Credential Definition by id      |
+
+## Transactions managment
+
+| Transaction              | Required Role               | Action Description                               |
+|--------------------------|-----------------------------|--------------------------------------------------|
+| Deploy contract          | Trustee                     | Deploy a new contract                            |
+| State modification       | Trustee, Endorser, Steward  | Execute contract methods to modify its state     |
 
 ## Storage format
 
