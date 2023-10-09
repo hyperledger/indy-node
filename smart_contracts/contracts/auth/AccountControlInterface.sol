@@ -2,14 +2,6 @@
 pragma solidity ^0.8.20;
 
 interface AccountControlInterface {
-
-    /**
-     * @dev Event emits, when the underlying rules are changed
-     * @param addsRestrictions Whether rules further restricted
-     * @param addsPermissions Whether new permission granted
-     */
-    // event AccountPermissionsUpdated(bool addsRestrictions, bool addsPermissions);
-
     /**
      * @dev Determine whether to accept atransaction received from a given Ethereum account.
      * @param sender The address of the account that created this transaction.
