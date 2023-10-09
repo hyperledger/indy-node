@@ -46,29 +46,34 @@ async function demo() {
   console.log(`Contract deployed to address ${simpleContract.address} by trustee`)
   await delay(4000)
 
-  console.log('7. Try calling the update contact method by an unauthorized account')
+  console.log('7. Try calling the update contract method by an unauthorized account')
   simpleContract = simpleContract.connect(unauthorized.account.signer)
   await assert.rejects(simpleContract.update('unauthorized'), (err) => {
     console.log(JSON.stringify(err))
     return true
   })
 
-  console.log('8. Call the update contact method by an endorser')
+  console.log('8. Call the update contract method by an endorser')
   simpleContract = simpleContract.connect(endorser.account.signer)
   receipt = await simpleContract.update('endorser')
   let message = await simpleContract.message()
   console.log(`Message updated to '${message}' by endorser -- ${JSON.stringify(receipt)}`)
 
-  console.log('9. Call the update contact method by a steward')
+  console.log('9. Call the update contract method by a steward')
   simpleContract = simpleContract.connect(steward.account.signer)
   receipt = await simpleContract.update('steward')
   message = await simpleContract.message()
   console.log(`Message updated to '${message}' by steward -- ${JSON.stringify(receipt)}`)
 
-  console.log('10. Call the update contact method by a trustee')
+  console.log('10. Call the update contract method by a trustee')
   receipt = await simpleContract.update('trustee')
   message = await simpleContract.message()
   console.log(`Message updated to '${message}' by trustee -- ${JSON.stringify(receipt)}`)
+
+  console.log('11. Call the read contract method by an unauthorized account')
+  simpleContract = simpleContract.connect(unauthorized.account.signer)
+  message = await simpleContract.message()
+  console.log(`Message '${message}' read by an unauthorized account`)
 }
 
 if (require.main === module) {
