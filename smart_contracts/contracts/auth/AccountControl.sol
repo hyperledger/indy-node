@@ -21,15 +21,13 @@ contract AccountControl is AccountControlInterface {
         uint256 gasLimit,
         bytes calldata payload
     ) public view returns (bool result) {
-        // Validation ensure that only senders with 'trustee' role can deploy contract
+        // Validation ensure that only senders with 'trustee' role can deploy contracts
         if (target == address(0) && !_roleControl.hasRole(RoleControlInterface.ROLES.TRUSTEE, sender)) {
             return false;
         }
 
-        // Validate ensure that only senders with 'trustee', 'endorser' or 'steward' role can write transactions
-        if (!_roleControl.hasRole(RoleControlInterface.ROLES.TRUSTEE, sender) 
-            && !_roleControl.hasRole(RoleControlInterface.ROLES.ENDORSER, sender)
-            && !_roleControl.hasRole(RoleControlInterface.ROLES.STEWARD, sender)) {
+        // Validate ensure that only senders with not-empty roles can write transactions
+        if (_roleControl.hasRole(RoleControlInterface.ROLES.EMPTY, sender)) {
             return false;
         }
 

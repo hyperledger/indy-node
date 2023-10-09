@@ -27,7 +27,7 @@ export const config: Config = {
     description: 'Account permissioning smart contract',
     data: {
       roleControlContractAddress: '0000000000000000000000000000000000006666',
-    }
+    },
   },
   credentialDefinitions: {
     name: 'CredentialDefinitionRegistry',

@@ -1,7 +1,7 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
+import { expect } from 'chai'
 import { AccountControl, RoleControl } from '../../contracts-ts'
 import { createContractDeployTransaction, createWriteTransaction, getTestAccounts } from '../utils'
-import { expect } from 'chai'
 
 describe('AccountControl', function () {
   async function deployCredDefContractFixture() {
@@ -17,12 +17,11 @@ describe('AccountControl', function () {
   }
 
   describe('transactionAllowed', () => {
-
     it('Should allow write transaction to sender with trustee role', async function () {
       const { accountControl, testAccounts } = await loadFixture(deployCredDefContractFixture)
 
       const transaction = createWriteTransaction(testAccounts.trustee.account.address)
-      
+
       expect(await accountControl.transactionAllowed(transaction)).to.be.true
     })
 
@@ -30,7 +29,7 @@ describe('AccountControl', function () {
       const { accountControl, testAccounts } = await loadFixture(deployCredDefContractFixture)
 
       const transaction = createWriteTransaction(testAccounts.endorser.account.address)
-      
+
       expect(await accountControl.transactionAllowed(transaction)).to.be.true
     })
 
@@ -38,7 +37,7 @@ describe('AccountControl', function () {
       const { accountControl, testAccounts } = await loadFixture(deployCredDefContractFixture)
 
       const transaction = createWriteTransaction(testAccounts.steward.account.address)
-      
+
       expect(await accountControl.transactionAllowed(transaction)).to.be.true
     })
 

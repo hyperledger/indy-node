@@ -182,22 +182,22 @@ export function createCredentialDefinitionObject({
 
 export function createContractDeployTransaction(sender: string): Transaction {
   return {
-    sender: sender,
+    sender,
     target: '0x0000000000000000000000000000000000000000',
     value: 0,
     gasPrice: 0,
     gasLimit: 0,
-    bytes: '0x00'
+    bytes: '0x00',
   }
 }
 
 export function createWriteTransaction(sender: string): Transaction {
   return {
-    sender: sender,
+    sender,
     target: '0x0000000000000000000000000000000000003333',
     value: 0,
     gasPrice: 0,
     gasLimit: 0,
-    bytes: '0x00'
+    bytes: '0x00',
   }
 }
