@@ -16,7 +16,7 @@ export class SimpleContract extends Contract {
     return tx.wait()
   }
 
-  public override async deploy(options?: { params?: any, libraries?: [Contract] }) {
+  public override async deploy(options?: { params?: any; libraries?: [Contract] }) {
     let factory = new ethers.ContractFactory(simpleContractJson.abi, simpleContractJson.bytecode, this.signer)
 
     const contract = await factory.deploy()

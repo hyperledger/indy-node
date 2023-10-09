@@ -45,7 +45,7 @@ async function demo() {
   await simpleContract.deploy()
   console.log(`Contract deployed to address ${simpleContract.address} by trustee`)
   await delay(4000)
-  
+
   console.log('7. Try calling the update contact method by an unauthorized account')
   simpleContract = simpleContract.connect(unauthorized.account.signer)
   await assert.rejects(simpleContract.update('unauthorized'), (err) => {
