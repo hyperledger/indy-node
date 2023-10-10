@@ -1,7 +1,7 @@
 import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers'
 import { expect } from 'chai'
 import { VerificationMethod } from '../../contracts-ts/DidRegistry'
-import { createBaseDidDocument, createFakeSignature, deployDidRegistry } from '../utils'
+import { createBaseDidDocument, deployDidRegistry } from '../utils'
 
 describe('DIDContract', function () {
   // We define a fixture to reuse the same setup in every test.
@@ -17,9 +17,9 @@ describe('DIDContract', function () {
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
-      const signature = createFakeSignature(did)
+      console.log(JSON.stringify(didDocument))
 
-      await didRegistry.createDid(didDocument, [signature])
+      await didRegistry.createDid(didDocument)
 
       const { document } = await didRegistry.resolveDid(did)
 
@@ -39,11 +39,10 @@ describe('DIDContract', function () {
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
-      const signature = createFakeSignature(did)
 
-      await didRegistry.createDid(didDocument, [signature])
+      await didRegistry.createDid(didDocument)
 
-      await expect(didRegistry.createDid(didDocument, [signature])).to.be.revertedWith('DID has already exist')
+      await expect(didRegistry.createDid(didDocument)).to.be.revertedWith('DID has already exist')
     })
 
     it('Should fail if an incorrect schema is provided for the DID', async function () {
@@ -51,9 +50,8 @@ describe('DIDContract', function () {
 
       const did: string = 'indy:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
-      const signature = createFakeSignature(did)
 
-      await expect(didRegistry.createDid(didDocument, [signature])).to.be.revertedWith('Incorrect DID')
+      await expect(didRegistry.createDid(didDocument)).to.be.revertedWith('Incorrect DID')
     })
 
     it('Should fail if an unsupported DID method is provided', async function () {
@@ -61,9 +59,8 @@ describe('DIDContract', function () {
 
       const did: string = 'did:indy3:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
-      const signature = createFakeSignature(did)
 
-      await expect(didRegistry.createDid(didDocument, [signature])).to.be.revertedWith('Incorrect DID')
+      await expect(didRegistry.createDid(didDocument)).to.be.revertedWith('Incorrect DID')
     })
 
     it('Should fail if an incorrect DID method-specific-id is provided', async function () {
@@ -71,9 +68,8 @@ describe('DIDContract', function () {
 
       const did: string = 'did:indy3:testnet:123456789'
       const didDocument = createBaseDidDocument(did)
-      const signature = createFakeSignature(did)
 
-      await expect(didRegistry.createDid(didDocument, [signature])).to.be.revertedWith('Incorrect DID')
+      await expect(didRegistry.createDid(didDocument)).to.be.revertedWith('Incorrect DID')
     })
 
     it('Should fail if an authentication key is not provided', async function () {
@@ -82,9 +78,8 @@ describe('DIDContract', function () {
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
       didDocument.authentication = []
-      const signature = createFakeSignature(did)
 
-      await expect(didRegistry.createDid(didDocument, [signature])).to.be.revertedWith('Authentication key is required')
+      await expect(didRegistry.createDid(didDocument)).to.be.revertedWith('Authentication key is required')
     })
 
     it('Should fail if an authentication key is not found in the verification methods', async function () {
@@ -104,9 +99,8 @@ describe('DIDContract', function () {
           },
         },
       ]
-      const signature = createFakeSignature(did)
 
-      await expect(didRegistry.createDid(didDocument, [signature])).to.be.revertedWith(
+      await expect(didRegistry.createDid(didDocument)).to.be.revertedWith(
         `Authentication key for ID: ${did}#KEY-3 is not found`,
       )
     })
@@ -118,9 +112,8 @@ describe('DIDContract', function () {
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
-      const signature = createFakeSignature(did)
 
-      await didRegistry.createDid(didDocument, [signature])
+      await didRegistry.createDid(didDocument)
 
       const verificationMethod: VerificationMethod = {
         id: `${did}#KEY-2`,
@@ -132,7 +125,7 @@ describe('DIDContract', function () {
 
       didDocument.verificationMethod.push(verificationMethod)
 
-      await didRegistry.updateDid(didDocument, [signature])
+      await didRegistry.updateDid(didDocument)
 
       const { document } = await didRegistry.resolveDid(did)
 
@@ -144,9 +137,8 @@ describe('DIDContract', function () {
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
-      const signature = createFakeSignature(did)
 
-      await expect(didRegistry.updateDid(didDocument, [signature])).to.be.revertedWith('DID not found')
+      await expect(didRegistry.updateDid(didDocument)).to.be.revertedWith('DID not found')
     })
 
     it('Should fail if the DID being updated is deactivated', async function () {
@@ -154,12 +146,11 @@ describe('DIDContract', function () {
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
-      const signature = createFakeSignature(did)
 
-      await didRegistry.createDid(didDocument, [signature])
-      await didRegistry.deactivateDid(did, [signature])
+      await didRegistry.createDid(didDocument)
+      await didRegistry.deactivateDid(did)
 
-      await expect(didRegistry.updateDid(didDocument, [signature])).to.be.revertedWith('DID has been deactivated')
+      await expect(didRegistry.updateDid(didDocument)).to.be.revertedWith('DID has been deactivated')
     })
 
     it('Should fail if an authentication key is not provided', async function () {
@@ -167,13 +158,12 @@ describe('DIDContract', function () {
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
-      const signature = createFakeSignature(did)
 
-      await didRegistry.createDid(didDocument, [signature])
+      await didRegistry.createDid(didDocument)
 
       didDocument.authentication = []
 
-      await expect(didRegistry.updateDid(didDocument, [signature])).to.be.revertedWith('Authentication key is required')
+      await expect(didRegistry.updateDid(didDocument)).to.be.revertedWith('Authentication key is required')
     })
 
     it('Should fail if an authentication key is not found in the verification methods', async function () {
@@ -181,9 +171,8 @@ describe('DIDContract', function () {
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
-      const signature = createFakeSignature(did)
 
-      await didRegistry.createDid(didDocument, [signature])
+      await didRegistry.createDid(didDocument)
 
       didDocument.authentication = [
         {
@@ -198,7 +187,7 @@ describe('DIDContract', function () {
         },
       ]
 
-      await expect(didRegistry.updateDid(didDocument, [signature])).to.be.revertedWith(
+      await expect(didRegistry.updateDid(didDocument)).to.be.revertedWith(
         `Authentication key for ID: ${did}#KEY-3 is not found`,
       )
     })
@@ -210,10 +199,9 @@ describe('DIDContract', function () {
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
-      const signature = createFakeSignature(did)
 
-      await didRegistry.createDid(didDocument, [signature])
-      await didRegistry.deactivateDid(did, [signature])
+      await didRegistry.createDid(didDocument)
+      await didRegistry.deactivateDid(did)
 
       const didStorage = await didRegistry.resolveDid(did)
 
@@ -225,21 +213,19 @@ describe('DIDContract', function () {
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
       const didDocument = createBaseDidDocument(did)
-      const signature = createFakeSignature(did)
 
-      await didRegistry.createDid(didDocument, [signature])
-      await didRegistry.deactivateDid(did, [signature])
+      await didRegistry.createDid(didDocument)
+      await didRegistry.deactivateDid(did)
 
-      await expect(didRegistry.deactivateDid(did, [signature])).to.be.revertedWith('DID has been deactivated')
+      await expect(didRegistry.deactivateDid(did)).to.be.revertedWith('DID has been deactivated')
     })
 
     it('Should fail if the DID being deactivated does not exists', async function () {
       const didRegistry = await loadFixture(deployDidContractFixture)
 
       const did: string = 'did:indy2:testnet:SEp33q43PsdP7nDATyySSH'
-      const signature = createFakeSignature(did)
 
-      await expect(didRegistry.deactivateDid(did, [signature])).to.be.revertedWith('DID not found')
+      await expect(didRegistry.deactivateDid(did)).to.be.revertedWith('DID not found')
     })
   })
 })

@@ -13,7 +13,7 @@ async function demo() {
   const alice = await new Actor().init()
 
   console.log('1. Trustee creates DID Document')
-  receipt = await trustee.didRegistry.createDid(trustee.didDocument, [])
+  receipt = await trustee.didRegistry.createDid(trustee.didDocument)
   console.log(`Did Document created for DID ${trustee.did}. Receipt: ${JSON.stringify(receipt)}`)
 
   console.log('2. Trustee resolve DID Document to ensure its written')
@@ -25,7 +25,7 @@ async function demo() {
   console.log(`Role ${ROLES.ENDORSER} assigned to account ${faber.address}. Receipt: ${JSON.stringify(receipt)}`)
 
   console.log('4. Faber creates DID Document')
-  receipt = await trustee.didRegistry.createDid(faber.didDocument, [])
+  receipt = await trustee.didRegistry.createDid(faber.didDocument)
   console.log(`Did Document created for DID ${faber.did}. Receipt: ${JSON.stringify(receipt)}`)
 
   console.log('5. Faber creates Test Schema')

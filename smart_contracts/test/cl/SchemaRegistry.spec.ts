@@ -1,7 +1,7 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
 import { ClErrors } from '../errors'
-import { createBaseDidDocument, createFakeSignature, createSchemaObject, deploySchemaRegistry } from '../utils'
+import { createBaseDidDocument, createSchemaObject, deploySchemaRegistry } from '../utils'
 
 describe('SchemaRegistry', function () {
   const issuerId = 'did:indy2:mainnet:SEp33q43PsdP7nDATyySSH'
@@ -10,9 +10,8 @@ describe('SchemaRegistry', function () {
     const { didRegistry, schemaRegistry } = await deploySchemaRegistry()
 
     const didDocument = createBaseDidDocument(issuerId)
-    const signature = createFakeSignature(issuerId)
 
-    await didRegistry.createDid(didDocument, [signature])
+    await didRegistry.createDid(didDocument)
 
     return { didRegistry, schemaRegistry }
   }
@@ -64,8 +63,7 @@ describe('SchemaRegistry', function () {
     it('Should fail if Schema is being created with inactive Issuer', async function () {
       const { didRegistry, schemaRegistry } = await loadFixture(deploySchemaContractFixture)
 
-      const signature = createFakeSignature(issuerId)
-      didRegistry.deactivateDid(issuerId, [signature])
+      didRegistry.deactivateDid(issuerId)
 
       const schema = createSchemaObject({ issuerId })
 
