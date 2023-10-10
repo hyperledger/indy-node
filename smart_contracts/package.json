@@ -11,6 +11,7 @@
     "demo/roles": "ts-node demos/role-control.ts",
     "demo/validators": "ts-node demos/validator-control.ts",
     "demo/flow": "ts-node demos/flow.ts",
+    "demo/account": "ts-node demos/account-control.ts",
     "genesis/generate": "ts-node scripts/genesis/generate.ts"
   },
   "license": "Apache-2.0",

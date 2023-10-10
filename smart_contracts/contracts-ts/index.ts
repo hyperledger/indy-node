@@ -1,3 +1,4 @@
+export * from './AccountControl'
 export * from './CredentialDefinitionRegistry'
 export * from './DidRegistry'
 export * from './RoleControl'
