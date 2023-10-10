@@ -1,11 +1,9 @@
 import { padLeft } from 'web3-utils'
 import { config } from '../config'
 import { buildSection, slots } from '../helpers'
+import { ContractConfig } from '../contractConfig'
 
-export interface AccountControlConfig {
-  name: string
-  address: string
-  description: string
+export interface AccountControlConfig extends ContractConfig {
   data: {
     roleControlContractAddress: string
   }
