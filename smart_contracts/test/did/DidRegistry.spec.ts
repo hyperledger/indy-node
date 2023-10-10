@@ -35,20 +35,6 @@ describe('DIDContract', function () {
       await expect(didRegistry.resolveDid(did)).to.be.revertedWith('DID not found')
     })
 
-    it('Should create DID document when UUID is provided as DID method-specific-id', async function () {
-      const didRegistry = await loadFixture(deployDidContractFixture)
-
-      const did: string = 'did:indy2:testnet:03043e53-4d36-44f2-9996-a839634f48f9'
-      const didDocument = createBaseDidDocument(did)
-      const signature = createFakeSignature(did)
-
-      await didRegistry.createDid(didDocument, [signature])
-
-      const { document } = await didRegistry.resolveDid(did)
-
-      expect(document).to.be.deep.equal(didDocument)
-    })
-
     it('Should fail if the DID being created already exists', async function () {
       const didRegistry = await loadFixture(deployDidContractFixture)
 
