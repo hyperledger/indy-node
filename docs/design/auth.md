@@ -52,7 +52,8 @@
 | Transaction              | Required Role               | Action Description                               |
 |--------------------------|-----------------------------|--------------------------------------------------|
 | Deploy contract          | Trustee                     | Deploy a new contract                            |
-| State modification       | Trustee, Endorser, Steward  | Execute contract methods to modify its state     |
+| Modify contract state    | Trustee, Endorser, Steward  | Execute contract method to modify its state      |
+| Read contract state      | any                         | Execute contract method to read its state        |
 
 ## Storage format
 
