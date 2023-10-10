@@ -14,9 +14,10 @@ pub use utils::{rand_string, sleep};
 mod tests {
     use super::*;
     use crate::{
-        client::test::{client, ACCOUNT},
+        client::test::client,
         contracts::did::test::did_doc,
         error::VdrResult,
+        signer::test::ACCOUNT
     };
 
     async fn get_transaction_receipt(client: &LedgerClient, hash: &[u8]) -> String {

@@ -89,14 +89,11 @@ impl LedgerClient {
 #[cfg(test)]
 pub mod test {
     use std::{env, fs};
+    use crate::signer::test::signer;
     use super::*;
-    use crate::BasicSigner;
 
     pub const CHAIN_ID: u64 = 1337;
     pub const NODE_ADDRESS: &'static str = "http://127.0.0.1:8545";
-    pub const ACCOUNT: &'static str = "0xf0e2db6c8dc6c681bb5d6ad121a107f300e9b2b5";
-    pub const PRIVATE_KEY: &'static str =
-        "8bbbb1b345af56b560a5b20bd4b0ed1cd8cc9958a16262bc75118453cb546df7";
     pub const DID_REGISTRY_ADDRESS: &'static str = "0x0000000000000000000000000000000000003333";
     pub const DID_REGISTRY_SPEC_PATH: &'static str = "../smart_contracts/artifacts/contracts/did/DidRegistry.sol/DidRegistry.json";
     pub const SCHEMA_REGISTRY_ADDRESS: &'static str = "0x0000000000000000000000000000000000005555";
@@ -119,12 +116,6 @@ pub mod test {
                 spec_path: build_contract_path(SCHEMA_REGISTRY_SPEC_PATH),
             },
         ]
-    }
-
-    fn signer() -> BasicSigner {
-        let mut signer = BasicSigner::new().unwrap();
-        signer.add_key(ACCOUNT, PRIVATE_KEY).unwrap();
-        signer
     }
 
     pub fn client() -> LedgerClient {

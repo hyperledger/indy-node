@@ -89,8 +89,9 @@ impl DidRegistry {
 mod test {
     use super::*;
     use crate::{
-        client::test::{client, ACCOUNT, CHAIN_ID, DID_REGISTRY_ADDRESS},
+        client::test::{client, CHAIN_ID, DID_REGISTRY_ADDRESS},
         contracts::did::test::{did_doc, DID},
+        signer::test::ACCOUNT
     };
 
     mod build_create_did_transaction {

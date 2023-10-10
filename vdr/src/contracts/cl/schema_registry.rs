@@ -88,8 +88,9 @@ impl SchemaRegistry {
 mod test {
     use super::*;
     use crate::{
-        client::test::{client, ACCOUNT, CHAIN_ID, SCHEMA_REGISTRY_ADDRESS},
+        client::test::{client, CHAIN_ID, SCHEMA_REGISTRY_ADDRESS},
         contracts::cl::schema::test::{schema, SCHEMA_NAME},
+        signer::test::ACCOUNT
     };
 
     const ISSUER_ID: &'static str = "did:indy2:testnet:GNd75u7mFpjX";

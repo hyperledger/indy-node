@@ -64,3 +64,18 @@ impl Signer for BasicSigner {
         }
     }
 }
+
+#[cfg(test)]
+pub mod test {
+    use super::*;
+
+    pub const ACCOUNT: &'static str = "0xf0e2db6c8dc6c681bb5d6ad121a107f300e9b2b5";
+    pub const PRIVATE_KEY: &'static str =
+        "8bbbb1b345af56b560a5b20bd4b0ed1cd8cc9958a16262bc75118453cb546df7";
+
+    pub fn signer() -> BasicSigner {
+        let mut signer = BasicSigner::new().unwrap();
+        signer.add_key(ACCOUNT, PRIVATE_KEY).unwrap();
+        signer
+    }
+}
