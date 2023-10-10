@@ -28,7 +28,7 @@ export class Account {
     }
 
     public get did() {
-        // TODO: The DID's method-specefic-id hasn't been generated in accordance with the specification.
+        // TODO: The DID's method-specefic-id is not generated according to the specification.
         // It needs to be adjusted to match the specification: Base58(Truncate_msb(16(SHA256(publicKey))))
         const did = `did:${environment.did.method}:${environment.network.name}:${encodeBase58(this.address).substring(0, 22)}`
         console.log(did)
