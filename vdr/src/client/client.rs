@@ -47,15 +47,15 @@ impl LedgerClient {
         }
     }
 
-    pub fn contract(&self, name: &str) -> VdrResult<&Box<dyn Contract>> {
-        self.contracts.get(name).ok_or(VdrError::Unexpected)
-    }
-
     pub async fn get_transaction_receipt(&self, hash: &[u8]) -> VdrResult<String> {
         self.client.get_transaction_receipt(hash).await
     }
 
-    pub fn chain_id(&self) -> u64 {
+    pub(crate) fn contract(&self, name: &str) -> VdrResult<&Box<dyn Contract>> {
+        self.contracts.get(name).ok_or(VdrError::Unexpected)
+    }
+
+    pub(crate) fn chain_id(&self) -> u64 {
         self.chain_id
     }
 
@@ -88,6 +88,7 @@ impl LedgerClient {
 
 #[cfg(test)]
 pub mod test {
+    use std::{env, fs};
     use super::*;
     use crate::BasicSigner;
 
@@ -97,19 +98,25 @@ pub mod test {
     pub const PRIVATE_KEY: &'static str =
         "8bbbb1b345af56b560a5b20bd4b0ed1cd8cc9958a16262bc75118453cb546df7";
     pub const DID_REGISTRY_ADDRESS: &'static str = "0x0000000000000000000000000000000000003333";
-    pub const DID_REGISTRY_SPEC_PATH: &'static str = "/Users/artem/indy-ledger/smart_contracts/artifacts/contracts/did/DidRegistry.sol/DidRegistry.json";
+    pub const DID_REGISTRY_SPEC_PATH: &'static str = "../smart_contracts/artifacts/contracts/did/DidRegistry.sol/DidRegistry.json";
     pub const SCHEMA_REGISTRY_ADDRESS: &'static str = "0x0000000000000000000000000000000000005555";
-    pub const SCHEMA_REGISTRY_SPEC_PATH: &'static str = "/Users/artem/indy-ledger/smart_contracts/artifacts/contracts/cl/SchemaRegistry.sol/SchemaRegistry.json";
+    pub const SCHEMA_REGISTRY_SPEC_PATH: &'static str = "../smart_contracts/artifacts/contracts/cl/SchemaRegistry.sol/SchemaRegistry.json";
+
+    fn build_contract_path(contract_path: &str) -> String {
+        let mut cur_dir = env::current_dir().unwrap();
+        cur_dir.push(contract_path);
+        fs::canonicalize(&cur_dir).unwrap().to_str().unwrap().to_string()
+    }
 
     fn contracts() -> Vec<ContractConfig> {
         vec![
             ContractConfig {
                 address: DID_REGISTRY_ADDRESS.to_string(),
-                spec_path: DID_REGISTRY_SPEC_PATH.to_string(),
+                spec_path: build_contract_path(DID_REGISTRY_SPEC_PATH),
             },
             ContractConfig {
                 address: SCHEMA_REGISTRY_ADDRESS.to_string(),
-                spec_path: SCHEMA_REGISTRY_SPEC_PATH.to_string(),
+                spec_path: build_contract_path(SCHEMA_REGISTRY_SPEC_PATH),
             },
         ]
     }
