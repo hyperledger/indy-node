@@ -62,11 +62,6 @@
           string[] accept;
           string[] routingKeys;
       }
-
-      struct Signature {
-          string id;
-          string value;
-      }
       ```
   * Example:
     ```
@@ -142,13 +137,6 @@ Each DID Document MUST have a metadata section when a representation is produced
 * updated (timestamp): The updated field is null if an Update operation has never been performed on the DID document. Time of a block ordered a transaction changed a DID Doc last time
 * deactivated (string): If DID has been deactivated, DID document metadata MUST include this property with the boolean value true. By default this is set to false.
 
-#### Signature
-
-Information regarding the document signature must be signed with the key specified in either the "authentication" or "controller" DID document field.
-
-* id: `kid` of the key used to sign the document.
-* value: DID Document signature.
-
 ## Transactions (Smart Contract's methods)
 
 Contract name: **DidRegistry** 
@@ -163,8 +151,7 @@ Contract name: **DidRegistry**
 * Format:
     ```
     DidRegistry.createDid(
-      didDoc DidDoc,
-      signatures []Signature 
+      didDoc DidDoc
     )
     ```
 * Example:
@@ -184,13 +171,7 @@ Contract name: **DidRegistry**
           did:indy2:testnet:SEp33q43PsdP7nDATyySSH#key1
        ],
        "alsoKnownAs": "Alice"
-      },
-      "signatures": [
-        {
-          id: "did:indy2:testnet:SEp33q43PsdP7nDATyySSH",
-          value: "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        }
-      ]
+      }
     )
     ```
 * Raised Event:
@@ -206,13 +187,28 @@ Contract name: **DidRegistry**
 * Format:
     ```
     DidRegistry.updateDid(
-      didDoc DidDoc,
-      signatures []Signature
+      didDoc DidDoc
     )
     ```
 * Example:
     ```
-  
+    DidRegistry.updatedDid(
+      didDoc: {
+        id:"did:indy2:testnet:SEp33q43PsdP7nDATyySSH",
+        verificationMethod: [
+          {
+             id:"did:indy2:testnet:SEp33q43PsdP7nDATyySSH#key1",
+             type:"Ed25519VerificationKey2018",
+             controller:"did:indy2:testnet:N22SEp33q43PsdP7nDATyySSH",
+             publicKeyMultibase:"zAKJP3f7BD6W4iWEQ9jwndVTCBq8ua2Utt8EEjJ6Vxsf"
+          }
+       ],
+       authentication: [
+          did:indy2:testnet:SEp33q43PsdP7nDATyySSH#key1
+       ],
+       "alsoKnownAs": "Alice"
+      }
+    )
     ```
 * Raised Event:
   * DIDUpdated(id)
@@ -227,13 +223,14 @@ Contract name: **DidRegistry**
 * Format:
     ```
     DidRegistry.deactivateDid( 
-      string did,
-      signatures []Signature
+      string did
     )
     ```
 * Example:
     ```
-  
+    DidRegistry.deactivateDid(
+      "did:indy2:testnet:SEp33q43PsdP7nDATyySSH"
+    )
     ```
 * Raised Event:
   * DIDDeactivated(id)

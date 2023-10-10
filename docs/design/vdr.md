@@ -1,7 +1,7 @@
 # VDR Design
 
-**Disclaimer:** popular packages for working with Ethereum network are very close to `indy-sdk`: their provide tide modules for the whole flow execution.
-It may be difficult to reuse only particular functions without full integration. 
+**Disclaimer:** popular packages for working with Ethereum network are very close to `indy-sdk`: their provide tide
+modules for the whole flow execution. It may be difficult to reuse only particular functions without full integration.
 In the same, time Indy community follows to idea of splitting complex library into components.
 
 > Rust client library to work with Web3, Solidity smart contracts: https://github.com/tomusdrw/rust-web3
@@ -10,8 +10,9 @@ In the same, time Indy community follows to idea of splitting complex library in
 
 * VDR library firstly will be implemented independently and later integrate into existing indy vdr/sdk/frameworks.
 * VDR library will be written in Rust with providing language wrappers.
-* VDR library does conversion of legacy `sov/indy` formatted did's and id's into `indy2` format.  
-* VDR library does conversion of ledger formatted entities (DID Document, Schema, Credential Definition) into specifications compatible format.
+* VDR library does conversion of legacy `sov/indy` formatted did's and id's into `indy2` format.
+* VDR library does conversion of ledger formatted entities (DID Document, Schema, Credential Definition) into
+  specifications compatible format.
 * VDR library does only basic validation within request builders.
 * VDR library does only Ethereum base account signing of transactions.
 * VDR library request builders are tide to the network.
@@ -27,93 +28,112 @@ In the same, time Indy community follows to idea of splitting complex library in
 ///  param: node_address: string - RPC node endpoint
 ///  param: contract_specs: Vec<ContractSpec> - specifications for contracts  deployed on the networl
 ///  param: signer: Option<Signer> - transactions signer. Need to be provided for usage of single-step functions. 
-/// 
+///
 /// #Returns
 ///  client - client to use for building and sending transactions
 fn indy_vdr_create_client(
-    chain_id: String,
+    chain_id: u64,
     node_address: String,
-    contract_specs: Vec<ContractSpec>,
+    contract_configs: Vec<ContractConfig>,
     signer: Option<Signer>
-) -> Client {
+) -> LedgerClient {
     unimpltemented!()
 }
 
-struct ContractSpec {
-    name: String, // name of the contract
+struct ContractConfig {
     address: String, // address of deployed contract
-    abi_path: String, // path to JSON file containing contract's ABI
+    spec_path: String, // path to JSON file containing compiled contract's ABI specification
 }
 
 trait Signer {
-    fn sign(&self, message: &[u8], key: &[u8]) -> TransactionSpec;
+    fn sign(&self, message: &[u8], account: &str) -> VdrResult<(RecoveryId, Vec<u8>)>;
+    fn contain_key(&self, account: &str) -> bool;
+    fn public_key(&self, account: &str) -> Vec<u8>;
 }
 
-trait EthClient {}
-trait Contract {}
-
-struct Web3Client {
-    eth: Web3<Http>
+trait Client {
+    async fn sign_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>>;
+    async fn submit_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>>;
+    async fn call_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>>;
+    async fn get_transaction_receipt(&self, hash: &[u8]) -> VdrResult<String>;
 }
 
-impl EthClient for Web3Client {}
-
-struct Web3Contract {
-    contract: Contract<Http>
+trait Contract {
+    fn address(&self) -> String;
+    fn encode_input(&self, method: &str, params: &[ContractParam]) -> VdrResult<Vec<u8>>;
+    fn decode_output(&self, method: &str, output: &[u8]) -> VdrResult<ContractOutput>;
 }
-impl Contract for Web3Client {}
 
-struct Client {
-    client: EthClient, // ethereum client library
-    contracts: HashMap<String, Contract>, // list of contract instances
-    signer: Signer // transaction signer (wallet)
+pub struct LedgerClient {
+    chain_id: u64, // network chain id
+    client: Box<dyn Client>, // ethereum client library
+    contracts: HashMap<String, Box<dyn Contract>>, // contract instances
 }
 
 /// Ping Ledger.
 ///   
 /// #Params
-///  param: client: Client - Ledger client
-/// 
+///  param: client: LedgerClient - Ledger client
+///
 /// #Returns
 ///   status: object - ping status
 ///
 fn indy_vdr_ping(
-    client: Client,
+    client: LedgerClient,
 ) -> StatusResult {
     unimplemented!();
 }
 
-struct  StatusResult {
-    status: Status
+struct StatusResult {
+  status: Status
 }
 
 enum Status {
-    Ok,
-    Err(String)
+  Ok,
+  Err(String)
+}
+
+/// Sign transaction
+///
+/// #Params
+///  param: client: LedgerClient - Ledger client
+///  param: transaction: Transaction - transaction to sign 
+///
+/// #Returns
+///   signed_transaction - signed transaction
+fn indy_vdr_sign_transaction(
+    client: LedgerClient,
+    transaction: Transaction,
+) -> Transaction {
+  unimplemented!();
 }
 
 /// Submit prepared transaction to the ledger
-///     Depending on the transaction type Write/Read eith send_raw or call ethereum method will be used
+///     Depending on the transaction type Write/Read eith send_raw or call ethereum method will be used to send transaction
 ///   
 /// #Params
-///  param: client: Client - Ledger client
-///  param: transaction: TransactionSpec - spec of transaction to submit
+///  param: client: LedgerClient - Ledger client
+///  param: transaction: Transaction - transaction to submit
 ///  param: options: Option<SubmitTransactionOptions> - extra data required for transaction submitting
-/// 
+///
 /// #Returns
 ///   result - transaction execution results (receipt or hash or data itself?? - need to clarify)  
 ///
 fn indy_vdr_submit_transaction(
-    client: Client,
-    transaction: TransactionSpec
+    client: LedgerClient,
+    transaction: Transaction,
     options: Option<SubmitTransactionOptions>
 ) -> Receipt {
     unimplemented!()
 }
 
-struct TransactionSpec {
+struct Transaction {
+    chain_id: u64,
     type_: TransactionType,
-    txn: Transaction
+    from: Option<String>,
+    to: String,
+    data: Vec<u8>,
+    signed: Option<Vec<u8>>,
 }
 
 enum TransactionType {
@@ -121,17 +141,9 @@ enum TransactionType {
     Write
 }
 
-struct Transaction {
+struct SubmitTransactionOptions {}
 
-}
-
-struct SubmitTransactionOptions {
-
-}
-
-struct Receipt {
-    
-}
+type Receipt = Vec<u8>;
 ```
 
 ## Contracts/Requests methods
@@ -144,28 +156,26 @@ struct Receipt {
 
 ```rust
 // Probably we do no even need it
-struct BuildTxnOptions {
-
-}
+struct BuildTxnOptions {}
 ```
 
 ```rust
 /// Prepare transaction executing `DidRegistry.createDid` smart contract method to create a new DID on the Ledger
 ///
 /// #Params
-///  param: client: Client - Ledger client
+///  param: client: LedgerClient - Ledger client
 ///  param: from: string - sender account address
 ///  param: did_document: DidDocument - DID Document matching to the specification: https://www.w3.org/TR/did-core/
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_build_create_did_transaction(
-    client: Client,
+    client: LedgerClient,
     from: String,
     did_document: DidDoc,
     options: Option<BuildTxnOptions>,
-) -> TransactionSpec {
+) -> Transaction {
     unimplemented!();
 }
 ```
@@ -176,11 +186,11 @@ fn indy_vdr_build_create_did_transaction(
 /// Single step function executing DidRegistry.createDid smart contract method to publish a new DID Document
 ///
 /// #Params
-///  param: client: Client - Ledger client
+///  param: client: LedgerClient - Ledger client
 ///  param: from: string - sender account address
 ///  param: did_document: DidDocument - DID Document matching to the specification: https://www.w3.org/TR/did-core/
 ///  param: options: Option<BuildTxnOptions> - extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   receipt - transaction Receipt
 fn indy_vdr_create_did(
@@ -199,19 +209,19 @@ fn indy_vdr_create_did(
 /// Prepare transaction executing `DidRegistry.updateDid` smart contract method to update an existing DID Document
 ///
 /// #Params
-///  param: client: Client - Ledger client
+///  param: client: LedgerClient - Ledger client
 ///  param: from: string - sender account address
 ///  param: did_document: DidDocument - DID Document matching to the specification: https://www.w3.org/TR/did-core/
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_build_update_did_transaction(
-    client: Client,
+    client: LedgerClient,
     from: String,
     did_document: DidDoc,
     options: Option<BuildTxnOptions>,
-) -> TransactionSpec;
+) -> Transaction;
 ```
 
 ##### Single step contract execution
@@ -220,11 +230,11 @@ fn indy_vdr_build_update_did_transaction(
 /// Single step function executing DidRegistry.updateDid smart contract method to publish DID Document
 ///
 /// #Params
-///  param: client: Client - Ledger client
+///  param: client: LedgerClient - Ledger client
 ///  param: from: string - sender account address
 ///  param: did_document: DidDocument - DID Document matching to the specification: https://www.w3.org/TR/did-core/
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   receipt - transaction Receipt
 fn indy_vdr_update_did(
@@ -243,19 +253,19 @@ fn indy_vdr_update_did(
 /// Prepare transaction executing `DidRegistry.deactivateDid` smart contract method to deactivate an existing DID
 ///
 /// #Params
-///  param: client: Client - Ledger client
+///  param: client: LedgerClient - Ledger client
 ///  param: from: string - sender account address
 ///  param: did: string - did to deactivate
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_build_deactivate_did_transaction(
-    client: Client,
+    client: LedgerClient,
     from: String,
     did: String,
     options: Option<BuildTxnOptions>,
-) -> TransactionSpec;
+) -> Transaction;
 ```
 
 ##### Single step contract execution
@@ -264,11 +274,11 @@ fn indy_vdr_build_deactivate_did_transaction(
 /// Single step function executing DidRegistry.deactivateDid smart contract method to publish DID Document
 ///
 /// #Params
-///  param: client: Client - Ledger client
+///  param: client: LedgerClient - Ledger client
 ///  param: from: string - sender account address
 ///  param: did: string - did to activate
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   receipt - transaction Receipt
 fn indy_vdr_deactivate_did(
@@ -290,14 +300,14 @@ fn indy_vdr_deactivate_did(
 ///  param: client: Ledger - client (Ethereum client - for example web3::Http)
 ///  param: did - DID to resolve
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_build_resolve_did_transaction(
-    client: Client,
+    client: LedgerClient,
     did: String,
     options: Option<BuildTransactionOptions>,
-) -> TransactionSpec;
+) -> Transaction;
 ```
 
 ```rust
@@ -306,11 +316,11 @@ fn indy_vdr_build_resolve_did_transaction(
 /// #Params
 ///  param: client: Ledger - client (Ethereum client - for example web3::Http)
 ///  param: response: bytes - received response
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_parse_resolve_did_response(
-    client: Client,
+    client: LedgerClient,
     response: bytes,
 ) -> DidDocumentWithMeta;
 ```
@@ -324,7 +334,7 @@ fn indy_vdr_parse_resolve_did_response(
 ///  param: client - Ledger  client (Ethereum client - for example web3::Http)
 ///  param: did - DID to resolve
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   did_document_with_meta - resolved DID Document
 fn indy_vdr_resolve_did(
@@ -341,7 +351,7 @@ fn indy_vdr_resolve_did(
 ///  param: client - Ledger  client (Ethereum client - for example web3::Http)
 ///  param: did - DID-URL to derefence
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   did_document_with_meta - resolved DID Document
 fn indy_vdr_dereference_did(
@@ -365,15 +375,15 @@ fn indy_vdr_dereference_did(
 ///  param: from: string - sender account address
 ///  param: schema - Schema object matching to the specification - https://hyperledger.github.io/anoncreds-spec/#term:schema
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_build_create_schema_transaction(
-    client: Client,
+    client: LedgerClient,
     from: String,
     schema: Schema,
     options: Option<BuildTxnOptions>,
-) -> TransactionSpec;
+) -> Transaction;
 ```
 
 ##### Single step contract execution
@@ -382,11 +392,11 @@ fn indy_vdr_build_create_schema_transaction(
 /// Single step function executing SchemaRegistry.createSchema smart contract method to publish Schema
 ///
 /// #Params
-///  param: client: Client - Ledger client
+///  param: client: LedgerClient - Ledger client
 ///  param: from: string - sender account address
 ///  param: schema - Schema object matching to the specification - https://hyperledger.github.io/anoncreds-spec/#term:schema
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   receipt - transaction Receipt
 fn indy_vdr_create_schema(
@@ -408,14 +418,14 @@ fn indy_vdr_create_schema(
 ///  param: client: Ledger - client (Ethereum client - for example web3::Http)
 ///  param: id - id of Schema to resolve
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_build_resolve_schema_transaction(
-    client: Client,
+    client: LedgerClient,
     id: String,
     options: Option<BuildTransactionOptions>,
-) -> TransactionSpec;
+) -> Transaction;
 ```
 
 ```rust
@@ -424,11 +434,11 @@ fn indy_vdr_build_resolve_schema_transaction(
 /// #Params
 ///  param: client: Ledger - client (Ethereum client - for example web3::Http)
 ///  param: response: bytes - received response bytes
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_parse_resolve_schema_response(
-    client: Client,
+    client: LedgerClient,
     response: bytes,
 ) -> SchemaWithMeta;
 ```
@@ -442,7 +452,7 @@ fn indy_vdr_parse_resolve_schema_response(
 ///  param: client - Ledger  client (Ethereum client - for example web3::Http)
 ///  param: id - id of Schema to resolve
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   schema_with_meta - resolved Schema
 fn indy_vdr_resolve_schema(
@@ -466,15 +476,15 @@ fn indy_vdr_resolve_schema(
 ///  param: from: string - sender account address
 ///  param: cred_def - Credential Definition object matching to the specification - https://hyperledger.github.io/anoncreds-spec/#term:credential-definition 
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_build_create_schema_transaction(
-    client: Client,
+    client: LedgerClient,
     from: String,
     cred_def: CredentialDefinition,
     options: Option<BuildTxnOptions>,
-) -> TransactionSpec;
+) -> Transaction;
 ```
 
 ##### Single step contract execution
@@ -483,11 +493,11 @@ fn indy_vdr_build_create_schema_transaction(
 /// Single step function executing CredentialDefinitionRegistry.createCredentialDefinition smart contract method to piblish Credential Definition
 ///
 /// #Params
-///  param: client: Client - Ledger client
+///  param: client: LedgerClient - Ledger client
 ///  param: from: string - sender account address
 ///  param: cred_def - Credential Definition object matching to the specification - https://hyperledger.github.io/anoncreds-spec/#term:credential-definition 
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   receipt - transaction Receipt
 fn indy_vdr_create_credential_definition(
@@ -509,14 +519,14 @@ fn indy_vdr_create_credential_definition(
 ///  param: client: Ledger - client (Ethereum client - for example web3::Http)
 ///  param: id - id of Credential Definition to resolve
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_build_resolve_credential_definition_transaction(
-    client: Client,
+    client: LedgerClient,
     id: String,
     options: Option<BuildTransactionOptions>,
-) -> TransactionSpec;
+) -> Transaction;
 ```
 
 ```rust
@@ -525,11 +535,11 @@ fn indy_vdr_build_resolve_credential_definition_transaction(
 /// #Params
 ///  param: client: Ledger - client (Ethereum client - for example web3::Http)
 ///  param: response: bytes - received response bytes
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_parse_resolve_credential_definition_response(
-    client: Client,
+    client: LedgerClient,
     response: bytes,
 ) -> CredentialDefinitionWithMeta;
 ```
@@ -543,10 +553,10 @@ fn indy_vdr_parse_resolve_credential_definition_response(
 ///  param: client - Ledger  client (Ethereum client - for example web3::Http)
 ///  param: id - id of Credential Definition to resolve
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   cred_def_with_meta - resolved Schema
-fn indy_vdr_resolve_schema(
+fn indy_vdr_resolve_credential_definition(
     client: LedgerClient,
     id: String,
     options: Option<ResolveDidOptions>,
@@ -568,16 +578,16 @@ fn indy_vdr_resolve_schema(
 ///  param: to: string - account address to assign role
 ///  param: role: string - role to assign
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_build_assign_role_transaction(
-    client: Client,
+    client: LedgerClient,
     from: String,
     to: String,
     role: String,
     options: Option<BuildTxnOptions>,
-) -> TransactionSpec;
+) -> Transaction;
 ```
 
 ##### Single step contract execution
@@ -586,12 +596,12 @@ fn indy_vdr_build_assign_role_transaction(
 /// Single step function executing RoleControl.assignRole smart contract method to assign account role
 ///
 /// #Params
-///  param: client: Client - Ledger client
+///  param: client: LedgerClient - Ledger client
 ///  param: from: string - sender account address
 ///  param: to: string - account address to assign role
 ///  param: role: string - role to assign
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   receipt - transaction Receipt
 fn indy_vdr_assign_role(
@@ -616,16 +626,16 @@ fn indy_vdr_assign_role(
 ///  param: to: string - account address to assign role
 ///  param: role: string - role to revoke
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_build_revoke_role_transaction(
-    client: Client,
+    client: LedgerClient,
     from: String,
     to: String,
     role: String,
     options: Option<BuildTxnOptions>,
-) -> TransactionSpec;
+) -> Transaction;
 ```
 
 ##### Single step contract execution
@@ -634,12 +644,12 @@ fn indy_vdr_build_revoke_role_transaction(
 /// Single step function executing RoleControl.revokeRole smart contract method to revoke account role
 ///
 /// #Params
-///  param: client: Client - Ledger client
+///  param: client: LedgerClient - Ledger client
 ///  param: from: string - sender account address
 ///  param: to: string - account address to assign role
 ///  param: role: string - role to assign
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   receipt - transaction Receipt
 fn indy_vdr_revoke_role(
@@ -662,14 +672,14 @@ fn indy_vdr_revoke_role(
 ///  param: client: Ledger - client (Ethereum client - for example web3::Http)
 ///  param: account: string - account address to get role
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_build_get_role_transaction(
-    client: Client,
+    client: LedgerClient,
     account: String,
     options: Option<BuildTransactionOptions>,
-) -> TransactionSpec;
+) -> Transaction;
 ```
 
 ```rust
@@ -678,11 +688,11 @@ fn indy_vdr_build_get_role_transaction(
 /// #Params
 ///  param: client: Ledger - client (Ethereum client - for example web3::Http)
 ///  param: response: bytes - received response bytes
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_parse_get_role_response(
-    client: Client,
+    client: LedgerClient,
     response: bytes,
 ) -> AccountRole;
 ```
@@ -696,7 +706,7 @@ fn indy_vdr_parse_get_role_response(
 ///  param: client - Ledger client (Ethereum client - for example web3::Http)
 ///  param: account: string - account address to get role
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   validators - list of current validators
 fn indy_vdr_get_role(
@@ -720,15 +730,15 @@ fn indy_vdr_get_role(
 ///  param: from: string - sender account address
 ///  param: validator: string - address of valdiator to add
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_build_add_validator_transaction(
-    client: Client,
+    client: LedgerClient,
     from: String,
     validator: String,
     options: Option<BuildTxnOptions>,
-) -> TransactionSpec;
+) -> Transaction;
 ```
 
 ##### Single step contract execution
@@ -737,11 +747,11 @@ fn indy_vdr_build_add_validator_transaction(
 /// Single step function executing ValidatorControl.addValidato smart contract method to add new validator node
 ///
 /// #Params
-///  param: client: Client - Ledger client
+///  param: client: LedgerClient - Ledger client
 ///  param: from: string - sender account address
 ///  param: validator: string - address of valdiator to add
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   receipt - transaction Receipt
 fn indy_vdr_add_validator(
@@ -764,15 +774,15 @@ fn indy_vdr_add_validator(
 ///  param: from: string - sender account address
 ///  param: validator: string - address of valdiator to remove
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_build_remove_validator_transaction(
-    client: Client,
+    client: LedgerClient,
     from: String,
     validator: String,
     options: Option<BuildTxnOptions>,
-) -> TransactionSpec;
+) -> Transaction;
 ```
 
 ##### Single step contract execution
@@ -781,11 +791,11 @@ fn indy_vdr_build_remove_validator_transaction(
 /// Single step function executing ValidatorControl.removeValidator smart contract method to remove validator node
 ///
 /// #Params
-///  param: client: Client - Ledger client
+///  param: client: LedgerClient - Ledger client
 ///  param: from: string - sender account address
 ///  param: validator: string - address of valdiator to remove
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   receipt - transaction Receipt
 fn indy_vdr_remove_validator(
@@ -806,26 +816,26 @@ fn indy_vdr_remove_validator(
 /// #Params
 ///  param: client: Ledger - client (Ethereum client - for example web3::Http)
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_build_get_validators_transaction(
-    client: Client,
+    client: LedgerClient,
     options: Option<BuildTransactionOptions>,
-) -> TransactionSpec;
+) -> Transaction;
 ```
 
 ```rust
-/// Parse response for of `ValidatorControl.getValdiators` smart contract 
+/// Parse response for of `ValidatorControl.getValidators` smart contract 
 ///
 /// #Params
 ///  param: client: Ledger - client (Ethereum client - for example web3::Http)
 ///  param: response: bytes - received response bytes
-/// 
+///
 /// #Returns
-///   transaction: TransactionSpec - prepared transaction object 
+///   transaction: Transaction - prepared transaction object 
 fn indy_vdr_parse_get_validators_response(
-    client: Client,
+    client: LedgerClient,
     response: bytes,
 ) -> ValidatorList;
 
@@ -842,7 +852,7 @@ struct ValidatorList {
 /// #Params
 ///  param: client - Ledger  client (Ethereum client - for example web3::Http)
 ///  param: options: Option<BuildTxnOptions> - (Optional) extra data required for transaction preparation
-/// 
+///
 /// #Returns
 ///   validators - list of current validators
 fn indy_vdr_get_validators(
@@ -851,35 +861,10 @@ fn indy_vdr_get_validators(
 ) -> ValidatorList; 
 ```
 
-## Transaction Spec methods
+## Transaction methods
 
-```rust
-/// Get bytes to sign
-///
-/// #Params
-///  param: transaction: TransactionSpec - preparaed transaction 
-///
-/// #Returns
-///   bytes_to_sign - bytes need to be signed
-fn indy_vdr_transaction_spec_get_bytes_to_sign(
-    transaction: TransactionSpec,
-) -> bytes;
-
-/// Set signature for transaction spec.
-///
-/// #Params
-///  param: transaction: TransactionSpec - preparaed transaction 
-///  param: signature: bytes - signature bytes
-///
-/// #Returns
-///   did_document_with_meta - resolved DID Document
-fn indy_vdr_transaction_spec_set_signature(
-    transaction: TransactionSpec,
-    signature: bytes,
-);
+???
 ```
-
-????
 
 ## Transaction flow example
 
@@ -888,9 +873,10 @@ fn indy_vdr_transaction_spec_set_signature(
 ```
 client = indy_vdr_create_client(chain_id, node_address, contracts_path)
 did_document = {}
-transaction = indy_vdr_build_create_did_transaction(client.contract, from, did_document, options): TransactionSpec
-signed_transaction = external_wallet_method_to_secp256k1_sign(transaction.data, private_key)
-indy_vdr_submit_transaction(client, signed_transaction)
+transaction = indy_vdr_build_create_did_transaction(client.contract, from, did_document, options): Transaction
+signature = external_wallet_method_to_secp256k1_sign(transaction.data, private_key)
+transaction.set_signature(signature)
+indy_vdr_submit_transaction(client, transaction)
 ```
 
 ### Reads
@@ -898,14 +884,14 @@ indy_vdr_submit_transaction(client, signed_transaction)
 ```
 client = indy_vdr_create_client(chain_id, node_address, contracts_path)
 did = ""
-transaction = indy_vdr_build_resolve_did_transaction(client.contract, did, options): TransactionSpec
+transaction = indy_vdr_build_resolve_did_transaction(client.contract, did, options): Transaction
 indy_vdr_submit_transaction(client, transaction)
 ```
 
 ## Wallet: Transaction signing
 
 * **Algorithm:** `ECDSA` - elliptic curve digital signature.
-    * `recoverable`?  - public key can be recovered from the signature
+    * `recoverable`? - public key can be recovered from the signature
 * **Key Types:** - `Secp256k1`
 * Steps:
     * `hash = keccak256.Hash(data)`
@@ -917,7 +903,7 @@ indy_vdr_submit_transaction(client, transaction)
 ///
 /// #Params
 ///  param: mnemonic - string (Optional) seed used for deterministic account generation 
-/// 
+///
 /// #Returns
 ///   wallet - wallet used for signing transactions (web3?)
 fn external_wallet_method_to_create_wallet_with_ethr_account(
@@ -925,11 +911,10 @@ fn external_wallet_method_to_create_wallet_with_ethr_account(
 ) -> Wallet;
 
 struct Wallet {
-    keys: Vec<Key>
+    keys: HashMap<String, Key>
 }
 
 struct Key {
-    type: string,
     public_key: Vec<bytes>,
     private_key: Vec<bytes>
 }
@@ -939,7 +924,7 @@ struct Key {
 /// #Params
 ///  param: message: bytes - message to sign (hashed message according to EIP-191)
 ///  param: private_key: bytes - key to use for signing 
-/// 
+///
 /// #Returns
 ///   signature: bytes - generated signature
 fn external_wallet_method_to_Secp256k1_sign(
