@@ -12,8 +12,8 @@ export interface RolesConfig {
   }
 }
 
-export function roles() {
-  const { name, address, description, data } = config.roles
+export function roleControl() {
+  const { name, address, description, data } = config.roleControl
   const storage: any = {}
 
   // mappings for the account to role are stored in slot sha3(account | slot(0))

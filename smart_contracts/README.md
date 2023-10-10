@@ -75,3 +75,5 @@ This section describes how to inject smart contracts into the genesis state of t
 3. Put the whole block into the `alloc` section of the network genesis file.
 
 4. Set address of `ValidatorControl` contract into `validatorcontractaddress` field of the `qbft` section of the genesis file.
+
+4. Set address of `AccountControl` contract into `permissions-accounts-contract-address` field of the `config.toml` file.

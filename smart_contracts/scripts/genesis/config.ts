@@ -1,10 +1,12 @@
-import { AccountControlConfig } from './contracts/accountControl'
-import { CredentialDefinitionsConfig } from './contracts/credentialDefinitions'
-import { DidsConfig } from './contracts/dids'
-import { DidValidatorConfig } from './contracts/didValidator'
-import { RolesConfig } from './contracts/roles'
-import { SchemasConfig } from './contracts/schemas'
-import { ValidatorsConfig } from './contracts/validators'
+import {
+  AccountControlConfig,
+  CredentialDefinitionsConfig,
+  DidsConfig,
+  DidValidatorConfig,
+  RolesConfig,
+  SchemasConfig,
+  ValidatorsConfig,
+} from './contracts'
 
 export const compiledContractsFolder = 'compiled-contracts'
 export const inFile = 'config.json'
@@ -12,50 +14,60 @@ export const outFile = 'ContractsGenesis.json'
 
 export interface Config {
   accountControl: AccountControlConfig
-  credentialDefinitions: CredentialDefinitionsConfig
+  credentialDefinitionRegistry: CredentialDefinitionsConfig
   didValidator: DidValidatorConfig
-  dids: DidsConfig
-  roles: RolesConfig
-  schemas: SchemasConfig
-  validators: ValidatorsConfig
+  didRegistry: DidsConfig
+  roleControl: RolesConfig
+  schemaRegistry: SchemasConfig
+  validatorControl: ValidatorsConfig
+}
+
+const contractsAddresses = {
+  didValidator: '0x0000000000000000000000000000000000002222',
+  didRegistry: '0x0000000000000000000000000000000000003333',
+  credentialDefinitionRegistry: '0x0000000000000000000000000000000000004444',
+  schemas: '0x0000000000000000000000000000000000005555',
+  roles: '0x0000000000000000000000000000000000006666',
+  validators: '0x0000000000000000000000000000000000007777',
+  accountControl: '0x0000000000000000000000000000000000008888',
 }
 
 export const config: Config = {
   accountControl: {
     name: 'AccountControl',
-    address: '0x0000000000000000000000000000000000008888',
+    address: contractsAddresses.accountControl,
     description: 'Account permissioning smart contract',
     data: {
-      roleControlContractAddress: '0000000000000000000000000000000000006666',
+      roleControlContractAddress: contractsAddresses.roles,
     },
   },
-  credentialDefinitions: {
+  credentialDefinitionRegistry: {
     name: 'CredentialDefinitionRegistry',
-    address: '0x0000000000000000000000000000000000004444',
+    address: contractsAddresses.credentialDefinitionRegistry,
     description: 'Smart contract to manage credential definitions',
     data: {
       credentialDefinitions: [],
-      didRegistryAddress: '0x0000000000000000000000000000000000003333',
-      schemaRegistryAddress: '0x0000000000000000000000000000000000005555',
+      didRegistryAddress: contractsAddresses.didRegistry,
+      schemaRegistryAddress: contractsAddresses.schemas,
     },
   },
   didValidator: {
     name: 'DidValidator',
-    address: '0x0000000000000000000000000000000000002222',
+    address: contractsAddresses.didValidator,
     description: 'Library to validate DID',
   },
-  dids: {
+  didRegistry: {
     name: 'DidRegistry',
-    address: '0x0000000000000000000000000000000000003333',
+    address: contractsAddresses.didRegistry,
     description: 'Smart contract to manage DIDs',
-    libraries: { 'contracts/did/DidValidator.sol:DidValidator': '0x0000000000000000000000000000000000002222' },
+    libraries: { 'contracts/did/DidValidator.sol:DidValidator': contractsAddresses.didValidator },
     data: {
       dids: [],
     },
   },
-  roles: {
+  roleControl: {
     name: 'RoleControl',
-    address: '0x0000000000000000000000000000000000006666',
+    address: contractsAddresses.roles,
     description: 'Smart contract to manage account roles',
     data: {
       accounts: [
@@ -87,18 +99,18 @@ export const config: Config = {
       },
     },
   },
-  schemas: {
+  schemaRegistry: {
     name: 'SchemaRegistry',
-    address: '0x0000000000000000000000000000000000005555',
+    address: contractsAddresses.schemas,
     description: 'Smart contract to manage schemas',
     data: {
       schemas: [],
-      didRegistryAddress: '0x0000000000000000000000000000000000003333',
+      didRegistryAddress: contractsAddresses.didRegistry,
     },
   },
-  validators: {
+  validatorControl: {
     name: 'ValidatorControl',
-    address: '0x0000000000000000000000000000000000007777',
+    address: contractsAddresses.validators,
     description: 'Smart contract to manage validator nodes',
     data: {
       validators: [
@@ -119,7 +131,7 @@ export const config: Config = {
           validator: '0x98c1334496614aed49d2e81526d089f7264fed9c',
         },
       ],
-      roleControlContractAddress: '0000000000000000000000000000000000006666',
+      roleControlContractAddress: contractsAddresses.roles,
     },
   },
 }
