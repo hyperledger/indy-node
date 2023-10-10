@@ -13,7 +13,7 @@ import {
   VerificationMethod,
   VerificationRelationship,
 } from '../contracts-ts'
-import { Account } from '../utils'
+import { Contract } from '../utils'
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
