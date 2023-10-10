@@ -1,7 +1,7 @@
 import { BN } from 'bn.js'
 import { padLeft, sha3 } from 'web3-utils'
-import { ContractConfig } from '../contractConfig'
 import { config } from '../config'
+import { ContractConfig } from '../contractConfig'
 import { buildSection, slots } from '../helpers'
 
 export interface ValidatorsConfig extends ContractConfig {

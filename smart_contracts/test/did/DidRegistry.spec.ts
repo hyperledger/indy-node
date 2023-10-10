@@ -1,7 +1,6 @@
 import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers'
 import { expect } from 'chai'
-import { DidRegistry, VerificationMethod } from '../../contracts-ts/DidRegistry'
-import { Contract } from '../../utils'
+import { VerificationMethod } from '../../contracts-ts/DidRegistry'
 import { createBaseDidDocument, createFakeSignature, deployDidRegistry } from '../utils'
 
 describe('DIDContract', function () {

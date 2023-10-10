@@ -1,7 +1,5 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
-import { DidRegistry } from '../../contracts-ts'
-import { Contract } from '../../utils'
 import { ClErrors } from '../errors'
 import {
   createBaseDidDocument,
@@ -9,8 +7,6 @@ import {
   createFakeSignature,
   createSchemaObject,
   deployCredentialDefinitionRegistry,
-  TestableCredentialDefinitionRegistry,
-  TestableSchemaRegistry,
 } from '../utils'
 
 describe('CredentialDefinitionRegistry', function () {

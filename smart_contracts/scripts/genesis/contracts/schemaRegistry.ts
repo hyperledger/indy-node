@@ -1,6 +1,6 @@
 import { padLeft } from 'web3-utils'
-import { ContractConfig } from '../contractConfig'
 import { config } from '../config'
+import { ContractConfig } from '../contractConfig'
 import { buildSection, slots } from '../helpers'
 
 export interface SchemasConfig extends ContractConfig {

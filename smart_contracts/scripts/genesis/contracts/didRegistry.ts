@@ -1,5 +1,5 @@
-import { ContractConfig } from '../contractConfig'
 import { config } from '../config'
+import { ContractConfig } from '../contractConfig'
 import { buildSection } from '../helpers'
 
 export interface DidsConfig extends ContractConfig {

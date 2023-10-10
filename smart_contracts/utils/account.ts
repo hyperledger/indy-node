@@ -1,4 +1,4 @@
-import { Signer, encodeBase58 } from 'ethers';
+import { encodeBase58, Signer } from 'ethers';
 import { ethers } from 'hardhat';
 import { environment, host, web3 } from '../environment';
 import { createBaseDidDocument } from '../test/utils';
