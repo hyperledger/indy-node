@@ -9,8 +9,8 @@ export interface DidsConfig extends ContractConfig {
   }
 }
 
-export function dids() {
-  const { name, address, description, libraries } = config.dids
+export function didRegistry() {
+  const { name, address, description, libraries } = config.didRegistry
   const storage: any = {}
   return buildSection(name, address, description, storage, libraries)
 }

@@ -10,8 +10,8 @@ export interface SchemasConfig extends ContractConfig {
   }
 }
 
-export function schemas() {
-  const { name, address, description, data } = config.schemas
+export function schemaRegistry() {
+  const { name, address, description, data } = config.schemaRegistry
   const storage: any = {}
 
   storage[slots['0']] = padLeft(data.didRegistryAddress, 64)

@@ -11,8 +11,8 @@ export interface ValidatorsConfig extends ContractConfig {
   }
 }
 
-export function validators() {
-  const { name, address, description, data } = config.validators
+export function validatorControl() {
+  const { name, address, description, data } = config.validatorControl
   const storage: any = {}
 
   // length of the validator array is stored in slot 0

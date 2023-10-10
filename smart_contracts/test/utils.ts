@@ -9,10 +9,11 @@ import {
   Schema,
   SchemaRegistry,
   Signature,
+  Transaction,
   VerificationMethod,
   VerificationRelationship,
 } from '../contracts-ts'
-import { Contract } from '../utils'
+import { Account } from '../utils'
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -214,5 +215,27 @@ export function createCredentialDefinitionObject({
     credDefType,
     tag,
     value,
+  }
+}
+
+export function createContractDeployTransaction(sender: string): Transaction {
+  return {
+    sender,
+    target: '0x0000000000000000000000000000000000000000',
+    value: 0,
+    gasPrice: 0,
+    gasLimit: 0,
+    bytes: '0x00',
+  }
+}
+
+export function createWriteTransaction(sender: string): Transaction {
+  return {
+    sender,
+    target: '0x0000000000000000000000000000000000003333',
+    value: 0,
+    gasPrice: 0,
+    gasLimit: 0,
+    bytes: '0x00',
   }
 }
