@@ -1,6 +1,7 @@
 import {
   AccountControlConfig,
   CredentialDefinitionsConfig,
+  DidRegexConfig,
   DidsConfig,
   DidValidatorConfig,
   RolesConfig,
@@ -17,12 +18,14 @@ export interface Config {
   credentialDefinitionRegistry: CredentialDefinitionsConfig
   didValidator: DidValidatorConfig
   didRegistry: DidsConfig
+  didRegex: DidRegexConfig
   roleControl: RolesConfig
   schemaRegistry: SchemasConfig
   validatorControl: ValidatorsConfig
 }
 
 const contractsAddresses = {
+  didRegex: '0x0000000000000000000000000000000000001111',
   didValidator: '0x0000000000000000000000000000000000002222',
   didRegistry: '0x0000000000000000000000000000000000003333',
   credentialDefinitionRegistry: '0x0000000000000000000000000000000000004444',
@@ -51,10 +54,16 @@ export const config: Config = {
       schemaRegistryAddress: contractsAddresses.schemas,
     },
   },
+  didRegex: {
+    name: 'DidRegex',
+    address: contractsAddresses.didRegex,
+    description: 'Regex library to validate DID syntax',
+  },
   didValidator: {
     name: 'DidValidator',
     address: contractsAddresses.didValidator,
     description: 'Library to validate DID',
+    libraries: { 'contracts/did/DidRegex.sol:DidRegex': contractsAddresses.didRegex },
   },
   didRegistry: {
     name: 'DidRegistry',

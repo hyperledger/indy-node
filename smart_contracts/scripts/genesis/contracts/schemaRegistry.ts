@@ -1,11 +1,9 @@
 import { padLeft } from 'web3-utils'
 import { config } from '../config'
+import { ContractConfig } from '../contractConfig'
 import { buildSection, slots } from '../helpers'
 
-export interface SchemasConfig {
-  name: string
-  address: string
-  description: string
+export interface SchemasConfig extends ContractConfig {
   data: {
     schemas: Array<{ id: string; data: { name: string } }>
     didRegistryAddress: string

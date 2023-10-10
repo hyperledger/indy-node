@@ -1,12 +1,10 @@
 import { BN } from 'bn.js'
 import { padLeft, sha3 } from 'web3-utils'
 import { config } from '../config'
+import { ContractConfig } from '../contractConfig'
 import { buildSection, slots } from '../helpers'
 
-export interface ValidatorsConfig {
-  name: string
-  address: string
-  description: string
+export interface ValidatorsConfig extends ContractConfig {
   data: {
     validators: Array<{ account: string; validator: string }>
     roleControlContractAddress: string

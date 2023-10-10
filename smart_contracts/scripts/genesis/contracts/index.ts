@@ -1,6 +1,7 @@
 export * from './accountControl'
 export * from './credentialDefinitionRegistry'
 export * from './didRegistry'
+export * from './didRegex'
 export * from './didValidator'
 export * from './roleControl'
 export * from './schemaRegistry'

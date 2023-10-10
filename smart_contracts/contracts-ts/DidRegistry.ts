@@ -30,7 +30,7 @@ export class DidRegistry extends Contract {
     return tx.wait()
   }
 
-  public async deactivateDid(id: string,) {
+  public async deactivateDid(id: string) {
     const tx = await this.instance.deactivateDid(id)
     return tx.wait()
   }

@@ -3,6 +3,7 @@ import { outFile } from './config'
 import {
   accountControl,
   credentialDefinitionRegistry,
+  didRegex,
   didRegistry,
   didValidator,
   roleControl,
@@ -15,6 +16,7 @@ function main() {
     ...accountControl(),
     ...roleControl(),
     ...validatorControl(),
+    ...didRegex(),
     ...didValidator(),
     ...didRegistry(),
     ...schemaRegistry(),

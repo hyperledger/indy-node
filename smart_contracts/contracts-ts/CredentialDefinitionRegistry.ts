@@ -31,7 +31,7 @@ export class CredentialDefinitionRegistry extends Contract {
         value: result.credDef.value,
       },
       metadata: {
-        created: result.metadata.create,
+        created: result.metadata.created,
       },
     }
   }

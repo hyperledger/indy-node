@@ -36,7 +36,7 @@ async function demo() {
 
   console.log('6. Faber resolves Test Schema to ensure its written')
   const resolvedSchema = await faber.schemaRegistry.resolveSchema(schema.id)
-  console.log(`Schema resolved for ${schema.id}. Schema: ${JSON.stringify(resolvedSchema)}`)
+  console.log(`Schema resolved for ${schema.id}. Schema: ${JSON.stringify(resolvedSchema.schema)}`)
 
   console.log('7. Faber create Test Credential Definition')
   const credentialDefinition = createCredentialDefinitionObject({ issuerId: faber.did, schemaId: schema.id })
@@ -50,7 +50,7 @@ async function demo() {
   )
   console.log(
     `Credential Definition resolved for ${credentialDefinition.id}. Credential Definition: ${JSON.stringify(
-      resolvedCredentialDefinition,
+      resolvedCredentialDefinition.credDef,
     )}`,
   )
   await delay(2000)
@@ -61,7 +61,7 @@ async function demo() {
 
   console.log('10. Alice resolves Test Schema')
   const testSchema = await alice.schemaRegistry.resolveSchema(schema.id)
-  console.log(`Schema resolved for ${schema.id}. Schema: ${JSON.stringify(testSchema)}`)
+  console.log(`Schema resolved for ${schema.id}. Schema: ${JSON.stringify(testSchema.schema)}`)
 
   console.log('11. Alice resolves Test Credential Definition')
   const testCredentialDefinition = await alice.credentialDefinitionRegistry.resolveCredentialDefinition(
@@ -69,7 +69,7 @@ async function demo() {
   )
   console.log(
     `Credential Definition resolved for ${credentialDefinition.id}. Credential Definition: ${JSON.stringify(
-      testCredentialDefinition,
+      testCredentialDefinition.credDef,
     )}`,
   )
 }

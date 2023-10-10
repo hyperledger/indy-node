@@ -27,7 +27,7 @@ export class SchemaRegistry extends Contract {
         attrNames: result.schema.attrNames,
       },
       metadata: {
-        created: result.metadata.create,
+        created: result.metadata.created,
       },
     }
   }

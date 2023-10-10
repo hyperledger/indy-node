@@ -1,38 +1,25 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
-import { DidRegistry } from '../../contracts-ts'
-import { Contract } from '../../utils'
 import { ClErrors } from '../errors'
 import {
   createBaseDidDocument,
   createCredentialDefinitionObject,
   createSchemaObject,
-  TestableCredentialDefinitionRegistry,
-  TestableSchemaRegistry,
+  deployCredentialDefinitionRegistry,
 } from '../utils'
 
 describe('CredentialDefinitionRegistry', function () {
   const issuerId = 'did:indy2:mainnet:SEp33q43PsdP7nDATyySSH'
 
   async function deployCredDefContractFixture() {
-    const didValidator = new Contract('DidValidator')
-    await didValidator.deploy()
-
-    const didRegistry = new DidRegistry()
-    await didRegistry.deploy({ libraries: [didValidator] })
+    const { credentialDefinitionRegistry, didRegistry, schemaRegistry } = await deployCredentialDefinitionRegistry()
 
     const didDocument = createBaseDidDocument(issuerId)
 
     await didRegistry.createDid(didDocument)
 
-    const schemaRegistry = new TestableSchemaRegistry()
-    await schemaRegistry.deploy({ params: [didRegistry.address] })
-
     const schema = createSchemaObject({ issuerId })
     await schemaRegistry.createSchema(schema)
-
-    const credentialDefinitionRegistry = new TestableCredentialDefinitionRegistry()
-    await credentialDefinitionRegistry.deploy({ params: [didRegistry.address, schemaRegistry.address] })
 
     return {
       didRegistry,
