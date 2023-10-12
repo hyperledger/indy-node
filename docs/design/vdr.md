@@ -47,7 +47,7 @@ struct ContractConfig {
 
 trait Signer {
     fn sign(&self, message: &[u8], account: &str) -> VdrResult<(RecoveryId, Vec<u8>)>;
-    fn contain_key(&self, account: &str) -> bool;
+    fn has_key(&self, account: &str) -> bool;
     fn public_key(&self, account: &str) -> Vec<u8>;
 }
 
@@ -56,6 +56,7 @@ trait Client {
     async fn submit_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>>;
     async fn call_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>>;
     async fn get_transaction_receipt(&self, hash: &[u8]) -> VdrResult<String>;
+    async fn ping(&self) -> VdrResult<PingStatus>;
 }
 
 trait Contract {

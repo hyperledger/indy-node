@@ -4,7 +4,12 @@ use crate::{
 };
 
 use secp256k1::{ecdsa::RecoveryId, All, Message, PublicKey, Secp256k1, SecretKey};
-use std::{collections::HashMap, str::FromStr};
+use std::collections::HashMap;
+
+#[cfg(test)]
+use std::str::FromStr;
+#[cfg(test)]
+use web3::signing::keccak256;
 
 pub struct KeyPair {
     public_key: PublicKey,
@@ -17,6 +22,7 @@ pub struct BasicSigner {
 }
 
 impl BasicSigner {
+    #[cfg(test)]
     pub fn new() -> VdrResult<BasicSigner> {
         Ok(BasicSigner {
             secp: Secp256k1::new(),
@@ -24,11 +30,14 @@ impl BasicSigner {
         })
     }
 
-    pub fn add_key(&mut self, id: &str, private_key: &str) -> VdrResult<()> {
+    #[cfg(test)]
+    pub fn add_key(&mut self, private_key: &str) -> VdrResult<()> {
         let private_key = SecretKey::from_str(private_key)?;
         let public_key = PublicKey::from_secret_key(&self.secp, &private_key);
+        let address = self.get_address(&public_key);
+
         self.keys.insert(
-            id.to_string(),
+            address,
             KeyPair {
                 public_key,
                 private_key,
@@ -39,6 +48,12 @@ impl BasicSigner {
 
     fn get_key(&self, account: &str) -> VdrResult<&KeyPair> {
         self.keys.get(account).ok_or(VdrError::Unexpected)
+    }
+
+    #[cfg(test)]
+    fn get_address(&self, public_key: &PublicKey) -> String {
+        let hash = keccak256(&public_key.serialize_uncompressed()[1..]);
+        format!("0x{}", hex::encode(&hash[12..]))
     }
 }
 
@@ -53,7 +68,7 @@ impl Signer for BasicSigner {
         Ok((recovery_id, signature.to_vec()))
     }
 
-    fn contain_key(&self, account: &str) -> bool {
+    fn has_key(&self, account: &str) -> bool {
         self.keys.contains_key(account)
     }
 
@@ -75,7 +90,13 @@ pub mod test {
 
     pub fn signer() -> BasicSigner {
         let mut signer = BasicSigner::new().unwrap();
-        signer.add_key(ACCOUNT, PRIVATE_KEY).unwrap();
+        signer.add_key(PRIVATE_KEY).unwrap();
         signer
+    }
+
+    #[test]
+    fn add_key_test() {
+        let basic_signer = signer();
+        assert!(basic_signer.has_key(ACCOUNT));
     }
 }
