@@ -61,12 +61,12 @@ pragma solidity ^0.8.20;
 
 import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy";
 
-contract UpgradableContract is UUPSUpgradable {
+contract UpgradableContract is UUPSUpgradable, Initializable {
 
     UpgradeControlInterface _upgradeControl;
 
-    constructor(address upgradeControlAddress) {
-        _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
+    function initialize(address upgradeControlAddress) public initializer {
+      _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
     }
 
     function _authorizeUpgrade(address newImplementation) internal override {
