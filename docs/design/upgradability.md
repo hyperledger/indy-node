@@ -6,6 +6,14 @@ Upgrading smart contracts is a challenging task because they are immutable once 
 
 A proxy contract is a smart contract that forwards function calls to another contract, known as the implementation contract. The proxy contract holds the state, while the implementation contract contains the logic. When you want to upgrade the contract, you deploy a new implementation and update the proxy to point to this new address. This way, you can change the contract’s behavior without affecting its address. There are several common patterns of proxy implementation.
 
+```
+User ---- tx ---> Proxy -X--------> Implementation_v0
+                     |
+                      ---X--------> Implementation_v1
+                     |
+                      ------------> Implementation_v2
+```
+
 ### Proxy Smart Contract Patterns
 
 #### Transparent proxy pattern ([EIP-1538](https://eips.ethereum.org/EIPS/eip-1538))
@@ -74,6 +82,11 @@ contract UpgradableContract is UUPSUpgradable, Initializable {
     }
 }
 ```
+
+## Resources
+
+- https://docs.openzeppelin.com/upgrades-plugins/1.x/
+- https://blog.logrocket.com/using-uups-proxy-pattern-upgrade-smart-contracts/
 
 
 
