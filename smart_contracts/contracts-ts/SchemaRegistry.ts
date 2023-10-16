@@ -1,4 +1,4 @@
-import { SchemaStruct, SchemaWithMetadataStruct } from '../typechain-types/cl/SchemaRegistryInterface'
+import { SchemaStruct, SchemaWithMetadataStruct } from '../typechain-types/contracts/cl/SchemaRegistryInterface'
 import { Contract } from '../utils/contract'
 
 export type Schema = SchemaStruct

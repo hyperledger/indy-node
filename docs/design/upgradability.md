@@ -35,23 +35,45 @@ Diamond proxy pattern introduces the concept of "Diamonds" which are a more modu
 ## Upgrading Smart Contracts using UUPS proxy pattern
 Among the listed templates, the UUPS proxy template is the most suitable for our needs. It is not only straightforward to implement but also it provides flexability to update the upgrade logic in the future. The [OpenZeppelin](https://docs.openzeppelin.com/contracts/4.x/api/proxy) library can be used for this implementation. Conveniently, it offers seamless integration with the Hardhat library, simplifying our testing process. To implement this proxy using OpenZeppelin, one only needs to inherit from the [UUPSUpgradeable](https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable) contract. This contract provides an abstract method, [_authorizeUpgrade](https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable-_authorizeUpgrade-address-), where we can define our own upgrade permission mechanism. Additionally, it has a built-in security feature to prevent any upgrades to non-UUPS compliant implementations. This is essential as it avoids unintentional upgrades to an implementation contract lacking the requisite upgrade mechanisms, which would otherwise permanently lock the proxy's upgradeability.
 
-### Contract Upgrade Smart Contract's methods
+### Upgrade Control Smart Contract's methods
 
 * Method: **ensureSufficientApprovals**
-* Description: This transaction ensures that an implementation upgrade has garnered sufficient approvals. At least 60% of users with the trustee role should approve before proceeding. It should be invoked within the _authorizeUpgrade method of the UUPS upgradeable contract. If approvals are insufficient, the transaction will be reverted with a `InsufficientApprovals` error.
+* Description: This transaction ensures that an implementation upgrade has received sufficient approvals. At least 60% of users with the trustee role should approve before proceeding. If approvals are insufficient, the transaction will be reverted with a `InsufficientApprovals` error. It can be invoked within the [_authorizeUpgrade](https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable-_authorizeUpgrade-address-) method of the [UUPSUpgradeable](https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable) contract.
 * Restrictions: None.
 * Format:
   ```
-  ContractUpgrade.ensureSufficientApprovals(address proxy, address implementation)
+  UpgradeController.ensureSufficientApprovals(address proxy, address implementation)
   ```
 * Method: **approve**
-* Description: Transaction to approve specefic contract implementation
+* Description: Transaction to approve specefic contract implementation. Once over 60 percent of approvals are received, this function upgrades implementation.
 * Restrictions:
   * Sender must have TRUSTEE role assigned
+  * Implementation must be [UUPSUpgradeable](https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable)
 * Format
-    ```
-    ContractUpgrade.approve(address proxy, address implementation)
-    ```
+  ```
+  UpgradeController.approve(address proxy, address implementation)
+  ```
+#### Usage Example
+
+```
+// SPDX-License-Identifier: Apache-2.0
+pragma solidity ^0.8.20;
+
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy";
+
+contract UpgradableContract is UUPSUpgradable {
+
+    UpgradeControlInterface _upgradeControl;
+
+    constructor(address upgradeControlAddress) {
+        _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
+    }
+
+    function _authorizeUpgrade(address newImplementation) internal override {
+      _upgradeControl.ensureSufficientApprovals(address(this), newImplementation);
+    }
+}
+```
 
 
 

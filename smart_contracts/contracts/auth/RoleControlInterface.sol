@@ -36,4 +36,9 @@ interface RoleControlInterface {
      * @dev Function to revoke role from an account
      */
     function revokeRole(ROLES role, address account) external returns (bool);
+
+     /**
+     * @dev Function to return the count of an account with the role of a trustee
+     */
+    function getTrusteeCount() external view returns (uint);
 }
