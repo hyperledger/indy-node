@@ -5,21 +5,26 @@ import { Unauthorized } from "../auth/AuthErrorTypes.sol";
 import { RoleControlInterface } from "../auth/RoleControlInterface.sol";
 import { UpgradeControlInterface } from "./UpgradeControlInterface.sol";
 
-import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
-import { ERC1967Utils } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
 import { IERC1822Proxiable } from "@openzeppelin/contracts/interfaces/draft-IERC1822.sol";
+import { ERC1967Utils } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
-contract UpgradeControl is UpgradeControlInterface {
+contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializable {
+    RoleControlInterface private _roleControl;
 
-    RoleControlInterface _roleControl;
-    
     /**
      * @dev Mapping proxy and implmentation addresses to there approvers addresses 
      */
-    mapping(address => mapping(address => address[])) private upgradeApprovals;
+    mapping(address => mapping(address => UpgradeData)) private upgradeApprovals;
 
-    constructor(address roleControlAddress) {
+    function initialize(address roleControlAddress) public initializer {
         _roleControl = RoleControlInterface(roleControlAddress);
+    }
+
+    /// @inheritdoc UUPSUpgradeable
+    function _authorizeUpgrade(address newImplementation) internal view override {
+        ensureSufficientApprovals(address(this), newImplementation);
     }
 
     /**
@@ -40,18 +45,32 @@ contract UpgradeControl is UpgradeControlInterface {
      * @dev Modifier that checks that the sender account has a trustee role
      */
     modifier _onlyTrustee() {
-        if (!_roleControl.hasRole(RoleControlInterface.ROLES.TRUSTEE, msg.sender)) revert Unauthorized();
+        if (!_roleControl.hasRole(RoleControlInterface.ROLES.TRUSTEE, msg.sender)) revert Unauthorized(msg.sender);
+        _;
+    }
+
+    /**
+     * Modifier that checks that the sender has not approved the upgrade yet
+     */
+    modifier _hasNotApproved(address proxy, address implementation) {
+        if (upgradeApprovals[proxy][implementation].approvals[msg.sender]) revert AlreadyApproved();
         _;
     }
 
     /// @inheritdoc UpgradeControlInterface
-    function approve(address proxy, address implementation) public override _onlyTrustee() _isUupsProxy(implementation) {
-        upgradeApprovals[proxy][implementation].push(msg.sender);
+    function approve(address proxy, address implementation) 
+        public override 
+        _onlyTrustee() 
+        _isUupsProxy(implementation) 
+        _hasNotApproved(proxy, implementation) 
+    {
+        upgradeApprovals[proxy][implementation].approvals[msg.sender] = true;
+        upgradeApprovals[proxy][implementation].approvers.push(msg.sender);
 
         emit UpgradeApproved(proxy, implementation, msg.sender);
 
         if (isSufficientApprovals(proxy, implementation)) {
-            UUPSUpgradeable(proxy).upgradeToAndCall(implementation, "0x0");
+            UUPSUpgradeable(proxy).upgradeToAndCall(implementation, "");
         }
     }
 
@@ -62,13 +81,13 @@ contract UpgradeControl is UpgradeControlInterface {
 
     function isSufficientApprovals(address proxy, address implementation) view private returns (bool) {
         uint trusteeCount = _roleControl.getTrusteeCount();
-        uint approvalsCount = upgradeApprovals[proxy][implementation].length;
+        uint approvalsCount = upgradeApprovals[proxy][implementation].approvers.length;
         uint requiredApprovalsCount = ceil(trusteeCount * 6, 10);
 
         return approvalsCount >= requiredApprovalsCount;
     }
 
     function ceil(uint x, uint y) pure private returns (uint) {
-        return (x- 1) / y + 1;
+        return (x - 1) / y + 1;
     }
 }

@@ -4,6 +4,14 @@ pragma solidity ^0.8.0;
 interface UpgradeControlInterface {
 
     /**
+     * @dev Struct that captures the approval status for a proposed contract upgrade.
+     */
+    struct UpgradeData {
+        mapping (address => bool) approvals;
+        address[] approvers;
+    }
+
+    /**
      * @dev Event that is sent when a contract implementation upgrade is approved.
      * 
      * @param proxy Address of the proxy contract.
@@ -15,6 +23,9 @@ interface UpgradeControlInterface {
     /// @dev Error emitted when the number of approvals is insufficient.
     error InsufficientApprovals();
 
+    /// @dev Error emitted when a sender has previously approved.
+    error AlreadyApproved();
+
     /**
      * @dev Approves a specific contract implementation for an upgrade.
      * 
@@ -24,8 +35,9 @@ interface UpgradeControlInterface {
      * When approvals exceed 60 percent, the implementation will be upgraded.
      * 
      * Restrictions:
-     * - Only accounts with the trustee role can call this method.
-     * - The provided implementation must be a UUPS upgradable contract.
+     * - Only accounts with the trustee role can call this method. Otherwise will throw an `Unauthorized` error 
+     * - The provided implementation must be a UUPS upgradable contract. Otherwise will throw an `ERC1967InvalidImplementation` error
+     * - An account can only approve each implementation once. Otherwise will throw an `AlreadyApproved` error
      *
      * @param proxy The address of the proxy contract.
      * @param implementation The address of the proposed new implementation.

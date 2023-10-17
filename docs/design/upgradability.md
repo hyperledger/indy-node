@@ -55,8 +55,9 @@ Among the listed templates, the UUPS proxy template is the most suitable for our
 * Method: **approve**
 * Description: Transaction to approve specefic contract implementation. Once over 60 percent of approvals are received, this function upgrades implementation.
 * Restrictions:
-  * Sender must have TRUSTEE role assigned
-  * Implementation must be [UUPSUpgradeable](https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable)
+  * Sender must have TRUSTEE role assigned.
+  * Implementation must be [UUPSUpgradeable](https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable).
+  * Sender can only approve each implementation once.
 * Format
   ```
   UpgradeController.approve(address proxy, address implementation)

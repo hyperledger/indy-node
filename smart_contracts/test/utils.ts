@@ -1,4 +1,5 @@
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
+import { BytesLike } from 'ethers'
 import { ethers } from 'hardhat'
 import {
   CredentialDefinition,
@@ -9,6 +10,7 @@ import {
   Schema,
   SchemaRegistry,
   Transaction,
+  UpgradeControl,
   VerificationMethod,
   VerificationRelationship,
 } from '../contracts-ts'
@@ -52,6 +54,22 @@ export class TestableSchemaRegistry extends SchemaRegistry {
 export class TestableCredentialDefinitionRegistry extends CredentialDefinitionRegistry {
   public get baseInstance() {
     return this.instance
+  }
+}
+
+export class TestableUpgradeControl extends UpgradeControl {
+  public get baseInstance() {
+    return this.instance
+  }
+}
+
+export class UpgradablePrototype extends Contract {
+  public get baseInstance() {
+    return this.instance
+  }
+
+  public get version(): Promise<string> {
+    return this.instance.getVersion()
   }
 }
 
