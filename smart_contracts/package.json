@@ -12,6 +12,7 @@
     "demo/validators": "ts-node demos/validator-control.ts",
     "demo/flow": "ts-node demos/flow.ts",
     "demo/account": "ts-node demos/account-control.ts",
+    "demo/upgrade": "hardhat run demos/upgrade-control.ts --network besu",
     "genesis/generate": "ts-node scripts/genesis/generate.ts"
   },
   "license": "Apache-2.0",
@@ -36,7 +37,7 @@
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.2",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@nomiclabs/hardhat-waffle": "^2.0.6",
-    "@openzeppelin/hardhat-upgrades": "^2.3.2",
+    "@openzeppelin/hardhat-upgrades": "^2.3.3",
     "@typechain/ethers-v6": "^0.5.0",
     "@typechain/hardhat": "9.0.0",
     "@types/chai": "^4.3.6",

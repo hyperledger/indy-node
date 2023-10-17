@@ -4,9 +4,9 @@ pragma solidity ^0.8.20;
 import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
-import { UpgradeControlInterface } from "../UpgradeControlInterface.sol";
+import { UpgradeControlInterface } from "../upgrade/UpgradeControlInterface.sol";
 
-contract UpgradablePrototypeV2 is UUPSUpgradeable, Initializable {
+contract UpgradablePrototypeV1 is UUPSUpgradeable, Initializable {
 
     UpgradeControlInterface _upgradeControl;
 
@@ -19,6 +19,6 @@ contract UpgradablePrototypeV2 is UUPSUpgradeable, Initializable {
     }
 
     function getVersion() public pure returns (string memory version) {
-        return "2.0";
+        return "1.0";
     }
 }

@@ -1,4 +1,5 @@
-import { padLeft, sha3 } from 'web3-utils'
+import { padLeft, sha3, toHex } from 'web3-utils'
+import { ROLES } from '../../../contracts-ts'
 import { config } from '../config'
 import { ContractConfig } from '../contractConfig'
 import { buildSection, slots } from '../helpers'
@@ -30,6 +31,10 @@ export function roleControl() {
       .toLowerCase()
     storage[padLeft(slot, 64)] = padLeft(parseInt(owner, 10).toString(16), 64)
   }
+
+  const trusteeCount = data.accounts.filter((e) => e.role === ROLES.TRUSTEE).length
+
+  storage[slots['2']] = padLeft(toHex(trusteeCount), 64).substring(2)
 
   return buildSection(name, address, description, storage)
 }

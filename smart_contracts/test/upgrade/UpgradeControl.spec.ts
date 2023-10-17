@@ -93,7 +93,7 @@ describe('UpgradableControl', function () {
     ).to.revertedWithCustomError(upgradeControl.baseInstance, UpgradeControlErrors.AlreadyApproved)
   })
 
-  it('Should fail when approval sends from a non-trustee account.', async function () {
+  it('Should fail when approval sends from a non-trustee account', async function () {
     const { upgradeControl, upgradablePrototype, upgradablePrototypeV2, testAccounts } = await loadFixture(
       deployUpgradableContractFixture,
     )

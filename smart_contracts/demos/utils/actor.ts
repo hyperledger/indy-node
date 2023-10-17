@@ -4,6 +4,7 @@ import {
   SchemaRegistry,
   CredentialDefinitionRegistry,
   ValidatorControl,
+  UpgradeControl,
 } from '../../contracts-ts'
 import { Account, AccountInfo } from '../../utils'
 
@@ -14,6 +15,7 @@ export class Actor {
   public didRegistry!: DidRegistry
   public schemaRegistry!: SchemaRegistry
   public credentialDefinitionRegistry!: CredentialDefinitionRegistry
+  public upgradeControl!: UpgradeControl
 
   constructor(accountInfo?: AccountInfo) {
     this.account = accountInfo ? new Account(accountInfo) : new Account()
@@ -27,6 +29,7 @@ export class Actor {
     this.credentialDefinitionRegistry = await new CredentialDefinitionRegistry(this.account).getInstance(
       CredentialDefinitionRegistry.defaultAddress,
     )
+    this.upgradeControl = await new UpgradeControl(this.account).getInstance(UpgradeControl.defaultAddress)
     return this
   }
 

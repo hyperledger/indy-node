@@ -23,6 +23,9 @@ contract RoleControl is RoleControlInterface {
      */
     mapping(ROLES role => ROLES ownerRole) private _roleOwners;
 
+    /**
+     * @dev Count of accounts with the trustee role
+     */
     uint private _trusteeCount;
 
     constructor() {

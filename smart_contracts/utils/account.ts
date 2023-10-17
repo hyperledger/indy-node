@@ -1,7 +1,7 @@
 import { encodeBase58, Signer } from 'ethers';
 import { ethers } from 'hardhat';
 import { environment, host, web3 } from '../environment';
-import { createBaseDidDocument } from '../test/utils';
+import { createBaseDidDocument } from './entity-factories';
 
 export interface AccountInfo {
     address: string,

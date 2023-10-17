@@ -35,15 +35,6 @@ export class Contract {
         return this
     }
 
-    public async upgradeProxy(proxyAddress: string, libraries?: [Contract]) {
-        const factory = await ethers.getContractFactory(
-            this.name,
-            { signer: this.signer, libraries: this.toDictionary(libraries) },
-        )
-
-        await upgrades.upgradeProxy(proxyAddress, factory);
-    }
-
     public async deploy(options?: { params?: any, libraries?: [Contract] }) {
         const { params, libraries } = options || {}
 

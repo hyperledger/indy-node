@@ -2,8 +2,7 @@ import environment from '../environment'
 import { Actor } from './utils/actor'
 import { delay } from '../utils'
 import { ROLES } from '../contracts-ts'
-import { createSchemaObject } from './utils/schema'
-import { createCredentialDefinitionObject } from './utils/credentialDefinition'
+import { createCredentialDefinitionObject, createSchemaObject } from '../utils/entity-factories'
 
 async function demo() {
   let receipt: any
