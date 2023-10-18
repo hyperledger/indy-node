@@ -84,9 +84,11 @@ impl TryFrom<ContractOutput> for SchemaWithMeta {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::{contracts::did::test::DID, rand_string};
+    use crate::{contracts::did::did_doc::test::DID, utils::rand_string};
 
-    pub const SCHEMA_NAME: &'static str = "m1DQly1FxUPs";
+    pub const SCHEMA_ID: &'static str =
+        "did:indy2:testnet:3LpjszkgTmE3qThge25FZw/anoncreds/v0/SCHEMA/F1DClaFEzi3t/1.0.0";
+    pub const SCHEMA_NAME: &'static str = "F1DClaFEzi3t";
     pub const SCHEMA_VERSION: &'static str = "1.0.0";
     pub const SCHEMA_ATTRIBUTE_FIRST_NAME: &'static str = "First Name";
     pub const SCHEMA_ATTRIBUTE_LAST_NAME: &'static str = "Last Name";

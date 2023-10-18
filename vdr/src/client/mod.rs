@@ -14,6 +14,7 @@ pub trait Client {
     async fn submit_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>>;
     async fn call_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>>;
     async fn get_transaction_receipt(&self, hash: &[u8]) -> VdrResult<String>;
+    async fn ping(&self) -> VdrResult<PingStatus>;
 }
 
 pub trait Contract {

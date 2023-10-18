@@ -1,3 +1,4 @@
 mod common;
 
-pub use common::{rand_string, sleep};
+#[cfg(test)]
+pub use common::{rand_bytes, rand_string};

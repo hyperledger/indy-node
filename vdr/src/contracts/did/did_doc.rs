@@ -504,9 +504,9 @@ impl TryFrom<ContractOutput> for DidDocumentWithMeta {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::rand_string;
+    use crate::utils::rand_bytes;
 
-    pub const DID: &'static str = "did:indy2:testnet:tbNMu6x0wI9e";
+    pub const DID: &'static str = "did:indy2:testnet:3LpjszkgTmE3qThge25FZw";
     pub const CONTEXT: &'static str = "https://www.w3.org/ns/did/v1";
     pub const MULTIBASE_KEY: &'static str = "zAKJP3f7BD6W4iWEQ9jwndVTCBq8ua2Utt8EEjJ6Vxsf";
     pub const SERVICE_ENDPOINT: &'static str = "https://example.com/path";
@@ -541,7 +541,10 @@ pub mod test {
     }
 
     pub fn new_id() -> String {
-        format!("did:indy2:testnet:{}", rand_string())
+        format!(
+            "did:indy2:testnet:{}",
+            &bs58::encode(rand_bytes()).into_string()
+        )
     }
 
     pub fn did_doc(id: Option<&str>) -> DidDocument {

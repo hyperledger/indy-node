@@ -16,6 +16,20 @@ pub struct ContractSpec {
     pub abi: serde_json::Value,
 }
 
+impl ContractSpec {
+    pub fn from_file(spec_path: &str) -> VdrResult<Self> {
+        let contract_spec = std::fs::read_to_string(spec_path).map_err(|err| {
+            VdrError::Common(format!("Unable to read contract spec file. Err: {:?}", err))
+        })?;
+        serde_json::from_str(&contract_spec).map_err(|err| {
+            VdrError::Common(format!(
+                "Unable to parse contract specification. Err: {:?}",
+                err.to_string()
+            ))
+        })
+    }
+}
+
 pub type ContractParam = Token;
 
 #[derive(Debug)]

@@ -4,8 +4,9 @@ use crate::{
     signer::Signer,
 };
 
+use crate::client::PingStatus;
 use serde_json::json;
-use std::str::FromStr;
+use std::{str::FromStr, time::Duration};
 use web3::{
     api::Eth,
     transports::Http,
@@ -17,6 +18,9 @@ pub struct Web3Client {
     client: Web3<Http>,
     signer: Option<Box<dyn Signer + 'static + Send + Sync>>,
 }
+
+const POLL_INTERVAL: u64 = 200;
+const NUMBER_TX_CONFIRMATIONS: usize = 1; // FIXME: what number of confirmation events should we wait? 2n+1?
 
 impl Web3Client {
     pub fn new(
@@ -39,21 +43,25 @@ impl Web3Client {
 #[async_trait::async_trait]
 impl Client for Web3Client {
     async fn sign_transaction(&self, transaction: &Transaction) -> VdrResult<Transaction> {
-        let account = transaction.from.clone().ok_or(VdrError::Unexpected)?;
         let signer = self.signer.as_ref().ok_or(VdrError::Unexpected)?;
-        if !signer.contain_key(&account) {
+        let account = transaction.from.clone().ok_or(VdrError::Unexpected)?;
+
+        if !signer.has_key(&account) {
             return Err(VdrError::Unexpected);
         }
+
         let signer = Web3Signer::new(account, signer);
-        let address = Address::from_str(&transaction.to).map_err(|_| VdrError::Unexpected)?;
+
+        let to = Address::from_str(&transaction.to).map_err(|_| VdrError::Unexpected)?;
         let web3_transaction = TransactionParameters {
-            to: Some(address),
+            to: Some(to),
             data: Bytes::from(transaction.clone().data),
             chain_id: Some(transaction.chain_id),
             gas: U256([GAS, 0, 0, 0]),
             gas_price: Some(U256([0, 0, 0, 0])),
             ..Default::default()
         };
+
         let signed_transaction = self
             .client
             .accounts()
@@ -61,21 +69,25 @@ impl Client for Web3Client {
             .await?
             .raw_transaction
             .0;
-        let signed_transaction = Transaction {
+
+        Ok(Transaction {
             signed: Some(signed_transaction),
             ..transaction.clone()
-        };
-        Ok(signed_transaction)
+        })
     }
 
     async fn submit_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>> {
         let signed_transaction = transaction.signed.as_ref().ok_or(VdrError::Unexpected)?;
-        let response = self
+
+        let receipt = self
             .client
-            .eth()
-            .send_raw_transaction(Bytes::from(signed_transaction.clone()))
+            .send_raw_transaction_with_confirmation(
+                Bytes::from(signed_transaction.clone()),
+                Duration::from_millis(POLL_INTERVAL),
+                NUMBER_TX_CONFIRMATIONS,
+            )
             .await?;
-        Ok(response.0.to_vec())
+        Ok(receipt.transaction_hash.0.to_vec())
     }
 
     async fn call_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>> {
@@ -95,5 +107,12 @@ impl Client for Web3Client {
             .await?
             .ok_or(VdrError::Unexpected)
             .map(|receipt| json!(receipt).to_string())
+    }
+
+    async fn ping(&self) -> VdrResult<PingStatus> {
+        match self.client.eth().block_number().await {
+            Ok(_current_block) => Ok(PingStatus::ok()),
+            Err(_) => Ok(PingStatus::err("Could not get current network block")),
+        }
     }
 }
