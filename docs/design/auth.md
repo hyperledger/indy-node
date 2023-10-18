@@ -47,6 +47,12 @@
 | CredentialDefinitionRegistry | createCredentialDefinition  | Trustee, Endorser, Steward  | Create a new Credential Definition       |
 | CredentialDefinitionRegistry | resolveCredentialDefinition | any                         | Resolve Credential Definition by id      |
 
+## Contract upgrade management
+
+| Contract          | Method     | Required Role     | Action Description                                         |
+|-------------------|------------|-------------------|------------------------------------------------------------|
+| UpgradeControl    | approve    | Trustee           | Approve the upgrade of a specefic contract implementation  |
+
 ## Transactions managment
 
 | Transaction              | Required Role               | Action Description                               |
