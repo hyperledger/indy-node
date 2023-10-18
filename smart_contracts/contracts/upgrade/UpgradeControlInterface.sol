@@ -66,7 +66,7 @@ interface UpgradeControlInterface {
      * 
      * Restrictions:
      * - Only accounts with the trustee role can call this method. Otherwise will throw an `Unauthorized` error 
-     * - The approved implementation must be proposed first. Otherwise will throw an `UpgradeProposalNotFound` error
+     * - The approved implementation must have been previously proposed. Otherwise will throw an `UpgradeProposalNotFound` error
      * - An account can only approve each implementation upgrade once. Otherwise will throw an `UpgradeAlreadyApproved` error
      *
      * @param proxy The address of the proxy contract.

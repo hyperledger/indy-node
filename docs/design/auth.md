@@ -51,6 +51,7 @@
 
 | Contract          | Method                    | Required Role     | Action Description                                                       |
 |-------------------|---------------------------|-------------------|--------------------------------------------------------------------------|
+| UpgradeControl    | propose                   | Trustee           | Propose the upgrade of a specefic contract implementation                |
 | UpgradeControl    | approve                   | Trustee           | Approve the upgrade of a specefic contract implementation                |
 | UpgradeControl    | ensureSufficientApprovals | any               | Ensures that an implementation upgrade has received sufficient approvals |
 

@@ -51,17 +51,29 @@ This smart contract is designed to manage the approval process for upgrading a c
     ```
   * Raised Event: None
 
-* Method: `approve`
-  * Description: Transaction to approve specefic contract implementation. Once over 60 percent of approvals are received, this function upgrades implementation.
+* Method: `propose`
+  * Description: Transaction to propose an upgrade to a specified contract implementation.
   * Restrictions:
     * Sender must have TRUSTEE role assigned.
     * Implementation must be [UUPSUpgradeable](https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable).
-    * Sender can only approve each implementation once.
+    * The same implementation upgrade can not be proposed more than once.
+  * Format
+    ```
+    UpgradeController.propose(address proxy, address implementation)
+    ```
+  * Raised Event: UpgradeProposed(proxy, implementation, sender)
+
+* Method: `approve`
+  * Description: Transaction to approve an upgrade to a specified contract implementation. Once over 60 percent of approvals are received, this function upgrades implementation.
+  * Restrictions:
+    * Sender must have TRUSTEE role assigned.
+    * The approved implementation must have been previously proposed.
+    * An account can only approve each implementation upgrade once.
   * Format
     ```
     UpgradeController.approve(address proxy, address implementation)
     ```
-  * Raised Event: Approved(sender), Upgraded(implementation)
+  * Raised Event: UpgradeApproved(proxy, implementation, sender), Upgraded(implementation)
 
 #### Usage Example
 
