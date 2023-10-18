@@ -26,7 +26,7 @@ contract RoleControl is RoleControlInterface {
     /**
      * @dev Count of accounts with the trustee role
      */
-    uint private _trusteeCount;
+    mapping(ROLES role => uint) private _roleCounts;
 
     constructor() {
         _initialTrustee();
@@ -79,9 +79,9 @@ contract RoleControl is RoleControlInterface {
     function assignRole(ROLES role, address account) public virtual _onlyRoleOwner(role) returns (ROLES assignedRole) {
         if (!hasRole(role, account)) {
             _roles[account] = role;
-            emit RoleAssigned(role, account, msg.sender);
+            _roleCounts[role]++;
 
-            if (role == ROLES.TRUSTEE) _trusteeCount++;
+            emit RoleAssigned(role, account, msg.sender);
         }
         return role;
     }
@@ -90,15 +90,17 @@ contract RoleControl is RoleControlInterface {
     function revokeRole(ROLES role, address account) public virtual _onlyRoleOwner(role) returns (bool) {
         if (hasRole(role, account)) {
             delete _roles[account];
+            _roleCounts[role]--;
+
             emit RoleRevoked(role, account, msg.sender);
 
-            if (role == ROLES.TRUSTEE) _trusteeCount--;
+           return true;
         }
         return false;
     }
 
     /// @inheritdoc RoleControlInterface
-    function getTrusteeCount() public view virtual returns (uint) {
-        return _trusteeCount;
+    function getRoleCount(ROLES role) public view virtual returns (uint) {
+        return _roleCounts[role];
     }
 }

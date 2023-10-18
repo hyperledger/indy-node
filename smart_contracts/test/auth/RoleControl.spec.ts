@@ -82,4 +82,17 @@ describe('RoleControl', () => {
       ).to.be.revertedWith('Sender does not have required role to perform action')
     })
   })
+
+  describe('getRoleCount', () => {
+    it('should return assigned roles count', async function () {
+      await roleControl.assignRole(ROLES.TRUSTEE, new Account().address)
+      await roleControl.assignRole(ROLES.ENDORSER, new Account().address)
+      await roleControl.assignRole(ROLES.ENDORSER, new Account().address)
+      await roleControl.assignRole(ROLES.STEWARD, testAccounts.steward.account.address)
+      
+      expect(await roleControl.getRoleCount(ROLES.TRUSTEE)).to.equal(5)
+      expect(await roleControl.getRoleCount(ROLES.ENDORSER)).to.equal(5)
+      expect(await roleControl.getRoleCount(ROLES.STEWARD)).to.equal(3)
+    })
+  })
 })

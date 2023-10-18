@@ -80,7 +80,7 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
     }
 
     function isSufficientApprovals(address proxy, address implementation) view private returns (bool) {
-        uint trusteeCount = _roleControl.getTrusteeCount();
+        uint trusteeCount = _roleControl.getRoleCount(RoleControlInterface.ROLES.TRUSTEE);
         uint approvalsCount = upgradeApprovals[proxy][implementation].approvers.length;
         uint requiredApprovalsCount = ceil(trusteeCount * 6, 10);
 

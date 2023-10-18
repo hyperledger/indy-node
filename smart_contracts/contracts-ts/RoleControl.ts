@@ -33,7 +33,7 @@ export class RoleControl extends Contract {
     return await tx.wait()
   }
 
-  public async getTrusteeCount() {
-    return this.instance.getTrusteeCount()
+  public async getRoleCount(role: number) {
+    return this.instance.getRoleCount(role)
   }
 }
