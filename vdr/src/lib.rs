@@ -7,7 +7,7 @@ mod utils;
 pub use client::{ContractConfig, LedgerClient};
 pub use contracts::{
     CredentialDefinition, CredentialDefinitionRegistry, DidDocument, DidRegistry, Schema,
-    SchemaRegistry,
+    SchemaRegistry, ValidatorControl,
 };
 
 #[cfg(feature = "ledger_test")]
