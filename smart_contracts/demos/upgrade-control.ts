@@ -21,23 +21,27 @@ async function demo() {
   await upgradablePrototypeV2.deploy()
   console.log(`Upgradable contract V2 deployed to address ${upgradablePrototype.address} by trustee1`)
 
-  console.log('4. Approve the upgradable contract V2 by trustee1')
-  let receipt = await trustee1.upgradeControl.approve(upgradablePrototype.address!, upgradablePrototypeV2.address!)
+  console.log('4. Propose the upgradable contract V2 by trustee1')
+  let receipt = await trustee1.upgradeControl.propose(upgradablePrototype.address!, upgradablePrototypeV2.address!)
+  console.log(`Upgradable contract V2 proposed by trustee1 -- ${JSON.stringify(receipt)}`)
+
+  console.log('5. Approve the upgradable contract V2 by trustee1')
+  receipt = await trustee1.upgradeControl.approve(upgradablePrototype.address!, upgradablePrototypeV2.address!)
   console.log(`Upgradable contract V2 approved by trustee1 -- ${JSON.stringify(receipt)}`)
 
-  console.log('5. Approve the upgradable contract V2 by trustee2')
+  console.log('6. Approve the upgradable contract V2 by trustee2')
   receipt = await trustee2.upgradeControl.approve(upgradablePrototype.address!, upgradablePrototypeV2.address!)
   console.log(`Upgradable contract V2 approved by trustee2 -- ${JSON.stringify(receipt)}`)
 
-  console.log('6. Get the version of upgradable contract')
+  console.log('7. Get the version of upgradable contract')
   version = await upgradablePrototype.version
   console.log(`Upgradable contract version is ${version}`)
 
-  console.log('7. Approve the upgradable contract V2 by trustee3')
+  console.log('8. Approve the upgradable contract V2 by trustee3')
   receipt = await trustee3.upgradeControl.approve(upgradablePrototype.address!, upgradablePrototypeV2.address!)
   console.log(`Upgradable contract V2 approved by trustee3 -- ${JSON.stringify(receipt)}`)
 
-  console.log('8. Get the version of upgradable contract')
+  console.log('9. Get the version of upgradable contract')
   version = await upgradablePrototype.version
   console.log(`Upgradable contract version is ${version}`)
 }

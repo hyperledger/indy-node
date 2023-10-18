@@ -32,9 +32,21 @@ export function roleControl() {
     storage[padLeft(slot, 64)] = padLeft(parseInt(owner, 10).toString(16), 64)
   }
 
-  const trusteeCount = data.accounts.filter((e) => e.role === ROLES.TRUSTEE).length
+  // Group account based on their role and compute a count
+  const roleCounts = data.accounts.reduce<Record<string, number>>((previous, current) => {
+    let count = previous[current.role] || 0
+    previous[current.role] = ++count
+    return previous
+  }, {})
 
-  storage[slots['2']] = padLeft(toHex(trusteeCount), 64).substring(2)
+  // mappings for the roles to their count are stored in slot sha3(role | slot(2))
+  Object.entries(roleCounts).forEach(([role, count]) => {
+    const role_ = padLeft(parseInt(role, 10).toString(16), 64)
+    const slot = sha3('0x' + role_ + slots['2'])!
+      .substring(2)
+      .toLowerCase()
+    storage[padLeft(slot, 64)] = padLeft(toHex(count), 64).substring(2)
+  })
 
   return buildSection(name, address, description, storage)
 }

@@ -62,14 +62,14 @@ describe('UpgradableControl', function () {
       deployUpgradableContractFixture,
     )
 
-   // Propose and approve by trustee
-   upgradeControl.connect(testAccounts.trustee.account)
-   await expect(upgradeControl.propose(upgradablePrototype.address!, upgradablePrototypeV2.address!))
-     .to.emit(upgradeControl.baseInstance, UpgradeControlEvents.UpgradeProposed)
-     .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address, testAccounts.trustee.account.address)
-   await expect(upgradeControl.approve(upgradablePrototype.address!, upgradablePrototypeV2.address!))
-     .to.emit(upgradeControl.baseInstance, UpgradeControlEvents.UpgradeApproved)
-     .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address, testAccounts.trustee.account.address)
+    // Propose and approve by trustee
+    upgradeControl.connect(testAccounts.trustee.account)
+    await expect(upgradeControl.propose(upgradablePrototype.address!, upgradablePrototypeV2.address!))
+      .to.emit(upgradeControl.baseInstance, UpgradeControlEvents.UpgradeProposed)
+      .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address, testAccounts.trustee.account.address)
+    await expect(upgradeControl.approve(upgradablePrototype.address!, upgradablePrototypeV2.address!))
+      .to.emit(upgradeControl.baseInstance, UpgradeControlEvents.UpgradeApproved)
+      .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address, testAccounts.trustee.account.address)
 
     // Approve by trustee2
     upgradeControl.connect(testAccounts.trustee2.account)
@@ -133,9 +133,7 @@ describe('UpgradableControl', function () {
   })
 
   it('Should fail when an implementation that is not UUPSUpgradable is proposed', async function () {
-    const { upgradeControl, upgradablePrototype, testAccounts } = await loadFixture(
-      deployUpgradableContractFixture,
-    )
+    const { upgradeControl, upgradablePrototype, testAccounts } = await loadFixture(deployUpgradableContractFixture)
 
     const notUpgradable = await new UpgradablePrototype('NotUpgradable').deploy()
 

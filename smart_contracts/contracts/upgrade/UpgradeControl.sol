@@ -14,7 +14,7 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
     RoleControlInterface private _roleControl;
 
     /**
-     * @dev Mapping proxy and implmentation addresses to upgrade proposal
+     * @dev Double mapping proxy and implmentation addresses to upgrade proposal
      * The key relationship can be visualized as: 
      * `proxy address -> implementation address -> upgrade proposal`
      */
