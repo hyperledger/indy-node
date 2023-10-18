@@ -22,13 +22,15 @@ impl<'a> Web3Signer<'a> {
 
 impl<'a> Key for Web3Signer<'a> {
     fn sign(&self, message: &[u8], chain_id: Option<u64>) -> Result<Signature, SigningError> {
-        let (recovery_id, signature) = self.signer.sign(message, &self.account)
+        let (recovery_id, signature) = self
+            .signer
+            .sign(message, &self.account)
             .map_err(|_| SigningError::InvalidMessage)?;
 
         let standard_v = recovery_id.to_i32() as u64;
         let v = match chain_id {
             Some(chain_id) => standard_v + 35 + chain_id * 2,
-            None => standard_v + 27
+            None => standard_v + 27,
         };
         let r = H256::from_slice(&signature[..32]);
         let s = H256::from_slice(&signature[32..]);
@@ -37,7 +39,9 @@ impl<'a> Key for Web3Signer<'a> {
     }
 
     fn sign_message(&self, message: &[u8]) -> Result<Signature, SigningError> {
-        let (recovery_id, signature) = self.signer.sign(message, &self.account)
+        let (recovery_id, signature) = self
+            .signer
+            .sign(message, &self.account)
             .map_err(|_| SigningError::InvalidMessage)?;
 
         let v = recovery_id.to_i32() as u64;

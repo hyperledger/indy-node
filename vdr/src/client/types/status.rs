@@ -1,5 +1,5 @@
 #[derive(Debug, PartialEq)]
-pub struct StatusResult {
+pub struct PingStatus {
     pub status: Status,
 }
 
@@ -7,4 +7,16 @@ pub struct StatusResult {
 pub enum Status {
     Ok,
     Err(String),
+}
+
+impl PingStatus {
+    pub fn ok() -> PingStatus {
+        PingStatus { status: Status::Ok }
+    }
+
+    pub fn err(err: &str) -> PingStatus {
+        PingStatus {
+            status: Status::Err(err.to_string()),
+        }
+    }
 }
