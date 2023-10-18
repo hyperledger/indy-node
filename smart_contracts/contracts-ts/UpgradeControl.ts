@@ -7,6 +7,11 @@ export class UpgradeControl extends Contract {
     super(UpgradeControl.name, sender)
   }
 
+  public async propose(proxy: string, implementation: string) {
+    const tx = await this.instance.propose(proxy, implementation)
+    return tx.wait()
+  }
+
   public async approve(proxy: string, implementation: string) {
     const tx = await this.instance.approve(proxy, implementation)
     return tx.wait()

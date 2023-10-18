@@ -14,9 +14,11 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
     RoleControlInterface private _roleControl;
 
     /**
-     * @dev Mapping proxy and implmentation addresses to there approvers addresses 
+     * @dev Mapping proxy and implmentation addresses to upgrade proposal
+     * The key relationship can be visualized as: 
+     * `proxy address -> implementation address -> upgrade proposal`
      */
-    mapping(address => mapping(address => UpgradeData)) private upgradeApprovals;
+    mapping(address => mapping(address => UpgradeProposal)) private upgradeProposals;
 
     function initialize(address roleControlAddress) public initializer {
         _roleControl = RoleControlInterface(roleControlAddress);
@@ -49,23 +51,51 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
         _;
     }
 
+     /**
+     * Modifier that checks that the upgrade proposal exists
+     */
+    modifier _hasProposal(address proxy, address implementation) {
+        if (upgradeProposals[proxy][implementation].created == 0) revert UpgradeProposalNotFound(proxy, implementation);
+        _;
+    }
+
+    /**
+     * Modifier that checks that the sender has not proposed the upgrade yet
+     */
+    modifier _hasNotProposed(address proxy, address implementation) {
+        if (upgradeProposals[proxy][implementation].created != 0) revert UpgradeAlreadyProposed(proxy, implementation);
+        _;
+    }
+
     /**
      * Modifier that checks that the sender has not approved the upgrade yet
      */
     modifier _hasNotApproved(address proxy, address implementation) {
-        if (upgradeApprovals[proxy][implementation].approvals[msg.sender]) revert AlreadyApproved();
+        if (upgradeProposals[proxy][implementation].approvals[msg.sender]) revert UpgradeAlreadyApproved(proxy, implementation);
         _;
+    }
+
+    function propose(address proxy, address implementation)
+        public override 
+        _onlyTrustee() 
+        _isUupsProxy(implementation) 
+        _hasNotProposed(proxy, implementation) 
+    {
+        upgradeProposals[proxy][implementation].author = msg.sender;
+        upgradeProposals[proxy][implementation].created = block.timestamp;
+
+        emit UpgradeProposed(proxy, implementation, msg.sender);
     }
 
     /// @inheritdoc UpgradeControlInterface
     function approve(address proxy, address implementation) 
         public override 
-        _onlyTrustee() 
-        _isUupsProxy(implementation) 
+        _onlyTrustee()
+        _hasProposal(proxy, implementation)
         _hasNotApproved(proxy, implementation) 
     {
-        upgradeApprovals[proxy][implementation].approvals[msg.sender] = true;
-        upgradeApprovals[proxy][implementation].approvers.push(msg.sender);
+        upgradeProposals[proxy][implementation].approvals[msg.sender] = true;
+        upgradeProposals[proxy][implementation].approvalsCount++;
 
         emit UpgradeApproved(proxy, implementation, msg.sender);
 
@@ -81,7 +111,7 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
 
     function isSufficientApprovals(address proxy, address implementation) view private returns (bool) {
         uint trusteeCount = _roleControl.getRoleCount(RoleControlInterface.ROLES.TRUSTEE);
-        uint approvalsCount = upgradeApprovals[proxy][implementation].approvers.length;
+        uint approvalsCount = upgradeProposals[proxy][implementation].approvalsCount;
         uint requiredApprovalsCount = ceil(trusteeCount * 6, 10);
 
         return approvalsCount >= requiredApprovalsCount;

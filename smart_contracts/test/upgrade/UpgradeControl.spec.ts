@@ -29,8 +29,11 @@ describe('UpgradableControl', function () {
       deployUpgradableContractFixture,
     )
 
-    // Approve by trustee
+    // Propose and approve by trustee
     upgradeControl.connect(testAccounts.trustee.account)
+    await expect(upgradeControl.propose(upgradablePrototype.address!, upgradablePrototypeV2.address!))
+      .to.emit(upgradeControl.baseInstance, UpgradeControlEvents.UpgradeProposed)
+      .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address, testAccounts.trustee.account.address)
     await expect(upgradeControl.approve(upgradablePrototype.address!, upgradablePrototypeV2.address!))
       .to.emit(upgradeControl.baseInstance, UpgradeControlEvents.UpgradeApproved)
       .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address, testAccounts.trustee.account.address)
@@ -59,11 +62,14 @@ describe('UpgradableControl', function () {
       deployUpgradableContractFixture,
     )
 
-    // Approve by trustee
-    upgradeControl.connect(testAccounts.trustee.account)
-    await expect(upgradeControl.approve(upgradablePrototype.address!, upgradablePrototypeV2.address!))
-      .to.emit(upgradeControl.baseInstance, UpgradeControlEvents.UpgradeApproved)
-      .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address, testAccounts.trustee.account.address)
+   // Propose and approve by trustee
+   upgradeControl.connect(testAccounts.trustee.account)
+   await expect(upgradeControl.propose(upgradablePrototype.address!, upgradablePrototypeV2.address!))
+     .to.emit(upgradeControl.baseInstance, UpgradeControlEvents.UpgradeProposed)
+     .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address, testAccounts.trustee.account.address)
+   await expect(upgradeControl.approve(upgradablePrototype.address!, upgradablePrototypeV2.address!))
+     .to.emit(upgradeControl.baseInstance, UpgradeControlEvents.UpgradeApproved)
+     .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address, testAccounts.trustee.account.address)
 
     // Approve by trustee2
     upgradeControl.connect(testAccounts.trustee2.account)
@@ -77,26 +83,35 @@ describe('UpgradableControl', function () {
     expect(await upgradablePrototype.version).to.be.not.equal(await upgradablePrototypeV2.version)
   })
 
-  it('Should fail when the trustee has already approved the implementation', async function () {
+  it('Should fail when the trustee has already approved the implementation upgrade', async function () {
     const { upgradeControl, upgradablePrototype, upgradablePrototypeV2, testAccounts } = await loadFixture(
       deployUpgradableContractFixture,
     )
 
-    // Approve by trustee
+    // Propose and approve by trustee
     upgradeControl.connect(testAccounts.trustee.account)
+    await expect(upgradeControl.propose(upgradablePrototype.address!, upgradablePrototypeV2.address!))
+      .to.emit(upgradeControl.baseInstance, UpgradeControlEvents.UpgradeProposed)
+      .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address, testAccounts.trustee.account.address)
     await expect(upgradeControl.approve(upgradablePrototype.address!, upgradablePrototypeV2.address!))
       .to.emit(upgradeControl.baseInstance, UpgradeControlEvents.UpgradeApproved)
       .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address, testAccounts.trustee.account.address)
 
     await expect(
       upgradeControl.approve(upgradablePrototype.address!, upgradablePrototypeV2.address!),
-    ).to.revertedWithCustomError(upgradeControl.baseInstance, UpgradeControlErrors.AlreadyApproved)
+    ).to.revertedWithCustomError(upgradeControl.baseInstance, UpgradeControlErrors.UpgradeAlreadyApproved)
   })
 
   it('Should fail when approval sends from a non-trustee account', async function () {
     const { upgradeControl, upgradablePrototype, upgradablePrototypeV2, testAccounts } = await loadFixture(
       deployUpgradableContractFixture,
     )
+
+    // Propose by trustee
+    upgradeControl.connect(testAccounts.trustee.account)
+    await expect(upgradeControl.propose(upgradablePrototype.address!, upgradablePrototypeV2.address!))
+      .to.emit(upgradeControl.baseInstance, UpgradeControlEvents.UpgradeProposed)
+      .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address, testAccounts.trustee.account.address)
 
     // Approve by endorser
     upgradeControl.connect(testAccounts.endorser.account)
@@ -117,17 +132,47 @@ describe('UpgradableControl', function () {
       .withArgs(testAccounts.noRole.account.address)
   })
 
-  it('Should fail when an implementation that is not UUPSUpgradable is submitted for approval', async function () {
-    const { upgradeControl, upgradablePrototype, upgradablePrototypeV2, testAccounts } = await loadFixture(
+  it('Should fail when an implementation that is not UUPSUpgradable is proposed', async function () {
+    const { upgradeControl, upgradablePrototype, testAccounts } = await loadFixture(
       deployUpgradableContractFixture,
     )
 
     const notUpgradable = await new UpgradablePrototype('NotUpgradable').deploy()
 
-    // Approve by trustee
+    // Propose by trustee
     upgradeControl.connect(testAccounts.trustee.account)
-    await expect(upgradeControl.approve(upgradablePrototype.address!, notUpgradable.address!))
+    await expect(upgradeControl.propose(upgradablePrototype.address!, notUpgradable.address!))
       .to.revertedWithCustomError(upgradeControl.baseInstance, ProxyError.ERC1967InvalidImplementation)
       .withArgs(notUpgradable.address)
+  })
+
+  it('Should fail when approval sends to an unproposed upgrade', async function () {
+    const { upgradeControl, upgradablePrototype, upgradablePrototypeV2, testAccounts } = await loadFixture(
+      deployUpgradableContractFixture,
+    )
+
+    // Propose by trustee
+    upgradeControl.connect(testAccounts.trustee.account)
+    await expect(upgradeControl.approve(upgradablePrototype.address!, upgradablePrototypeV2.address!))
+      .to.revertedWithCustomError(upgradeControl.baseInstance, UpgradeControlErrors.UpgradeProposalNotFound)
+      .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address)
+  })
+
+  it('Should fail when same implementation upgrade proposed twice', async function () {
+    const { upgradeControl, upgradablePrototype, upgradablePrototypeV2, testAccounts } = await loadFixture(
+      deployUpgradableContractFixture,
+    )
+
+    // Propose upgrade by trustee
+    upgradeControl.connect(testAccounts.trustee.account)
+    await expect(upgradeControl.propose(upgradablePrototype.address!, upgradablePrototypeV2.address!))
+      .to.emit(upgradeControl.baseInstance, UpgradeControlEvents.UpgradeProposed)
+      .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address, testAccounts.trustee.account.address)
+
+    // Propose same upgrade by trustee
+    upgradeControl.connect(testAccounts.trustee.account)
+    await expect(upgradeControl.propose(upgradablePrototype.address!, upgradablePrototypeV2.address!))
+      .to.revertedWithCustomError(upgradeControl.baseInstance, UpgradeControlErrors.UpgradeAlreadyProposed)
+      .withArgs(upgradablePrototype.address, upgradablePrototypeV2.address)
   })
 })

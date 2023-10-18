@@ -1,4 +1,5 @@
 export namespace UpgradeControlEvents {
+  export const UpgradeProposed = 'UpgradeProposed'
   export const UpgradeApproved = 'UpgradeApproved'
 }
 

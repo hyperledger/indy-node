@@ -22,6 +22,24 @@ Among the [Proxy Smart Contract Patterns](#proxy-smart-contract-patterns), the [
 
 This smart contract is designed to manage the approval process for upgrading a contract. It is specifically built to work with OpenZeppelin's [UUPSUpgradeable](https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable) contracts. When a new implementation receives approval from more than 60 percent of the accounts with trustee role, the contract automatically upgrades the current implementation to the newly approved on.
 
+#### Storage format
+
+* Proposals collection:
+    * Description: Double mapping holding the proposed upgrades and information about their approvals, can be accessed by combination of proxy and implementation addresses. The key relationship can be visualized as: `proxy address -> implementation address -> upgrade proposal`.
+    * Format:
+      ```
+      mapping(address => mapping(address => UpgradeProposal)) private upgradeProposes;
+
+      struct UpgradeProposal {
+        mapping (address => bool) approvals;
+        uint approvalsCount;
+        address author;
+        uint256 created;
+      }
+
+
+      ```
+
 #### Transactions (Smart Contract's methods)
 
 * Method: `ensureSufficientApprovals`

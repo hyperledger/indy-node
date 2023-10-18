@@ -23,6 +23,8 @@ export namespace ProxyError {
   export const ERC1967InvalidImplementation = 'ERC1967InvalidImplementation'
 }
 export namespace UpgradeControlErrors {
-  export const AlreadyApproved = 'AlreadyApproved'
+  export const UpgradeAlreadyApproved = 'UpgradeAlreadyApproved'
+  export const UpgradeAlreadyProposed = 'UpgradeAlreadyProposed'
+  export const UpgradeProposalNotFound = 'UpgradeProposalNotFound'
   export const InsufficientApprovals = 'InsufficientApprovals'
 }
