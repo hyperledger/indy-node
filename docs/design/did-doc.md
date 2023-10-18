@@ -143,117 +143,117 @@ Contract name: **DidRegistry**
 
 ### Create DID
 
-* Method: **createDid**
-* Description: Transaction to createCredentialDefinition DidDocStorage entry (DID Document and corresponding DID Doc Metadata)
-* Restrictions: 
-  * DID must not exist
-  * Valid DID Document must be provided
-* Format:
-    ```
-    DidRegistry.createDid(
-      didDoc DidDoc
-    )
-    ```
-* Example:
-    ```
-    DidRegistry.createDid(
-      didDoc: {
-        id:"did:indy2:testnet:SEp33q43PsdP7nDATyySSH",
-        verificationMethod: [
-          {
-             id:"did:indy2:testnet:SEp33q43PsdP7nDATyySSH#key1",
-             type:"Ed25519VerificationKey2018",
-             controller:"did:indy2:testnet:N22SEp33q43PsdP7nDATyySSH",
-             publicKeyMultibase:"zAKJP3f7BD6W4iWEQ9jwndVTCBq8ua2Utt8EEjJ6Vxsf"
-          }
-       ],
-       authentication: [
-          did:indy2:testnet:SEp33q43PsdP7nDATyySSH#key1
-       ],
-       "alsoKnownAs": "Alice"
-      }
-    )
-    ```
-* Raised Event:
-  * DIDCreated(id)
+* Method: `createDid`
+  * Description: Transaction to createCredentialDefinition DidDocStorage entry (DID Document and corresponding DID Doc Metadata)
+  * Restrictions: 
+    * DID must not exist
+    * Valid DID Document must be provided
+  * Format:
+      ```
+      DidRegistry.createDid(
+        didDoc DidDoc
+      )
+      ```
+  * Example:
+      ```
+      DidRegistry.createDid(
+        didDoc: {
+          id:"did:indy2:testnet:SEp33q43PsdP7nDATyySSH",
+          verificationMethod: [
+            {
+              id:"did:indy2:testnet:SEp33q43PsdP7nDATyySSH#key1",
+              type:"Ed25519VerificationKey2018",
+              controller:"did:indy2:testnet:N22SEp33q43PsdP7nDATyySSH",
+              publicKeyMultibase:"zAKJP3f7BD6W4iWEQ9jwndVTCBq8ua2Utt8EEjJ6Vxsf"
+            }
+        ],
+        authentication: [
+            did:indy2:testnet:SEp33q43PsdP7nDATyySSH#key1
+        ],
+        "alsoKnownAs": "Alice"
+        }
+      )
+      ```
+  * Raised Event:
+    * DIDCreated(id)
   
 ### Update DID
 
-* Method: **updateDid**
-* Description: Transaction to update an existing DidDocStorage entry
-* Restrictions:
-  * DID must exist
-  * DID must be active
-* Format:
-    ```
-    DidRegistry.updateDid(
-      didDoc DidDoc
-    )
-    ```
-* Example:
-    ```
-    DidRegistry.updatedDid(
-      didDoc: {
-        id:"did:indy2:testnet:SEp33q43PsdP7nDATyySSH",
-        verificationMethod: [
-          {
-             id:"did:indy2:testnet:SEp33q43PsdP7nDATyySSH#key1",
-             type:"Ed25519VerificationKey2018",
-             controller:"did:indy2:testnet:N22SEp33q43PsdP7nDATyySSH",
-             publicKeyMultibase:"zAKJP3f7BD6W4iWEQ9jwndVTCBq8ua2Utt8EEjJ6Vxsf"
-          }
-       ],
-       authentication: [
-          did:indy2:testnet:SEp33q43PsdP7nDATyySSH#key1
-       ],
-       "alsoKnownAs": "Alice"
-      }
-    )
-    ```
-* Raised Event:
-  * DIDUpdated(id)
+* Method: `updateDid`
+  * Description: Transaction to update an existing DidDocStorage entry
+  * Restrictions:
+    * DID must exist
+    * DID must be active
+  * Format:
+      ```
+      DidRegistry.updateDid(
+        didDoc DidDoc
+      )
+      ```
+  * Example:
+      ```
+      DidRegistry.updatedDid(
+        didDoc: {
+          id:"did:indy2:testnet:SEp33q43PsdP7nDATyySSH",
+          verificationMethod: [
+            {
+              id:"did:indy2:testnet:SEp33q43PsdP7nDATyySSH#key1",
+              type:"Ed25519VerificationKey2018",
+              controller:"did:indy2:testnet:N22SEp33q43PsdP7nDATyySSH",
+              publicKeyMultibase:"zAKJP3f7BD6W4iWEQ9jwndVTCBq8ua2Utt8EEjJ6Vxsf"
+            }
+        ],
+        authentication: [
+            did:indy2:testnet:SEp33q43PsdP7nDATyySSH#key1
+        ],
+        "alsoKnownAs": "Alice"
+        }
+      )
+      ```
+  * Raised Event:
+    * DIDUpdated(id)
 
 ### Deactivate DID
 
-* Method: **deactivateDid**
-* Description: Transaction to deactivate an existing DID
-* Restrictions:
-  * DID must exist
-  * DID must be active
-* Format:
-    ```
-    DidRegistry.deactivateDid( 
-      string did
-    )
-    ```
-* Example:
-    ```
-    DidRegistry.deactivateDid(
-      "did:indy2:testnet:SEp33q43PsdP7nDATyySSH"
-    )
-    ```
-* Raised Event:
-  * DIDDeactivated(id)
+* Method: `deactivateDid`
+  * Description: Transaction to deactivate an existing DID
+  * Restrictions:
+    * DID must exist
+    * DID must be active
+  * Format:
+      ```
+      DidRegistry.deactivateDid( 
+        string did
+      )
+      ```
+  * Example:
+      ```
+      DidRegistry.deactivateDid(
+        "did:indy2:testnet:SEp33q43PsdP7nDATyySSH"
+      )
+      ```
+  * Raised Event:
+    * DIDDeactivated(id)
 
 ### Resolve DID Document with Meta
 
-* Method: **resolveDid**
-* Description: Transaction to resolve DidDocStorage entry (DID Document and corresponding DID Doc Metadata)
-* Restrictions:
-  * DID must exist
-* Format:
-    ```
-    DidRegistry.resolveDid(
-      string id,
-    ) returns (DidDocumentStorage)
-    ```
-* Example:
-    ```
-    DidRegistry.resolveDid(
-      "did:indy2:testnet:SEp33q43PsdP7nDATyySSH"
-    )
-    ```
-* Raised Event: None
+* Method: `resolveDid`
+  * Description: Transaction to resolve DidDocStorage entry (DID Document and corresponding DID Doc Metadata)
+  * Restrictions:
+    * DID must exist
+  * Format:
+      ```
+      DidRegistry.resolveDid(
+        string id,
+      ) returns (DidDocumentStorage)
+      ```
+  * Example:
+      ```
+      DidRegistry.resolveDid(
+        "did:indy2:testnet:SEp33q43PsdP7nDATyySSH"
+      )
+      ```
+  * Raised Event: None
 
 
 

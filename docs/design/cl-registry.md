@@ -81,7 +81,7 @@ Contract name: **SchemaRegistry**
 
 #### Create a new schema
 
-* Method: **createSchema**
+#### Method: `createSchema`
 * Description: Transaction to create a new AnonCreds Schema
 * Restrictions:
     * Schema must be unique.
@@ -109,7 +109,7 @@ Contract name: **SchemaRegistry**
 
 #### Resolve schema
 
-* Method: **resolveSchema**
+#### Method: `resolveSchema`
 * Description: Transaction to resolve Schema for giving id
 * Restrictions:
     * Schema must exist.
@@ -213,49 +213,49 @@ Contract name: **CredentialDefinitionRegistry**
 
 #### Create a new credential definition
 
-* Method: **createCredentialDefinition**
-* Description: Transaction to create a new AnonCreds Credential Definition
-* Restrictions:
-    * Credential Definition must be unique.
-    * Corresponding issuer DID must exist and be active.
-    * Corresponding schema must exist.
-* Format:
-    ```
-    CredentialDefinitionRegistry.createCredentialDefinition(CredentialDefinitionData data)
-    ```
-* Example:
-    ```
-    CredentialDefinitionRegistry.createCredentialDefinition(
-      {
-        id: "did:indy2:sovrin:Gs6cQcvrtWoZKsbBhD3dQJ/anoncreds/v0/CLAIM_DEF/56495/BasicIdentity",
-        issuerId: "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu",
-        schemaId: "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu/anoncreds/v0/SCHEMA/BasicIdentity/1.0.0",
-        type: "CL",
-        tag: "BasicIdentity",
-        value: "{.......}",
-      }
-    )
-* Raised Event:
-    * CredentialDefinitionCreated(credential_definition_id, sender)
+* Method: `createCredentialDefinition`
+    * Description: Transaction to create a new AnonCreds Credential Definition
+    * Restrictions:
+        * Credential Definition must be unique.
+        * Corresponding issuer DID must exist and be active.
+        * Corresponding schema must exist.
+    * Format:
+        ```
+        CredentialDefinitionRegistry.createCredentialDefinition(CredentialDefinitionData data)
+        ```
+    * Example:
+        ```
+        CredentialDefinitionRegistry.createCredentialDefinition(
+        {
+            id: "did:indy2:sovrin:Gs6cQcvrtWoZKsbBhD3dQJ/anoncreds/v0/CLAIM_DEF/56495/BasicIdentity",
+            issuerId: "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu",
+            schemaId: "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu/anoncreds/v0/SCHEMA/BasicIdentity/1.0.0",
+            type: "CL",
+            tag: "BasicIdentity",
+            value: "{.......}",
+        }
+        )
+    * Raised Event:
+        * CredentialDefinitionCreated(credential_definition_id, sender)
 
 #### Resolve credential definition
 
-* Method: **resolveCredentialDefinition**
-* Description: Transaction to resolve Credential Definition for giving id
-* Restrictions:
-    * Credential Definition must exist.
-    * Credential Definition id must be valid.
-* Format:
-    ```
-    CredentialDefinitionRegistry.resolveCredentialDefinition(
-      string id
-    ) returns (CredentialDefinitionWithMetadata)
-    ```
-* Example:
-    ```
-    SchemaRegistry.resolveCredentialDefinition(
-      "did:indy2:sovrin:Gs6cQcvrtWoZKsbBhD3dQJ/anoncreds/v0/CLAIM_DEF/56495/BasicIdentity"
-    )
-* Raised Event: None
+* Method: `resolveCredentialDefinition`
+    * Description: Transaction to resolve Credential Definition for giving id
+    * Restrictions:
+        * Credential Definition must exist.
+        * Credential Definition id must be valid.
+    * Format:
+        ```
+        CredentialDefinitionRegistry.resolveCredentialDefinition(
+        string id
+        ) returns (CredentialDefinitionWithMetadata)
+        ```
+    * Example:
+        ```
+        SchemaRegistry.resolveCredentialDefinition(
+        "did:indy2:sovrin:Gs6cQcvrtWoZKsbBhD3dQJ/anoncreds/v0/CLAIM_DEF/56495/BasicIdentity"
+        )
+    * Raised Event: None
 
 

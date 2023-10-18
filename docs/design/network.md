@@ -49,62 +49,62 @@ Contract name: **ValidatorControl**
 
 ### Get Validators
 
-* Method: **getValidators**
-* Description: Transaction to get the list of current validator nodes.
-* Restrictions: None
-* Format
-    ```
-    ValidatorControl.getValidators() returns (address[] validators)
-    ```
-* Example:
-    ```
-    ValidatorControl.removeValidator()
-    ```
-* Raised Event: None
+* Method: `getValidators`
+    * Description: Transaction to get the list of current validator nodes.
+    * Restrictions: None
+    * Format
+        ```
+        ValidatorControl.getValidators() returns (address[] validators)
+        ```
+    * Example:
+        ```
+        ValidatorControl.removeValidator()
+        ```
+    * Raised Event: None
 
 ### Add Validator
 
-* Method: **addValidator**
-* Description: Transaction to add a new validator node into validator's list. Sender will be set as an owner of the validator node. 
-* Restrictions:
-  * Sender must have STEWARD role assigned
-  * Sender must not have existing validator 
-  * Validator must be unique
-  * Number of validator cannot be greater than 256
-* Format
-    ```
-    ValidatorControl.addValidator(
-      address newValidator
-    )
-    ```
-* Example:
-    ```
-    ValidatorControl.addValidator(
-      "0x98c1334496614aed49d2e81526d089f7264fed9c"
-    )
-    ```
-* Raised Event:
-    * ValidatorAdded(validatorAddress, ownerAddress, numberOfValidators)
+* Method: `addValidator`
+    * Description: Transaction to add a new validator node into validator's list. Sender will be set as an owner of the validator node. 
+    * Restrictions:
+    * Sender must have STEWARD role assigned
+    * Sender must not have existing validator 
+    * Validator must be unique
+    * Number of validator cannot be greater than 256
+    * Format
+        ```
+        ValidatorControl.addValidator(
+        address newValidator
+        )
+        ```
+    * Example:
+        ```
+        ValidatorControl.addValidator(
+        "0x98c1334496614aed49d2e81526d089f7264fed9c"
+        )
+        ```
+    * Raised Event:
+        * ValidatorAdded(validatorAddress, ownerAddress, numberOfValidators)
 
 ### Remove Validator
 
-* Method: **removeValidator**
-* Description: Transaction to remove validator node from validator's list.
-* Restrictions:
-    * Sender must have STEWARD role assigned
-    * Should leave at least one validator after deletion
-    * Validator should exist
-* Format
-    ```
-    ValidatorControl.removeValidator(
-      address validator
-    )
-    ```
-* Example:
-    ```
-    ValidatorControl.removeValidator(
-      "0x98c1334496614aed49d2e81526d089f7264fed9c"
-    )
-    ```
-* Raised Event:
-    * ValidatorRemoved(validatorAddress, ownerAddress, numberOfValidators)
+* Method: `removeValidator`
+    * Description: Transaction to remove validator node from validator's list.
+    * Restrictions:
+        * Sender must have STEWARD role assigned
+        * Should leave at least one validator after deletion
+        * Validator should exist
+    * Format
+        ```
+        ValidatorControl.removeValidator(
+        address validator
+        )
+        ```
+    * Example:
+        ```
+        ValidatorControl.removeValidator(
+        "0x98c1334496614aed49d2e81526d089f7264fed9c"
+        )
+        ```
+    * Raised Event:
+        * ValidatorRemoved(validatorAddress, ownerAddress, numberOfValidators)
