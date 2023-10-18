@@ -49,9 +49,10 @@
 
 ## Contract upgrade management
 
-| Contract          | Method     | Required Role     | Action Description                                         |
-|-------------------|------------|-------------------|------------------------------------------------------------|
-| UpgradeControl    | approve    | Trustee           | Approve the upgrade of a specefic contract implementation  |
+| Contract          | Method                    | Required Role     | Action Description                                                       |
+|-------------------|---------------------------|-------------------|--------------------------------------------------------------------------|
+| UpgradeControl    | approve                   | Trustee           | Approve the upgrade of a specefic contract implementation                |
+| UpgradeControl    | ensureSufficientApprovals | any               | Ensures that an implementation upgrade has received sufficient approvals |
 
 ## Transactions managment
 
