@@ -3,7 +3,7 @@ import '@openzeppelin/hardhat-upgrades'
 import 'hardhat-dependency-compiler'
 import 'hardhat-storage-layout'
 import { HardhatUserConfig } from 'hardhat/config'
-import { environment } from './environment'
+import { host } from './environment'
 
 const config: HardhatUserConfig = {
     solidity: {
@@ -22,7 +22,7 @@ const config: HardhatUserConfig = {
     },
     networks: {
         besu: {
-            url: environment.besu.rpcnode.url
+            url: host
         }
     }
 };

@@ -1,7 +1,5 @@
 import { Actor } from './utils/actor'
-import assert from 'assert'
 import environment from '../environment'
-import { delay } from '../utils'
 import { UpgradablePrototype } from './utils/contracts/UpgradablePrototype'
 
 async function demo() {
@@ -13,7 +11,6 @@ async function demo() {
   const upgradablePrototype = new UpgradablePrototype('1.0', trustee1.account)
   await upgradablePrototype.deployProxy({ params: [trustee1.upgradeControl.address] })
   console.log(`Upgradable contract deployed to address ${upgradablePrototype.address} by trustee`)
-  await delay(4000)
 
   console.log('2. Get the version of upgradable contract')
   let version = await upgradablePrototype.version
@@ -23,7 +20,6 @@ async function demo() {
   const upgradablePrototypeV2 = new UpgradablePrototype('2.0', trustee1.account)
   await upgradablePrototypeV2.deploy()
   console.log(`Upgradable contract V2 deployed to address ${upgradablePrototype.address} by trustee1`)
-  await delay(4000)
 
   console.log('4. Approve the upgradable contract V2 by trustee1')
   let receipt = await trustee1.upgradeControl.approve(upgradablePrototype.address!, upgradablePrototypeV2.address!)

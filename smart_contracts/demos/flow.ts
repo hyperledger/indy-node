@@ -1,6 +1,5 @@
 import environment from '../environment'
 import { Actor } from './utils/actor'
-import { delay } from '../utils'
 import { ROLES } from '../contracts-ts'
 import { createCredentialDefinitionObject, createSchemaObject } from '../utils/entity-factories'
 
@@ -31,7 +30,6 @@ async function demo() {
   const schema = createSchemaObject({ issuerId: faber.did })
   receipt = await faber.schemaRegistry.createSchema(schema)
   console.log(`Schema created for id ${schema.id}. Receipt: ${JSON.stringify(receipt)}`)
-  await delay(2000)
 
   console.log('6. Faber resolves Test Schema to ensure its written')
   const resolvedSchema = await faber.schemaRegistry.resolveSchema(schema.id)
@@ -41,7 +39,6 @@ async function demo() {
   const credentialDefinition = createCredentialDefinitionObject({ issuerId: faber.did, schemaId: schema.id })
   receipt = await faber.credentialDefinitionRegistry.createCredentialDefinition(credentialDefinition)
   console.log(`Credential Definition created for id ${schema.id}. Receipt: ${JSON.stringify(receipt)}`)
-  await delay(2000)
 
   console.log('8. Trustee resolves Test Credential Definition to ensure its written')
   const resolvedCredentialDefinition = await faber.credentialDefinitionRegistry.resolveCredentialDefinition(
@@ -52,7 +49,6 @@ async function demo() {
       resolvedCredentialDefinition.credDef,
     )}`,
   )
-  await delay(2000)
 
   console.log("9. ALice resolves Faber's Did Document")
   const faberDidDocument = await alice.didRegistry.resolveDid(faber.did)

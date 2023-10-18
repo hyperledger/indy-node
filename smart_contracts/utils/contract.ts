@@ -30,6 +30,7 @@ export class Contract {
             params ?? [],
             { kind: 'uups', unsafeAllowLinkedLibraries: true }
         )
+        await this.instance.waitForDeployment()
 
         this.address = await this.instance.getAddress()
         return this
@@ -48,6 +49,7 @@ export class Contract {
             params ?? [],
             { signer: this.signer, libraries: libraryObject }
         )
+        await this.instance.waitForDeployment()
 
         this.address = await this.instance.getAddress()
         return this

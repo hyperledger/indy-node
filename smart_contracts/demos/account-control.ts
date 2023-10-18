@@ -3,7 +3,6 @@ import assert from 'assert'
 import environment from '../environment'
 import { ROLES } from '../contracts-ts'
 import { SimpleContract } from './utils/contracts/SimpleContract'
-import { delay } from '../utils'
 
 async function demo() {
   const trustee = await new Actor(environment.accounts.account1).init()
@@ -44,7 +43,6 @@ async function demo() {
   simpleContract = new SimpleContract(trustee.account)
   await simpleContract.deploy()
   console.log(`Contract deployed to address ${simpleContract.address} by trustee`)
-  await delay(4000)
 
   console.log('7. Try calling the update contract method by an unauthorized account')
   simpleContract = simpleContract.connect(unauthorized.account.signer)
