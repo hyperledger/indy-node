@@ -81,51 +81,51 @@ Contract name: **SchemaRegistry**
 
 #### Create a new schema
 
-#### Method: `createSchema`
-* Description: Transaction to create a new AnonCreds Schema
-* Restrictions:
-    * Schema must be unique.
-    * Schema must have name.
-    * Schema must contain at least one attribute.
-    * Schema must have version.
-    * Corresponding issuer DID must exist and be active.
-* Format:
-    ```
-    SchemaRegistry.createSchema(Schema schema)
-    ```
-* Example:
-    ```
-    SchemaRegistry.createSchema(
-      {
-        id: "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu/anoncreds/v0/SCHEMA/BasicIdentity/1.0.0",
-        issuerId: "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu",
-        name: "BasicIdentity",
-        version: "1.0.0",
-        attrNames: ["First Name", "Last Name"]
-      }
-    )
-* Raised Event:
-    * SchemaCreated(schema_id, sender)
+* Method: `createSchema`
+    * Description: Transaction to create a new AnonCreds Schema
+    * Restrictions:
+        * Schema must be unique.
+        * Schema must have name.
+        * Schema must contain at least one attribute.
+        * Schema must have version.
+        * Corresponding issuer DID must exist and be active.
+    * Format:
+        ```
+        SchemaRegistry.createSchema(Schema schema)
+        ```
+    * Example:
+        ```
+        SchemaRegistry.createSchema(
+        {
+            id: "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu/anoncreds/v0/SCHEMA/BasicIdentity/1.0.0",
+            issuerId: "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu",
+            name: "BasicIdentity",
+            version: "1.0.0",
+            attrNames: ["First Name", "Last Name"]
+        }
+        )
+    * Raised Event:
+        * SchemaCreated(schema_id, sender)
 
 #### Resolve schema
 
-#### Method: `resolveSchema`
-* Description: Transaction to resolve Schema for giving id
-* Restrictions:
-    * Schema must exist.
-    * Schema id must be valid.
-* Format:
-    ```
-    SchemaRegistry.resolveSchema(
-      string id
-    ) returns (SchemaWithMetadata)
-    ```
-* Example:
-    ```
-    SchemaRegistry.resolveSchema(
-      "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu/anoncreds/v0/SCHEMA/BasicIdentity/1.0.0"
-    )
-* Raised Event: None
+* Method: `resolveSchema`
+    * Description: Transaction to resolve Schema for giving id
+    * Restrictions:
+        * Schema must exist.
+        * Schema id must be valid.
+    * Format:
+        ```
+        SchemaRegistry.resolveSchema(
+        string id
+        ) returns (SchemaWithMetadata)
+        ```
+    * Example:
+        ```
+        SchemaRegistry.resolveSchema(
+        "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu/anoncreds/v0/SCHEMA/BasicIdentity/1.0.0"
+        )
+    * Raised Event: None
 
 
 ## Credential Definition
