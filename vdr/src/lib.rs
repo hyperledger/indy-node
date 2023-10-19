@@ -4,11 +4,26 @@ mod error;
 mod signer;
 mod utils;
 
-pub use client::{ContractConfig, LedgerClient};
+pub use client::{Client, ContractConfig, LedgerClient, PingStatus, Status};
 pub use contracts::{
-    CredentialDefinition, CredentialDefinitionRegistry, DidDocument, DidRegistry, Schema,
-    SchemaRegistry,
+    cl::{
+        credential_definition_registry::CredentialDefinitionRegistry,
+        schema_registry::SchemaRegistry,
+        types::{
+            credential_definition::CredentialDefinition,
+            credential_definition_id::CredentialDefinitionId, schema::Schema, schema_id::SchemaId,
+        },
+    },
+    did::{
+        did_doc::{DidDocument, VerificationKey, VerificationKeyType, DID},
+        did_doc_builder::DidDocumentBuilder,
+        did_registry::DidRegistry,
+    },
 };
+pub use signer::{BasicSigner, Signer};
+
+#[cfg(feature = "migration")]
+pub use contracts::cl::types::migration;
 
 #[cfg(feature = "ledger_test")]
 #[cfg(test)]
@@ -18,8 +33,10 @@ mod tests {
         client::test::client,
         contracts::{
             cl::{
-                credential_definition::test::credential_definition, schema::test::schema,
+                credential_definition::test::credential_definition,
+                schema::test::schema,
                 schema_registry::test::create_schema,
+                types::{credential_definition::test::credential_definition, schema::test::schema},
             },
             did::{did_doc::test::did_doc, did_registry::test::create_did},
         },

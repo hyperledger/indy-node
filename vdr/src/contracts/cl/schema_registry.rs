@@ -3,7 +3,10 @@ use crate::{
         ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
         TransactionType,
     },
-    contracts::cl::schema::{Schema, SchemaWithMeta},
+    contracts::cl::types::{
+        schema::{Schema, SchemaWithMeta},
+        schema_id::SchemaId,
+    },
     error::VdrResult,
 };
 
@@ -30,12 +33,12 @@ impl SchemaRegistry {
 
     pub fn build_resolve_schema_transaction(
         client: &LedgerClient,
-        id: &str,
+        id: &SchemaId,
     ) -> VdrResult<Transaction> {
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_RESOLVE_SCHEMA)
-            .add_param(ContractParam::String(id.into()))
+            .add_param(ContractParam::String(id.value().into()))
             .set_type(TransactionType::Read)
             .build(&client)
     }
@@ -57,7 +60,7 @@ impl SchemaRegistry {
         client.sign_and_submit(&transaction).await
     }
 
-    pub async fn resolve_schema(client: &LedgerClient, id: &str) -> VdrResult<Schema> {
+    pub async fn resolve_schema(client: &LedgerClient, id: &SchemaId) -> VdrResult<Schema> {
         let transaction = Self::build_resolve_schema_transaction(client, id)?;
         let result = client.submit_transaction(&transaction).await?;
         Self::parse_resolve_schema_result(client, &result)
@@ -70,14 +73,15 @@ pub mod test {
     use crate::{
         client::test::{client, CHAIN_ID, SCHEMA_REGISTRY_ADDRESS},
         contracts::{
-            cl::schema::test::{schema, SCHEMA_NAME},
-            did::did_doc::test::DID,
+            cl::types::schema::test::{schema, SCHEMA_NAME},
+            did::did_doc::test::ISSUER_ID,
         },
-        signer::test::ACCOUNT,
+        signer::signer::test::ACCOUNT,
+        DID,
     };
 
     #[cfg(feature = "ledger_test")]
-    pub async fn create_schema(client: &LedgerClient, issuer_id: &str) -> Schema {
+    pub async fn create_schema(client: &LedgerClient, issuer_id: &DID) -> Schema {
         let schema = schema(issuer_id, None);
         let _receipt = SchemaRegistry::create_schema(&client, ACCOUNT, &schema)
             .await
@@ -94,7 +98,7 @@ pub mod test {
             let transaction = SchemaRegistry::build_create_schema_transaction(
                 &client,
                 ACCOUNT,
-                &schema(DID, Some(SCHEMA_NAME)),
+                &schema(&DID::new(ISSUER_ID), Some(SCHEMA_NAME)),
             )
             .unwrap();
             let expected_transaction = Transaction {
@@ -151,7 +155,7 @@ pub mod test {
             let client = client();
             let transaction = SchemaRegistry::build_resolve_schema_transaction(
                 &client,
-                &schema(DID, Some(SCHEMA_NAME)).id,
+                &schema(&DID::new(ISSUER_ID), Some(SCHEMA_NAME)).id,
             )
             .unwrap();
             let expected_transaction = Transaction {
@@ -177,6 +181,7 @@ pub mod test {
 
     mod parse_resolve_schema_result {
         use super::*;
+        use crate::DID;
 
         #[test]
         fn parse_resolve_schema_result_test() {
@@ -219,7 +224,10 @@ pub mod test {
             ];
             let parsed_schema =
                 SchemaRegistry::parse_resolve_schema_result(&client, &data).unwrap();
-            assert_eq!(schema(DID, Some(SCHEMA_NAME)), parsed_schema);
+            assert_eq!(
+                schema(&DID::new(ISSUER_ID), Some(SCHEMA_NAME)),
+                parsed_schema
+            );
         }
     }
 }
