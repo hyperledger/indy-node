@@ -28,7 +28,7 @@ This smart contract is designed to manage the approval process for upgrading a c
     * Description: Double mapping holding the proposed upgrades and information about their approvals, can be accessed by combination of proxy and implementation addresses. The key relationship can be visualized as: `proxy address -> implementation address -> upgrade proposal`.
     * Format:
       ```
-      mapping(address => mapping(address => UpgradeProposal)) private upgradeProposes;
+      mapping(address => mapping(address => UpgradeProposal)) private upgradeProposals;
 
       struct UpgradeProposal {
         mapping (address => bool) approvals;
