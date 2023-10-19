@@ -1,4 +1,5 @@
-import { padLeft, sha3 } from 'web3-utils'
+import { padLeft, sha3, toHex } from 'web3-utils'
+import { ROLES } from '../../../contracts-ts'
 import { config } from '../config'
 import { ContractConfig } from '../contractConfig'
 import { buildSection, slots } from '../helpers'
@@ -30,6 +31,22 @@ export function roleControl() {
       .toLowerCase()
     storage[padLeft(slot, 64)] = padLeft(parseInt(owner, 10).toString(16), 64)
   }
+
+  // Group account based on their role and compute a count
+  const roleCounts = data.accounts.reduce<Record<string, number>>((previous, current) => {
+    let count = previous[current.role] || 0
+    previous[current.role] = ++count
+    return previous
+  }, {})
+
+  // mappings for the roles to their count are stored in slot sha3(role | slot(2))
+  Object.entries(roleCounts).forEach(([role, count]) => {
+    const role_ = padLeft(parseInt(role, 10).toString(16), 64)
+    const slot = sha3('0x' + role_ + slots['2'])!
+      .substring(2)
+      .toLowerCase()
+    storage[padLeft(slot, 64)] = padLeft(toHex(count), 64).substring(2)
+  })
 
   return buildSection(name, address, description, storage)
 }

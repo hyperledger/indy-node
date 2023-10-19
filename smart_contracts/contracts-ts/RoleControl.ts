@@ -32,4 +32,8 @@ export class RoleControl extends Contract {
     const tx = await this.instance.revokeRole(role, account)
     return await tx.wait()
   }
+
+  public async getRoleCount(role: number) {
+    return this.instance.getRoleCount(role)
+  }
 }

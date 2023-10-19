@@ -1,12 +1,12 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
-import { ClErrors } from '../errors'
 import {
   createBaseDidDocument,
   createCredentialDefinitionObject,
   createSchemaObject,
-  deployCredentialDefinitionRegistry,
-} from '../utils'
+} from '../../utils/entity-factories'
+import { ClErrors } from '../errors'
+import { deployCredentialDefinitionRegistry } from '../utils'
 
 describe('CredentialDefinitionRegistry', function () {
   const issuerId = 'did:indy2:mainnet:SEp33q43PsdP7nDATyySSH'

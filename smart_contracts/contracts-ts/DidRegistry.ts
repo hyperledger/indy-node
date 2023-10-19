@@ -4,7 +4,7 @@ import {
   ServiceStruct,
   VerificationMethodStruct,
   VerificationRelationshipStruct,
-} from '../typechain-types/did/DidRegistry'
+} from '../typechain-types/contracts/did/DidRegistry'
 import { Contract } from '../utils/contract'
 
 export type DidDocumentStorage = DidDocumentStorageStruct
