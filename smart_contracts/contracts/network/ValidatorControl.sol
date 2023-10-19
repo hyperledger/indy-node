@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import "./ValidatorSmartContractInterface.sol";
-import "../auth/RoleControl.sol";
+import { Unauthorized} from "../auth/AuthErrors.sol";
+import { RoleControlInterface } from "../auth/RoleControlInterface.sol";
+import { ValidatorSmartContractInterface } from "./ValidatorSmartContractInterface.sol";
 
 contract ValidatorControl is ValidatorSmartContractInterface {
     /**
@@ -39,16 +40,13 @@ contract ValidatorControl is ValidatorSmartContractInterface {
     /**
      * @dev Reference to the contract managing auth permissions
          */
-    RoleControl private roleControl;
+    RoleControlInterface private roleControl;
 
     /**
      * @dev Modifier that checks that an the sender account has Steward role assigned.
      */
     modifier senderIsSteward() {
-        require(
-            roleControl.hasRole(RoleControlInterface.ROLES.STEWARD, msg.sender),
-            "Sender does not have STEWARD role assigned"
-        );
+        if (!roleControl.hasRole(RoleControlInterface.ROLES.STEWARD, msg.sender)) revert Unauthorized(msg.sender);
         _;
     }
 
@@ -66,7 +64,7 @@ contract ValidatorControl is ValidatorSmartContractInterface {
             validatorInfos[validator.validator] = ValidatorInfo(validator.account, uint8(i));
         }
 
-        roleControl = RoleControl(roleControlContractAddress);
+        roleControl = RoleControlInterface(roleControlContractAddress);
     }
 
     /**

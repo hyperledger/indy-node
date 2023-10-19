@@ -2,8 +2,8 @@ import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers'
 import { expect } from 'chai'
 import { VerificationMethod } from '../../contracts-ts/DidRegistry'
 import { createBaseDidDocument } from '../../utils/entity-factories'
+import { deployDidRegistry } from '../utils/contract-helpers'
 import { DidError } from '../utils/errors'
-import { deployDidRegistry } from '../utils/deploy-helpers'
 
 describe('DIDContract', function () {
   // We define a fixture to reuse the same setup in every test.
