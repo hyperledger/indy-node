@@ -2,6 +2,8 @@
 pragma solidity ^0.8.20;
 
 import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { AuthenticationKeyNotFound, AuthenticationKeyRequired, IncorrectDid } from './DidErrors.sol';
+import { IncorrectDid } from "./DidErrors.sol";
 import { DidRegex } from "./DidRegex.sol";
 import { DidDocument, VerificationMethod } from "./DidTypes.sol";
 
@@ -12,26 +14,23 @@ library DidValidator {
      * @dev Validates the DID syntax
      */
     function validateDid(string memory did) public pure {
-        require(DidRegex.matches(did), "Incorrect DID");
+        if (!DidRegex.matches(did)) revert IncorrectDid(did);
     }
 
     /**
      * @dev Validates verification keys
      */
     function validateVerificationKey(DidDocument memory didDocument) public pure {
-        require(didDocument.authentication.length != 0, "Authentication key is required");
+        if (didDocument.authentication.length == 0) revert AuthenticationKeyRequired(didDocument.id);
 
         for (uint i = 0; i < didDocument.authentication.length; i++) {
             if (!didDocument.authentication[i].verificationMethod.id.toSlice().isEmpty()) {
                 continue;
             }
 
-            require (
-                contains(
-                    didDocument.verificationMethod, didDocument.authentication[i].id),
-                    string.concat("Authentication key for ID: ", didDocument.authentication[i].id, " is not found"
-                )
-            );
+            if (!contains(didDocument.verificationMethod, didDocument.authentication[i].id)) {              
+                revert AuthenticationKeyNotFound(didDocument.authentication[i].id);
+            }
         }
     }
 

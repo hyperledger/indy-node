@@ -19,6 +19,15 @@ export namespace ClErrors {
   export const CredentialDefinitionNotFound = 'CredentialDefinitionNotFound'
 }
 
+export namespace DidError {
+  export const AuthenticationKeyRequired = 'AuthenticationKeyRequired'
+  export const AuthenticationKeyNotFound = 'AuthenticationKeyNotFound'
+  export const DidNotFound = 'DidNotFound'
+  export const DidAlreadyExist = 'DidAlreadyExist'
+  export const DidHasBeenDeactivated = 'DidHasBeenDeactivated'
+  export const IncorrectDid = 'IncorrectDid'
+}
+
 export namespace ProxyError {
   export const ERC1967InvalidImplementation = 'ERC1967InvalidImplementation'
 }

@@ -1,7 +1,7 @@
 import chai from 'chai'
 import { RoleControl, ROLES } from '../../contracts-ts'
 import { Account } from '../../utils'
-import { getTestAccounts, TestAccounts } from '../utils'
+import { getTestAccounts, TestAccounts } from '../utils/test-entities'
 
 const { expect } = chai
 

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
+import { DidAlreadyExist, DidHasBeenDeactivated, DidNotFound } from "./DidErrors.sol";
 import { DidRegistryInterface } from "./DidRegistryInterface.sol";
 import { DidDocument, DidDocumentStorage } from "./DidTypes.sol";
 import { DidValidator } from "./DidValidator.sol";
@@ -15,7 +16,7 @@ contract DidRegistry is DidRegistryInterface {
      * Checks that DID already exists
      */
     modifier didExist(string memory did) {
-        require(dids[did].metadata.created != 0, "DID not found");
+        if (dids[did].metadata.created == 0) revert DidNotFound(did);
         _;
     }
 
@@ -23,7 +24,7 @@ contract DidRegistry is DidRegistryInterface {
      * Checks that the DID has not yet been added
      */
     modifier didNotExist(string memory did) {
-        require(dids[did].metadata.created == 0, "DID has already exist");
+        if (dids[did].metadata.created != 0) revert DidAlreadyExist(did);
         _;
     }
 
@@ -31,7 +32,7 @@ contract DidRegistry is DidRegistryInterface {
      * Сhecks that the DID has not been deactivated
      */
     modifier didIsActive(string memory did) {
-        require(!dids[did].metadata.deactivated, "DID has been deactivated");
+        if (dids[did].metadata.deactivated) revert DidHasBeenDeactivated(did);
         _;
     }
 

@@ -1,7 +1,7 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
 import { AccountControl, RoleControl } from '../../contracts-ts'
-import { createContractDeployTransaction, createWriteTransaction, getTestAccounts } from '../utils'
+import { createContractDeployTransaction, createWriteTransaction, getTestAccounts } from '../utils/test-entities'
 
 describe('AccountControl', function () {
   async function deployCredDefContractFixture() {
