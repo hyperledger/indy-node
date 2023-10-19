@@ -7,11 +7,11 @@ import { CredentialDefinition, CredentialDefinitionWithMetadata } from "./Creden
 import { CredentialDefinitionRegistryInterface } from "./CredentialDefinitionRegistryInterface.sol";
 import { CredentialDefinitionValidator } from "./CredentialDefinitionValidator.sol";
 import {
-    CredentialDefinitionAlreadyExist, 
+    CredentialDefinitionAlreadyExist,
     CredentialDefinitionNotFound,
     DID_NOT_FOUND_ERROR_MESSAGE,
     IssuerHasBeenDeactivated,
-    IssuerNotFound 
+    IssuerNotFound
 } from "./ErrorTypes.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
@@ -68,19 +68,19 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
         }
     }
 
-    constructor(address didRegistryAddress, address schemaRegistryAddress) { 
+    constructor(address didRegistryAddress, address schemaRegistryAddress) {
         _didRegistry = DidRegistryInterface(didRegistryAddress);
         _schemaRegistry = SchemaRegistryInterface(schemaRegistryAddress);
     }
 
     /// @inheritdoc CredentialDefinitionRegistryInterface
-    function createCredentialDefinition(CredentialDefinition calldata credDef) 
-        public virtual 
+    function createCredentialDefinition(CredentialDefinition calldata credDef)
+        public virtual
         _uniqueCredDefId(credDef.id)
-        _schemaExist(credDef.schemaId) 
-        _issuerActive(credDef.issuerId) 
+        _schemaExist(credDef.schemaId)
+        _issuerActive(credDef.issuerId)
     {
-        credDef.requireValidId();
+//        credDef.requireValidId();
         credDef.requireValidType();
         credDef.requireTag();
         credDef.requireValue();
@@ -93,9 +93,9 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
 
     /// @inheritdoc CredentialDefinitionRegistryInterface
     function resolveCredentialDefinition(string calldata id)
-        public view virtual 
-        _credDefExist(id) 
-        returns (CredentialDefinitionWithMetadata memory credDefWithMetadata) 
+        public view virtual
+        _credDefExist(id)
+        returns (CredentialDefinitionWithMetadata memory credDefWithMetadata)
     {
         return _credDefs[id];
     }

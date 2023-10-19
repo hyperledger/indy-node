@@ -4,11 +4,9 @@ mod error;
 mod signer;
 mod utils;
 
-pub use client::{ContractConfig, LedgerClient};
-pub use contracts::{
-    CredentialDefinition, CredentialDefinitionRegistry, DidDocument, DidRegistry, Schema,
-    SchemaRegistry,
-};
+pub use client::*;
+pub use contracts::*;
+pub use signer::*;
 
 #[cfg(feature = "ledger_test")]
 #[cfg(test)]
