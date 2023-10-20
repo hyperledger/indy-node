@@ -49,7 +49,7 @@ impl TryFrom<ContractOutput> for CredentialDefinition {
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
         let cred_def_value = serde_json::from_str::<Value>(&value.get_string(5)?)
-            .map_err(|_err| VdrError::Unexpected)?;
+            .map_err(|_err| VdrError::ContractInvalidResponseData)?;
         Ok(CredentialDefinition {
             id: value.get_string(0)?,
             issuer_id: value.get_string(1)?,

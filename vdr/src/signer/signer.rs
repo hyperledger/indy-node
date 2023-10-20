@@ -47,7 +47,7 @@ impl BasicSigner {
     }
 
     fn get_key(&self, account: &str) -> VdrResult<&KeyPair> {
-        self.keys.get(account).ok_or(VdrError::Unexpected)
+        self.keys.get(account).ok_or(VdrError::SignerMissingKey(account.to_string()))
     }
 
     #[cfg(test)]

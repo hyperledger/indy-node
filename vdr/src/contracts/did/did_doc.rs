@@ -118,7 +118,10 @@ impl TryFrom<&str> for VerificationKeyType {
             "EcdsaSecp256k1VerificationKey2019" => {
                 Ok(VerificationKeyType::EcdsaSecp256k1VerificationKey2019)
             }
-            _ => Err(VdrError::Unexpected),
+            _type => Err(VdrError::CommonInvalidData(format!(
+                "Unexpected verification key type {}",
+                _type
+            ))),
         }
     }
 }
@@ -206,15 +209,16 @@ impl TryFrom<ContractOutput> for VerificationMethod {
         let public_key_multibase = value.get_string(4)?;
         let verification_key = if !public_key_jwk.is_empty() {
             VerificationKey::JWK {
-                public_key_jwk: serde_json::from_str::<Value>(&public_key_jwk)
-                    .map_err(|_| VdrError::Unexpected)?,
+                public_key_jwk: serde_json::from_str::<Value>(&public_key_jwk).map_err(|err| {
+                    VdrError::CommonInvalidData(format!("Unable to parse JWK key. Err: {:?}", err))
+                })?,
             }
         } else if !public_key_multibase.is_empty() {
             VerificationKey::Multibase {
                 public_key_multibase: public_key_multibase.to_string(),
             }
         } else {
-            return Err(VdrError::Unexpected);
+            return Err(VdrError::ContractInvalidResponseData);
         };
 
         Ok(VerificationMethod {
