@@ -23,6 +23,11 @@ contract RoleControl is RoleControlInterface {
      */
     mapping(ROLES role => ROLES ownerRole) private _roleOwners;
 
+    /**
+     * @dev Count of accounts with the trustee role
+     */
+    mapping(ROLES role => uint) private _roleCounts;
+
     constructor() {
         _initialTrustee();
         _initRoles();
@@ -58,9 +63,7 @@ contract RoleControl is RoleControlInterface {
         _;
     }
 
-    /**
-     * @dev Function to check if an account has requested role assigned
-     */
+    /// @inheritdoc RoleControlInterface
     function hasRole(ROLES role, address account) public view virtual returns (bool) {
         return _roles[account] == role;
     }
@@ -72,25 +75,32 @@ contract RoleControl is RoleControlInterface {
         return _roles[account];
     }
 
-    /**
-     * @dev Function to assign role to an account
-     */
+    /// @inheritdoc RoleControlInterface
     function assignRole(ROLES role, address account) public virtual _onlyRoleOwner(role) returns (ROLES assignedRole) {
         if (!hasRole(role, account)) {
             _roles[account] = role;
+            _roleCounts[role]++;
+
             emit RoleAssigned(role, account, msg.sender);
         }
         return role;
     }
 
-    /**
-     * @dev Function to revoke role from an account
-     */
+    /// @inheritdoc RoleControlInterface
     function revokeRole(ROLES role, address account) public virtual _onlyRoleOwner(role) returns (bool) {
         if (hasRole(role, account)) {
             delete _roles[account];
+            _roleCounts[role]--;
+
             emit RoleRevoked(role, account, msg.sender);
+
+           return true;
         }
         return false;
+    }
+
+    /// @inheritdoc RoleControlInterface
+    function getRoleCount(ROLES role) public view virtual returns (uint) {
+        return _roleCounts[role];
     }
 }
