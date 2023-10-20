@@ -15,7 +15,7 @@ path = "src/lib.rs"
 crate-type = ["staticlib", "rlib", "cdylib"]
 
 [features]
-default = ["migration"]
+default = []
 ledger_test = []
 migration = []
 

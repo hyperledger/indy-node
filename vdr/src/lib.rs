@@ -4,6 +4,9 @@ mod error;
 mod signer;
 mod utils;
 
+#[cfg(feature = "migration")]
+pub mod migration;
+
 pub use client::{Client, ContractConfig, LedgerClient, PingStatus, Status};
 pub use contracts::{
     cl::{
@@ -23,9 +26,6 @@ pub use contracts::{
     },
 };
 pub use signer::{BasicSigner, Signer};
-
-#[cfg(feature = "migration")]
-pub use contracts::cl::types::migration;
 
 #[cfg(feature = "ledger_test")]
 #[cfg(test)]
