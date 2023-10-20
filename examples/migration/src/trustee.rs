@@ -7,11 +7,10 @@ use std::time::Duration;
 use vdrtoolsrs::future::Future;
 
 pub struct Trustee {
-    pub indy_wallet: IndyWallet,
-    pub indy_ledger: IndyLedger,
-    pub did: String,
-    pub verkey: String,
-    pub used_ledger: Ledgers,
+    indy_wallet: IndyWallet,
+    indy_ledger: IndyLedger,
+    did: String,
+    used_ledger: Ledgers,
 }
 
 impl Trustee {
@@ -20,15 +19,14 @@ impl Trustee {
     pub fn setup(seed: &str) -> Trustee {
         let indy_wallet = IndyWallet::new(Self::NAME);
         let indy_ledger = IndyLedger::new(Self::NAME);
-        let config = json!({"seed": seed}).to_string();
-        let (did, verkey) = vdrtoolsrs::did::create_and_store_my_did(indy_wallet.handle, &config)
+        let config = json!({ "seed": seed }).to_string();
+        let (did, _) = vdrtoolsrs::did::create_and_store_my_did(indy_wallet.handle, &config)
             .wait()
             .unwrap();
         Trustee {
             indy_wallet,
             indy_ledger,
             did,
-            verkey,
             used_ledger: Ledgers::Indy,
         }
     }

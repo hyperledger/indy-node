@@ -1,7 +1,7 @@
 use crate::{
-    contracts::{
-        did::CONTEXT, Service, ServiceEndpoint, StringOrVector, VerificationMethod,
-        VerificationMethodOrReference,
+    contracts::did::types::did_doc::{
+        Service, ServiceEndpoint, StringOrVector, VerificationMethod,
+        VerificationMethodOrReference, CONTEXT,
     },
     error::{VdrError, VdrResult},
     DidDocument, VerificationKey, VerificationKeyType, DID,

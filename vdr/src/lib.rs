@@ -15,9 +15,11 @@ pub use contracts::{
         },
     },
     did::{
-        did_doc::{DidDocument, VerificationKey, VerificationKeyType, DID},
-        did_doc_builder::DidDocumentBuilder,
         did_registry::DidRegistry,
+        types::{
+            did_doc::{DidDocument, VerificationKey, VerificationKeyType, DID},
+            did_doc_builder::DidDocumentBuilder,
+        },
     },
 };
 pub use signer::{BasicSigner, Signer};

@@ -3,7 +3,7 @@ use crate::{
         ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
         TransactionType,
     },
-    contracts::did::did_doc::{DidDocument, DidDocumentWithMeta},
+    contracts::did::types::did_doc::{DidDocument, DidDocumentWithMeta},
     error::VdrResult,
     DID,
 };
@@ -100,7 +100,7 @@ pub mod test {
     use super::*;
     use crate::{
         client::test::{client, CHAIN_ID, DID_REGISTRY_ADDRESS},
-        contracts::did::did_doc::test::{did_doc, ISSUER_ID},
+        contracts::did::types::did_doc::test::{did_doc, ISSUER_ID},
         signer::signer::test::ACCOUNT,
         DID,
     };

@@ -74,7 +74,7 @@ pub mod test {
         client::test::{client, CHAIN_ID, SCHEMA_REGISTRY_ADDRESS},
         contracts::{
             cl::types::schema::test::{schema, SCHEMA_NAME},
-            did::did_doc::test::ISSUER_ID,
+            did::types::did_doc::test::ISSUER_ID,
         },
         signer::signer::test::ACCOUNT,
         DID,

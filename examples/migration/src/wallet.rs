@@ -11,10 +11,7 @@ impl IndyWallet {
     pub const KEY_DERIVATION: &'static str = "RAW";
 
     pub fn new(name: &str) -> IndyWallet {
-        let config = json!({
-            "id": format!("{}_wallet", name)
-        })
-        .to_string();
+        let config = json!({ "id": format!("{}_wallet", name) }).to_string();
         let credentials = json!({
             "key": Self::KEY,
             "key_derivation_method": Self::KEY_DERIVATION

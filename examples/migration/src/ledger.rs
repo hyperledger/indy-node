@@ -26,10 +26,7 @@ impl IndyLedger {
             .unwrap()
             .to_string();
 
-        let config = json!({
-            "genesis_txn": genesis_txn
-        })
-        .to_string();
+        let config = json!({ "genesis_txn": genesis_txn }).to_string();
         vdrtoolsrs::pool::create_pool_ledger_config(name, Some(&config))
             .wait()
             .ok();

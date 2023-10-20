@@ -91,7 +91,7 @@ impl TryFrom<ContractOutput> for CredentialDefinitionWithMeta {
 pub mod test {
     use super::*;
     use crate::{
-        contracts::{cl::types::schema::test::SCHEMA_ID, did::did_doc::test::ISSUER_ID},
+        contracts::{cl::types::schema::test::SCHEMA_ID, did::types::did_doc::test::ISSUER_ID},
         utils::rand_string,
     };
     use serde_json::json;

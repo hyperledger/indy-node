@@ -90,7 +90,7 @@ pub mod test {
                 schema::test::SCHEMA_ID,
                 schema_id::SchemaId,
             },
-            did::did_doc::test::ISSUER_ID,
+            did::types::did_doc::test::ISSUER_ID,
         },
         signer::signer::test::ACCOUNT,
         DID,

@@ -2,21 +2,24 @@ use crate::{
     ledger::{BesuLedger, IndyLedger, Ledgers},
     wallet::{BesuWallet, IndyWallet},
 };
-use indy2_vdr::{DidDocument, DidDocumentBuilder, VerificationKey, VerificationKeyType, DID};
+use indy2_vdr::{
+    CredentialDefinition, CredentialDefinitionRegistry, DidDocument, DidDocumentBuilder,
+    DidRegistry, Schema, SchemaRegistry, VerificationKey, VerificationKeyType, DID,
+};
 use serde_json::json;
 use std::time::Duration;
 use vdrtoolsrs::future::Future;
 
 pub struct Issuer {
-    pub indy_wallet: IndyWallet,
-    pub indy_ledger: IndyLedger,
-    pub besu_ledger: BesuLedger,
+    indy_wallet: IndyWallet,
+    indy_ledger: IndyLedger,
+    besu_ledger: BesuLedger,
     pub did: String,
     pub account: String,
     pub edkey: String,
     pub secpkey: String,
     pub service: String,
-    pub used_ledger: Ledgers,
+    used_ledger: Ledgers,
 }
 
 impl Issuer {
@@ -191,6 +194,28 @@ impl Issuer {
             .unwrap()
             .add_service("DIDCommService", endpoint)
             .build()
+    }
+
+    pub async fn publish_did(&self, did_doc: &DidDocument) -> String {
+        DidRegistry::create_did(&self.besu_ledger.client, &self.account, did_doc)
+            .await
+            .unwrap()
+    }
+
+    pub async fn publish_schema(&self, schema: &Schema) -> String {
+        SchemaRegistry::create_schema(&self.besu_ledger.client, &self.account, schema)
+            .await
+            .unwrap()
+    }
+
+    pub async fn publish_cred_def(&self, cred_def: &CredentialDefinition) -> String {
+        CredentialDefinitionRegistry::create_credential_definition(
+            &self.besu_ledger.client,
+            &self.account,
+            cred_def,
+        )
+        .await
+        .unwrap()
     }
 
     pub fn use_indy_ledger(&mut self) {
