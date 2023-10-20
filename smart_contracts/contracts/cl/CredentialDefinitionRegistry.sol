@@ -80,7 +80,7 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
         _schemaExist(credDef.schemaId)
         _issuerActive(credDef.issuerId)
     {
-//        credDef.requireValidId();
+        // credDef.requireValidId(); For migration from Indy we need to disable this check as schema id there represented as seq_no
         credDef.requireValidType();
         credDef.requireTag();
         credDef.requireValue();
