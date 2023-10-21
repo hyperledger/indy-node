@@ -3,7 +3,7 @@ import chai from 'chai'
 import { RoleControl, ValidatorControl } from '../../contracts-ts'
 import { Account } from '../../utils'
 import { TestableValidatorControl } from '../utils/contract-helpers'
-import { AuthErrors } from '../utils/errors'
+import { AuthErrors, ValidatorControlErrors } from '../utils/errors'
 import { getTestAccounts, ZERO_ADDRESS } from '../utils/test-entities'
 
 const { expect } = chai
@@ -72,15 +72,25 @@ describe('ValidatorControl', function () {
 
       await expect(
         validatorControl.connect(testAccounts.steward3.account).addValidator(ZERO_ADDRESS),
-      ).to.be.revertedWith('Cannot add validator with address 0')
+      ).to.revertedWithCustomError(validatorControl.baseInstance, ValidatorControlErrors.InvalidValidatorAddress)
     })
 
     it('should fail when adding duplicate validator address', async function () {
       const { validatorControl, testAccounts } = await loadFixture(deployValidatorControlFixture)
 
-      await expect(validatorControl.connect(testAccounts.steward3.account).addValidator(validator1)).to.be.revertedWith(
-        'Validator already exists',
-      )
+      await expect(validatorControl.connect(testAccounts.steward3.account).addValidator(validator1))
+        .to.revertedWithCustomError(validatorControl.baseInstance, ValidatorControlErrors.ValidatorAlreadyExists)
+        .withArgs(validator1)
+    })
+
+    it('should fail when adding second validator address', async function () {
+      const { validatorControl, testAccounts } = await loadFixture(deployValidatorControlFixture)
+
+      await validatorControl.connect(testAccounts.steward3.account).addValidator(newValidator.address)
+
+      await expect(validatorControl.connect(testAccounts.steward3.account).addValidator(new Account().address))
+        .to.revertedWithCustomError(validatorControl.baseInstance, ValidatorControlErrors.SenderHasActiveValidator)
+        .withArgs(testAccounts.steward3.account.address)
     })
   })
 
@@ -112,7 +122,10 @@ describe('ValidatorControl', function () {
 
       await expect(
         validatorControl.connect(testAccounts.steward.account).removeValidator(validator1),
-      ).to.be.revertedWith('Cannot deactivate last validator')
+      ).to.be.revertedWithCustomError(
+        validatorControl.baseInstance,
+        ValidatorControlErrors.CannotDeactivateLastValidator,
+      )
 
       await validatorControl.connect(testAccounts.steward2.account).addValidator(validator2)
     })
@@ -121,9 +134,17 @@ describe('ValidatorControl', function () {
       const { validatorControl, testAccounts } = await loadFixture(deployValidatorControlFixture)
 
       const notExisingValidator = new Account()
+      await expect(validatorControl.connect(testAccounts.steward.account).removeValidator(notExisingValidator.address))
+        .to.revertedWithCustomError(validatorControl.baseInstance, ValidatorControlErrors.ValidatorNotFound)
+        .withArgs(notExisingValidator.address)
+    })
+
+    it('should fail when trying to delete a validator with zero address', async function () {
+      const { validatorControl, testAccounts } = await loadFixture(deployValidatorControlFixture)
+
       await expect(
-        validatorControl.connect(testAccounts.steward.account).removeValidator(notExisingValidator.address),
-      ).to.be.revertedWith('Validator does not exist')
+        validatorControl.connect(testAccounts.steward.account).removeValidator(ZERO_ADDRESS),
+      ).to.revertedWithCustomError(validatorControl.baseInstance, ValidatorControlErrors.InvalidValidatorAddress)
     })
   })
 })

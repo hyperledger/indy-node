@@ -37,3 +37,14 @@ export namespace UpgradeControlErrors {
   export const UpgradeProposalNotFound = 'UpgradeProposalNotFound'
   export const InsufficientApprovals = 'InsufficientApprovals'
 }
+
+export namespace ValidatorControlErrors {
+  export const InitialValidatorsRequired = 'InitialValidatorsRequired'
+  export const InvalidValidatorAccountAddress = 'InvalidValidatorAccountAddress'
+  export const InvalidValidatorAddress = 'InvalidValidatorAddress'
+  export const ExceedsValidatorLimit = 'ExceedsValidatorLimit'
+  export const ValidatorAlreadyExists = 'ValidatorAlreadyExists'
+  export const SenderHasActiveValidator = 'SenderHasActiveValidator'
+  export const CannotDeactivateLastValidator = 'CannotDeactivateLastValidator'
+  export const ValidatorNotFound = 'ValidatorNotFound'
+}
