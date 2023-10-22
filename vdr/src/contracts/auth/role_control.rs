@@ -1,3 +1,5 @@
+use web3::types::U256;
+
 use crate::{
     client::{
         ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
@@ -25,8 +27,8 @@ impl RoleControl {
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_ASSIGN_ROLE)
-            .add_param(role.into())
-            .add_param(ContractParam::String(account.into()))
+            .add_param(ContractParam::Uint(U256([role.clone().into_index(); 4])))
+            .add_param(ContractParam::Address(account.parse().unwrap()))
             .set_type(TransactionType::Write)
             .set_from(from)
             .build(&client)
@@ -41,8 +43,8 @@ impl RoleControl {
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_REVOKE_ROLE)
-            .add_param(role.into())
-            .add_param(ContractParam::String(account.into()))
+            .add_param(ContractParam::Uint(U256([role.clone().into_index(); 4])))
+            .add_param(ContractParam::Address(account.parse().unwrap()))
             .set_type(TransactionType::Write)
             .set_from(from)
             .build(&client)
@@ -56,8 +58,8 @@ impl RoleControl {
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_HAS_ROLE)
-            .add_param(role.into())
-            .add_param(ContractParam::String(account.into()))
+            .add_param(ContractParam::Uint(U256([role.clone().into_index(); 4])))
+            .add_param(ContractParam::Address(account.parse().unwrap()))
             .set_type(TransactionType::Read)
             .build(&client)
     }
@@ -69,7 +71,7 @@ impl RoleControl {
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_GET_ROLE)
-            .add_param(ContractParam::String(account.into()))
+            .add_param(ContractParam::Address(account.parse().unwrap()))
             .set_type(TransactionType::Read)
             .build(&client)
     }
@@ -124,4 +126,130 @@ impl RoleControl {
 #[cfg(test)]
 pub mod test {
     use super::*;
+    use crate::{
+        client::test::{client, CHAIN_ID, ROLE_CONTROL_ADDRESS},
+        signer::test::ACCOUNT,
+    };
+
+    pub const NEW_ACCOUNT: &'static str = "0x0886328869e4e1f401e1052a5f4aae8b45f42610";
+
+    mod build_assign_role_transaction {
+        use super::*;
+
+        #[test]
+        fn build_assign_role_transaction_test() {
+            let client = client();
+            let expected_data = vec![
+                136, 165, 191, 110, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+                0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 134, 50,
+                136, 105, 228, 225, 244, 1, 225, 5, 42, 95, 74, 174, 139, 69, 244, 38, 16,
+            ];
+
+            let transaction = RoleControl::build_assign_role_transaction(
+                &client,
+                ACCOUNT,
+                &Role::Trustee,
+                NEW_ACCOUNT,
+            )
+            .unwrap();
+
+            let expected_transaction = Transaction {
+                type_: TransactionType::Write,
+                from: Some(ACCOUNT.to_string()),
+                to: ROLE_CONTROL_ADDRESS.to_string(),
+                chain_id: CHAIN_ID,
+                data: expected_data,
+                signed: None,
+            };
+
+            assert_eq!(expected_transaction, transaction);
+        }
+    }
+
+    mod build_revoke_role_transaction {
+        use super::*;
+
+        #[test]
+        fn build_revoke_role_transaction_test() {
+            let client = client();
+            let expected_data = vec![
+                76, 187, 135, 211, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+                0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 134, 50,
+                136, 105, 228, 225, 244, 1, 225, 5, 42, 95, 74, 174, 139, 69, 244, 38, 16,
+            ];
+
+            let transaction = RoleControl::build_revoke_role_transaction(
+                &client,
+                ACCOUNT,
+                &Role::Trustee,
+                NEW_ACCOUNT,
+            )
+            .unwrap();
+
+            let expected_transaction = Transaction {
+                type_: TransactionType::Write,
+                from: Some(ACCOUNT.to_string()),
+                to: ROLE_CONTROL_ADDRESS.to_string(),
+                chain_id: CHAIN_ID,
+                data: expected_data,
+                signed: None,
+            };
+
+            assert_eq!(expected_transaction, transaction);
+        }
+    }
+
+    mod build_get_role_transaction {
+        use super::*;
+
+        #[test]
+        fn build_get_role_transaction_test() {
+            let client = client();
+            let expected_data = vec![
+                68, 39, 103, 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 226, 219, 108, 141, 198,
+                198, 129, 187, 93, 106, 209, 33, 161, 7, 243, 0, 233, 178, 181,
+            ];
+
+            let transaction = RoleControl::build_get_role_transaction(&client, ACCOUNT).unwrap();
+
+            let expected_transaction = Transaction {
+                type_: TransactionType::Read,
+                from: None,
+                to: ROLE_CONTROL_ADDRESS.to_string(),
+                chain_id: CHAIN_ID,
+                data: expected_data,
+                signed: None,
+            };
+
+            assert_eq!(expected_transaction, transaction);
+        }
+    }
+
+    mod build_has_role_transaction {
+        use super::*;
+
+        #[test]
+        fn build_has_role_transaction_test() {
+            let client = client();
+            let expected_data = vec![
+                158, 151, 184, 246, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+                0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 226, 219,
+                108, 141, 198, 198, 129, 187, 93, 106, 209, 33, 161, 7, 243, 0, 233, 178, 181,
+            ];
+
+            let transaction =
+                RoleControl::build_has_role_transaction(&client, &Role::Trustee, ACCOUNT).unwrap();
+
+            let expected_transaction = Transaction {
+                type_: TransactionType::Read,
+                from: None,
+                to: ROLE_CONTROL_ADDRESS.to_string(),
+                chain_id: CHAIN_ID,
+                data: expected_data,
+                signed: None,
+            };
+
+            assert_eq!(expected_transaction, transaction);
+        }
+    }
 }

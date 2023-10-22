@@ -91,6 +91,17 @@ impl ContractOutput {
             .as_u128())
     }
 
+    pub fn get_u64(&self, index: usize) -> VdrResult<u64> {
+        Ok(self
+            .0
+            .get(index)
+            .ok_or(VdrError::Unexpected)?
+            .clone()
+            .into_uint()
+            .ok_or(VdrError::Unexpected)?
+            .as_u64())
+    }
+
     pub fn get_string_array(&self, index: usize) -> VdrResult<Vec<String>> {
         self.0
             .get(index)
