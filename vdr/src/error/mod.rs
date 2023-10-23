@@ -1,3 +1,4 @@
+use serde_json::json;
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq)]
@@ -10,6 +11,9 @@ pub enum VdrError {
 
     #[error("Ledger Client: Got invalid response: {}", _0)]
     ClientInvalidResponse(String),
+
+    #[error("Ledger Client: Transaction reverted: {}", _0)]
+    ClientTransactionReverted(String),
 
     #[error("Ledger Client: Unexpected error occurred: {}", _0)]
     ClientUnexpectedError(String),
@@ -26,8 +30,8 @@ pub enum VdrError {
     #[error("Contract: Invalid data")]
     ContractInvalidInputData,
 
-    #[error("Contract: Invalid response data")]
-    ContractInvalidResponseData,
+    #[error("Contract: Invalid response data: {}", _0)]
+    ContractInvalidResponseData(String),
 
     #[error("Signer: Invalid private key")]
     SignerInvalidPrivateKey,
@@ -38,8 +42,8 @@ pub enum VdrError {
     #[error("Signer: Key is missing: {}", _0)]
     SignerMissingKey(String),
 
-    #[error("Signer: Unexpected error occurred")]
-    SignerUnexpectedError,
+    #[error("Signer: Unexpected error occurred: {}", _0)]
+    SignerUnexpectedError(String),
 
     #[error("Invalid data: {}", _0)]
     CommonInvalidData(String),
@@ -52,6 +56,7 @@ impl From<web3::Error> for VdrError {
         match value {
             web3::Error::Unreachable => VdrError::ClientNodeUnreachable,
             web3::Error::InvalidResponse(err) => VdrError::ClientInvalidResponse(err),
+            web3::Error::Rpc(err) => VdrError::ClientTransactionReverted(json!(err).to_string()),
             _ => VdrError::ClientUnexpectedError(value.to_string()),
         }
     }
@@ -69,9 +74,9 @@ impl From<web3::ethabi::Error> for VdrError {
 impl From<secp256k1::Error> for VdrError {
     fn from(value: secp256k1::Error) -> Self {
         match value {
-            secp256k1::Error::InvalidPublicKey => VdrError::SignerInvalidPrivateKey,
+            secp256k1::Error::InvalidSecretKey => VdrError::SignerInvalidPrivateKey,
             secp256k1::Error::InvalidMessage => VdrError::SignerInvalidMessage,
-            _ => VdrError::SignerUnexpectedError,
+            err => VdrError::SignerUnexpectedError(err.to_string()),
         }
     }
 }

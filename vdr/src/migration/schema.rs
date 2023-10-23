@@ -22,8 +22,8 @@ impl SchemaId {
     pub fn from_indy_format(id: &str) -> VdrResult<SchemaId> {
         let parts: Vec<&str> = id.split(':').collect();
         let id = parts.get(0).ok_or(VdrError::CommonInvalidData("Invalid indy schema id".to_string()))?;
-        let name = parts.get(2).ok_or(VdrError::CommonInvalidData("Invalid indy schema id".to_string()))?;
-        let version = parts.get(3).ok_or(VdrError::CommonInvalidData("Invalid indy schema id".to_string()))?;
+        let name = parts.get(2).ok_or(VdrError::CommonInvalidData("Invalid indy schema name".to_string()))?;
+        let version = parts.get(3).ok_or(VdrError::CommonInvalidData("Invalid indy schema version".to_string()))?;
         let issuer_did = DID::build(DID_METHOD, NETWORK, id);
         Ok(
             SchemaId::build(&issuer_did, name, version)

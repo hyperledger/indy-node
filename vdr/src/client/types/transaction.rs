@@ -105,10 +105,13 @@ impl TransactionParser {
         client: &LedgerClient,
         bytes: &[u8],
     ) -> VdrResult<T> {
+        if bytes.is_empty() {
+            return Err(VdrError::ContractInvalidResponseData("Empty response bytes".to_string()));
+        }
         let contract = client.contract(&self.contract)?;
         let output = contract.decode_output(&self.method, bytes)?;
         if output.is_empty() {
-            return Err(VdrError::ContractInvalidResponseData);
+            return Err(VdrError::ContractInvalidResponseData("Unable to parse response".to_string()));
         }
 
         let data = output.get_tuple(0)?;
