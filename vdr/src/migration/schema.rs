@@ -21,9 +21,9 @@ pub struct IndySchemaFormat {
 impl SchemaId {
     pub fn from_indy_format(id: &str) -> VdrResult<SchemaId> {
         let parts: Vec<&str> = id.split(':').collect();
-        let id = parts.get(0).ok_or(VdrError::Unexpected)?;
-        let name = parts.get(2).ok_or(VdrError::Unexpected)?;
-        let version = parts.get(3).ok_or(VdrError::Unexpected)?;
+        let id = parts.get(0).ok_or(VdrError::CommonInvalidData("Invalid indy schema id".to_string()))?;
+        let name = parts.get(2).ok_or(VdrError::CommonInvalidData("Invalid indy schema id".to_string()))?;
+        let version = parts.get(3).ok_or(VdrError::CommonInvalidData("Invalid indy schema id".to_string()))?;
         let issuer_did = DID::build(DID_METHOD, NETWORK, id);
         Ok(
             SchemaId::build(&issuer_did, name, version)
@@ -34,7 +34,7 @@ impl SchemaId {
 impl Schema {
     pub fn from_indy_format(schema: &str) -> VdrResult<Schema> {
         let indy_schema: IndySchemaFormat =
-            serde_json::from_str(&schema).map_err(|_err| VdrError::Unexpected)?;
+            serde_json::from_str(&schema).map_err(|_err| VdrError::CommonInvalidData("Invalid indy schema".to_string()))?;
         Schema::try_from(indy_schema)
     }
 }
@@ -44,7 +44,7 @@ impl TryFrom<IndySchemaFormat> for Schema {
 
     fn try_from(schema: IndySchemaFormat) -> Result<Self, Self::Error> {
         let parts: Vec<&str> = schema.id.split(':').collect();
-        let id = parts.get(0).ok_or(VdrError::Unexpected)?;
+        let id = parts.get(0).ok_or(VdrError::CommonInvalidData("Invalid indy schema".to_string()))?;
         let issuer_id = DID::build(DID_METHOD, NETWORK, id);
         Ok(Schema {
             id: SchemaId::build(&issuer_id, &schema.name, &schema.version),

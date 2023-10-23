@@ -22,9 +22,9 @@ pub struct IndyCredentialDefinitionFormat {
 impl CredentialDefinitionId {
     pub fn from_indy_format(id: &str) -> VdrResult<CredentialDefinitionId> {
         let parts: Vec<&str> = id.split(':').collect();
-        let id = parts.get(0).ok_or(VdrError::Unexpected)?;
-        let schema_id = parts.get(3).ok_or(VdrError::Unexpected)?;
-        let tag = parts.get(4).ok_or(VdrError::Unexpected)?;
+        let id = parts.get(0).ok_or(VdrError::CommonInvalidData("Invalid indy cred def id".to_string()))?;
+        let schema_id = parts.get(3).ok_or(VdrError::CommonInvalidData("Invalid indy cred def id".to_string()))?;
+        let tag = parts.get(4).ok_or(VdrError::CommonInvalidData("Invalid indy cred def id".to_string()))?;
         let issuer_did = DID::build(DID_METHOD, NETWORK,  id);
         Ok(
             CredentialDefinitionId::build(&issuer_did, schema_id, tag)
@@ -35,7 +35,7 @@ impl CredentialDefinitionId {
 impl CredentialDefinition {
     pub fn from_indy_format(credential_definition: &str) -> VdrResult<CredentialDefinition> {
         let indy_cred_def: IndyCredentialDefinitionFormat =
-            serde_json::from_str(&credential_definition).map_err(|_err| VdrError::Unexpected)?;
+            serde_json::from_str(&credential_definition).map_err(|_err| VdrError::CommonInvalidData("Invalid indy cred def".to_string()))?;
         CredentialDefinition::try_from(indy_cred_def)
     }
 }
@@ -45,8 +45,8 @@ impl TryFrom<IndyCredentialDefinitionFormat> for CredentialDefinition {
 
     fn try_from(cred_def: IndyCredentialDefinitionFormat) -> Result<Self, Self::Error> {
         let parts: Vec<&str> = cred_def.id.split(':').collect();
-        let id = parts.get(0).ok_or(VdrError::Unexpected)?;
-        let schema_id_seq_no = parts.get(3).ok_or(VdrError::Unexpected)?;
+        let id = parts.get(0).ok_or(VdrError::CommonInvalidData("Invalid indy cred def id".to_string()))?;
+        let schema_id_seq_no = parts.get(3).ok_or(VdrError::CommonInvalidData("Invalid indy cred def id".to_string()))?;
         let issuer_id = DID::build(DID_METHOD, NETWORK, id);
         // TODO: How to deal with schema_id - now it's just sequence number?
         let schema_id = cred_def.schema_id.to_string();

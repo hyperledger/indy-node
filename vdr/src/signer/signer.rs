@@ -47,7 +47,7 @@ impl BasicSigner {
     }
 
     fn key_for_account(&self, account: &str) -> VdrResult<&KeyPair> {
-        self.keys.get(account).ok_or(VdrError::Unexpected)
+        self.keys.get(account).ok_or(VdrError::SignerMissingKey(account.to_string()))
     }
 
     fn account_from_key(&self, public_key: &PublicKey) -> String {
