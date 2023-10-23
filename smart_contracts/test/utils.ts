@@ -80,7 +80,7 @@ export async function deployDidRegistry() {
   await didValidator.deploy({ libraries: [didRegex] })
 
   const didRegistry = new TestableDidRegistry()
-  await didRegistry.deploy({ libraries: [didValidator] })
+  await didRegistry.deployProxy({params: [ZERO_ADDRESS], libraries: [didValidator] })
 
   return didRegistry
 }
@@ -89,7 +89,7 @@ export async function deploySchemaRegistry() {
   const didRegistry = await deployDidRegistry()
 
   const schemaRegistry = new TestableSchemaRegistry()
-  await schemaRegistry.deploy({ params: [didRegistry.address] })
+  await schemaRegistry.deployProxy({ params: [didRegistry.address, ZERO_ADDRESS] })
 
   return { didRegistry, schemaRegistry }
 }
@@ -98,7 +98,7 @@ export async function deployCredentialDefinitionRegistry() {
   const { didRegistry, schemaRegistry } = await deploySchemaRegistry()
 
   const credentialDefinitionRegistry = new TestableCredentialDefinitionRegistry()
-  await credentialDefinitionRegistry.deploy({ params: [didRegistry.address, schemaRegistry.address] })
+  await credentialDefinitionRegistry.deployProxy({ params: [didRegistry.address, schemaRegistry.address, ZERO_ADDRESS] })
 
   return { credentialDefinitionRegistry, didRegistry, schemaRegistry }
 }

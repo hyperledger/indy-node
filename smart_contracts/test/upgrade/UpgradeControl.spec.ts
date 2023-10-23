@@ -3,13 +3,13 @@ import chai from 'chai'
 import { RoleControl } from '../../contracts-ts'
 import { AuthErrors, ProxyError, UpgradeControlErrors } from '../errors'
 import { ProxyEvents, UpgradeControlEvents } from '../events'
-import { getTestAccounts, TestableUpgradeControl, UpgradablePrototype } from '../utils'
+import { getTestAccounts, TestableUpgradeControl, UpgradablePrototype, ZERO_ADDRESS } from '../utils'
 
 const { expect } = chai
 
 describe('UpgradableControl', function () {
   async function deployUpgradableContractFixture() {
-    const roleControl = await new RoleControl().deploy()
+    const roleControl = await new RoleControl().deployProxy({ params: [ZERO_ADDRESS] })
 
     const testAccounts = await getTestAccounts(roleControl)
 

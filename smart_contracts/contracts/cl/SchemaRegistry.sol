@@ -75,7 +75,7 @@ contract SchemaRegistry is SchemaRegistryInterface, UUPSUpgradeable, Initializab
     function initialize(
         address didRegistryAddress,
         address upgradeControlAddress
-    ) public initializer {
+    ) public reinitializer(1) {
         _didRegistry = DidRegistryInterface(didRegistryAddress);
         _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
     }

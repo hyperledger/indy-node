@@ -1,7 +1,7 @@
 import chai from 'chai'
 import { RoleControl, ROLES } from '../../contracts-ts'
 import { Account } from '../../utils'
-import { getTestAccounts, TestAccounts } from '../utils'
+import { getTestAccounts, TestAccounts, ZERO_ADDRESS } from '../utils'
 
 const { expect } = chai
 
@@ -10,7 +10,7 @@ describe('RoleControl', () => {
   let testAccounts: TestAccounts
 
   beforeEach('deploy RoleControl', async () => {
-    roleControl = await new RoleControl().deploy()
+    roleControl = await new RoleControl().deployProxy({ params: [ZERO_ADDRESS]})
     testAccounts = await getTestAccounts(roleControl)
   })
 

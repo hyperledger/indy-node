@@ -81,13 +81,14 @@ This smart contract is designed to manage the approval process for upgrading a c
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy";
 
 contract UpgradableContract is UUPSUpgradable, Initializable {
 
     UpgradeControlInterface _upgradeControl;
 
-    function initialize(address upgradeControlAddress) public initializer {
+    function initialize(address upgradeControlAddress) public reinitializer(1) {
       _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
     }
 

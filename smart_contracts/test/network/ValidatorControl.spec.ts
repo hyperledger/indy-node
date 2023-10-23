@@ -15,7 +15,7 @@ describe('ValidatorControl', function () {
   const initialValidators: Array<string> = [validator1, validator2]
 
   beforeEach('deploy ValidatorSmartContract', async () => {
-    roleControl = await new RoleControl().deploy()
+    roleControl = await new RoleControl().deployProxy({ params: [ZERO_ADDRESS] })
     testAccounts = await getTestAccounts(roleControl)
     const initialValidatorsData = [
       {
@@ -27,7 +27,7 @@ describe('ValidatorControl', function () {
         account: testAccounts.steward2.account,
       },
     ]
-    validatorControl = await new ValidatorControl().deploy({ params: [roleControl.address, initialValidatorsData] })
+    validatorControl = await new ValidatorControl().deployProxy({ params: [roleControl.address, ZERO_ADDRESS, initialValidatorsData] })
   })
 
   describe('getValidators', () => {

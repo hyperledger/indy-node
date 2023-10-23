@@ -41,7 +41,7 @@ contract RoleControl is RoleControlInterface, UUPSUpgradeable, Initializable {
 
     function initialize(
         address upgradeControlAddress
-    ) public initializer {
+    ) public reinitializer(1) {
         _initialTrustee();
         _initRoles();
 

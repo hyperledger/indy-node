@@ -46,7 +46,7 @@ contract DidRegistry is DidRegistryInterface, UUPSUpgradeable, Initializable {
         _;
     }
 
-    function initialize(address upgradeControlAddress) public initializer {
+    function initialize(address upgradeControlAddress) public reinitializer(1) {
       _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
     }
 

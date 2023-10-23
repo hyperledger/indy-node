@@ -24,7 +24,7 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
      */
     mapping(address => mapping(address => UpgradeProposal)) private upgradeProposals;
 
-    function initialize(address roleControlAddress) public initializer {
+    function initialize(address roleControlAddress) public reinitializer(1) {
         _roleControl = RoleControlInterface(roleControlAddress);
     }
 

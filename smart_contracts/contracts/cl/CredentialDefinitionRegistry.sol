@@ -90,7 +90,7 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
         address didRegistryAddress, 
         address schemaRegistryAddress, 
         address upgradeControlAddress
-    ) public initializer {
+    ) public reinitializer(1) {
         _didRegistry = DidRegistryInterface(didRegistryAddress);
         _schemaRegistry = SchemaRegistryInterface(schemaRegistryAddress);
         _upgradeControl = UpgradeControlInterface(upgradeControlAddress);

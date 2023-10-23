@@ -65,9 +65,9 @@ contract ValidatorControl is ValidatorSmartContractInterface, UUPSUpgradeable, I
 
     function initialize(
         address roleControlContractAddress, 
-        InitialValidatorInfo[] memory initialValidators, 
-        address upgradeControlAddress
-    ) public initializer {
+        address upgradeControlAddress,
+        InitialValidatorInfo[] memory initialValidators
+    ) public reinitializer(1) {
         require(initialValidators.length > 0, "List of initial validators cannot be empty");
         require(initialValidators.length < MAX_VALIDATORS, "Number of validators cannot be larger than 256");
 
