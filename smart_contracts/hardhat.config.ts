@@ -13,6 +13,7 @@ const config: HardhatUserConfig = {
                 enabled: false,
                 runs: 200
             },
+            evmVersion: 'constantinople',
         },
     },
     dependencyCompiler: {

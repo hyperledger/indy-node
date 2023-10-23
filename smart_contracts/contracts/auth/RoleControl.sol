@@ -1,9 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+
+import { UpgradeControlInterface } from "../upgrade/UpgradeControlInterface.sol";
+
 import { RoleControlInterface } from "./RoleControlInterface.sol";
 
-contract RoleControl is RoleControlInterface {
+contract RoleControl is RoleControlInterface, UUPSUpgradeable, Initializable {
+
     /**
      * @dev Type describing single initial assignment
      */
@@ -11,6 +17,11 @@ contract RoleControl is RoleControlInterface {
         ROLES role;
         address account;
     }
+
+    /**
+     * @dev Reference to the contract that manages contract upgrades
+     */
+    UpgradeControlInterface private _upgradeControl;
 
     /**
      * @dev Mapping holding the list of accounts with roles assigned to them.
@@ -28,9 +39,18 @@ contract RoleControl is RoleControlInterface {
      */
     mapping(ROLES role => uint) private _roleCounts;
 
-    constructor() {
+    function initialize(
+        address upgradeControlAddress
+    ) public initializer {
         _initialTrustee();
         _initRoles();
+
+        _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
+    }
+
+     /// @inheritdoc UUPSUpgradeable
+    function _authorizeUpgrade(address newImplementation) internal view override {
+      _upgradeControl.ensureSufficientApprovals(address(this), newImplementation);
     }
 
     /**

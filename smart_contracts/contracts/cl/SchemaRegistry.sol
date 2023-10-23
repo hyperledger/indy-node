@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+
 import { DidRegistryInterface } from "../did/DidRegistry.sol";
 import { DidDocumentStorage } from "../did/DidTypes.sol";
+import { UpgradeControlInterface } from "../upgrade/UpgradeControlInterface.sol";
+
 import { 
     DID_NOT_FOUND_ERROR_MESSAGE,
     IssuerHasBeenDeactivated,
@@ -18,9 +23,17 @@ import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 using SchemaValidator for Schema;
 using { toSlice } for string;
 
-contract SchemaRegistry is SchemaRegistryInterface {
+contract SchemaRegistry is SchemaRegistryInterface, UUPSUpgradeable, Initializable { 
 
-    DidRegistryInterface _didRegistry;
+    /**
+     * @dev Reference to the contract that manages DIDs
+     */
+    DidRegistryInterface private _didRegistry;
+
+    /**
+     * @dev Reference to the contract that manages contract upgrades
+     */
+    UpgradeControlInterface private _upgradeControl;
 
     /**
      * Mapping Scheman ID to its Schema Details and Metadata.
@@ -59,8 +72,17 @@ contract SchemaRegistry is SchemaRegistryInterface {
         }
     }
 
-    constructor(address didRegistryAddress) { 
+    function initialize(
+        address didRegistryAddress,
+        address upgradeControlAddress
+    ) public initializer {
         _didRegistry = DidRegistryInterface(didRegistryAddress);
+        _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
+    }
+
+     /// @inheritdoc UUPSUpgradeable
+    function _authorizeUpgrade(address newImplementation) internal view override {
+      _upgradeControl.ensureSufficientApprovals(address(this), newImplementation);
     }
 
     /// @inheritdoc SchemaRegistryInterface
