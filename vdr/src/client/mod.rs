@@ -6,6 +6,7 @@ mod types;
 use crate::error::VdrResult;
 
 pub use client::*;
+pub use constants::*;
 pub use types::*;
 
 #[async_trait::async_trait]

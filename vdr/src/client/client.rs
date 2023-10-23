@@ -83,7 +83,7 @@ impl LedgerClient {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::signer::test::signer;
+    use crate::signer::signer::test::signer;
     use std::{env, fs};
 
     pub const CHAIN_ID: u64 = 1337;

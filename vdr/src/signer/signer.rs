@@ -3,12 +3,11 @@ use crate::{
     signer::Signer,
 };
 
-use secp256k1::{ecdsa::RecoveryId, All, Message, PublicKey, Secp256k1, SecretKey};
+use secp256k1::{All, Message, PublicKey, Secp256k1, SecretKey};
 use std::collections::HashMap;
 
-#[cfg(test)]
+use secp256k1::ecdsa::RecoveryId;
 use std::str::FromStr;
-#[cfg(test)]
 use web3::signing::keccak256;
 
 pub struct KeyPair {
@@ -22,7 +21,6 @@ pub struct BasicSigner {
 }
 
 impl BasicSigner {
-    #[cfg(test)]
     pub fn new() -> VdrResult<BasicSigner> {
         Ok(BasicSigner {
             secp: Secp256k1::new(),
@@ -30,28 +28,29 @@ impl BasicSigner {
         })
     }
 
-    #[cfg(test)]
-    pub fn add_key(&mut self, private_key: &str) -> VdrResult<()> {
-        let private_key = SecretKey::from_str(private_key)?;
+    pub fn create_key(&mut self, private_key: Option<&str>) -> VdrResult<(String, Vec<u8>)> {
+        let private_key = match private_key {
+            Some(private_key) => SecretKey::from_str(private_key)?,
+            None => SecretKey::new(&mut rand::thread_rng()),
+        };
         let public_key = PublicKey::from_secret_key(&self.secp, &private_key);
-        let address = self.get_address(&public_key);
-
+        let account = self.account_from_key(&public_key);
         self.keys.insert(
-            address,
+            account.clone(),
             KeyPair {
                 public_key,
                 private_key,
             },
         );
-        Ok(())
+        let public_key_bytes = public_key.serialize_uncompressed().to_vec();
+        Ok((account, public_key_bytes))
     }
 
-    fn get_key(&self, account: &str) -> VdrResult<&KeyPair> {
-        self.keys.get(account).ok_or(VdrError::SignerMissingKey(account.to_string()))
+    fn key_for_account(&self, account: &str) -> VdrResult<&KeyPair> {
+        self.keys.get(account).ok_or(VdrError::Unexpected)
     }
 
-    #[cfg(test)]
-    fn get_address(&self, public_key: &PublicKey) -> String {
+    fn account_from_key(&self, public_key: &PublicKey) -> String {
         let hash = keccak256(&public_key.serialize_uncompressed()[1..]);
         format!("0x{}", hex::encode(&hash[12..]))
     }
@@ -59,8 +58,8 @@ impl BasicSigner {
 
 impl Signer for BasicSigner {
     fn sign(&self, message: &[u8], account: &str) -> VdrResult<(RecoveryId, Vec<u8>)> {
-        let key = self.get_key(account)?;
-        let message = Message::from_slice(message)?;
+        let key = self.key_for_account(account)?;
+        let message = Message::from_digest_slice(message)?;
         let (recovery_id, signature) = self
             .secp
             .sign_ecdsa_recoverable(&message, &key.private_key)
@@ -90,7 +89,7 @@ pub mod test {
 
     pub fn signer() -> BasicSigner {
         let mut signer = BasicSigner::new().unwrap();
-        signer.add_key(PRIVATE_KEY).unwrap();
+        signer.create_key(Some(PRIVATE_KEY)).unwrap();
         signer
     }
 
