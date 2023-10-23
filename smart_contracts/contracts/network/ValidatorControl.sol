@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import "./ValidatorSmartContractInterface.sol";
-import "../auth/RoleControl.sol";
+import { Unauthorized} from "../auth/AuthErrors.sol";
+import { RoleControlInterface } from "../auth/RoleControlInterface.sol";
+import { ValidatorSmartContractInterface } from "./ValidatorSmartContractInterface.sol";
 
 contract ValidatorControl is ValidatorSmartContractInterface {
     /**
@@ -39,26 +40,28 @@ contract ValidatorControl is ValidatorSmartContractInterface {
     /**
      * @dev Reference to the contract managing auth permissions
          */
-    RoleControl private roleControl;
+    RoleControlInterface private roleControl;
 
     /**
      * @dev Modifier that checks that an the sender account has Steward role assigned.
      */
     modifier senderIsSteward() {
-        require(
-            roleControl.hasRole(RoleControlInterface.ROLES.STEWARD, msg.sender),
-            "Sender does not have STEWARD role assigned"
-        );
+        if (!roleControl.hasRole(RoleControlInterface.ROLES.STEWARD, msg.sender)) revert Unauthorized(msg.sender);
         _;
     }
 
+    modifier nonZeroValidatorAddress(address validator) {
+        if (validator == address(0)) revert InvalidValidatorAddress();
+         _;
+    }
+
     constructor(address roleControlContractAddress, InitialValidatorInfo[] memory initialValidators) {
-        require(initialValidators.length > 0, "List of initial validators cannot be empty");
-        require(initialValidators.length < MAX_VALIDATORS, "Number of validators cannot be larger than 256");
+        if (initialValidators.length == 0) revert InitialValidatorsRequired();
+        if (initialValidators.length >= MAX_VALIDATORS) revert ExceedsValidatorLimit(MAX_VALIDATORS);
 
         for (uint i = 0; i < initialValidators.length; i++) {
-            require(initialValidators[i].account != address(0), "Initial validator account cannot be zero");
-            require(initialValidators[i].validator != address(0), "Initial validator address cannot be zero");
+            if (initialValidators[i].account == address(0)) revert InvalidValidatorAccountAddress();
+            if (initialValidators[i].validator == address(0)) revert InvalidValidatorAddress();
 
             InitialValidatorInfo memory validator = initialValidators[i];
 
@@ -66,7 +69,7 @@ contract ValidatorControl is ValidatorSmartContractInterface {
             validatorInfos[validator.validator] = ValidatorInfo(validator.account, uint8(i));
         }
 
-        roleControl = RoleControl(roleControlContractAddress);
+        roleControl = RoleControlInterface(roleControlContractAddress);
     }
 
     /**
@@ -79,15 +82,14 @@ contract ValidatorControl is ValidatorSmartContractInterface {
     /**
      * @dev Add a new validator to the list
      */
-    function addValidator(address newValidator) external senderIsSteward {
-        require(newValidator != address(0), "Cannot add validator with address 0");
-        require(validators.length < MAX_VALIDATORS, "Number of validators cannot be larger than 256");
+    function addValidator(address newValidator) external senderIsSteward nonZeroValidatorAddress(newValidator) {
+        if (validators.length >= MAX_VALIDATORS) revert ExceedsValidatorLimit(MAX_VALIDATORS);
 
         uint256 validatorsCount = validators.length;
         for (uint i=0; i < validatorsCount; i++) {
             ValidatorInfo memory validatorInfo = validatorInfos[validators[i]];
-            require(newValidator != validators[i], "Validator already exists");
-            require(msg.sender != validatorInfo.account, "Sender already has active validator");
+            if (newValidator == validators[i]) revert ValidatorAlreadyExists(validators[i]);
+            if (msg.sender == validatorInfo.account) revert SenderHasActiveValidator(msg.sender);
         }
 
         validatorInfos[newValidator] = ValidatorInfo(msg.sender, uint8(validatorsCount));
@@ -100,11 +102,11 @@ contract ValidatorControl is ValidatorSmartContractInterface {
     /**
      * @dev Remove an existing validator from the list
      */
-    function removeValidator(address validator) external senderIsSteward {
-        require(validators.length > 1, "Cannot deactivate last validator");
+    function removeValidator(address validator) external senderIsSteward nonZeroValidatorAddress(validator) {
+        if (validators.length == 1) revert CannotDeactivateLastValidator();
 
         ValidatorInfo memory removedValidatorInfo = validatorInfos[validator];
-        require(removedValidatorInfo.account != address(0), "Validator does not exist");
+        if (removedValidatorInfo.account == address(0)) revert ValidatorNotFound(validator);
 
         uint8 removedValidatorIndex = removedValidatorInfo.validatorIndex;
 

@@ -1,7 +1,7 @@
 import environment from '../environment'
 import { Actor } from './utils/actor'
 import { ROLES } from '../contracts-ts'
-import { createCredentialDefinitionObject, createSchemaObject } from '../utils/entity-factories'
+import { createCredentialDefinitionObject, createSchemaObject } from '../utils'
 
 async function demo() {
   let receipt: any

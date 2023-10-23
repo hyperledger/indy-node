@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
+import { Unauthorized } from "./AuthErrors.sol";
 import { RoleControlInterface } from "./RoleControlInterface.sol";
 
 contract RoleControl is RoleControlInterface {
@@ -56,10 +57,7 @@ contract RoleControl is RoleControlInterface {
      */
     modifier _onlyRoleOwner(ROLES role) {
         ROLES ownerRole = _roleOwners[role];
-        require(
-            hasRole(ownerRole, msg.sender),
-            "Sender does not have required role to perform action"
-        );
+        if (!hasRole(ownerRole, msg.sender)) revert Unauthorized(msg.sender);
         _;
     }
 
