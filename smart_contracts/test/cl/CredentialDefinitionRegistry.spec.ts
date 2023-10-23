@@ -133,18 +133,20 @@ describe('CredentialDefinitionRegistry', function () {
         .withArgs('value')
     })
 
-    it('Should fail if Credential Definition is being with invalid ID', async function () {
-      const { credentialDefinitionRegistry, schemaId } = await loadFixture(deployCredDefContractFixture)
-
-      const credDef = createCredentialDefinitionObject({ issuerId, schemaId })
-      credDef.id = 'Gs6cQcvrtWoZKsbBhD3dQJ:3:CL:140384:mctc'
-
-      await expect(credentialDefinitionRegistry.createCredentialDefinition(credDef))
-        .to.be.revertedWithCustomError(
-          credentialDefinitionRegistry.baseInstance,
-          ClErrors.InvalidCredentialDefinitionId,
-        )
-        .withArgs(credDef.id)
-    })
+    // FIXME: for ledger migration purpose we disabled checking id validity for credential definition
+    //  as it can contain schema id represented as seq_no
+    // it('Should fail if Credential Definition is being with invalid ID', async function () {
+    //   const { credentialDefinitionRegistry, schemaId } = await loadFixture(deployCredDefContractFixture)
+    //
+    //   const credDef = createCredentialDefinitionObject({ issuerId, schemaId })
+    //   credDef.id = 'Gs6cQcvrtWoZKsbBhD3dQJ:3:CL:140384:mctc'
+    //
+    //   await expect(credentialDefinitionRegistry.createCredentialDefinition(credDef))
+    //     .to.be.revertedWithCustomError(
+    //       credentialDefinitionRegistry.baseInstance,
+    //       ClErrors.InvalidCredentialDefinitionId,
+    //     )
+    //     .withArgs(credDef.id)
+    // })
   })
 })
