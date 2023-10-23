@@ -57,8 +57,8 @@ impl Verifier {
                 (schema, cred_def)
             }
             Ledgers::Besu => {
-                let schema_id = SchemaId::from_indy_format(schema_id);
-                let cred_def_id = CredentialDefinitionId::from_indy_format(cred_def_id);
+                let schema_id = SchemaId::from_indy_format(schema_id).unwrap();
+                let cred_def_id = CredentialDefinitionId::from_indy_format(cred_def_id).unwrap();
                 let schema = self.besu_ledger.get_schema(&schema_id).await;
                 let cred_def = self.besu_ledger.get_cred_def(&cred_def_id).await;
                 let schema: IndySchemaFormat = schema.into();

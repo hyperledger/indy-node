@@ -1,9 +1,10 @@
+use crate::{
+    error::{VdrError, VdrResult},
+    migration::{DID_METHOD, NETWORK},
+    CredentialDefinition, CredentialDefinitionId, SchemaId, DID,
+};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
-use crate::{CredentialDefinition, CredentialDefinitionId, DID, SchemaId};
-use crate::error::{VdrError, VdrResult};
-use crate::migration::NETWORK;
-
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct IndyCredentialDefinitionFormat {
@@ -19,10 +20,15 @@ pub struct IndyCredentialDefinitionFormat {
 }
 
 impl CredentialDefinitionId {
-    pub fn from_indy_format(id: &str) -> CredentialDefinitionId {
+    pub fn from_indy_format(id: &str) -> VdrResult<CredentialDefinitionId> {
         let parts: Vec<&str> = id.split(':').collect();
-        let issuer_did = DID::build(NETWORK, parts[0]);
-        CredentialDefinitionId::build(&issuer_did, parts[3], parts[4])
+        let id = parts.get(0).ok_or(VdrError::Unexpected)?;
+        let schema_id = parts.get(3).ok_or(VdrError::Unexpected)?;
+        let tag = parts.get(4).ok_or(VdrError::Unexpected)?;
+        let issuer_did = DID::build(DID_METHOD, NETWORK,  id);
+        Ok(
+            CredentialDefinitionId::build(&issuer_did, schema_id, tag)
+        )
     }
 }
 
@@ -39,11 +45,13 @@ impl TryFrom<IndyCredentialDefinitionFormat> for CredentialDefinition {
 
     fn try_from(cred_def: IndyCredentialDefinitionFormat) -> Result<Self, Self::Error> {
         let parts: Vec<&str> = cred_def.id.split(':').collect();
-        let issuer_id = DID::build(NETWORK, &parts[0]);
+        let id = parts.get(0).ok_or(VdrError::Unexpected)?;
+        let schema_id_seq_no = parts.get(3).ok_or(VdrError::Unexpected)?;
+        let issuer_id = DID::build(DID_METHOD, NETWORK, id);
         // TODO: How to deal with schema_id - now it's just sequence number?
         let schema_id = cred_def.schema_id.to_string();
         Ok(CredentialDefinition {
-            id: CredentialDefinitionId::build(&issuer_id, &parts[3].to_string(), &cred_def.tag),
+            id: CredentialDefinitionId::build(&issuer_id, schema_id_seq_no, &cred_def.tag),
             issuer_id,
             schema_id: SchemaId::new(&schema_id.to_string()),
             cred_def_type: cred_def.type_.to_string(),
@@ -57,8 +65,9 @@ impl Into<IndyCredentialDefinitionFormat> for CredentialDefinition {
     fn into(self) -> IndyCredentialDefinitionFormat {
         IndyCredentialDefinitionFormat {
             id: format!(
-                "{}:3:CL:{}:{}",
+                "{}:3:{}:{}:{}",
                 self.issuer_id.value(),
+                self.cred_def_type,
                 self.schema_id.value(),
                 self.tag
             ),

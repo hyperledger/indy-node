@@ -171,7 +171,7 @@ impl Issuer {
     }
 
     pub fn build_did_doc(did: &str, edkey: &str, secpkey: &str, endpoint: &str) -> DidDocument {
-        let id = DID::build("testnet", did);
+        let id = DID::build("indy", "testnet", did);
         DidDocumentBuilder::new()
             .set_id(&id)
             .add_verification_method(

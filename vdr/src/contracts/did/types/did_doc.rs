@@ -3,7 +3,6 @@ use crate::{
     error::{VdrError, VdrResult},
 };
 
-use crate::client::DID_METHOD;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
@@ -19,11 +18,11 @@ impl DID {
         DID(did.to_string())
     }
 
-    pub fn build(network: &str, id: &str) -> DID {
+    pub fn build(method: &str, network: &str, id: &str) -> DID {
         DID(format!(
             "{}:{}:{}:{}",
             Self::DID_PREFIX,
-            DID_METHOD,
+            method,
             network,
             id
         ))

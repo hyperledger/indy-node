@@ -35,17 +35,14 @@ mod tests {
         client::test::client,
         contracts::{
             cl::{
-                credential_definition::test::credential_definition,
-                schema::test::schema,
                 schema_registry::test::create_schema,
                 types::{credential_definition::test::credential_definition, schema::test::schema},
             },
-            did::{did_doc::test::did_doc, did_registry::test::create_did},
+            did::{did_registry::test::create_did, types::did_doc::test::did_doc},
         },
         error::VdrResult,
-        signer::test::ACCOUNT,
+        signer::signer::test::ACCOUNT,
     };
-    use signer::BasicSigner;
 
     mod did {
         use super::*;
