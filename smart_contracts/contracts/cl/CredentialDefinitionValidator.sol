@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
-import { FieldRequired, InvalidCredentialDefinitionId, UnsupportedCredentialDefintionType } from "./ErrorTypes.sol";
+import { FieldRequired, InvalidCredentialDefinitionId, UnsupportedCredentialDefintionType } from "./ClErrors.sol";
 import { CredentialDefinition } from "./CredentialDefinitionTypes.sol";
 import { CredentialDefinitionRegistryInterface } from "./CredentialDefinitionRegistryInterface.sol";
 

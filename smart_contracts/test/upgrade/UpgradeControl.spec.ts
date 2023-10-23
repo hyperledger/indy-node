@@ -1,9 +1,10 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import chai from 'chai'
 import { RoleControl } from '../../contracts-ts'
-import { AuthErrors, ProxyError, UpgradeControlErrors } from '../errors'
-import { ProxyEvents, UpgradeControlEvents } from '../events'
-import { getTestAccounts, TestableUpgradeControl, UpgradablePrototype, ZERO_ADDRESS } from '../utils'
+import { TestableUpgradeControl, UpgradablePrototype } from '../utils/contract-helpers'
+import { AuthErrors, ProxyError, UpgradeControlErrors } from '../utils/errors'
+import { ProxyEvents, UpgradeControlEvents } from '../utils/events'
+import { getTestAccounts, ZERO_ADDRESS } from '../utils/test-entities'
 
 const { expect } = chai
 

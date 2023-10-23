@@ -26,7 +26,7 @@ In the same, time Indy community follows to idea of splitting complex library in
 /// #Params
 ///  param: chain_id: u64 - chain id of network (chain ID is part of the transaction signing process to protect against transaction replay attack)
 ///  param: node_address: string - RPC node endpoint
-///  param: contract_specs: Vec<ContractSpec> - specifications for contracts  deployed on the networl
+///  param: contract_specs: Vec<ContractSpec> - specifications for contracts  deployed on the network
 ///  param: signer: Option<Signer> - transactions signer. Need to be provided for usage of single-step functions. 
 ///
 /// #Returns

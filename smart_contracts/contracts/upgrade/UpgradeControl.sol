@@ -6,8 +6,9 @@ import { ERC1967Utils } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils
 import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
-import { Unauthorized } from "../auth/AuthErrorTypes.sol";
+import { Unauthorized } from "../auth/AuthErrors.sol";
 import { RoleControlInterface } from "../auth/RoleControlInterface.sol";
+
 import { UpgradeControlInterface } from "./UpgradeControlInterface.sol";
 
 contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializable {

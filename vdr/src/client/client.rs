@@ -57,7 +57,9 @@ impl LedgerClient {
     }
 
     pub(crate) fn contract(&self, name: &str) -> VdrResult<&Box<dyn Contract>> {
-        self.contracts.get(name).ok_or(VdrError::Unexpected)
+        self.contracts
+            .get(name)
+            .ok_or(VdrError::ContractInvalidName(name.to_string()))
     }
 
     pub(crate) fn chain_id(&self) -> u64 {
@@ -81,7 +83,7 @@ impl LedgerClient {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::signer::test::signer;
+    use crate::signer::signer::test::signer;
     use std::{env, fs};
 
     pub const CHAIN_ID: u64 = 1337;

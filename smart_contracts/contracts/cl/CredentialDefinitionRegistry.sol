@@ -4,20 +4,21 @@ pragma solidity ^0.8.20;
 import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
+import { DidNotFound } from "../did/DidErrors.sol";
 import { DidRegistryInterface } from "../did/DidRegistry.sol";
 import { DidDocumentStorage } from "../did/DidTypes.sol";
+import { Errors } from "../utils/Errors.sol";
 import { UpgradeControlInterface } from "../upgrade/UpgradeControlInterface.sol";
 
 import { CredentialDefinition, CredentialDefinitionWithMetadata } from "./CredentialDefinitionTypes.sol";
 import { CredentialDefinitionRegistryInterface } from "./CredentialDefinitionRegistryInterface.sol";
 import { CredentialDefinitionValidator } from "./CredentialDefinitionValidator.sol";
 import {
-    CredentialDefinitionAlreadyExist, 
+    CredentialDefinitionAlreadyExist,
     CredentialDefinitionNotFound,
-    DID_NOT_FOUND_ERROR_MESSAGE,
     IssuerHasBeenDeactivated,
     IssuerNotFound 
-} from "./ErrorTypes.sol";
+} from "./ClErrors.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
@@ -77,18 +78,18 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
         try _didRegistry.resolveDid(id) returns (DidDocumentStorage memory didDocumentStorage) {
             if (didDocumentStorage.metadata.deactivated) revert IssuerHasBeenDeactivated(id);
             _;
-        } catch Error(string memory reason) {
-            if (reason.toSlice().eq(DID_NOT_FOUND_ERROR_MESSAGE.toSlice())) {
+        } catch (bytes memory reason) {
+            if (Errors.equals(reason, DidNotFound.selector)) {
                 revert IssuerNotFound(id);
             }
 
-            revert(reason);
+            Errors.rethrow(reason);
         }
     }
 
     function initialize(
-        address didRegistryAddress, 
-        address schemaRegistryAddress, 
+        address didRegistryAddress,
+        address schemaRegistryAddress,
         address upgradeControlAddress
     ) public reinitializer(1) {
         _didRegistry = DidRegistryInterface(didRegistryAddress);
@@ -102,13 +103,13 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
     }
 
     /// @inheritdoc CredentialDefinitionRegistryInterface
-    function createCredentialDefinition(CredentialDefinition calldata credDef) 
-        public virtual 
+    function createCredentialDefinition(CredentialDefinition calldata credDef)
+        public virtual
         _uniqueCredDefId(credDef.id)
-        _schemaExist(credDef.schemaId) 
-        _issuerActive(credDef.issuerId) 
+        _schemaExist(credDef.schemaId)
+        _issuerActive(credDef.issuerId)
     {
-        credDef.requireValidId();
+        // credDef.requireValidId(); For migration from Indy we need to disable this check as schema id there represented as seq_no
         credDef.requireValidType();
         credDef.requireTag();
         credDef.requireValue();
@@ -121,9 +122,9 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
 
     /// @inheritdoc CredentialDefinitionRegistryInterface
     function resolveCredentialDefinition(string calldata id)
-        public view virtual 
-        _credDefExist(id) 
-        returns (CredentialDefinitionWithMetadata memory credDefWithMetadata) 
+        public view virtual
+        _credDefExist(id)
+        returns (CredentialDefinitionWithMetadata memory credDefWithMetadata)
     {
         return _credDefs[id];
     }

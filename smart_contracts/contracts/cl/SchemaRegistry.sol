@@ -4,17 +4,18 @@ pragma solidity ^0.8.20;
 import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
+import { DidNotFound } from "../did/DidErrors.sol";
 import { DidRegistryInterface } from "../did/DidRegistry.sol";
 import { DidDocumentStorage } from "../did/DidTypes.sol";
 import { UpgradeControlInterface } from "../upgrade/UpgradeControlInterface.sol";
+import { Errors } from "../utils/Errors.sol";
 
-import { 
-    DID_NOT_FOUND_ERROR_MESSAGE,
+import {
     IssuerHasBeenDeactivated,
     IssuerNotFound, 
     SchemaAlreadyExist, 
     SchemaNotFound 
-} from "./ErrorTypes.sol";
+} from "./ClErrors.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { Schema, SchemaWithMetadata} from "./SchemaTypes.sol";
 import { SchemaValidator } from "./SchemaValidator.sol";
@@ -23,7 +24,7 @@ import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 using SchemaValidator for Schema;
 using { toSlice } for string;
 
-contract SchemaRegistry is SchemaRegistryInterface, UUPSUpgradeable, Initializable { 
+contract SchemaRegistry is SchemaRegistryInterface, UUPSUpgradeable, Initializable {
 
     /**
      * @dev Reference to the contract that manages DIDs
@@ -63,12 +64,12 @@ contract SchemaRegistry is SchemaRegistryInterface, UUPSUpgradeable, Initializab
         try _didRegistry.resolveDid(id) returns (DidDocumentStorage memory didDocumentStorage) {
             if (didDocumentStorage.metadata.deactivated) revert IssuerHasBeenDeactivated(id);
             _;
-        } catch Error(string memory reason) {
-            if (reason.toSlice().eq(DID_NOT_FOUND_ERROR_MESSAGE.toSlice())) {
+        } catch (bytes memory reason) {
+            if (Errors.equals(reason, DidNotFound.selector)) {
                 revert IssuerNotFound(id);
             }
 
-            revert(reason);
+            Errors.rethrow(reason);
         }
     }
 
