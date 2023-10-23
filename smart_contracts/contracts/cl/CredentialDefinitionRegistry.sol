@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
+import { DidNotFound } from "../did/DidErrors.sol";
 import { DidRegistryInterface } from "../did/DidRegistry.sol";
 import { DidDocumentStorage } from "../did/DidTypes.sol";
+import { Errors } from "../utils/Errors.sol";
 import { CredentialDefinition, CredentialDefinitionWithMetadata } from "./CredentialDefinitionTypes.sol";
 import { CredentialDefinitionRegistryInterface } from "./CredentialDefinitionRegistryInterface.sol";
 import { CredentialDefinitionValidator } from "./CredentialDefinitionValidator.sol";
 import {
     CredentialDefinitionAlreadyExist, 
     CredentialDefinitionNotFound,
-    DID_NOT_FOUND_ERROR_MESSAGE,
     IssuerHasBeenDeactivated,
     IssuerNotFound 
-} from "./ErrorTypes.sol";
+} from "./ClErrors.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
@@ -59,12 +60,12 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
         try _didRegistry.resolveDid(id) returns (DidDocumentStorage memory didDocumentStorage) {
             if (didDocumentStorage.metadata.deactivated) revert IssuerHasBeenDeactivated(id);
             _;
-        } catch Error(string memory reason) {
-            if (reason.toSlice().eq(DID_NOT_FOUND_ERROR_MESSAGE.toSlice())) {
+        } catch (bytes memory reason) {
+            if (Errors.equals(reason, DidNotFound.selector)) {
                 revert IssuerNotFound(id);
             }
 
-            revert(reason);
+            Errors.rethrow(reason);
         }
     }
 

@@ -2,6 +2,16 @@
 pragma solidity ^0.8.20;
 
 interface ValidatorSmartContractInterface {
+
+    error InitialValidatorsRequired();
+    error InvalidValidatorAddress();
+    error InvalidValidatorAccountAddress();
+    error ExceedsValidatorLimit(uint limit);
+    error ValidatorAlreadyExists(address validator);
+    error SenderHasActiveValidator(address sender);
+    error CannotDeactivateLastValidator();
+    error ValidatorNotFound(address validator);
+
     /**
      * @dev Event emitting when new validator node added
      */

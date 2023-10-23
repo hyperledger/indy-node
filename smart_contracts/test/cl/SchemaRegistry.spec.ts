@@ -1,8 +1,8 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
-import { createBaseDidDocument, createSchemaObject } from '../../utils/entity-factories'
-import { ClErrors } from '../errors'
-import { deploySchemaRegistry } from '../utils'
+import { createBaseDidDocument, createSchemaObject } from '../../utils'
+import { deploySchemaRegistry } from '../utils/contract-helpers'
+import { ClErrors } from '../utils/errors'
 
 describe('SchemaRegistry', function () {
   const issuerId = 'did:indy2:mainnet:SEp33q43PsdP7nDATyySSH'
