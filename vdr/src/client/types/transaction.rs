@@ -4,16 +4,8 @@ use crate::{
     LedgerClient,
 };
 
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct Transaction {
-    pub type_: TransactionType,
-    pub from: Option<String>,
-    pub to: String,
-    pub chain_id: u64,
-    pub data: Vec<u8>,
-    pub signed: Option<Vec<u8>>,
-}
-
+/// Type of transaction: write/read
+/// depending on the transaction type different client methods will be executed to submit transaction
 #[derive(Clone, Debug, PartialEq)]
 pub enum TransactionType {
     Read,
@@ -23,6 +15,31 @@ pub enum TransactionType {
 impl Default for TransactionType {
     fn default() -> Self {
         TransactionType::Read
+    }
+}
+
+/// Transaction object
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Transaction {
+    /// type of transaction: write/read
+    /// depending on the transaction type different client methods will be executed to submit transaction
+    pub type_: TransactionType,
+    /// transaction sender account address
+    pub from: Option<String>,
+    /// transaction recipient address
+    pub to: String,
+    /// chain id of the ledger
+    pub chain_id: u64,
+    /// transaction payload
+    pub data: Vec<u8>,
+    /// signed raw transaction
+    pub signed: Option<Vec<u8>>,
+}
+
+impl Transaction {
+    /// set signature for the transaction
+    pub fn set_signature(&mut self, signature: &[u8]) {
+        self.signed = Some(signature.to_owned())
     }
 }
 
@@ -106,12 +123,16 @@ impl TransactionParser {
         bytes: &[u8],
     ) -> VdrResult<T> {
         if bytes.is_empty() {
-            return Err(VdrError::ContractInvalidResponseData("Empty response bytes".to_string()));
+            return Err(VdrError::ContractInvalidResponseData(
+                "Empty response bytes".to_string(),
+            ));
         }
         let contract = client.contract(&self.contract)?;
         let output = contract.decode_output(&self.method, bytes)?;
         if output.is_empty() {
-            return Err(VdrError::ContractInvalidResponseData("Unable to parse response".to_string()));
+            return Err(VdrError::ContractInvalidResponseData(
+                "Unable to parse response".to_string(),
+            ));
         }
 
         let data = output.get_tuple(0)?;

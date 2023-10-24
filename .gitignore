@@ -3,5 +3,5 @@ node_modules
 .vscode
 logs
 .localnet.lock
-
+.idea
 vdr/target

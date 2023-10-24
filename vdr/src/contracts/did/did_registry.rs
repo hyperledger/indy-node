@@ -8,6 +8,7 @@ use crate::{
     DID,
 };
 
+/// DidRegistry contract methods
 pub struct DidRegistry;
 
 impl DidRegistry {
@@ -17,6 +18,15 @@ impl DidRegistry {
     const METHOD_DEACTIVATE_DID: &'static str = "deactivateDid";
     const METHOD_RESOLVE_DID: &'static str = "resolveDid";
 
+    /// Build transaction to execute DidRegistry.createDid contract method to create a new DID
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `did_doc` DID Document matching to the specification: https://www.w3.org/TR/did-core/
+    ///
+    /// # Returns
+    /// Write transaction to sign and submit
     pub fn build_create_did_transaction(
         client: &LedgerClient,
         from: &str,
@@ -31,6 +41,15 @@ impl DidRegistry {
             .build(&client)
     }
 
+    /// Build transaction to execute DidRegistry.updateDid contract method to update DID document for an existing DID
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `did_doc` new DID Document matching to the specification: https://www.w3.org/TR/did-core/
+    ///
+    /// # Returns
+    /// Write transaction to sign and submit
     pub fn build_update_did_transaction(
         client: &LedgerClient,
         from: &str,
@@ -45,6 +64,15 @@ impl DidRegistry {
             .build(&client)
     }
 
+    /// Build transaction to execute DidRegistry.deactivateDid contract method to deactivate an existing DID
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `did` DID to deactivate
+    ///
+    /// # Returns
+    /// Write transaction to sign and submit
     pub fn build_deactivate_did_transaction(
         client: &LedgerClient,
         from: &str,
@@ -59,6 +87,14 @@ impl DidRegistry {
             .build(&client)
     }
 
+    /// Build transaction to execute DidRegistry.resolveDid contract method to receive a DID Document associated with the DID
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `did` target DID to receive DID Document
+    ///
+    /// # Returns
+    /// Read transaction to submit
     pub fn build_resolve_did_transaction(
         client: &LedgerClient,
         did: &DID,
@@ -71,6 +107,14 @@ impl DidRegistry {
             .build(&client)
     }
 
+    /// Parse the result of execution DidRegistry.resolveDid contract method to receive a DID Document associated with the DID
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `bytes` result bytes returned from the ledger
+    ///
+    /// # Returns
+    /// parsed DID Document
     pub fn parse_resolve_did_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<DidDocument> {
         TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -79,6 +123,15 @@ impl DidRegistry {
             .map(|did_with_meta| did_with_meta.document)
     }
 
+    /// Single step function executing DidRegistry.createDid smart contract method to create a new DID
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `did_doc` DID Document matching to the specification: https://www.w3.org/TR/did-core/
+    ///
+    /// # Returns
+    /// receipt of executed transaction
     pub async fn create_did(
         client: &LedgerClient,
         from: &str,
@@ -88,6 +141,47 @@ impl DidRegistry {
         client.sign_and_submit(&transaction).await
     }
 
+    /// Single step function executing DidRegistry.updateDid smart contract method to update DID Document for an existing DID
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `did_doc` DID Document matching to the specification: https://www.w3.org/TR/did-core/
+    ///
+    /// # Returns
+    /// receipt of executed transaction
+    pub async fn update_did(
+        client: &LedgerClient,
+        from: &str,
+        did_doc: &DidDocument,
+    ) -> VdrResult<String> {
+        let transaction = Self::build_update_did_transaction(client, from, did_doc)?;
+        client.sign_and_submit(&transaction).await
+    }
+
+    /// Single step function executing DidRegistry.deactivateDid smart contract method to deactivate as existing DID
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `did` DID to deactivate
+    ///
+    /// # Returns
+    /// receipt of executed transaction
+    pub async fn deactivate_did(client: &LedgerClient, from: &str, did: &DID) -> VdrResult<String> {
+        let transaction = Self::build_deactivate_did_transaction(client, from, did)?;
+        client.sign_and_submit(&transaction).await
+    }
+
+    /// Single step function executing DidRegistry.resolveDid smart contract method to resolve DID Document for an existing DID
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `did` target DID to receive DID Document
+    ///
+    /// # Returns
+    /// resolved DID Document
     pub async fn resolve_did(client: &LedgerClient, did: &DID) -> VdrResult<DidDocument> {
         let transaction = Self::build_resolve_did_transaction(client, did)?;
         let result = client.submit_transaction(&transaction).await?;

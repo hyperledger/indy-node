@@ -10,6 +10,7 @@ use crate::{
     error::VdrResult,
 };
 
+/// SchemaRegistry contract methods
 pub struct SchemaRegistry;
 
 impl SchemaRegistry {
@@ -17,6 +18,15 @@ impl SchemaRegistry {
     const METHOD_CREATE_SCHEMA: &'static str = "createSchema";
     const METHOD_RESOLVE_SCHEMA: &'static str = "resolveSchema";
 
+    /// Build transaction to execute SchemaRegistry.createSchema contract method to create a new Schema
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `schema` Schema object matching to the specification - https://hyperledger.github.io/anoncreds-spec/#term:schema
+    ///
+    /// # Returns
+    /// Write transaction to sign and submit
     pub fn build_create_schema_transaction(
         client: &LedgerClient,
         from: &str,
@@ -31,6 +41,14 @@ impl SchemaRegistry {
             .build(&client)
     }
 
+    /// Build transaction to execute SchemaRegistry.resolveSchema contract method to retrieve an existing Schema by the given id
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `id` id of Schema to resolve
+    ///
+    /// # Returns
+    /// Read transaction to submit
     pub fn build_resolve_schema_transaction(
         client: &LedgerClient,
         id: &SchemaId,
@@ -43,6 +61,14 @@ impl SchemaRegistry {
             .build(&client)
     }
 
+    /// Parse the result of execution SchemaRegistry.resolveSchema contract method to receive a Schema associated with the id
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `bytes` result bytes returned from the ledger
+    ///
+    /// # Returns
+    /// parsed Schema
     pub fn parse_resolve_schema_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<Schema> {
         TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -51,6 +77,15 @@ impl SchemaRegistry {
             .map(|schema_with_meta| schema_with_meta.schema)
     }
 
+    /// Single step function executing SchemaRegistry.createSchema smart contract method to create a new Schema
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `schema` Schema object matching to the specification - https://hyperledger.github.io/anoncreds-spec/#term:schema
+    ///
+    /// # Returns
+    /// receipt of executed transaction
     pub async fn create_schema(
         client: &LedgerClient,
         from: &str,
@@ -60,6 +95,15 @@ impl SchemaRegistry {
         client.sign_and_submit(&transaction).await
     }
 
+    /// Single step function executing SchemaRegistry.resolveSchema smart contract method to resolve Schema for an existing id
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `id` id of Schema to resolve
+    ///
+    /// # Returns
+    /// resolved Schema
     pub async fn resolve_schema(client: &LedgerClient, id: &SchemaId) -> VdrResult<Schema> {
         let transaction = Self::build_resolve_schema_transaction(client, id)?;
         let result = client.submit_transaction(&transaction).await?;

@@ -62,7 +62,7 @@ mod tests {
                 .unwrap();
 
             // get receipt
-            let receipt = client.get_transaction_receipt(&block_hash).await.unwrap();
+            let receipt = client.get_receipt(&block_hash).await.unwrap();
             println!("Receipt: {}", receipt);
 
             // read
@@ -115,7 +115,7 @@ mod tests {
                 .submit_transaction(&signed_transaction)
                 .await
                 .unwrap();
-            let receipt = client.get_transaction_receipt(&block_hash).await.unwrap();
+            let receipt = client.get_receipt(&block_hash).await.unwrap();
             println!("Receipt: {}", receipt);
 
             // read
@@ -124,7 +124,7 @@ mod tests {
             let result = client.submit_transaction(&transaction).await.unwrap();
             let resolved_schema =
                 SchemaRegistry::parse_resolve_schema_result(&client, &result).unwrap();
-            assert_eq!(schema, resolved_schema);
+            assert_eq!(sschema, resolved_schema);
 
             Ok(())
         }
@@ -178,7 +178,7 @@ mod tests {
                 .submit_transaction(&signed_transaction)
                 .await
                 .unwrap();
-            let receipt = client.get_transaction_receipt(&block_hash).await.unwrap();
+            let receipt = client.get_receipt(&block_hash).await.unwrap();
             println!("Receipt: {}", receipt);
 
             // read

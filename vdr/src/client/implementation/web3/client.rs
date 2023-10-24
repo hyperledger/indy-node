@@ -4,7 +4,7 @@ use crate::{
     signer::Signer,
 };
 
-use crate::client::PingStatus;
+use crate::client::{PingStatus, TransactionType};
 use serde_json::json;
 use std::{str::FromStr, time::Duration};
 use web3::{
@@ -53,10 +53,6 @@ impl Client for Web3Client {
                 "Missing sender address".to_string(),
             ))?;
 
-        if !signer.has_key(&account) {
-            return Err(VdrError::SignerMissingKey(account));
-        }
-
         let signer = Web3Signer::new(account, signer);
 
         let to = Address::from_str(&transaction.to).map_err(|_| {
@@ -89,6 +85,11 @@ impl Client for Web3Client {
     }
 
     async fn submit_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>> {
+        if transaction.type_ != TransactionType::Write {
+            return Err(VdrError::ClientInvalidTransaction(
+                "Write transaction expected".to_string(),
+            ));
+        }
         let signed_transaction =
             transaction
                 .signed
@@ -109,6 +110,11 @@ impl Client for Web3Client {
     }
 
     async fn call_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>> {
+        if transaction.type_ != TransactionType::Read {
+            return Err(VdrError::ClientInvalidTransaction(
+                "Read transaction expected".to_string(),
+            ));
+        }
         let address = Address::from_str(&transaction.to).map_err(|_| {
             VdrError::ClientInvalidTransaction(format!(
                 "Invalid transaction target address {}",
@@ -123,7 +129,7 @@ impl Client for Web3Client {
         Ok(response.0.to_vec())
     }
 
-    async fn get_transaction_receipt(&self, hash: &[u8]) -> VdrResult<String> {
+    async fn get_receipt(&self, hash: &[u8]) -> VdrResult<String> {
         self.client
             .eth()
             .transaction_receipt(H256::from_slice(hash))

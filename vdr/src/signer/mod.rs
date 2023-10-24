@@ -1,12 +1,17 @@
 pub mod signer;
 
 use crate::error::VdrResult;
-use secp256k1::ecdsa::RecoveryId;
 
 pub use signer::BasicSigner;
 
 pub trait Signer {
-    fn sign(&self, message: &[u8], account: &str) -> VdrResult<(RecoveryId, Vec<u8>)>;
-    fn has_key(&self, account: &str) -> bool;
-    fn public_key(&self, account: &str) -> Vec<u8>;
+    /// Sign message with the key associated with account
+    ///
+    /// # Params
+    /// - `message` message to sign
+    /// - `account` account to use for message signing
+    ///
+    /// # Returns
+    /// recovery ID (for public key recovery) and ECDSA signature
+    fn sign(&self, message: &[u8], account: &str) -> VdrResult<(i32, Vec<u8>)>;
 }
