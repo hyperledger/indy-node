@@ -26,7 +26,6 @@ mod tests {
         error::VdrResult,
         signer::test::ACCOUNT,
     };
-    use signer::BasicSigner;
 
     mod did {
         use super::*;
