@@ -221,6 +221,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "ledger_test")]
     mod role {
         use super::*;
 
