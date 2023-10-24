@@ -27,7 +27,7 @@ impl RoleControl {
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_ASSIGN_ROLE)
-            .add_param(ContractParam::Uint(U256([role.clone().into_index(); 4])))
+            .add_param(ContractParam::Uint(U256::from(role.clone().into_index())))
             .add_param(ContractParam::Address(account.parse().unwrap()))
             .set_type(TransactionType::Write)
             .set_from(from)
@@ -43,7 +43,7 @@ impl RoleControl {
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_REVOKE_ROLE)
-            .add_param(ContractParam::Uint(U256([role.clone().into_index(); 4])))
+            .add_param(ContractParam::Uint(U256::from(role.clone().into_index())))
             .add_param(ContractParam::Address(account.parse().unwrap()))
             .set_type(TransactionType::Write)
             .set_from(from)
@@ -58,7 +58,7 @@ impl RoleControl {
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_HAS_ROLE)
-            .add_param(ContractParam::Uint(U256([role.clone().into_index(); 4])))
+            .add_param(ContractParam::Uint(U256::from(role.clone().into_index())))
             .add_param(ContractParam::Address(account.parse().unwrap()))
             .set_type(TransactionType::Read)
             .build(&client)
@@ -86,7 +86,7 @@ impl RoleControl {
     pub fn parse_get_role_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<Role> {
         TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
-            .set_method(Self::METHOD_HAS_ROLE)
+            .set_method(Self::METHOD_GET_ROLE)
             .parse::<Role>(&client, bytes)
     }
 
@@ -225,6 +225,21 @@ pub mod test {
         }
     }
 
+    mod parse_get_role_result {
+        use super::*;
+
+        #[test]
+        fn parse_get_role_result_test() {
+            let client = client();
+            let result = vec![0; 32];
+            let expected_role = Role::Empty;
+
+            let role = RoleControl::parse_get_role_result(&client, &result).unwrap();
+
+            assert_eq!(expected_role, role);
+        }
+    }
+
     mod build_has_role_transaction {
         use super::*;
 
@@ -250,6 +265,21 @@ pub mod test {
             };
 
             assert_eq!(expected_transaction, transaction);
+        }
+    }
+
+    mod parse_has_role_result {
+        use super::*;
+
+        #[test]
+        fn parse_has_role_result_test() {
+            let client = client();
+            let result = vec![0; 32];
+            let expected_has_role = false;
+
+            let has_role = RoleControl::parse_has_role_result(&client, &result).unwrap();
+
+            assert_eq!(expected_has_role, has_role);
         }
     }
 }

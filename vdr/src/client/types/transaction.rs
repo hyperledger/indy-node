@@ -107,13 +107,17 @@ impl TransactionParser {
     ) -> VdrResult<T> {
         let contract = client.contract(&self.contract)?;
         let output = contract.decode_output(&self.method, bytes)?;
+
         if output.is_empty() {
             return Err(VdrError::Common(
                 "Unable to parse object: Empty data".to_string(),
             ));
         }
 
-        let data = output.get_tuple(0)?;
-        T::try_from(data)
+        let result = output.get_tuple(0);
+        match result {
+            Ok(_) => T::try_from(result?),
+            Err(_) => T::try_from(output),
+        }
     }
 }

@@ -3,7 +3,7 @@ use crate::{
     error::VdrError,
 };
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum Role {
     Empty,
     Trustee,
