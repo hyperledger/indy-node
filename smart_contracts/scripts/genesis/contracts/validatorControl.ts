@@ -16,11 +16,11 @@ export function validatorControl() {
   const { name, address, description, data } = config.validatorControl
   const storage: any = {}
 
-  // address of upgrade control contact stored in slot 0
-  storage[slots['0']] = padLeft(data.upgradeControlAddress, 64)
   // address of role control contact stored in slot 1
-  storage[slots['1']] = padLeft(data.roleControlContractAddress, 64)
-
+  storage[slots['0']] = padLeft(data.roleControlContractAddress, 64)
+  // address of upgrade control contact stored in slot 0
+  storage[slots['1']] = padLeft(data.upgradeControlAddress, 64)
+  
   // length of the validator array is stored in slot 2
   storage[slots['2']] = padLeft(data.validators.length, 64).substring(2)
 
