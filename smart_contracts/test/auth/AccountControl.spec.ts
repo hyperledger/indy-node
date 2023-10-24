@@ -1,17 +1,20 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
 import { AccountControl, RoleControl } from '../../contracts-ts'
-import { ZERO_ADDRESS, createContractDeployTransaction, createWriteTransaction, getTestAccounts } from '../utils/test-entities'
+import {
+  ZERO_ADDRESS,
+  createContractDeployTransaction,
+  createWriteTransaction,
+  getTestAccounts,
+} from '../utils/test-entities'
 
 describe('AccountControl', function () {
   async function deployAccountControlFixture() {
-    const roleControl = new RoleControl()
-    await roleControl.deployProxy({ params: [ZERO_ADDRESS] })
+    const roleControl = await new RoleControl().deployProxy({ params: [ZERO_ADDRESS] })
 
     const testAccounts = await getTestAccounts(roleControl)
 
-    const accountControl = new AccountControl()
-    await accountControl.deployProxy({ params: [roleControl.address, ZERO_ADDRESS] })
+    const accountControl = await new AccountControl().deployProxy({ params: [roleControl.address, ZERO_ADDRESS] })
 
     return { accountControl, testAccounts }
   }

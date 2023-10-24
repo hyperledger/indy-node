@@ -1,6 +1,6 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import chai from 'chai'
-import { RoleControl, ValidatorControl } from '../../contracts-ts'
+import { RoleControl } from '../../contracts-ts'
 import { Account } from '../../utils'
 import { TestableValidatorControl } from '../utils/contract-helpers'
 import { AuthErrors, ValidatorControlErrors } from '../utils/errors'
@@ -20,11 +20,11 @@ describe('ValidatorControl', function () {
     const initialValidatorsData = [
       {
         validator: validator1,
-        account: testAccounts.steward.account,
+        account: testAccounts.steward.account.address,
       },
       {
         validator: validator2,
-        account: testAccounts.steward2.account,
+        account: testAccounts.steward2.account.address,
       },
     ]
 

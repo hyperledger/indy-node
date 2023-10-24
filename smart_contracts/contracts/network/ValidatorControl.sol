@@ -57,7 +57,7 @@ contract ValidatorControl is ValidatorSmartContractInterface, UUPSUpgradeable, I
      * @dev Modifier that checks that an the sender account has Steward role assigned.
      */
     modifier _senderIsSteward() {
-        if (!roleControl.hasRole(RoleControlInterface.ROLES.STEWARD, msg.sender)) revert Unauthorized(msg.sender);
+        if (!_roleControl.hasRole(RoleControlInterface.ROLES.STEWARD, msg.sender)) revert Unauthorized(msg.sender);
         _;
     }
 
