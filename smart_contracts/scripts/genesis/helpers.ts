@@ -15,6 +15,7 @@ export const slots = {
 
 const proxyBytecode = readContractBytecode('ERC1967Proxy')
 const proxyImplmentationSlot = '360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc'
+const initializableVersionSlot = 'f0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00'
 
 export function computeContractAddress(name: string) {
   const bytecode = readContractBytecode(name)
@@ -39,6 +40,7 @@ export function buildProxySection(
 
   const implementationAddress = sha3(implementationBytecode)!.substring(26)
 
+  storage[initializableVersionSlot] =  `0x${padLeft('1', 64)}`
   storage[proxyImplmentationSlot] = `0x${padLeft(implementationAddress, 64)}`
 
   return {
