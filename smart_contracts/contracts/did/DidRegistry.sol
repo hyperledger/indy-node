@@ -14,8 +14,8 @@ import { DidValidator } from "./DidValidator.sol";
 contract DidRegistry is DidRegistryInterface, UUPSUpgradeable, Initializable {
 
     /**
-    * @dev Reference to the contract that manages contract upgrades
-    */
+     * @dev Reference to the contract that manages contract upgrades
+     */
     UpgradeControlInterface private _upgradeControl;
 
     /**
@@ -51,7 +51,7 @@ contract DidRegistry is DidRegistryInterface, UUPSUpgradeable, Initializable {
       _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
     }
 
-     /// @inheritdoc UUPSUpgradeable
+    /// @inheritdoc UUPSUpgradeable
     function _authorizeUpgrade(address newImplementation) internal view override {
       _upgradeControl.ensureSufficientApprovals(address(this), newImplementation);
     }

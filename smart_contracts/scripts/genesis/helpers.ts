@@ -38,9 +38,11 @@ export function buildProxySection(
     implementationBytecode = linker.linkBytecode(implementationBytecode, libraries).split('\n')[0]
   }
 
-  const implementationAddress = sha3(implementationBytecode)!.substring(26)
+  // set the version for the initializer to ensure that the initial version of the`initialize` method can not be called.
+  storage[initializableVersionSlot] = `0x${padLeft('1', 64)}`
 
-  storage[initializableVersionSlot] =  `0x${padLeft('1', 64)}`
+  // calculate and set contract implementation address
+  const implementationAddress = sha3(implementationBytecode)!.substring(26)
   storage[proxyImplmentationSlot] = `0x${padLeft(implementationAddress, 64)}`
 
   return {

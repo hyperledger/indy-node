@@ -63,7 +63,7 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
          _;
     }
 
-     /**
+    /**
      * Сhecks that the schema exist
      */
     modifier _schemaExist(string memory id) {
@@ -97,7 +97,7 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
         _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
     }
 
-     /// @inheritdoc UUPSUpgradeable
+    /// @inheritdoc UUPSUpgradeable
     function _authorizeUpgrade(address newImplementation) internal view override {
       _upgradeControl.ensureSufficientApprovals(address(this), newImplementation);
     }

@@ -2,10 +2,10 @@ import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
 import { AccountControl, RoleControl } from '../../contracts-ts'
 import {
-  ZERO_ADDRESS,
   createContractDeployTransaction,
   createWriteTransaction,
   getTestAccounts,
+  ZERO_ADDRESS,
 } from '../utils/test-entities'
 
 describe('AccountControl', function () {

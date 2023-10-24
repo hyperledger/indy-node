@@ -49,7 +49,7 @@ contract RoleControl is RoleControlInterface, UUPSUpgradeable, Initializable {
         _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
     }
 
-     /// @inheritdoc UUPSUpgradeable
+    /// @inheritdoc UUPSUpgradeable
     function _authorizeUpgrade(address newImplementation) internal view override {
       _upgradeControl.ensureSufficientApprovals(address(this), newImplementation);
     }
