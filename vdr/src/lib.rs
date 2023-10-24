@@ -309,18 +309,32 @@ mod tests {
             let role_to_assign = Role::Trustee;
 
             // write
-            let _receipt =
+            let receipt =
                 RoleControl::assign_role(&client, ACCOUNT, &role_to_assign, assignee_account)
                     .await
                     .unwrap();
 
-            println!("Receipt: {}", _receipt);
+            println!("Receipt: {}", receipt);
 
             // read
             let parsed_role = RoleControl::get_role(&client, assignee_account)
                 .await
                 .unwrap();
             assert_eq!(role_to_assign, parsed_role);
+
+            // write
+            let receipt =
+                RoleControl::revoke_role(&client, ACCOUNT, &role_to_assign, assignee_account)
+                    .await
+                    .unwrap();
+
+            println!("Receipt: {}", receipt);
+
+            // read
+            let has_role = RoleControl::has_role(&client, &role_to_assign, assignee_account)
+                .await
+                .unwrap();
+            assert!(!has_role);
 
             Ok(())
         }
