@@ -1,16 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
-
 import { Unauthorized} from "../auth/AuthErrors.sol";
 import { RoleControlInterface } from "../auth/RoleControl.sol";
-import { UpgradeControlInterface } from "../upgrade/UpgradeControlInterface.sol";
+import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
 
 import { ValidatorSmartContractInterface } from "./ValidatorSmartContractInterface.sol";
 
-contract ValidatorControl is ValidatorSmartContractInterface, UUPSUpgradeable, Initializable {
+contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradeable {
 
     /**
      * @dev Type describing initial validator details
@@ -37,11 +34,6 @@ contract ValidatorControl is ValidatorSmartContractInterface, UUPSUpgradeable, I
      * @dev Reference to the contract managing auth permissions
      */
     RoleControlInterface private _roleControl;
-
-    /**
-     * @dev Reference to the contract that manages contract upgrades
-     */
-    UpgradeControlInterface private _upgradeControl;
 
     /**
      * @dev List of active validators
@@ -85,12 +77,7 @@ contract ValidatorControl is ValidatorSmartContractInterface, UUPSUpgradeable, I
         }
 
         _roleControl = RoleControlInterface(roleControlContractAddress);
-        _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
-    }
-
-    /// @inheritdoc UUPSUpgradeable
-    function _authorizeUpgrade(address newImplementation) internal view override {
-        _upgradeControl.ensureSufficientApprovals(address(this), newImplementation);
+        _initializeUpgradeControl(upgradeControlAddress);
     }
 
     /**

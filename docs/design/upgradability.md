@@ -98,6 +98,24 @@ contract UpgradableContract is UUPSUpgradable, Initializable {
 }
 ```
 
+Alternatively, you can extend from the `ControlledUpgreadable` contract, which encapsulates common boilerplate code:
+
+```
+// SPDX-License-Identifier: Apache-2.0
+pragma solidity ^0.8.20;
+
+import { UpgradeControlInterface } from "contracts/upgrade/ControlledUpgreadable.sol";
+
+contract UpgradableContract is ControlledUpgreadable {
+
+    function initialize(address upgradeControlAddress) public reinitializer(1) {
+      // This method must be called on initialization to set the upgrade control, 
+      // allowing the upgradeable contract to verify upgrade approvement.
+      _initializeUpgradeControl(upgradeControlAddress)
+    }
+}
+```
+
 ## Proxy Smart Contract Patterns
 
 #### Transparent proxy pattern ([EIP-1538](https://eips.ethereum.org/EIPS/eip-1538))

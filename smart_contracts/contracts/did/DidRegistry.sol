@@ -1,23 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
-
-import { UpgradeControlInterface } from "../upgrade/UpgradeControlInterface.sol";
+import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
 
 import { DidAlreadyExist, DidHasBeenDeactivated, DidNotFound } from "./DidErrors.sol";
 import { DidRegistryInterface } from "./DidRegistryInterface.sol";
 import { DidDocument, DidDocumentStorage } from "./DidTypes.sol";
 import { DidValidator } from "./DidValidator.sol";
 
-contract DidRegistry is DidRegistryInterface, UUPSUpgradeable, Initializable {
-
-    /**
-     * @dev Reference to the contract that manages contract upgrades
-     */
-    UpgradeControlInterface private _upgradeControl;
-
+contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     /**
      * @dev Mapping DID to its corresponding DID Document.
      */
@@ -48,12 +39,7 @@ contract DidRegistry is DidRegistryInterface, UUPSUpgradeable, Initializable {
     }
 
     function initialize(address upgradeControlAddress) public reinitializer(1) {
-      _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
-    }
-
-    /// @inheritdoc UUPSUpgradeable
-    function _authorizeUpgrade(address newImplementation) internal view override {
-      _upgradeControl.ensureSufficientApprovals(address(this), newImplementation);
+      _initializeUpgradeControl(upgradeControlAddress);
     }
 
     /**
