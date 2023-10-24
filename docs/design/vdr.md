@@ -46,23 +46,87 @@ struct ContractConfig {
 }
 
 trait Signer {
-    fn sign(&self, message: &[u8], account: &str) -> VdrResult<(RecoveryId, Vec<u8>)>;
-    fn has_key(&self, account: &str) -> bool;
-    fn public_key(&self, account: &str) -> Vec<u8>;
+    /// Sign message with the key associated with account
+    ///
+    /// # Params
+    /// - `message` message to sign
+    /// - `account` account to use for message signing
+    ///
+    /// # Returns
+    /// recovery ID (for public key recovery) and ECDSA signature
+    fn sign(&self, message: &[u8], account: &str) -> VdrResult<(i32, Vec<u8>)>;
 }
 
 trait Client {
-    async fn sign_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>>;
-    async fn submit_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>>;
-    async fn call_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>>;
-    async fn get_transaction_receipt(&self, hash: &[u8]) -> VdrResult<String>;
-    async fn ping(&self) -> VdrResult<PingStatus>;
+  /// Sign transaction.
+  ///
+  /// # Params
+  /// - `transaction` prepared transaction to sign
+  ///
+  /// # Returns
+  /// signed transaction object
+  async fn sign_transaction(&self, transaction: &Transaction) -> VdrResult<Transaction>;
+
+  /// Submit signed write transaction to the ledger
+  ///
+  /// # Params
+  /// - `transaction` prepared and signed transaction to submit
+  ///
+  /// # Returns
+  /// hash of a block in which transaction included
+  async fn submit_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>>;
+
+  /// Submit read transaction to the ledger
+  ///
+  /// # Params
+  /// - `transaction` prepared transaction to submit
+  ///
+  /// # Returns
+  /// result data of transaction execution
+  async fn call_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>>;
+
+  /// Get the receipt for the given block hash
+  ///
+  /// # Params
+  /// - `hash` hash of a block to get the receipt
+  ///
+  /// # Returns
+  /// receipt as JSON string for the requested block
+  async fn get_receipt(&self, hash: &[u8]) -> VdrResult<String>;
+
+  /// Check client connection (passed node is alive and return valid ledger data)
+  ///
+  /// # Returns
+  /// ledger status
+  async fn ping(&self) -> VdrResult<PingStatus>;
 }
 
 trait Contract {
-    fn address(&self) -> String;
-    fn encode_input(&self, method: &str, params: &[ContractParam]) -> VdrResult<Vec<u8>>;
-    fn decode_output(&self, method: &str, output: &[u8]) -> VdrResult<ContractOutput>;
+  /// Get the address of deployed contract
+  ///
+  /// # Returns
+  /// address of the deployed contract. Should be used to execute contract methods
+  fn address(&self) -> String;
+
+  /// Encode data required for the execution of a contract method
+  ///
+  /// # Params
+  /// - `method` method to execute
+  /// - `params` data to pass/encode for contract execution
+  ///
+  /// # Returns
+  /// encoded data to set into transaction
+  fn encode_input(&self, method: &str, params: &[ContractParam]) -> VdrResult<Vec<u8>>;
+
+  /// Decode the value (bytes) returned as the result of the execution of a contract method
+  ///
+  /// # Params
+  /// - `method` method to execute
+  /// - `output` data to decode (returned as result of sending call transaction)
+  ///
+  /// # Returns
+  /// contract execution result in decoded form
+  fn decode_output(&self, method: &str, output: &[u8]) -> VdrResult<ContractOutput>;
 }
 
 pub struct LedgerClient {
@@ -78,7 +142,6 @@ pub struct LedgerClient {
 ///
 /// #Returns
 ///   status: object - ping status
-///
 fn indy_vdr_ping(
     client: LedgerClient,
 ) -> StatusResult {
@@ -480,7 +543,7 @@ fn indy_vdr_resolve_schema(
 ///
 /// #Returns
 ///   transaction: Transaction - prepared transaction object 
-fn indy_vdr_build_create_schema_transaction(
+fn indy_vdr_build_create_credential_definition_transaction(
     client: LedgerClient,
     from: String,
     cred_def: CredentialDefinition,

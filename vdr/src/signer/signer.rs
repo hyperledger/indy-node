@@ -6,11 +6,11 @@ use crate::{
 use secp256k1::{All, Message, PublicKey, Secp256k1, SecretKey};
 use std::collections::HashMap;
 
-use secp256k1::ecdsa::RecoveryId;
 use std::str::FromStr;
 use web3::signing::keccak256;
 
 pub struct KeyPair {
+    #[allow(unused)]
     public_key: PublicKey,
     private_key: SecretKey,
 }
@@ -47,7 +47,9 @@ impl BasicSigner {
     }
 
     fn key_for_account(&self, account: &str) -> VdrResult<&KeyPair> {
-        self.keys.get(account).ok_or(VdrError::SignerMissingKey(account.to_string()))
+        self.keys
+            .get(account)
+            .ok_or(VdrError::SignerMissingKey(account.to_string()))
     }
 
     fn account_from_key(&self, public_key: &PublicKey) -> String {
@@ -57,25 +59,14 @@ impl BasicSigner {
 }
 
 impl Signer for BasicSigner {
-    fn sign(&self, message: &[u8], account: &str) -> VdrResult<(RecoveryId, Vec<u8>)> {
+    fn sign(&self, message: &[u8], account: &str) -> VdrResult<(i32, Vec<u8>)> {
         let key = self.key_for_account(account)?;
         let message = Message::from_digest_slice(message)?;
         let (recovery_id, signature) = self
             .secp
             .sign_ecdsa_recoverable(&message, &key.private_key)
             .serialize_compact();
-        Ok((recovery_id, signature.to_vec()))
-    }
-
-    fn has_key(&self, account: &str) -> bool {
-        self.keys.contains_key(account)
-    }
-
-    fn public_key(&self, account: &str) -> Vec<u8> {
-        match self.keys.get(account) {
-            Some(key) => key.public_key.serialize_uncompressed().to_vec(),
-            None => Vec::new(),
-        }
+        Ok((recovery_id.to_i32(), signature.to_vec()))
     }
 }
 
@@ -96,6 +87,6 @@ pub mod test {
     #[test]
     fn add_key_test() {
         let basic_signer = signer();
-        assert!(basic_signer.has_key(ACCOUNT));
+        basic_signer.key_for_account(ACCOUNT).unwrap();
     }
 }

@@ -16,6 +16,16 @@ pub struct LedgerClient {
 }
 
 impl LedgerClient {
+    /// Create client interacting with ledger
+    ///
+    /// # Params
+    ///  - chain_id chain id of network (chain ID is part of the transaction signing process to protect against transaction replay attack)
+    ///  - param node_address: string - RPC node endpoint
+    ///  - param contract_specs: Vec<ContractSpec> - specifications for contracts  deployed on the network
+    ///  - param signer: Option<Signer> - transactions signer. Need to be provided for usage of single-step functions.
+    ///
+    /// # Returns
+    ///  client to use for building and sending transactions
     pub fn new(
         chain_id: u64,
         node_address: &str,
@@ -31,14 +41,34 @@ impl LedgerClient {
         })
     }
 
+    /// Ping Ledger.
+    ///
+    /// # Returns
+    ///  ping status
     pub async fn ping(&self) -> VdrResult<PingStatus> {
         self.client.ping().await
     }
 
+    /// Sign transaction
+    ///
+    /// # Params
+    ///  transaction - prepared write transaction to sign
+    ///
+    /// # Returns
+    ///  signed transaction to submit
     pub async fn sign_transaction(&self, transaction: &Transaction) -> VdrResult<Transaction> {
         self.client.sign_transaction(&transaction).await
     }
 
+    /// Submit prepared transaction to the ledger
+    ///     Depending on the transaction type Write/Read ethereum methods will be used
+    ///
+    /// #Params
+    ///  transaction - transaction to submit
+    ///
+    /// #Returns
+    ///  transaction execution result:
+    ///    depending on the type it will be either result bytes or block hash
     pub async fn submit_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>> {
         match transaction.type_ {
             TransactionType::Read => self.client.call_transaction(&transaction).await,
@@ -46,14 +76,21 @@ impl LedgerClient {
         }
     }
 
-    pub async fn get_transaction_receipt(&self, hash: &[u8]) -> VdrResult<String> {
-        self.client.get_transaction_receipt(hash).await
+    /// Get receipt for the given block hash
+    ///
+    /// # Params
+    ///  transaction - transaction to submit
+    ///
+    /// # Returns
+    ///  receipt for the given block
+    pub async fn get_receipt(&self, hash: &[u8]) -> VdrResult<String> {
+        self.client.get_receipt(hash).await
     }
 
     pub(crate) async fn sign_and_submit(&self, transaction: &Transaction) -> VdrResult<String> {
         let signed_transaction = self.sign_transaction(&transaction).await?;
         let block_hash = self.submit_transaction(&signed_transaction).await?;
-        self.get_transaction_receipt(&block_hash).await
+        self.get_receipt(&block_hash).await
     }
 
     pub(crate) fn contract(&self, name: &str) -> VdrResult<&Box<dyn Contract>> {

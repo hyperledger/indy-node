@@ -64,7 +64,9 @@ impl DidDocumentBuilder {
         let kid = self
             .verification_method
             .get(index)
-            .ok_or(VdrError::CommonInvalidData("Missing verification method".to_string()))?
+            .ok_or(VdrError::CommonInvalidData(
+                "Missing verification method".to_string(),
+            ))?
             .id
             .to_string();
         self.authentication
@@ -76,7 +78,9 @@ impl DidDocumentBuilder {
         let kid = self
             .verification_method
             .get(index)
-            .ok_or(VdrError::CommonInvalidData("Missing verification method".to_string()))?
+            .ok_or(VdrError::CommonInvalidData(
+                "Missing verification method".to_string(),
+            ))?
             .id
             .to_string();
         self.assertion_method
@@ -91,7 +95,9 @@ impl DidDocumentBuilder {
         let kid = self
             .verification_method
             .get(index)
-            .ok_or(VdrError::CommonInvalidData("Missing verification method".to_string()))?
+            .ok_or(VdrError::CommonInvalidData(
+                "Missing verification method".to_string(),
+            ))?
             .id
             .to_string();
         self.capability_invocation
@@ -106,7 +112,9 @@ impl DidDocumentBuilder {
         let kid = self
             .verification_method
             .get(index)
-            .ok_or(VdrError::CommonInvalidData("Missing verification method".to_string()))?
+            .ok_or(VdrError::CommonInvalidData(
+                "Missing verification method".to_string(),
+            ))?
             .id
             .to_string();
         self.capability_delegation
@@ -118,7 +126,9 @@ impl DidDocumentBuilder {
         let kid = self
             .verification_method
             .get(index)
-            .ok_or(VdrError::CommonInvalidData("Missing verification method".to_string()))?
+            .ok_or(VdrError::CommonInvalidData(
+                "Missing verification method".to_string(),
+            ))?
             .id
             .to_string();
         self.key_agreement

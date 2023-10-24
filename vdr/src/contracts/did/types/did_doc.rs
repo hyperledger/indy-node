@@ -243,7 +243,9 @@ impl TryFrom<ContractOutput> for VerificationMethod {
                 public_key_multibase: public_key_multibase.to_string(),
             }
         } else {
-            return Err(VdrError::ContractInvalidResponseData("Unable to parse verification method".to_string()));
+            return Err(VdrError::ContractInvalidResponseData(
+                "Unable to parse verification method".to_string(),
+            ));
         };
 
         Ok(VerificationMethod {
