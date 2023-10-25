@@ -41,11 +41,11 @@ interface DidRegistryInterface {
      * - `DidHasBeenDeactivated` error if the DID Document has already been deactivated.
      * 
      * Restrictions:
-     * - DID must not exist. Otherwise will revert with `DidAlreadyExist` error
-     * - DID must be active. Otherwise will revert with `DidHasBeenDeactivated` error
+     * - DID must not exist; otherwise, will revert with a `DidAlreadyExist` error
+     * - DID must be active; otherwise, will revert with a `DidHasBeenDeactivated` error
      * 
      * Events:
-     * - On succesful DID update, emits `DIDDeactivated` event
+     * - On succesful DID update, will emit a `DIDDeactivated` event
      * 
      * @param document The updated DID Document
      */
@@ -55,11 +55,11 @@ interface DidRegistryInterface {
      * @dev Deactivates a DID
      * 
      * Restrictions:
-     * - DID must be active. Otherwise will revert with `DidHasBeenDeactivated` error
-     * - DID must exist. Otherwise will revert with `DidNotFound` error
+     * - DID must be active; otherwise, will revert with a `DidHasBeenDeactivated` error
+     * - DID must exist; otherwise, will revert with a `DidNotFound` error
      * 
      * Events:
-     * - On succesful DID deactivation emits `DIDDeactivated` event
+     * - On succesful DID deactivation, will emit a `DIDDeactivated` event
      * 
      * @param id The DID to be deactivated
      */
@@ -69,7 +69,7 @@ interface DidRegistryInterface {
      * @dev Function to resolve DID Document for the given DID
      * 
      * Restrictions
-     * - DID must exist. Otherwise will revert with `DidNotFound` error
+     * - DID must exist; otherwise, will revert with a `DidNotFound` error
      * 
      * @param id The DID to be resolved
      * @return didDocumentStorage The resolved DID document associated with provided DID

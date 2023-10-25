@@ -46,9 +46,9 @@ interface UpgradeControlInterface {
      * @dev Propose a specific contract implementation for an upgrade.
      *
      * Restrictions:
-     * - Only accounts with the trustee role can call this method. Otherwise will throw an `Unauthorized` error 
-     * - The provided implementation must be a UUPS upgradable contract. Otherwise will throw an `ERC1967InvalidImplementation` error
-     * - The same implementation upgrade can not be proposed more than once. Otherwise will throw an `UpgradeAlreadyProposed` error
+     * - Only accounts with the trustee role can call this method; otherwise, will revert with an `Unauthorized` error 
+     * - The provided implementation must be a UUPS upgradable contract; otherwise, will revert with an `ERC1967InvalidImplementation` error
+     * - The same implementation upgrade can not be proposed more than once; otherwise, will revert with an `UpgradeAlreadyProposed` error
      * 
      * Events:
      * - On successful propose, this function emits an `UpgradeProposed` event
@@ -64,9 +64,9 @@ interface UpgradeControlInterface {
      * When approvals exceed 60 percent, the implementation will be upgraded.
      * 
      * Restrictions:
-     * - Only accounts with the trustee role can call this method. Otherwise will throw an `Unauthorized` error 
-     * - The approved implementation must have been previously proposed. Otherwise will throw an `UpgradeProposalNotFound` error
-     * - An account can only approve each implementation upgrade once. Otherwise will throw an `UpgradeAlreadyApproved` error
+     * - Only accounts with the trustee role can call this method; otherwise, will revert with an `Unauthorized` error 
+     * - The approved implementation must have been previously proposed; otherwise, will revert with throw an `UpgradeProposalNotFound` error
+     * - An account can only approve each implementation upgrade once; otherwise, will revert with throw an `UpgradeAlreadyApproved` error
      * 
      * Events:
      * - On successful approval, emits an `UpgradeApproved` event
