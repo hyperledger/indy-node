@@ -9,7 +9,7 @@ import { RoleControlInterface } from "./RoleControlInterface.sol";
 contract RoleControl is RoleControlInterface, ControlledUpgradeable {
 
     /**
-     * @dev Type describing single initial assignment
+     * @dev Type describing single initial assignment.
      */
     struct InitialAssignments {
         ROLES role;
@@ -28,7 +28,7 @@ contract RoleControl is RoleControlInterface, ControlledUpgradeable {
     mapping(ROLES role => ROLES ownerRole) private _roleOwners;
 
     /**
-     * @dev Count of accounts with the trustee role
+     * @dev Count of accounts with each roles.
      */
     mapping(ROLES role => uint) private _roleCounts;
 
@@ -41,7 +41,7 @@ contract RoleControl is RoleControlInterface, ControlledUpgradeable {
     }
 
     /**
-     * @dev Function to set initial owners for roles
+     * @dev Function to set initial owners for roles.
      */
     function _initRoles() private {
         _roleOwners[ROLES.TRUSTEE] = ROLES.TRUSTEE;
@@ -51,7 +51,7 @@ contract RoleControl is RoleControlInterface, ControlledUpgradeable {
     }
 
     /**
-     * @dev Function to set party deployed the contrat as Trustee
+     * @dev Function to set the party deploying the contract as a trustee.
      */
     function _initialTrustee() private {
         assignRole(ROLES.TRUSTEE, msg.sender);
@@ -73,7 +73,7 @@ contract RoleControl is RoleControlInterface, ControlledUpgradeable {
     }
 
     /**
-     * @dev Function to check if an account has requested role assigned
+     * @dev Function to check if an account has requested role assigned.
      */
     function getRole(address account) public view virtual returns (ROLES role) {
         return _roles[account];

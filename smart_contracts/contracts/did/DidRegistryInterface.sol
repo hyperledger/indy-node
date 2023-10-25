@@ -4,75 +4,70 @@ pragma solidity ^0.8.20;
 import { DidDocument, DidDocumentStorage } from "./DidTypes.sol";
 
 /**
- * @title DidRegistryInterface
- * @dev The contract allows for the creation, updating, deactivation, and resolution of DID Documents.
+ * @dev The interface that defines functions for managing DID documents.
  */
 interface DidRegistryInterface {
     /**
-     * @dev Event that is sent when a DID Document is created
-      * @param did Created DID
+     * @dev Event that is sent when a DID Document is created.
+     * @param did Created DID.
      */
     event DIDCreated(string did);
 
     /**
-     * @dev Event that is sent when a DID Document is updated
-     * @param did Updated DID
+     * @dev Event that is sent when a DID Document is updated.
+     * @param did Updated DID.
      */
     event DIDUpdated(string did);
 
     /**
-     * @dev Event that is sent when a DID Document is deactivated
-     * @param did Deactivated DID
+     * @dev Event that is sent when a DID Document is deactivated.
+     * @param did Deactivated DID.
      */
     event DIDDeactivated(string did);
 
     /**
-     * @dev Creates a new DID
-     * @param document The new DID Document
+     * @dev Creates a new DID.
+     * @param document The new DID Document.
      */
     function createDid(DidDocument calldata document) external;
 
     /**
-     * @dev Updates an existing DID
-     * 
-     * 
-     * This function reverts with:
-     * - `DidNotFound` error if the DID Document does not exist.
-     * - `DidHasBeenDeactivated` error if the DID Document has already been deactivated.
+     * @dev Updates an existing DID.
      * 
      * Restrictions:
-     * - DID must not exist; otherwise, will revert with a `DidAlreadyExist` error
-     * - DID must be active; otherwise, will revert with a `DidHasBeenDeactivated` error
+     *
+     * - DID must not already exist; otherwise, will revert with a `DidAlreadyExist` error.
+     * - DID must be active; otherwise, will revert with a `DidHasBeenDeactivated` error.
      * 
      * Events:
-     * - On succesful DID update, will emit a `DIDDeactivated` event
+     * - On succesful DID update, will emit a `DIDDeactivated` event.
      * 
      * @param document The updated DID Document
      */
     function updateDid(DidDocument calldata document) external;
 
     /**
-     * @dev Deactivates a DID
+     * @dev Deactivates a DID.
      * 
      * Restrictions:
-     * - DID must be active; otherwise, will revert with a `DidHasBeenDeactivated` error
-     * - DID must exist; otherwise, will revert with a `DidNotFound` error
+     * - DID must be active; otherwise, will revert with a `DidHasBeenDeactivated` error.
+     * - DID must exist; otherwise, will revert with a `DidNotFound` error.
      * 
      * Events:
-     * - On succesful DID deactivation, will emit a `DIDDeactivated` event
+     * - On succesful DID deactivation, will emit a `DIDDeactivated` event.
      * 
-     * @param id The DID to be deactivated
+     * @param id The DID to be deactivated.
      */
     function deactivateDid(string calldata id) external;
 
     /**
-     * @dev Function to resolve DID Document for the given DID
+     * @dev Function to resolve DID Document for the given DID.
      * 
-     * Restrictions
-     * - DID must exist; otherwise, will revert with a `DidNotFound` error
+     * Restrictions:
+     * - DID must exist; otherwise, will revert with a `DidNotFound` error.
      * 
-     * @param id The DID to be resolved
-     * @return didDocumentStorage The resolved DID document associated with provided DID
+     * @param id The DID to be resolved.
+     * @return didDocumentStorage The resolved DID document associated with provided DID.
      */
     function resolveDid(string calldata id) external returns (DidDocumentStorage memory didDocumentStorage);
 }

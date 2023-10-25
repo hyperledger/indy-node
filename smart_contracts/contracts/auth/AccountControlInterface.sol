@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
+/**
+ * The interface that defunes function for account permissioning contract controls
+ */
 interface AccountControlInterface {
     /**
      * @dev Determine whether to accept a transaction received from a given Ethereum account.
