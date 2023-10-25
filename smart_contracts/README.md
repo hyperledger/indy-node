@@ -64,7 +64,7 @@ This section describes how to inject smart contracts into the genesis state of t
 
 3. Compile runtime contracts byte code:
    ```
-   solc -o compiled-contracts --optimize --bin-runtime  --evm-version=constantinople  @dk1a=$(pwd)/node_modules/@dk1a @openzeppelin=$(pwd)/node_modules/@openzeppelin  contracts/**/*.sol
+   solc -o compiled-contracts --optimize --bin-runtime  --evm-version=constantinople  @dk1a=$(pwd)/node_modules/@dk1a @openzeppelin=$(pwd)/node_modules/@openzeppelin  contracts/**/*.sol node_modules/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol
    ```
 * `compiled-contracts` folder with binary files will be generated as the result of the execution.
 

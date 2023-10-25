@@ -1,16 +1,21 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { Unauthorized } from "../auth/AuthErrors.sol";
-import { RoleControlInterface } from "../auth/RoleControlInterface.sol";
-import { UpgradeControlInterface } from "./UpgradeControlInterface.sol";
-
 import { IERC1822Proxiable } from "@openzeppelin/contracts/interfaces/draft-IERC1822.sol";
 import { ERC1967Utils } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
 import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
+import { Unauthorized } from "../auth/AuthErrors.sol";
+import { RoleControlInterface } from "../auth/RoleControlInterface.sol";
+
+import { UpgradeControlInterface } from "./UpgradeControlInterface.sol";
+
 contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializable {
+
+    /**
+     * @dev Reference to the contract that manages auth roles
+     */
     RoleControlInterface private _roleControl;
 
     /**
@@ -20,7 +25,7 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
      */
     mapping(address => mapping(address => UpgradeProposal)) private upgradeProposals;
 
-    function initialize(address roleControlAddress) public initializer {
+    function initialize(address roleControlAddress) public reinitializer(1) {
         _roleControl = RoleControlInterface(roleControlAddress);
     }
 
@@ -75,6 +80,7 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
         _;
     }
 
+    /// @inheritdoc UpgradeControlInterface
     function propose(address proxy, address implementation)
         public override 
         _onlyTrustee() 

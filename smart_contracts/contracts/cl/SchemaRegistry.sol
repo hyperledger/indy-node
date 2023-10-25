@@ -4,7 +4,9 @@ pragma solidity ^0.8.20;
 import { DidNotFound } from "../did/DidErrors.sol";
 import { DidRegistryInterface } from "../did/DidRegistry.sol";
 import { DidDocumentStorage } from "../did/DidTypes.sol";
+import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
 import { Errors } from "../utils/Errors.sol";
+
 import {
     IssuerHasBeenDeactivated,
     IssuerNotFound, 
@@ -19,9 +21,12 @@ import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 using SchemaValidator for Schema;
 using { toSlice } for string;
 
-contract SchemaRegistry is SchemaRegistryInterface {
+contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable {
 
-    DidRegistryInterface _didRegistry;
+    /**
+     * @dev Reference to the contract that manages DIDs
+     */
+    DidRegistryInterface private _didRegistry;
 
     /**
      * Mapping Scheman ID to its Schema Details and Metadata.
@@ -60,8 +65,12 @@ contract SchemaRegistry is SchemaRegistryInterface {
         }
     }
 
-    constructor(address didRegistryAddress) { 
+    function initialize(
+        address didRegistryAddress,
+        address upgradeControlAddress
+    ) public reinitializer(1) {
         _didRegistry = DidRegistryInterface(didRegistryAddress);
+        _initializeUpgradeControl(upgradeControlAddress);
     }
 
     /// @inheritdoc SchemaRegistryInterface

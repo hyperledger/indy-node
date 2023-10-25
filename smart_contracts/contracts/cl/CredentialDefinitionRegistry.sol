@@ -4,7 +4,9 @@ pragma solidity ^0.8.20;
 import { DidNotFound } from "../did/DidErrors.sol";
 import { DidRegistryInterface } from "../did/DidRegistry.sol";
 import { DidDocumentStorage } from "../did/DidTypes.sol";
+import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
 import { Errors } from "../utils/Errors.sol";
+
 import { CredentialDefinition, CredentialDefinitionWithMetadata } from "./CredentialDefinitionTypes.sol";
 import { CredentialDefinitionRegistryInterface } from "./CredentialDefinitionRegistryInterface.sol";
 import { CredentialDefinitionValidator } from "./CredentialDefinitionValidator.sol";
@@ -20,9 +22,17 @@ import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 using CredentialDefinitionValidator for CredentialDefinition;
 using { toSlice } for string;
 
-contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
-    DidRegistryInterface _didRegistry;
-    SchemaRegistryInterface _schemaRegistry;
+contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, ControlledUpgradeable {
+
+    /**
+     * @dev Reference to the contract that manages DIDs
+     */
+    DidRegistryInterface private _didRegistry;
+
+    /**
+     * @dev Reference to the contract that manages anoncreds schemas
+     */
+    SchemaRegistryInterface private _schemaRegistry;
 
     /**
      * Mapping Credential Definition ID to its Credential Definition Details and Metadata.
@@ -45,7 +55,7 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
          _;
     }
 
-     /**
+    /**
      * Сhecks that the schema exist
      */
     modifier _schemaExist(string memory id) {
@@ -69,9 +79,14 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface {
         }
     }
 
-    constructor(address didRegistryAddress, address schemaRegistryAddress) {
+    function initialize(
+        address didRegistryAddress,
+        address schemaRegistryAddress,
+        address upgradeControlAddress
+    ) public reinitializer(1) {
         _didRegistry = DidRegistryInterface(didRegistryAddress);
         _schemaRegistry = SchemaRegistryInterface(schemaRegistryAddress);
+        _initializeUpgradeControl(upgradeControlAddress);
     }
 
     /// @inheritdoc CredentialDefinitionRegistryInterface

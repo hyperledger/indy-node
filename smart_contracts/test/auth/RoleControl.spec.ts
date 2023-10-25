@@ -4,13 +4,13 @@ import { ROLES } from '../../contracts-ts'
 import { Account } from '../../utils'
 import { TestableRoleControl } from '../utils/contract-helpers'
 import { AuthErrors } from '../utils/errors'
-import { getTestAccounts } from '../utils/test-entities'
+import { getTestAccounts, ZERO_ADDRESS } from '../utils/test-entities'
 
 const { expect } = chai
 
 describe('RoleControl', () => {
   async function deployRoleControlFixture() {
-    const roleControl = await new TestableRoleControl().deploy()
+    const roleControl = await new TestableRoleControl().deployProxy({ params: [ZERO_ADDRESS] })
     const testAccounts = await getTestAccounts(roleControl)
 
     return { roleControl, testAccounts }

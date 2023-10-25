@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
+import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
+
 import { Unauthorized } from "./AuthErrors.sol";
 import { RoleControlInterface } from "./RoleControlInterface.sol";
 
-contract RoleControl is RoleControlInterface {
+contract RoleControl is RoleControlInterface, ControlledUpgradeable {
+
     /**
      * @dev Type describing single initial assignment
      */
@@ -29,9 +32,12 @@ contract RoleControl is RoleControlInterface {
      */
     mapping(ROLES role => uint) private _roleCounts;
 
-    constructor() {
+    function initialize(
+        address upgradeControlAddress
+    ) public reinitializer(1) {
         _initialTrustee();
         _initRoles();
+        _initializeUpgradeControl(upgradeControlAddress);
     }
 
     /**

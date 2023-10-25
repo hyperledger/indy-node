@@ -9,6 +9,7 @@ import {
   ValidatorControl,
 } from '../../contracts-ts'
 import { Contract } from '../../utils'
+import { ZERO_ADDRESS } from './test-entities'
 
 class DidRegex extends testableContractMixin(Contract) {
   constructor() {
@@ -38,22 +39,22 @@ export const TestableUpgradeControl = testableContractMixin(UpgradeControl)
 export async function deployDidRegistry() {
   const didRegex = await new DidRegex().deploy()
   const didValidator = await new DidValidator().deploy({ libraries: [didRegex] })
-  const didRegistry = await new TestableDidRegistry().deploy({ libraries: [didValidator] })
+  const didRegistry = await new TestableDidRegistry().deployProxy({ params: [ZERO_ADDRESS], libraries: [didValidator] })
 
   return { didRegistry, didValidator, didRegex }
 }
 
 export async function deploySchemaRegistry() {
   const { didRegistry } = await deployDidRegistry()
-  const schemaRegistry = await new TestableSchemaRegistry().deploy({ params: [didRegistry.address] })
+  const schemaRegistry = await new TestableSchemaRegistry().deployProxy({ params: [didRegistry.address, ZERO_ADDRESS] })
 
   return { didRegistry, schemaRegistry }
 }
 
 export async function deployCredentialDefinitionRegistry() {
   const { didRegistry, schemaRegistry } = await deploySchemaRegistry()
-  const credentialDefinitionRegistry = await new TestableCredentialDefinitionRegistry().deploy({
-    params: [didRegistry.address, schemaRegistry.address],
+  const credentialDefinitionRegistry = await new TestableCredentialDefinitionRegistry().deployProxy({
+    params: [didRegistry.address, schemaRegistry.address, ZERO_ADDRESS],
   })
 
   return { credentialDefinitionRegistry, didRegistry, schemaRegistry }

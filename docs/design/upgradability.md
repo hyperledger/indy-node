@@ -81,18 +81,37 @@ This smart contract is designed to manage the approval process for upgrading a c
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy";
 
 contract UpgradableContract is UUPSUpgradable, Initializable {
 
     UpgradeControlInterface _upgradeControl;
 
-    function initialize(address upgradeControlAddress) public initializer {
+    function initialize(address upgradeControlAddress) public reinitializer(1) {
       _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
     }
 
     function _authorizeUpgrade(address newImplementation) internal override {
       _upgradeControl.ensureSufficientApprovals(address(this), newImplementation);
+    }
+}
+```
+
+Alternatively, you can extend from the `ControlledUpgreadable` contract, which encapsulates common boilerplate code:
+
+```
+// SPDX-License-Identifier: Apache-2.0
+pragma solidity ^0.8.20;
+
+import { UpgradeControlInterface } from "contracts/upgrade/ControlledUpgreadable.sol";
+
+contract UpgradableContract is ControlledUpgreadable {
+
+    function initialize(address upgradeControlAddress) public reinitializer(1) {
+      // This method must be called on initialization to set the upgrade control, 
+      // allowing the upgradeable contract to verify upgrade approvement.
+      _initializeUpgradeControl(upgradeControlAddress)
     }
 }
 ```

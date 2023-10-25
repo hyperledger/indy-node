@@ -1,6 +1,6 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import chai from 'chai'
-import { RoleControl, ValidatorControl } from '../../contracts-ts'
+import { RoleControl } from '../../contracts-ts'
 import { Account } from '../../utils'
 import { TestableValidatorControl } from '../utils/contract-helpers'
 import { AuthErrors, ValidatorControlErrors } from '../utils/errors'
@@ -14,22 +14,22 @@ describe('ValidatorControl', function () {
   const initialValidators: Array<string> = [validator1, validator2]
 
   async function deployValidatorControlFixture() {
-    const roleControl = await new RoleControl().deploy()
+    const roleControl = await new RoleControl().deployProxy({ params: [ZERO_ADDRESS] })
     const testAccounts = await getTestAccounts(roleControl)
 
     const initialValidatorsData = [
       {
         validator: validator1,
-        account: testAccounts.steward.account,
+        account: testAccounts.steward.account.address,
       },
       {
         validator: validator2,
-        account: testAccounts.steward2.account,
+        account: testAccounts.steward2.account.address,
       },
     ]
 
-    const validatorControl = await new TestableValidatorControl().deploy({
-      params: [roleControl.address, initialValidatorsData],
+    const validatorControl = await new TestableValidatorControl().deployProxy({
+      params: [roleControl.address, ZERO_ADDRESS, initialValidatorsData],
     })
 
     return { validatorControl, roleControl, testAccounts }

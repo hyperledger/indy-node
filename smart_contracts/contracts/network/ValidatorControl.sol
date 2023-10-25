@@ -2,10 +2,13 @@
 pragma solidity ^0.8.20;
 
 import { Unauthorized} from "../auth/AuthErrors.sol";
-import { RoleControlInterface } from "../auth/RoleControlInterface.sol";
+import { RoleControlInterface } from "../auth/RoleControl.sol";
+import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
+
 import { ValidatorSmartContractInterface } from "./ValidatorSmartContractInterface.sol";
 
-contract ValidatorControl is ValidatorSmartContractInterface {
+contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradeable {
+
     /**
      * @dev Type describing initial validator details
      */
@@ -28,6 +31,11 @@ contract ValidatorControl is ValidatorSmartContractInterface {
     uint constant MAX_VALIDATORS = 256;
 
     /**
+     * @dev Reference to the contract managing auth permissions
+     */
+    RoleControlInterface private _roleControl;
+
+    /**
      * @dev List of active validators
      */
     address[] private validators;
@@ -38,24 +46,23 @@ contract ValidatorControl is ValidatorSmartContractInterface {
     mapping(address validatorAddress => ValidatorInfo validatorInfo) private validatorInfos;
 
     /**
-     * @dev Reference to the contract managing auth permissions
-         */
-    RoleControlInterface private roleControl;
-
-    /**
      * @dev Modifier that checks that an the sender account has Steward role assigned.
      */
-    modifier senderIsSteward() {
-        if (!roleControl.hasRole(RoleControlInterface.ROLES.STEWARD, msg.sender)) revert Unauthorized(msg.sender);
+    modifier _senderIsSteward() {
+        if (!_roleControl.hasRole(RoleControlInterface.ROLES.STEWARD, msg.sender)) revert Unauthorized(msg.sender);
         _;
     }
 
-    modifier nonZeroValidatorAddress(address validator) {
+    modifier _nonZeroValidatorAddress(address validator) {
         if (validator == address(0)) revert InvalidValidatorAddress();
          _;
     }
 
-    constructor(address roleControlContractAddress, InitialValidatorInfo[] memory initialValidators) {
+    function initialize(
+        address roleControlContractAddress,
+        address upgradeControlAddress,
+        InitialValidatorInfo[] memory initialValidators
+    ) public reinitializer(1) {
         if (initialValidators.length == 0) revert InitialValidatorsRequired();
         if (initialValidators.length >= MAX_VALIDATORS) revert ExceedsValidatorLimit(MAX_VALIDATORS);
 
@@ -69,7 +76,8 @@ contract ValidatorControl is ValidatorSmartContractInterface {
             validatorInfos[validator.validator] = ValidatorInfo(validator.account, uint8(i));
         }
 
-        roleControl = RoleControlInterface(roleControlContractAddress);
+        _roleControl = RoleControlInterface(roleControlContractAddress);
+        _initializeUpgradeControl(upgradeControlAddress);
     }
 
     /**
@@ -82,7 +90,7 @@ contract ValidatorControl is ValidatorSmartContractInterface {
     /**
      * @dev Add a new validator to the list
      */
-    function addValidator(address newValidator) external senderIsSteward nonZeroValidatorAddress(newValidator) {
+    function addValidator(address newValidator) external _senderIsSteward _nonZeroValidatorAddress(newValidator) {
         if (validators.length >= MAX_VALIDATORS) revert ExceedsValidatorLimit(MAX_VALIDATORS);
 
         uint256 validatorsCount = validators.length;
@@ -102,7 +110,7 @@ contract ValidatorControl is ValidatorSmartContractInterface {
     /**
      * @dev Remove an existing validator from the list
      */
-    function removeValidator(address validator) external senderIsSteward nonZeroValidatorAddress(validator) {
+    function removeValidator(address validator) external _senderIsSteward _nonZeroValidatorAddress(validator) {
         if (validators.length == 1) revert CannotDeactivateLastValidator();
 
         ValidatorInfo memory removedValidatorInfo = validatorInfos[validator];
