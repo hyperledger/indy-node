@@ -42,10 +42,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
       _initializeUpgradeControl(upgradeControlAddress);
     }
 
-    /**
-     * @dev Creates a new DID
-     * @param document The new DID Document
-     */
+    /// @inheritdoc DidRegistryInterface
     function createDid(
         DidDocument calldata document
     ) public _didNotExist(document.id) {
@@ -59,10 +56,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
         emit DIDCreated(document.id);
     }
 
-    /**
-     * @dev Updates an existing DID
-     * @param document The updated DID Document
-     */
+    /// @inheritdoc DidRegistryInterface
     function updateDid(
         DidDocument calldata document
     ) public _didExist(document.id) _didIsActive(document.id) {
@@ -74,10 +68,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
         emit DIDUpdated(document.id);
     }
 
-    /**
-     * @dev Deactivates a DID
-     * @param id The DID to be deactivated
-     */
+    /// @inheritdoc DidRegistryInterface
     function deactivateDid(
         string calldata id
     ) public _didExist(id) _didIsActive(id) {
@@ -86,10 +77,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
         emit DIDDeactivated(id);
     }
 
-    /**
-     * @dev Function to resolve DID Document for the given DID
-     * @param id The DID to be resolved
-     */
+    /// @inheritdoc DidRegistryInterface
     function resolveDid(
         string calldata id
     ) public _didExist(id) view virtual returns (DidDocumentStorage memory didDocumentStorage) {
