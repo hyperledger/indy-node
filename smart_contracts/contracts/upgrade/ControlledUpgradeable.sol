@@ -13,7 +13,8 @@ abstract contract ControlledUpgradeable is UUPSUpgradeable, Initializable {
   UpgradeControlInterface private _upgradeControl;
 
   /**
-   * @dev Function to initialize the upgrade control reference. Must be called during initialization of derived contract
+   * @dev Function to initialize the upgrade control reference. 
+   * @notice Must be called during initialization of derived contract
    * @param upgradeControlAddress The address of the upgrade control contract.
    */
   function _initializeUpgradeControl(address upgradeControlAddress) internal onlyInitializing {
