@@ -54,7 +54,7 @@ contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradea
     }
 
     /**
-     * @dev Modifier that checks that the validator address is not zero.
+     * @dev Modifier that checks that the validator address is non-zero.
      */
     modifier _nonZeroValidatorAddress(address validator) {
         if (validator == address(0)) revert InvalidValidatorAddress();

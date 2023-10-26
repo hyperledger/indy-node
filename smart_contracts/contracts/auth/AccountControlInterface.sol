@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 /**
- * The interface that defunes function for account permissioning contract controls
+ * The interface that defines function for account permissioning contract controls
  */
 interface AccountControlInterface {
     /**

@@ -2,32 +2,32 @@
 pragma solidity ^0.8.20;
 
 /**
- * @dev Error that thrown when an authentication key is not provided in the DID Document.
+ * @dev Error that occurs when an authentication key is not provided in the DID Document.
  */
 error AuthenticationKeyRequired(string did);
 
 /**
- * @dev Error that thrown when the specified authentication key is not found in the DID Document.
+ * @dev Error that occurs when the specified authentication key is not found in the DID Document.
  */
 error AuthenticationKeyNotFound(string id);
 
 /**
- * @dev Error that thrown when the specified DID is not found.
+ * @dev Error that occurs when the specified DID is not found.
  */
 error DidNotFound(string did);
 
 /**
- * @dev Error that thrown when an attempt is made to create a DID that already exists.
+ * @dev Error that occurs when trying to create an already existing DID.
  */
 error DidAlreadyExist(string did);
 
 /**
- * @dev Error that thrown when an operation is attempted on a DID that has been deactivated.
+ * @dev Error that occurs when trying to perform an operation with a deactivated DID.
  */
 error DidHasBeenDeactivated(string did);
 
 /**
- * @dev Error that thrown when a DID provided is incorrect.
+ * @dev Error that occurs when the specified DID is incorrect.
  */
 error IncorrectDid(string did);
 

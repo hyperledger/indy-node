@@ -27,19 +27,39 @@ The following folders should be generated as the result:
 > yarn test
 ```
 
-### Contracts
+### Main Contracts
 
-* `contracts/RoleControl.sol` - contract to manage (assign/revoke) account roles.   
-  * [RoleControl TS contract wrapper class](./scripts/contracts/role-control.ts)
+* `contracts/auth/AccountControl.sol` - contract to manage account transactions permissioning
+  * [AccountControl TS contract wrapper class](./contracts-ts/AccountControl.ts)  
+* `contracts/auth/RoleControl.sol` - contract to manage (assign/revoke) account roles.   
+  * [RoleControl TS contract wrapper class](./contracts-ts/RoleControl.ts)
+* `contracts/cl/CredentialDefinitionRegistry` - contract to manage (create/resolve) credential definitions
+  * [CredentialDefinitionRegistry TS contract wrapper class](./contracts-ts/CredentialDefinitionRegistry.ts)
+* `contracts/cl/SchemaRegistry` - contract to manager (create/resolve) schemas
+  * [SchemaRegistry TS contract wrapper class](./contracts-ts/SchemaRegistry.ts)
+* `contracts/did/DidRegistry` - contract to manage (create/update/deactivate/resolve) DID doucments
+  * [DidRegistry TS contract wrapper class](./contracts-ts/DidRegistry.ts)
 * `contracts//ValidatorControl.sol` - contract to manage network validator nodes.
-  * [ValidatorControl TS contract wrapper class](./scripts/contracts/validator-control.ts)
+  * [ValidatorControl TS contract wrapper class](./contracts-ts/ValidatorControl.ts)
 
 ### Demos
 
 You can find sample scripts demonstrating the usage of deployed contracts in the [demo folder](./demos).
+* [Account management](./demos/account-control.ts) - deploy/read/writer transactions.
+    ```
+    > yarn demo/account
+    ```
+* [Demo flow](./demos/flow.ts) - create/reolve DID/Schema/Credential Dedinition.
+    ```
+    > yarn demo/flow
+    ```
 * [Roles management](./demos/role-control.ts) - get/assign/revoke role to/from account.
     ```
     > yarn demo/roles
+    ```
+* [Upgrade management](./demos/upgrade-control.ts) - propose/approve upgradable contract implementation.
+    ```
+    > yarn demo/upgrade
     ```
 * [Validators management](./demos/validator-control.ts) - get list of current validators.
     ```
@@ -76,4 +96,4 @@ This section describes how to inject smart contracts into the genesis state of t
 
 4. Set address of `ValidatorControl` contract into `validatorcontractaddress` field of the `qbft` section of the genesis file.
 
-4. Set address of `AccountControl` contract into `permissions-accounts-contract-address` field of the `config.toml` file.
+5. Set address of `AccountControl` contract into `permissions-accounts-contract-address` field of the `config.toml` file.

@@ -5,6 +5,7 @@
 - [CL Registry](design/cl-registry.md)
 - [VDR](design/vdr.md)
 - [Validators node management](design/network.md)
+- [Upgrading contracts](design/upgradability.md)
  
 ## Migration documents
 
