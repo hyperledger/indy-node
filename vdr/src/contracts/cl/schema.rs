@@ -72,8 +72,9 @@ impl TryFrom<ContractOutput> for SchemaWithMeta {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
-        let schema = value.get_tuple(0)?;
-        let metadata = value.get_tuple(1)?;
+        let output_tuple = value.get_tuple(0)?;
+        let schema = output_tuple.get_tuple(0)?;
+        let metadata = output_tuple.get_tuple(1)?;
         Ok(SchemaWithMeta {
             schema: Schema::try_from(schema)?,
             metadata: SchemaMetadata::try_from(metadata)?,
