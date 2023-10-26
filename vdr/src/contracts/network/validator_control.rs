@@ -10,6 +10,7 @@ use crate::{
 
 use super::validator_info::ValidatorAddresses;
 
+/// ValidatorControl contract methods
 pub struct ValidatorControl;
 
 impl ValidatorControl {
@@ -18,6 +19,15 @@ impl ValidatorControl {
     const METHOD_REMOVE_VALIDATOR: &'static str = "removeValidator";
     const METHOD_GET_VALIDATORS: &'static str = "getValidators";
 
+    /// Build transaction to execute ValidatorControl.addValidator contract method to add a new Validator
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `validator_address` validator address to be added
+    ///
+    /// # Returns
+    /// Write transaction to sign and submit
     pub fn build_add_validator_transaction(
         client: &LedgerClient,
         from: &str,
@@ -39,6 +49,15 @@ impl ValidatorControl {
             .build(&client)
     }
 
+    /// Build transaction to execute ValidatorControl.removeValidator contract method to remove an existing Validator
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `validator_address` validator address to be removed
+    ///
+    /// # Returns
+    /// Write transaction to sign and submit
     pub fn build_remove_validator_transaction(
         client: &LedgerClient,
         from: &str,
@@ -60,6 +79,13 @@ impl ValidatorControl {
             .build(&client)
     }
 
+    /// Build transaction to execute ValidatorControl.getValidators contract method to get existing validators
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    ///
+    /// # Returns
+    /// Read transaction to submit
     pub fn build_get_validators_transaction(client: &LedgerClient) -> VdrResult<Transaction> {
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -68,6 +94,14 @@ impl ValidatorControl {
             .build(&client)
     }
 
+    /// Parse the result of execution ValidatorControl.getValidators contract method to get existing validators
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `bytes` result bytes returned from the ledger
+    ///
+    /// # Returns
+    /// Parsed validator addresses
     pub fn parse_get_validators_result(
         client: &LedgerClient,
         bytes: &[u8],
@@ -78,6 +112,15 @@ impl ValidatorControl {
             .parse::<ValidatorAddresses>(&client, bytes)
     }
 
+    /// Single step function executing ValidatorControl.addValidator contract method to add a new Validator
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `validator_address` validator address to be added
+    ///
+    /// # Returns
+    /// Receipt of executed transaction
     pub async fn add_validator(
         client: &LedgerClient,
         from: &str,
@@ -87,6 +130,15 @@ impl ValidatorControl {
         client.sign_and_submit(&transaction).await
     }
 
+    /// Single step function executing ValidatorControl.removeValidator contract method to remove an existing Validator
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `validator_address` validator address to be added
+    ///
+    /// # Returns
+    /// Receipt of executed transaction
     pub async fn remove_validator(
         client: &LedgerClient,
         from: &str,
@@ -97,7 +149,14 @@ impl ValidatorControl {
         client.sign_and_submit(&transaction).await
     }
 
-    pub async fn get_validators(client: &LedgerClient) -> VdrResult<Vec<String>> {
+    /// Single step function executing ValidatorControl.getValidators contract method to get existing validators
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    ///
+    /// # Returns
+    /// Existing validator addresses
+    pub async fn get_validators(client: &LedgerClient) -> VdrResult<ValidatorAddresses> {
         let transaction = Self::build_get_validators_transaction(client)?;
         let result = client.submit_transaction(&transaction).await?;
         Self::parse_get_validators_result(client, &result)
