@@ -1,6 +1,10 @@
+use std::str::FromStr;
+
+use web3::ethabi::ethereum_types::Address;
+
 use crate::{
     client::{ContractParam, Transaction, TransactionBuilder, TransactionParser, TransactionType},
-    error::VdrResult,
+    error::{VdrError, VdrResult},
     LedgerClient,
 };
 
@@ -19,10 +23,17 @@ impl ValidatorControl {
         from: &str,
         validator_address: &str,
     ) -> VdrResult<Transaction> {
+        let parsed_val_address = Address::from_str(validator_address).map_err(|err| {
+            VdrError::CommonInvalidData(format!(
+                "Unable to parse validator address. Err: {:?}",
+                err.to_string()
+            ))
+        })?;
+
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_ADD_VALIDATOR)
-            .add_param(ContractParam::Address(validator_address.parse().unwrap()))
+            .add_param(ContractParam::Address(parsed_val_address))
             .set_type(TransactionType::Write)
             .set_from(from)
             .build(&client)
@@ -33,10 +44,17 @@ impl ValidatorControl {
         from: &str,
         validator_address: &str,
     ) -> VdrResult<Transaction> {
+        let parsed_val_address = Address::from_str(validator_address).map_err(|err| {
+            VdrError::CommonInvalidData(format!(
+                "Unable to parse validator address. Err: {:?}",
+                err.to_string()
+            ))
+        })?;
+
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_REMOVE_VALIDATOR)
-            .add_param(ContractParam::Address(validator_address.parse().unwrap()))
+            .add_param(ContractParam::Address(parsed_val_address))
             .set_type(TransactionType::Write)
             .set_from(from)
             .build(&client)
