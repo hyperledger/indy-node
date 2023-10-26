@@ -148,9 +148,7 @@ contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradea
         emit ValidatorRemoved(validatorRemoved, msg.sender, uint8(_validators.length));
     }
 
-    /**
-     * @dev Get the list of active validators.
-     */
+    /// @inheritdoc ValidatorSmartContractInterface
     function getValidators() public view override returns (address[] memory) {
         return _validators;
     }

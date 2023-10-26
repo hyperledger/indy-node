@@ -112,6 +112,13 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
         ensureSufficientApprovals(address(this), newImplementation);
     }
 
+    /**
+     * @dev Function to check if there are sufficient approvals to proceed with the upgrade.
+     * @notice It requires at least 60% of the trustee's approval to proceed.
+     * @param proxy The address of the proxy contract.
+     * @param implementation The address of the implementation contract.
+     * @return bool Returns true if there are enough approvals, false otherwise.
+     */
     function _isSufficientApprovals(address proxy, address implementation) private view returns (bool) {
         uint32 trusteeCount = _roleControl.getRoleCount(RoleControlInterface.ROLES.TRUSTEE);
         uint32 approvalsCount = _upgradeProposals[proxy][implementation].approvalsCount;
@@ -120,6 +127,12 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
         return approvalsCount >= requiredApprovalsCount;
     }
 
+    /**
+     * @dev Function to perform a ceiling division.
+     * @param x The Dividend.
+     * @param y The Divisor.
+     * @return The result of the ceiling division.
+     */
     function _ceil(uint32 x, uint32 y) private pure returns (uint32) {
         return (x - 1) / y + 1;
     }
