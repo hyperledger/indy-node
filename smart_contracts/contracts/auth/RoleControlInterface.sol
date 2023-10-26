@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
+/**
+ * @dev The interface that defines functions for managing account roles.
+ */
 interface RoleControlInterface {
     /**
      * @dev List of available roles.
@@ -28,17 +31,39 @@ interface RoleControlInterface {
     function hasRole(ROLES role, address account) external view returns (bool);
 
     /**
-     * @dev Function to assign role to an account
+     * @dev Function to assign role to an account.
+     * 
+     * Restrcitions:
+     * - Only senders with certain roles as specified in the access rules are permitted assign specefic roles;
+     * otherwise, the transaction will revert with an `Unauthorized` error.
+     * 
+     * Events:
+     * - On successful role assignment, will emit a `RoleAssigned` event.
+     * 
+     * @param role The role to be assigned to the account.
+     * @param account The address of the account to which the role will be assigned.
+     * @return assignedRole The role that has been successfully assigned.
      */
     function assignRole(ROLES role, address account) external returns (ROLES assignedRole);
 
     /**
-     * @dev Function to revoke role from an account
+     * @dev Function to revoke role from an account.
+     * 
+     * Restrcitions:
+     * - Only senders with certain roles as specified in the access rules are permitted revoke specefic roles;
+     * otherwise, the transaction will revert with an `Unauthorized` error.
+     * 
+     * Events:
+     * - On successful role revokation, will emit a `RoleRevoked` event.
+     * 
+     * @param role The role to be revoked from the account.
+     * @param account The address of the account from which the role will be revoked.
+     * @return A boolean indicating the success of the revocation.
      */
     function revokeRole(ROLES role, address account) external returns (bool);
 
      /**
-     * @dev Function to return the count of an account with the provided role
+     * @dev Function to return the count of an account with the provided role.
      */
     function getRoleCount(ROLES role) external view returns (uint);
 }

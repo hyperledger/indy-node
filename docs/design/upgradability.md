@@ -61,6 +61,13 @@ This smart contract is designed to manage the approval process for upgrading a c
     ```
     UpgradeController.propose(address proxy, address implementation)
     ```
+  * Example:
+      ```
+      UpgradeController.propose(
+        "0x0000000000000000000000000000000000004444"
+        "0xe5414e3cf982222df96453cd910395a5c62a3b3d"
+      )
+      ```
   * Raised Event: UpgradeProposed(proxy, implementation, sender)
 
 * Method: `approve`
@@ -73,10 +80,16 @@ This smart contract is designed to manage the approval process for upgrading a c
     ```
     UpgradeController.approve(address proxy, address implementation)
     ```
+  * Example:
+      ```
+      UpgradeController.approve(
+        "0x0000000000000000000000000000000000004444"
+        "0xe5414e3cf982222df96453cd910395a5c62a3b3d"
+      )
+      ```
   * Raised Event: UpgradeApproved(proxy, implementation, sender), Upgraded(implementation)
 
-#### Usage Example
-
+#### Make the contract upgradable
 ```
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;

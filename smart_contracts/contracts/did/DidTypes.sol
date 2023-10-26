@@ -22,6 +22,7 @@ struct DidMetadata {
  * @dev DidDocument represent the main DID Document structure.
  */
 struct DidDocument {
+    // 
     string[] context;
     string id;
     string[] controller;
