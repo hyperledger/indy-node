@@ -53,7 +53,7 @@ impl ValidatorControl {
     pub fn parse_get_validators_result(
         client: &LedgerClient,
         bytes: &[u8],
-    ) -> VdrResult<Vec<String>> {
+    ) -> VdrResult<ValidatorAddresses> {
         TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_GET_VALIDATORS)
@@ -94,7 +94,7 @@ pub mod test {
         signer::test::ACCOUNT,
     };
 
-    pub const ADDRESS: &'static str = "0x93917cadbace5dfce132b991732c6cda9bcc5b8a";
+    pub const VALIDATOR_ADDRESS: &'static str = "0x93917cadbace5dfce132b991732c6cda9bcc5b8a";
 
     mod build_add_validator_transaction {
         use super::*;
@@ -102,9 +102,12 @@ pub mod test {
         #[test]
         fn build_add_validator_transaction_test() {
             let client = client();
-            let transaction =
-                ValidatorControl::build_add_validator_transaction(&client, ACCOUNT, ADDRESS)
-                    .unwrap();
+            let transaction = ValidatorControl::build_add_validator_transaction(
+                &client,
+                ACCOUNT,
+                VALIDATOR_ADDRESS,
+            )
+            .unwrap();
             let expected_data = [
                 77, 35, 140, 142, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 145, 124, 173, 186, 206,
                 93, 252, 225, 50, 185, 145, 115, 44, 108, 218, 155, 204, 91, 138,
@@ -129,9 +132,12 @@ pub mod test {
         #[test]
         fn build_remove_validator_transaction_test() {
             let client = client();
-            let transaction =
-                ValidatorControl::build_remove_validator_transaction(&client, ACCOUNT, ADDRESS)
-                    .unwrap();
+            let transaction = ValidatorControl::build_remove_validator_transaction(
+                &client,
+                ACCOUNT,
+                VALIDATOR_ADDRESS,
+            )
+            .unwrap();
             let expected_data = [
                 64, 161, 65, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 147, 145, 124, 173, 186, 206,
                 93, 252, 225, 50, 185, 145, 115, 44, 108, 218, 155, 204, 91, 138,

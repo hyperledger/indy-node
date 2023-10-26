@@ -223,13 +223,23 @@ mod tests {
 
     #[cfg(feature = "ledger_test")]
     mod validator {
+        use crate::contracts::network::ValidatorAddresses;
+
         use super::*;
+
+        async fn build_and_submit_get_validators_transaction(
+            client: &LedgerClient,
+        ) -> ValidatorAddresses {
+            let transaction = ValidatorControl::build_get_validators_transaction(&client).unwrap();
+            let result = client.submit_transaction(&transaction).await.unwrap();
+
+            ValidatorControl::parse_get_validators_result(&client, &result).unwrap()
+        }
 
         async fn build_and_submit_add_validator_transaction(
             client: &LedgerClient,
             new_validator_address: &str,
-        ) {
-            // write
+        ) -> String {
             let transaction = ValidatorControl::build_add_validator_transaction(
                 &client,
                 ACCOUNT,
@@ -241,22 +251,14 @@ mod tests {
                 .submit_transaction(&signed_transaction)
                 .await
                 .unwrap();
-            let receipt = client.get_transaction_receipt(&block_hash).await.unwrap();
-            println!("Receipt: {}", receipt);
 
-            // read
-            let transaction = ValidatorControl::build_get_validators_transaction(&client).unwrap();
-            let result = client.submit_transaction(&transaction).await.unwrap();
-            let validator_list =
-                ValidatorControl::parse_get_validators_result(&client, &result).unwrap();
-            assert_eq!(validator_list.len(), 5);
-            assert!(validator_list.contains(&new_validator_address.to_string()));
+            client.get_transaction_receipt(&block_hash).await.unwrap()
         }
 
         async fn build_and_submit_remove_validator_transaction(
             client: &LedgerClient,
             validator_address: &str,
-        ) {
+        ) -> String {
             // write
             let transaction = ValidatorControl::build_remove_validator_transaction(
                 &client,
@@ -269,16 +271,8 @@ mod tests {
                 .submit_transaction(&signed_transaction)
                 .await
                 .unwrap();
-            let receipt = client.get_transaction_receipt(&block_hash).await.unwrap();
-            println!("Receipt: {}", receipt);
 
-            // read
-            let transaction = ValidatorControl::build_get_validators_transaction(&client).unwrap();
-            let result = client.submit_transaction(&transaction).await.unwrap();
-            let validator_list =
-                ValidatorControl::parse_get_validators_result(&client, &result).unwrap();
-            assert_eq!(validator_list.len(), 4);
-            assert!(!validator_list.contains(&validator_address.to_string()));
+            client.get_transaction_receipt(&block_hash).await.unwrap()
         }
 
         #[async_std::test]
@@ -286,8 +280,21 @@ mod tests {
             let client = client();
             let new_validator_address = "0xb8f2bd414ec806a6a7fe536086e450a0fe6a286f";
 
-            build_and_submit_add_validator_transaction(&client, new_validator_address).await;
-            build_and_submit_remove_validator_transaction(&client, new_validator_address).await;
+            let receipt =
+                build_and_submit_add_validator_transaction(&client, new_validator_address).await;
+            println!("Receipt: {}", receipt);
+
+            let validator_list = build_and_submit_get_validators_transaction(&client).await;
+            assert_eq!(validator_list.len(), 5);
+            assert!(validator_list.contains(&new_validator_address.to_string()));
+
+            let receipt =
+                build_and_submit_remove_validator_transaction(&client, new_validator_address).await;
+            println!("Receipt: {}", receipt);
+
+            let validator_list = build_and_submit_get_validators_transaction(&client).await;
+            assert_eq!(validator_list.len(), 4);
+            assert!(!validator_list.contains(&new_validator_address.to_string()));
 
             Ok(())
         }
@@ -297,22 +304,18 @@ mod tests {
             let client = client();
             let new_validator_address = "0xb8f2bd414ec806a6a7fe536086e450a0fe6a286f";
 
-            // write
             ValidatorControl::add_validator(&client, ACCOUNT, new_validator_address)
                 .await
                 .unwrap();
 
-            // read
             let validator_list = ValidatorControl::get_validators(&client).await.unwrap();
             assert_eq!(validator_list.len(), 5);
             assert!(validator_list.contains(&new_validator_address.to_string()));
 
-            // write
             ValidatorControl::remove_validator(&client, ACCOUNT, new_validator_address)
                 .await
                 .unwrap();
 
-            // read
             let validator_list = ValidatorControl::get_validators(&client).await.unwrap();
             assert_eq!(validator_list.len(), 4);
             assert!(!validator_list.contains(&new_validator_address.to_string()));
