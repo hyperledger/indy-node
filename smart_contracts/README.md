@@ -29,7 +29,7 @@ The following folders should be generated as the result:
 
 ### Main Contracts
 
-* `contracts/auth/AccountControl.sol` - contract to manage account transactions permissioning
+* `contracts/auth/AccountControl.sol` - contract to manage permissions for account transactions
   * [AccountControl TS contract wrapper class](./contracts-ts/AccountControl.ts)  
 * `contracts/auth/RoleControl.sol` - contract to manage (assign/revoke) account roles.   
   * [RoleControl TS contract wrapper class](./contracts-ts/RoleControl.ts)
@@ -39,7 +39,7 @@ The following folders should be generated as the result:
   * [SchemaRegistry TS contract wrapper class](./contracts-ts/SchemaRegistry.ts)
 * `contracts/did/DidRegistry` - contract to manage (create/update/deactivate/resolve) DID doucments
   * [DidRegistry TS contract wrapper class](./contracts-ts/DidRegistry.ts)
-* `contracts//ValidatorControl.sol` - contract to manage network validator nodes.
+* `contracts/network/ValidatorControl.sol` - contract to manage network validator nodes.
   * [ValidatorControl TS contract wrapper class](./contracts-ts/ValidatorControl.ts)
 
 ### Demos

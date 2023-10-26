@@ -2,11 +2,11 @@
 pragma solidity ^0.8.20;
 
 /**
- * The interface that defines function for account permissioning contract controls
+ * The interface that defines function for account transaction permissions
  */
 interface AccountControlInterface {
     /**
-     * @dev Determine whether to accept a transaction received from a given Ethereum account.
+     * @dev Determine whether to accept a transaction received from a given account.
      * 
      * This function enforces the following restrictions:
      * - Only senders with the Trustee role are permitted to deploy transactions.
