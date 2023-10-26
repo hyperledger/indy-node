@@ -145,10 +145,14 @@ impl ContractOutput {
         Ok(self
             .0
             .get(index)
-            .ok_or(VdrError::Unexpected)?
+            .ok_or(VdrError::ContractInvalidResponseData(
+                "Missing address string array value".to_string(),
+            ))?
             .clone()
             .into_array()
-            .ok_or(VdrError::Unexpected)?
+            .ok_or(VdrError::ContractInvalidResponseData(
+                "Missing address string array value".to_string(),
+            ))?
             .into_iter()
             .map(|token| format!("0x{}", token.to_string()))
             .collect())

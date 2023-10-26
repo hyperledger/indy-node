@@ -91,7 +91,7 @@ pub mod test {
     use super::*;
     use crate::{
         client::test::{client, CHAIN_ID, VALIDATOR_CONTROL_ADDRESS},
-        signer::test::ACCOUNT,
+        signer::signer::test::ACCOUNT,
     };
 
     pub const VALIDATOR_ADDRESS: &'static str = "0x93917cadbace5dfce132b991732c6cda9bcc5b8a";
