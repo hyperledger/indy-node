@@ -11,6 +11,7 @@ use crate::{
     error::{VdrError, VdrResult},
 };
 
+/// RoleControl contract methods
 pub struct RoleControl;
 
 impl RoleControl {
@@ -20,6 +21,16 @@ impl RoleControl {
     const METHOD_HAS_ROLE: &'static str = "hasRole";
     const METHOD_GET_ROLE: &'static str = "getRole";
 
+    /// Build transaction to execute RoleControl.assignRole contract method to assign a role to an account
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `role` role to assign
+    /// - `account` assignee account
+    ///
+    /// # Returns
+    /// Write transaction to sign and submit
     pub fn build_assign_role_transaction(
         client: &LedgerClient,
         from: &str,
@@ -43,6 +54,16 @@ impl RoleControl {
             .build(&client)
     }
 
+    /// Build transaction to execute RoleControl.revokeRole contract method to revoke a role from an account
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `role` role to assign
+    /// - `account` revokee account
+    ///
+    /// # Returns
+    /// Write transaction to sign and submit
     pub fn build_revoke_role_transaction(
         client: &LedgerClient,
         from: &str,
@@ -66,6 +87,15 @@ impl RoleControl {
             .build(&client)
     }
 
+    /// Build transaction to execute RoleControl.hasRole contract method to check an account has a role
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `role` role to check
+    /// - `account` account to check
+    ///
+    /// # Returns
+    /// Read transaction to submit
     pub fn build_has_role_transaction(
         client: &LedgerClient,
         role: &Role,
@@ -87,6 +117,14 @@ impl RoleControl {
             .build(&client)
     }
 
+    /// Build transaction to execute RoleControl.getRole contract method to get account's role
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `account` account address
+    ///
+    /// # Returns
+    /// Read transaction to submit
     pub fn build_get_role_transaction(
         client: &LedgerClient,
         account: &str,
@@ -99,6 +137,14 @@ impl RoleControl {
             .build(&client)
     }
 
+    /// Parse the result of execution RoleControl.HasRole contract method to check an account has a role
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `bytes` result bytes returned from the ledger
+    ///
+    /// # Returns
+    /// Account has role result
     pub fn parse_has_role_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<bool> {
         TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -106,6 +152,14 @@ impl RoleControl {
             .parse::<HasRole>(&client, bytes)
     }
 
+    /// Parse the result of execution RoleControl.GetRole contract method to get account's role
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `bytes` result bytes returned from the ledger
+    ///
+    /// # Returns
+    /// Account's role
     pub fn parse_get_role_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<Role> {
         TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -113,6 +167,16 @@ impl RoleControl {
             .parse::<Role>(&client, bytes)
     }
 
+    /// Single step function executing RoleControl.assignRole contract method to assign a role to an account
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `role` role to assign
+    /// - `account` assignee account
+    ///
+    /// # Returns
+    /// Receipt of executed transaction
     pub async fn assign_role(
         client: &LedgerClient,
         from: &str,
@@ -123,6 +187,16 @@ impl RoleControl {
         client.sign_and_submit(&transaction).await
     }
 
+    /// Single step function executing RoleControl.revokeRole contract method to revoke a role from an account
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `from` transaction sender account address
+    /// - `role` role to assign
+    /// - `account` revokee account
+    ///
+    /// # Returns
+    /// Receipt of executed transaction
     pub async fn revoke_role(
         client: &LedgerClient,
         from: &str,
@@ -133,12 +207,29 @@ impl RoleControl {
         client.sign_and_submit(&transaction).await
     }
 
+    /// Single step function executing RoleControl.hasRole contract method to check an account has a role
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `role` role to check
+    /// - `account` account to check
+    ///
+    /// # Returns
+    /// Account has role result
     pub async fn has_role(client: &LedgerClient, role: &Role, account: &str) -> VdrResult<bool> {
         let transaction = Self::build_has_role_transaction(client, role, account)?;
         let result = client.submit_transaction(&transaction).await?;
         Self::parse_has_role_result(client, &result)
     }
 
+    /// Single step function executing RoleControl.getRole contract method to get account's role
+    ///
+    /// # Params
+    /// - `client` client connected to the network where contract will be executed
+    /// - `account` account address
+    ///
+    /// # Returns
+    /// Account's role
     pub async fn get_role(client: &LedgerClient, account: &str) -> VdrResult<Role> {
         let transaction = Self::build_get_role_transaction(client, account)?;
         let result = client.submit_transaction(&transaction).await?;
