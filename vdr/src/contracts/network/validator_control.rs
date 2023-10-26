@@ -1,7 +1,3 @@
-use std::str::FromStr;
-
-use web3::types::Address;
-
 use crate::{
     client::{ContractParam, Transaction, TransactionBuilder, TransactionParser, TransactionType},
     error::VdrResult,
