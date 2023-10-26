@@ -3,7 +3,7 @@ use crate::{
     error::VdrError,
 };
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Copy)]
 pub enum Role {
     Empty,
     Trustee,
@@ -12,19 +12,29 @@ pub enum Role {
 }
 
 pub type HasRole = bool;
+pub type RoleIndex = u8;
 
-impl Role {
-    fn from_index(index: u64) -> Self {
-        match index {
-            0 => Role::Empty,
-            1 => Role::Trustee,
-            2 => Role::Endorser,
-            3 => Role::Steward,
-            _ => Role::Empty,
-        }
+impl Into<ContractParam> for Role {
+    fn into(self) -> ContractParam {
+        let role_index: RoleIndex = Role::into(self);
+        ContractParam::Uint(role_index.into())
     }
+}
 
-    pub fn into_index(self) -> u64 {
+impl TryFrom<ContractOutput> for Role {
+    type Error = VdrError;
+
+    fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
+        let role_index = value.get_u8(0).map_err(|_err| VdrError::Unexpected)?;
+
+        let role = Role::try_from(role_index)?;
+
+        Ok(role)
+    }
+}
+
+impl Into<RoleIndex> for Role {
+    fn into(self) -> RoleIndex {
         match self {
             Role::Empty => 0,
             Role::Trustee => 1,
@@ -34,21 +44,17 @@ impl Role {
     }
 }
 
-impl Into<ContractParam> for Role {
-    fn into(self) -> ContractParam {
-        ContractParam::Uint(self.into_index().into())
-    }
-}
-
-impl TryFrom<ContractOutput> for Role {
+impl TryFrom<RoleIndex> for Role {
     type Error = VdrError;
 
-    fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
-        let role_index = value.get_u64(0).map_err(|_err| VdrError::Unexpected)?;
-
-        let role = Role::from_index(role_index);
-
-        Ok(role)
+    fn try_from(index: RoleIndex) -> Result<Self, Self::Error> {
+        match index {
+            0 => Ok(Role::Empty),
+            1 => Ok(Role::Trustee),
+            2 => Ok(Role::Endorser),
+            3 => Ok(Role::Steward),
+            _ => Err(VdrError::Unexpected),
+        }
     }
 }
 

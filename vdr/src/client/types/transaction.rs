@@ -114,10 +114,6 @@ impl TransactionParser {
             ));
         }
 
-        let result = output.get_tuple(0);
-        match result {
-            Ok(_) => T::try_from(result?),
-            Err(_) => T::try_from(output),
-        }
+        T::try_from(output)
     }
 }

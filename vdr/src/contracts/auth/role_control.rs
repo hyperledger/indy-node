@@ -5,7 +5,7 @@ use crate::{
         ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
         TransactionType,
     },
-    contracts::auth::{HasRole, Role},
+    contracts::auth::{HasRole, Role, RoleIndex},
     error::VdrResult,
 };
 
@@ -24,10 +24,12 @@ impl RoleControl {
         role: &Role,
         account: &str,
     ) -> VdrResult<Transaction> {
+        let role_index: RoleIndex = (*role).into();
+
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_ASSIGN_ROLE)
-            .add_param(ContractParam::Uint(U256::from(role.clone().into_index())))
+            .add_param(ContractParam::Uint(U256::from(role_index)))
             .add_param(ContractParam::Address(account.parse().unwrap()))
             .set_type(TransactionType::Write)
             .set_from(from)
@@ -40,10 +42,12 @@ impl RoleControl {
         role: &Role,
         account: &str,
     ) -> VdrResult<Transaction> {
+        let role_index: RoleIndex = (*role).into();
+
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_REVOKE_ROLE)
-            .add_param(ContractParam::Uint(U256::from(role.clone().into_index())))
+            .add_param(ContractParam::Uint(U256::from(role_index)))
             .add_param(ContractParam::Address(account.parse().unwrap()))
             .set_type(TransactionType::Write)
             .set_from(from)
@@ -55,10 +59,12 @@ impl RoleControl {
         role: &Role,
         account: &str,
     ) -> VdrResult<Transaction> {
+        let role_index: RoleIndex = (*role).into();
+
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_HAS_ROLE)
-            .add_param(ContractParam::Uint(U256::from(role.clone().into_index())))
+            .add_param(ContractParam::Uint(U256::from(role_index)))
             .add_param(ContractParam::Address(account.parse().unwrap()))
             .set_type(TransactionType::Read)
             .build(&client)

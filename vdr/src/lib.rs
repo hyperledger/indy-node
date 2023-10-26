@@ -229,8 +229,7 @@ mod tests {
             client: &LedgerClient,
             assignee_account: &str,
             role_to_assign: &Role,
-        ) {
-            // write
+        ) -> String {
             let transaction = RoleControl::build_assign_role_transaction(
                 client,
                 ACCOUNT,
@@ -244,24 +243,14 @@ mod tests {
                 .await
                 .unwrap();
 
-            // get receipt
-            let receipt = client.get_transaction_receipt(&block_hash).await.unwrap();
-            println!("Receipt: {}", receipt);
-
-            // read
-            let transaction =
-                RoleControl::build_get_role_transaction(client, assignee_account).unwrap();
-            let result = client.submit_transaction(&transaction).await.unwrap();
-            let parsed_role = RoleControl::parse_get_role_result(&client, &result).unwrap();
-            assert_eq!(*role_to_assign, parsed_role);
+            client.get_transaction_receipt(&block_hash).await.unwrap()
         }
 
         async fn build_and_submit_revoke_role_transaction(
             client: &LedgerClient,
             revokee_account: &str,
             role_to_revoke: &Role,
-        ) {
-            // write
+        ) -> String {
             let transaction = RoleControl::build_revoke_role_transaction(
                 client,
                 ACCOUNT,
@@ -275,17 +264,28 @@ mod tests {
                 .await
                 .unwrap();
 
-            // get receipt
-            let receipt = client.get_transaction_receipt(&block_hash).await.unwrap();
-            println!("Receipt: {}", receipt);
+            client.get_transaction_receipt(&block_hash).await.unwrap()
+        }
 
-            // read
+        async fn build_and_submit_get_role_transaction(
+            client: &LedgerClient,
+            assignee_account: &str,
+        ) -> Role {
             let transaction =
-                RoleControl::build_has_role_transaction(client, role_to_revoke, revokee_account)
-                    .unwrap();
+                RoleControl::build_get_role_transaction(client, assignee_account).unwrap();
             let result = client.submit_transaction(&transaction).await.unwrap();
-            let has_role = RoleControl::parse_has_role_result(&client, &result).unwrap();
-            assert!(!has_role);
+            RoleControl::parse_get_role_result(&client, &result).unwrap()
+        }
+
+        async fn build_and_submit_has_role_transaction(
+            client: &LedgerClient,
+            role: &Role,
+            assignee_account: &str,
+        ) -> bool {
+            let transaction =
+                RoleControl::build_has_role_transaction(client, role, assignee_account).unwrap();
+            let result = client.submit_transaction(&transaction).await.unwrap();
+            RoleControl::parse_has_role_result(&client, &result).unwrap()
         }
 
         #[async_std::test]
@@ -294,11 +294,30 @@ mod tests {
             let assignee_account = "0xed9d02e382b34818e88b88a309c7fe71e65f419d";
             let role_to_assign = Role::Endorser;
 
-            build_and_submit_assign_role_transaction(&client, assignee_account, &role_to_assign)
-                .await;
+            let receipt = build_and_submit_assign_role_transaction(
+                &client,
+                assignee_account,
+                &role_to_assign,
+            )
+            .await;
+            println!("{:?}", receipt);
 
-            build_and_submit_revoke_role_transaction(&client, assignee_account, &role_to_assign)
-                .await;
+            let assigned_role =
+                build_and_submit_get_role_transaction(&client, assignee_account).await;
+            assert_eq!(role_to_assign, assigned_role);
+
+            let receipt = build_and_submit_revoke_role_transaction(
+                &client,
+                assignee_account,
+                &role_to_assign,
+            )
+            .await;
+            println!("{:?}", receipt);
+
+            let has_role =
+                build_and_submit_has_role_transaction(&client, &role_to_assign, assignee_account)
+                    .await;
+            assert!(!has_role);
 
             Ok(())
         }
@@ -328,7 +347,6 @@ mod tests {
                 RoleControl::revoke_role(&client, ACCOUNT, &role_to_assign, assignee_account)
                     .await
                     .unwrap();
-
             println!("Receipt: {}", receipt);
 
             // read
