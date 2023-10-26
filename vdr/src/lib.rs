@@ -221,4 +221,104 @@ mod tests {
             Ok(())
         }
     }
+
+    #[cfg(feature = "ledger_test")]
+    mod validator {
+        use super::*;
+
+        async fn build_and_submit_add_validator_transaction(
+            client: &LedgerClient,
+            new_validator_address: &str,
+        ) {
+            // write
+            let transaction = ValidatorControl::build_add_validator_transaction(
+                &client,
+                ACCOUNT,
+                new_validator_address,
+            )
+            .unwrap();
+            let signed_transaction = client.sign_transaction(&transaction).await.unwrap();
+            let block_hash = client
+                .submit_transaction(&signed_transaction)
+                .await
+                .unwrap();
+            let receipt = client.get_transaction_receipt(&block_hash).await.unwrap();
+            println!("Receipt: {}", receipt);
+
+            // read
+            let transaction = ValidatorControl::build_get_validators_transaction(&client).unwrap();
+            let result = client.submit_transaction(&transaction).await.unwrap();
+            let validator_list =
+                ValidatorControl::parse_get_validators_result(&client, &result).unwrap();
+            assert_eq!(validator_list.len(), 5);
+            assert!(validator_list.contains(&new_validator_address.to_string()));
+        }
+
+        async fn build_and_submit_remove_validator_transaction(
+            client: &LedgerClient,
+            validator_address: &str,
+        ) {
+            // write
+            let transaction = ValidatorControl::build_remove_validator_transaction(
+                &client,
+                ACCOUNT,
+                validator_address,
+            )
+            .unwrap();
+            let signed_transaction = client.sign_transaction(&transaction).await.unwrap();
+            let block_hash = client
+                .submit_transaction(&signed_transaction)
+                .await
+                .unwrap();
+            let receipt = client.get_transaction_receipt(&block_hash).await.unwrap();
+            println!("Receipt: {}", receipt);
+
+            // read
+            let transaction = ValidatorControl::build_get_validators_transaction(&client).unwrap();
+            let result = client.submit_transaction(&transaction).await.unwrap();
+            let validator_list =
+                ValidatorControl::parse_get_validators_result(&client, &result).unwrap();
+            assert_eq!(validator_list.len(), 4);
+            assert!(!validator_list.contains(&validator_address.to_string()));
+        }
+
+        #[async_std::test]
+        async fn demo_build_and_submit_transaction_test() -> VdrResult<()> {
+            let client = client();
+            let new_validator_address = "0xb8f2bd414ec806a6a7fe536086e450a0fe6a286f";
+
+            build_and_submit_add_validator_transaction(&client, new_validator_address).await;
+            build_and_submit_remove_validator_transaction(&client, new_validator_address).await;
+
+            Ok(())
+        }
+
+        #[async_std::test]
+        async fn demo_single_step_transaction_execution_test() -> VdrResult<()> {
+            let client = client();
+            let new_validator_address = "0xb8f2bd414ec806a6a7fe536086e450a0fe6a286f";
+
+            // write
+            ValidatorControl::add_validator(&client, ACCOUNT, new_validator_address)
+                .await
+                .unwrap();
+
+            // read
+            let validator_list = ValidatorControl::get_validators(&client).await.unwrap();
+            assert_eq!(validator_list.len(), 5);
+            assert!(validator_list.contains(&new_validator_address.to_string()));
+
+            // write
+            ValidatorControl::remove_validator(&client, ACCOUNT, new_validator_address)
+                .await
+                .unwrap();
+
+            // read
+            let validator_list = ValidatorControl::get_validators(&client).await.unwrap();
+            assert_eq!(validator_list.len(), 4);
+            assert!(!validator_list.contains(&new_validator_address.to_string()));
+
+            Ok(())
+        }
+    }
 }

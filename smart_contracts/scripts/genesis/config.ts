@@ -97,6 +97,10 @@ export const config: Config = {
           role: 1,
         },
         {
+          account: '0xf0e2db6c8dc6c681bb5d6ad121a107f300e9b2b5',
+          role: 3,
+        },
+        {
           account: '0xca843569e3427144cead5e4d5999a3d0ccf92b8e',
           role: 1,
         },

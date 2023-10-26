@@ -103,6 +103,19 @@ impl ContractOutput {
             .collect()
     }
 
+    pub fn get_address_string_array(&self, index: usize) -> VdrResult<Vec<String>> {
+        Ok(self
+            .0
+            .get(index)
+            .ok_or(VdrError::Unexpected)?
+            .clone()
+            .into_array()
+            .ok_or(VdrError::Unexpected)?
+            .into_iter()
+            .map(|token| format!("0x{}", token.to_string()))
+            .collect())
+    }
+
     pub fn get_objects_array(&self, index: usize) -> VdrResult<Vec<ContractOutput>> {
         let tokens = self
             .0

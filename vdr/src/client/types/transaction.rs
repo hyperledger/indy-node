@@ -113,7 +113,6 @@ impl TransactionParser {
             ));
         }
 
-        let data = output.get_tuple(0)?;
-        T::try_from(data)
+        T::try_from(output)
     }
 }
