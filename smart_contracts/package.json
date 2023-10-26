@@ -16,7 +16,8 @@
     "demo/flow": "yarn run-on-besu demos/flow.ts",
     "demo/account": "yarn run-on-besu demos/account-control.ts",
     "demo/upgrade": "yarn run-on-besu demos/upgrade-control.ts",
-    "genesis/generate": "ts-node scripts/genesis/generate.ts"
+    "genesis/generate": "ts-node scripts/genesis/generate.ts",
+    "postinstall": "cd ../ && husky install smart_contracts/.husky"
   },
   "license": "Apache-2.0",
   "dependencies": {
@@ -51,6 +52,7 @@
     "hardhat": "^2.17.2",
     "hardhat-dependency-compiler": "^1.1.3",
     "hardhat-storage-layout": "^0.1.7",
+    "husky": "^8.0.3",
     "prettier": "^2.7.1",
     "solhint": "^3.6.2",
     "solhint-plugin-prettier": "^0.0.5",
