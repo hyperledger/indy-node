@@ -123,10 +123,14 @@ impl ContractOutput {
         Ok(self
             .0
             .get(index)
-            .ok_or(VdrError::Unexpected)?
+            .ok_or(VdrError::ContractInvalidResponseData(
+                "Missing uint value".to_string(),
+            ))?
             .clone()
             .into_uint()
-            .ok_or(VdrError::Unexpected)?
+            .ok_or(VdrError::ContractInvalidResponseData(
+                "Missing uint value".to_string(),
+            ))?
             .as_u32() as u8)
     }
 

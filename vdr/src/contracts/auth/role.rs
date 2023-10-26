@@ -25,7 +25,7 @@ impl TryFrom<ContractOutput> for Role {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
-        let role_index = value.get_u8(0).map_err(|_err| VdrError::Unexpected)?;
+        let role_index = value.get_u8(0)?;
         let role = Role::try_from(role_index)?;
 
         Ok(role)
@@ -52,7 +52,9 @@ impl TryFrom<RoleIndex> for Role {
             1 => Ok(Role::Trustee),
             2 => Ok(Role::Endorser),
             3 => Ok(Role::Steward),
-            _ => Err(VdrError::Unexpected),
+            _ => Err(VdrError::ContractInvalidResponseData(
+                "Invalid role provided".to_string(),
+            )),
         }
     }
 }
@@ -61,7 +63,7 @@ impl TryFrom<ContractOutput> for HasRole {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
-        let has_role = value.get_bool(0).map_err(|_err| VdrError::Unexpected)?;
+        let has_role = value.get_bool(0)?;
 
         Ok(has_role)
     }

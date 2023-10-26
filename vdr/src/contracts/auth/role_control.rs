@@ -26,7 +26,12 @@ impl RoleControl {
         role: &Role,
         account: &str,
     ) -> VdrResult<Transaction> {
-        let acc_address = Address::from_str(account).map_err(|_| VdrError::Unexpected)?;
+        let acc_address = Address::from_str(account).map_err(|err| {
+            VdrError::CommonInvalidData(format!(
+                "Unable to parse account address. Err: {:?}",
+                err.to_string()
+            ))
+        })?;
 
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -44,7 +49,12 @@ impl RoleControl {
         role: &Role,
         account: &str,
     ) -> VdrResult<Transaction> {
-        let acc_address = Address::from_str(account).map_err(|_| VdrError::Unexpected)?;
+        let acc_address = Address::from_str(account).map_err(|err| {
+            VdrError::CommonInvalidData(format!(
+                "Unable to parse account address. Err: {:?}",
+                err.to_string()
+            ))
+        })?;
 
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -61,7 +71,12 @@ impl RoleControl {
         role: &Role,
         account: &str,
     ) -> VdrResult<Transaction> {
-        let acc_address = Address::from_str(account).map_err(|_| VdrError::Unexpected)?;
+        let acc_address = Address::from_str(account).map_err(|err| {
+            VdrError::CommonInvalidData(format!(
+                "Unable to parse account address. Err: {:?}",
+                err.to_string()
+            ))
+        })?;
 
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -136,7 +151,7 @@ pub mod test {
     use super::*;
     use crate::{
         client::test::{client, CHAIN_ID, ROLE_CONTROL_ADDRESS},
-        signer::test::ACCOUNT,
+        signer::signer::test::ACCOUNT,
     };
 
     pub const NEW_ACCOUNT: &'static str = "0x0886328869e4e1f401e1052a5f4aae8b45f42610";
