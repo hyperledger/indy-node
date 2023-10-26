@@ -74,8 +74,9 @@ impl TryFrom<ContractOutput> for CredentialDefinitionWithMeta {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
-        let credential_definition = value.get_tuple(0)?;
-        let metadata = value.get_tuple(1)?;
+        let output_tuple = value.get_tuple(0)?;
+        let credential_definition = output_tuple.get_tuple(0)?;
+        let metadata = output_tuple.get_tuple(1)?;
         Ok(CredentialDefinitionWithMeta {
             credential_definition: CredentialDefinition::try_from(credential_definition)?,
             metadata: CredentialDefinitionMetadata::try_from(metadata)?,

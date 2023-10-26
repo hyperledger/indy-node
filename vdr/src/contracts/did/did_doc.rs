@@ -492,8 +492,9 @@ impl TryFrom<ContractOutput> for DidDocumentWithMeta {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
-        let document = value.get_tuple(0)?;
-        let metadata = value.get_tuple(1)?;
+        let output_tuple = value.get_tuple(0)?;
+        let document = output_tuple.get_tuple(0)?;
+        let metadata = output_tuple.get_tuple(1)?;
         Ok(DidDocumentWithMeta {
             document: DidDocument::try_from(document)?,
             metadata: DidMetadata::try_from(metadata)?,
