@@ -30,33 +30,7 @@ contract RoleControl is RoleControlInterface, ControlledUpgradeable {
     /**
      * @dev Count of accounts with each roles.
      */
-    mapping(ROLES role => uint) private _roleCounts;
-
-    function initialize(
-        address upgradeControlAddress
-    ) public reinitializer(1) {
-        _initialTrustee();
-        _initRoles();
-        _initializeUpgradeControl(upgradeControlAddress);
-    }
-
-    /**
-     * @dev Function to set initial owners for roles.
-     */
-    function _initRoles() private {
-        _roleOwners[ROLES.TRUSTEE] = ROLES.TRUSTEE;
-        _roleOwners[ROLES.ENDORSER] = ROLES.TRUSTEE;
-        _roleOwners[ROLES.STEWARD] = ROLES.TRUSTEE;
-        return;
-    }
-
-    /**
-     * @dev Function to set the party deploying the contract as a trustee.
-     */
-    function _initialTrustee() private {
-        assignRole(ROLES.TRUSTEE, msg.sender);
-        return;
-    }
+    mapping(ROLES role => uint32 count) private _roleCounts;
 
     /**
      * @dev Modifier that checks that an the sender account has a specific role to perform an action.
@@ -67,16 +41,12 @@ contract RoleControl is RoleControlInterface, ControlledUpgradeable {
         _;
     }
 
-    /// @inheritdoc RoleControlInterface
-    function hasRole(ROLES role, address account) public view virtual returns (bool) {
-        return _roles[account] == role;
-    }
-
-    /**
-     * @dev Function to check if an account has requested role assigned.
-     */
-    function getRole(address account) public view virtual returns (ROLES role) {
-        return _roles[account];
+    function initialize(
+        address upgradeControlAddress
+    ) public reinitializer(1) {
+        _initialTrustee();
+        _initRoles();
+        _initializeUpgradeControl(upgradeControlAddress);
     }
 
     /// @inheritdoc RoleControlInterface
@@ -104,7 +74,39 @@ contract RoleControl is RoleControlInterface, ControlledUpgradeable {
     }
 
     /// @inheritdoc RoleControlInterface
-    function getRoleCount(ROLES role) public view virtual returns (uint) {
+    function hasRole(ROLES role, address account) public view virtual returns (bool) {
+        return _roles[account] == role;
+    }
+    
+    /**
+     * @notice Function to check if an account has requested role assigned.
+     * @param account The address of the account whose role is being queried.
+     * @return role The role assigned to the specified account.
+     */
+    function getRole(address account) public view virtual returns (ROLES role) {
+        return _roles[account];
+    }
+
+    /// @inheritdoc RoleControlInterface
+    function getRoleCount(ROLES role) public view virtual returns (uint32) {
         return _roleCounts[role];
+    }
+
+    /**
+     * @dev Function to set initial owners for roles.
+     */
+    function _initRoles() private {
+        _roleOwners[ROLES.TRUSTEE] = ROLES.TRUSTEE;
+        _roleOwners[ROLES.ENDORSER] = ROLES.TRUSTEE;
+        _roleOwners[ROLES.STEWARD] = ROLES.TRUSTEE;
+        return;
+    }
+
+    /**
+     * @dev Function to set the party deploying the contract as a trustee.
+     */
+    function _initialTrustee() private {
+        assignRole(ROLES.TRUSTEE, msg.sender);
+        return;
     }
 }

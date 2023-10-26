@@ -10,7 +10,7 @@ interface UpgradeControlInterface {
      */
     struct UpgradeProposal {
         mapping (address => bool) approvals;
-        uint approvalsCount;
+        uint32 approvalsCount;
         address author;
         uint256 created;
     }

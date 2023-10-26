@@ -23,6 +23,7 @@ library Errors {
      * @param reason The error reason returned by a failed contract call, encoded in bytes.
      */
     function rethrow(bytes memory reason) internal pure {
+        // solhint-disable-next-line no-inline-assembly
         assembly {
             let start := add(reason, 0x20)
             let end := add(reason, mload(reason))

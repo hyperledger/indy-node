@@ -12,13 +12,13 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     /**
      * @dev Mapping DID to its corresponding DID Document.
      */
-    mapping(string => DidDocumentStorage) private dids;
+    mapping(string did => DidDocumentStorage didDocumentStorage) private _dids;
 
     /**
      * Checks that DID already exists
      */
     modifier _didExist(string memory did) {
-        if (dids[did].metadata.created == 0) revert DidNotFound(did);
+        if (_dids[did].metadata.created == 0) revert DidNotFound(did);
         _;
     }
 
@@ -26,7 +26,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
      * Checks that the DID has not yet been added
      */
     modifier _didNotExist(string memory did) {
-        if (dids[did].metadata.created != 0) revert DidAlreadyExist(did);
+        if (_dids[did].metadata.created != 0) revert DidAlreadyExist(did);
         _;
     }
 
@@ -34,7 +34,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
      * Сhecks that the DID has not been deactivated
      */
     modifier _didIsActive(string memory did) {
-        if (dids[did].metadata.deactivated) revert DidHasBeenDeactivated(did);
+        if (_dids[did].metadata.deactivated) revert DidHasBeenDeactivated(did);
         _;
     }
 
@@ -49,9 +49,9 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
         DidValidator.validateDid(document.id);
         DidValidator.validateVerificationKey(document);
 
-        dids[document.id].document = document;
-        dids[document.id].metadata.created = block.timestamp;
-        dids[document.id].metadata.updated = block.timestamp;
+        _dids[document.id].document = document;
+        _dids[document.id].metadata.created = block.timestamp;
+        _dids[document.id].metadata.updated = block.timestamp;
 
         emit DIDCreated(document.id);
     }
@@ -62,8 +62,8 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     ) public _didExist(document.id) _didIsActive(document.id) {
         DidValidator.validateVerificationKey(document);
 
-        dids[document.id].document = document;
-        dids[document.id].metadata.updated = block.timestamp;
+        _dids[document.id].document = document;
+        _dids[document.id].metadata.updated = block.timestamp;
 
         emit DIDUpdated(document.id);
     }
@@ -72,7 +72,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     function deactivateDid(
         string calldata id
     ) public _didExist(id) _didIsActive(id) {
-        dids[id].metadata.deactivated = true;
+        _dids[id].metadata.deactivated = true;
 
         emit DIDDeactivated(id);
     }
@@ -81,6 +81,6 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     function resolveDid(
         string calldata id
     ) public _didExist(id) view virtual returns (DidDocumentStorage memory didDocumentStorage) {
-        return dids[id];
+        return _dids[id];
     }
 }

@@ -1,23 +1,22 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 import { FieldRequired, InvalidCredentialDefinitionId, UnsupportedCredentialDefintionType } from "./ClErrors.sol";
 import { CredentialDefinition } from "./CredentialDefinitionTypes.sol";
-import { CredentialDefinitionRegistryInterface } from "./CredentialDefinitionRegistryInterface.sol";
 
 using { toSlice } for string;
 
 library CredentialDefinitionValidator {
-    string private constant DELIMITER = "/";
-    string private constant CRED_DEF_ID_MIDDLE_PART = "/anoncreds/v0/CLAIM_DEF/";
-    string private constant ANONCREDS_TYPE = "CL";
+    string private constant _DELIMITER = "/";
+    string private constant _CRED_DEF_ID_MIDDLE_PART = "/anoncreds/v0/CLAIM_DEF/";
+    string private constant _ANONCREDS_TYPE = "CL";
     
     /**
      * @dev Validates the Credential Definition syntax
      */
     function requireValidId(CredentialDefinition memory self) internal pure {
-        string memory credDefId = string.concat(self.issuerId, CRED_DEF_ID_MIDDLE_PART, self.schemaId, DELIMITER, self.tag);
+        string memory credDefId = string.concat(self.issuerId, _CRED_DEF_ID_MIDDLE_PART, self.schemaId, _DELIMITER, self.tag);
 
         if (!credDefId.toSlice().eq(self.id.toSlice())) revert InvalidCredentialDefinitionId(self.id);
     }
@@ -26,7 +25,7 @@ library CredentialDefinitionValidator {
      * @dev Validates the Credential Definition type
      */
     function requireValidType(CredentialDefinition memory self) internal pure {
-        if (!self.credDefType.toSlice().eq(ANONCREDS_TYPE.toSlice())) {
+        if (!self.credDefType.toSlice().eq(_ANONCREDS_TYPE.toSlice())) {
             revert UnsupportedCredentialDefintionType(self.credDefType);
         }
     }

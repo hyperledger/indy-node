@@ -16,7 +16,7 @@ import {
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { Schema, SchemaWithMetadata} from "./SchemaTypes.sol";
 import { SchemaValidator } from "./SchemaValidator.sol";
-import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
 using SchemaValidator for Schema;
 using { toSlice } for string;

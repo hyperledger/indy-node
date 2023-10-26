@@ -3,8 +3,8 @@ pragma solidity ^0.8.20;
 
 import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
 
-import { AccountControlInterface } from './AccountControlInterface.sol';
-import { RoleControlInterface } from './RoleControlInterface.sol';
+import { AccountControlInterface } from "./AccountControlInterface.sol";
+import { RoleControlInterface } from "./RoleControlInterface.sol";
 
 contract AccountControl is AccountControlInterface, ControlledUpgradeable {
 
@@ -22,6 +22,7 @@ contract AccountControl is AccountControlInterface, ControlledUpgradeable {
     }
 
     /// @inheritdoc AccountControlInterface
+    /* solhint-disable no-unused-vars */
     function transactionAllowed(
         address sender,
         address target,
@@ -42,4 +43,5 @@ contract AccountControl is AccountControlInterface, ControlledUpgradeable {
 
         return true;
     }
+    /* solhint-enable no-unused-vars */
 }

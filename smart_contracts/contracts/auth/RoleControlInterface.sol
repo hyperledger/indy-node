@@ -26,11 +26,6 @@ interface RoleControlInterface {
     event RoleRevoked(ROLES role, address indexed account, address indexed sender);
 
     /**
-     * @dev Function to check if an account has requested role assigned
-     */
-    function hasRole(ROLES role, address account) external view returns (bool);
-
-    /**
      * @dev Function to assign role to an account.
      * 
      * Restrcitions:
@@ -62,8 +57,18 @@ interface RoleControlInterface {
      */
     function revokeRole(ROLES role, address account) external returns (bool);
 
-     /**
-     * @dev Function to return the count of an account with the provided role.
+    /**
+     * @dev Function to check if an account has requested role assigned
+     * @param role The role to check against.
+     * @param account The address of the account whose role assignment is being checked.
+     * @return Returns true if the account has the requested role, and false otherwise.
      */
-    function getRoleCount(ROLES role) external view returns (uint);
+    function hasRole(ROLES role, address account) external view returns (bool);
+
+    /**
+     * @dev Function to return the count of accounts with the provided role.
+     * @param role The role for which the account count is to be retrieved.
+     * @return The count of accounts that have been assigned the specified role.
+     */
+    function getRoleCount(ROLES role) external view returns (uint32);
 }

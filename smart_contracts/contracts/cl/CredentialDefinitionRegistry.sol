@@ -17,7 +17,7 @@ import {
     IssuerNotFound 
 } from "./ClErrors.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
-import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
 using CredentialDefinitionValidator for CredentialDefinition;
 using { toSlice } for string;

@@ -3,5 +3,14 @@
   "trailingComma": "all",
   "semi": false,
   "tabWidth": 2,
-  "printWidth": 120
+  "printWidth": 120,
+  "overrides": [
+    {
+      "files": "*.sol",
+      "options": {
+        "singleQuote": false,
+        "tabWidth": 4
+      }
+    }
+  ]
 }

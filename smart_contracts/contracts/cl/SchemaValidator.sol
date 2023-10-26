@@ -1,22 +1,21 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 import { FieldRequired, InvalidSchemaId } from "./ClErrors.sol";
-import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
-import { Schema, SchemaWithMetadata } from "./SchemaTypes.sol";
+import { Schema } from "./SchemaTypes.sol";
 
 using { toSlice } for string;
 
 library SchemaValidator {
-    string private constant DELIMITER = "/";
-    string private constant SCHEMA_ID_MIDDLE_PART = "/anoncreds/v0/SCHEMA/";
+    string private constant _DELIMITER = "/";
+    string private constant _SCHEMA_ID_MIDDLE_PART = "/anoncreds/v0/SCHEMA/";
 
     /**
      * @dev Validates the Schema syntax
      */
      function requireValidId(Schema memory self) internal pure {
-        string memory schemaId = string.concat(self.issuerId, SCHEMA_ID_MIDDLE_PART, self.name, DELIMITER, self.version);
+        string memory schemaId = string.concat(self.issuerId, _SCHEMA_ID_MIDDLE_PART, self.name, _DELIMITER, self.version);
 
         if (!schemaId.toSlice().eq(self.id.toSlice())) revert InvalidSchemaId(self.id);
     }
