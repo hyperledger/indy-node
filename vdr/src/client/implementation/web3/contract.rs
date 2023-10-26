@@ -22,13 +22,17 @@ impl Web3Contract {
         contract_spec: &ContractSpec,
     ) -> VdrResult<Web3Contract> {
         let abi = serde_json::to_vec(&contract_spec.abi).map_err(|err| {
-            VdrError::Common(format!(
+            VdrError::CommonInvalidData(format!(
                 "Unable to parse contract ABI from specification. Err: {:?}",
                 err.to_string()
             ))
         })?;
-        let parsed_address =
-            Address::from_str(address).map_err(|err| VdrError::Common(err.to_string()))?;
+        let parsed_address = Address::from_str(address).map_err(|err| {
+            VdrError::CommonInvalidData(format!(
+                "Unable to parse contract address. Err: {:?}",
+                err.to_string()
+            ))
+        })?;
         let contract =
             Web3ContractImpl::from_json(web3_client.eth(), parsed_address, abi.as_slice())?;
         Ok(Web3Contract {

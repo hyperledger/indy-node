@@ -1,3 +1,4 @@
+/// Ledger status:  whether connected node and network are alive
 #[derive(Debug, PartialEq)]
 pub struct PingStatus {
     pub status: Status,

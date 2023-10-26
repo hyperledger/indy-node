@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import "./ValidatorSmartContractInterface.sol";
-import "../auth/RoleControl.sol";
+import { Unauthorized} from "../auth/AuthErrors.sol";
+import { RoleControlInterface } from "../auth/RoleControl.sol";
+import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
 
-contract ValidatorControl is ValidatorSmartContractInterface {
+import { ValidatorSmartContractInterface } from "./ValidatorSmartContractInterface.sol";
+
+contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradeable {
+
     /**
-     * @dev Type describing initial validator details
+     * @dev Type describing initial validator details.
      */
     struct InitialValidatorInfo {
         address validator;
@@ -14,7 +18,7 @@ contract ValidatorControl is ValidatorSmartContractInterface {
     }
 
     /**
-     * @dev Type describing validator details
+     * @dev Type describing validator details.
      */
     struct ValidatorInfo {
         address account;
@@ -22,43 +26,52 @@ contract ValidatorControl is ValidatorSmartContractInterface {
     }
 
     /**
-     * @dev Max allowed number of validators
+     * @dev Max allowed number of validators.
      */
     uint constant MAX_VALIDATORS = 256;
 
     /**
-     * @dev List of active validators
+     * @dev Reference to the contract managing auth permissions.
+     */
+    RoleControlInterface private _roleControl;
+
+    /**
+     * @dev List of active validators.
      */
     address[] private validators;
 
     /**
-     * @dev Mapping of validator address to validator info (owner, index, active)
+     * @dev Mapping of validator address to validator info (owner, index, active).
      */
     mapping(address validatorAddress => ValidatorInfo validatorInfo) private validatorInfos;
 
     /**
-     * @dev Reference to the contract managing auth permissions
-         */
-    RoleControl private roleControl;
-
-    /**
-     * @dev Modifier that checks that an the sender account has Steward role assigned.
+     * @dev Modifier that checks that the sender account has Steward role assigned.
      */
-    modifier senderIsSteward() {
-        require(
-            roleControl.hasRole(RoleControlInterface.ROLES.STEWARD, msg.sender),
-            "Sender does not have STEWARD role assigned"
-        );
+    modifier _senderIsSteward() {
+        if (!_roleControl.hasRole(RoleControlInterface.ROLES.STEWARD, msg.sender)) revert Unauthorized(msg.sender);
         _;
     }
 
-    constructor(address roleControlContractAddress, InitialValidatorInfo[] memory initialValidators) {
-        require(initialValidators.length > 0, "List of initial validators cannot be empty");
-        require(initialValidators.length < MAX_VALIDATORS, "Number of validators cannot be larger than 256");
+    /**
+     * @dev Modifier that checks that the validator address is non-zero.
+     */
+    modifier _nonZeroValidatorAddress(address validator) {
+        if (validator == address(0)) revert InvalidValidatorAddress();
+         _;
+    }
+
+    function initialize(
+        address roleControlContractAddress,
+        address upgradeControlAddress,
+        InitialValidatorInfo[] memory initialValidators
+    ) public reinitializer(1) {
+        if (initialValidators.length == 0) revert InitialValidatorsRequired();
+        if (initialValidators.length >= MAX_VALIDATORS) revert ExceedsValidatorLimit(MAX_VALIDATORS);
 
         for (uint i = 0; i < initialValidators.length; i++) {
-            require(initialValidators[i].account != address(0), "Initial validator account cannot be zero");
-            require(initialValidators[i].validator != address(0), "Initial validator address cannot be zero");
+            if (initialValidators[i].account == address(0)) revert InvalidValidatorAccountAddress();
+            if (initialValidators[i].validator == address(0)) revert InvalidValidatorAddress();
 
             InitialValidatorInfo memory validator = initialValidators[i];
 
@@ -66,28 +79,38 @@ contract ValidatorControl is ValidatorSmartContractInterface {
             validatorInfos[validator.validator] = ValidatorInfo(validator.account, uint8(i));
         }
 
-        roleControl = RoleControl(roleControlContractAddress);
+        _roleControl = RoleControlInterface(roleControlContractAddress);
+        _initializeUpgradeControl(upgradeControlAddress);
     }
 
     /**
-     * @dev Get the list of active validators
+     * @dev Get the list of active validators.
      */
     function getValidators() override external view returns (address[] memory) {
         return validators;
     }
 
-    /**
-     * @dev Add a new validator to the list
+   /**
+     * @dev Adds a new validator to the list.
+     * 
+     * Restrictions:
+     * - Only accounts with the steward role are permitted to call this method; otherwise, will revert with an `Unauthorized` error.
+     * - The validator address must be non-zero; otherwise, will revert with an `InvalidValidatorAddress` error.
+     * - The total number of validators must not exceed 256; otherwise, will revert with an `ExceedsValidatorLimit` error.
+     * - The validator must not already exist in the list; otherwise, will revert with an `ValidatorAlreadyExists` error.
+     * - The sender of the transaction must not have an active validator; otherwise, will revert with a `SenderHasActiveValidator` error.
+     * 
+     * Events:
+     * - On successful validator creation, will emit a `ValidatorAdded` event.
      */
-    function addValidator(address newValidator) external senderIsSteward {
-        require(newValidator != address(0), "Cannot add validator with address 0");
-        require(validators.length < MAX_VALIDATORS, "Number of validators cannot be larger than 256");
+    function addValidator(address newValidator) external _senderIsSteward _nonZeroValidatorAddress(newValidator) {
+        if (validators.length >= MAX_VALIDATORS) revert ExceedsValidatorLimit(MAX_VALIDATORS);
 
         uint256 validatorsCount = validators.length;
         for (uint i=0; i < validatorsCount; i++) {
             ValidatorInfo memory validatorInfo = validatorInfos[validators[i]];
-            require(newValidator != validators[i], "Validator already exists");
-            require(msg.sender != validatorInfo.account, "Sender already has active validator");
+            if (newValidator == validators[i]) revert ValidatorAlreadyExists(validators[i]);
+            if (msg.sender == validatorInfo.account) revert SenderHasActiveValidator(msg.sender);
         }
 
         validatorInfos[newValidator] = ValidatorInfo(msg.sender, uint8(validatorsCount));
@@ -98,13 +121,22 @@ contract ValidatorControl is ValidatorSmartContractInterface {
     }
 
     /**
-     * @dev Remove an existing validator from the list
+     * @dev Remove an existing validator from the list.
+     * 
+     * Restrcitions:
+     * - Only accounts with the steward role are permitted to call this method; otherwise, will revert with an `Unauthorized` error.
+     * - The validator address must be non-zero; otherwise, will revert with an `InvalidValidatorAddress` error.
+     * - The validator must not be last one; otherwise, will revert with an `CannotDeactivateLastValidator` error.
+     * - The validator must exist; otherwise, will revert with an `ValidatorNotFound` error.
+     * 
+     * Events:
+     * - On successful validator removal, will emit a `ValidatorRemoved` event.
      */
-    function removeValidator(address validator) external senderIsSteward {
-        require(validators.length > 1, "Cannot deactivate last validator");
+    function removeValidator(address validator) external _senderIsSteward _nonZeroValidatorAddress(validator) {
+        if (validators.length == 1) revert CannotDeactivateLastValidator();
 
         ValidatorInfo memory removedValidatorInfo = validatorInfos[validator];
-        require(removedValidatorInfo.account != address(0), "Validator does not exist");
+        if (removedValidatorInfo.account == address(0)) revert ValidatorNotFound(validator);
 
         uint8 removedValidatorIndex = removedValidatorInfo.validatorIndex;
 

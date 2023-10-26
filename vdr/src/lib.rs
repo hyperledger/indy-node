@@ -4,11 +4,29 @@ mod error;
 mod signer;
 mod utils;
 
-pub use client::{ContractConfig, LedgerClient};
+#[cfg(feature = "migration")]
+pub mod migration;
+
+pub use client::{Client, ContractConfig, LedgerClient, PingStatus, Status};
 pub use contracts::{
-    CredentialDefinition, CredentialDefinitionRegistry, DidDocument, DidRegistry, Role,
-    RoleControl, Schema, SchemaRegistry,
+    auth::{Role, RoleControl},
+    cl::{
+        credential_definition_registry::CredentialDefinitionRegistry,
+        schema_registry::SchemaRegistry,
+        types::{
+            credential_definition::CredentialDefinition,
+            credential_definition_id::CredentialDefinitionId, schema::Schema, schema_id::SchemaId,
+        },
+    },
+    did::{
+        did_registry::DidRegistry,
+        types::{
+            did_doc::{DidDocument, VerificationKey, VerificationKeyType, DID},
+            did_doc_builder::DidDocumentBuilder,
+        },
+    },
 };
+pub use signer::{BasicSigner, Signer};
 
 #[cfg(feature = "ledger_test")]
 #[cfg(test)]
@@ -18,13 +36,13 @@ mod tests {
         client::test::client,
         contracts::{
             cl::{
-                credential_definition::test::credential_definition, schema::test::schema,
                 schema_registry::test::create_schema,
+                types::{credential_definition::test::credential_definition, schema::test::schema},
             },
-            did::{did_doc::test::did_doc, did_registry::test::create_did},
+            did::{did_registry::test::create_did, types::did_doc::test::did_doc},
         },
         error::VdrResult,
-        signer::test::ACCOUNT,
+        signer::signer::test::ACCOUNT,
     };
 
     mod did {
@@ -45,7 +63,7 @@ mod tests {
                 .unwrap();
 
             // get receipt
-            let receipt = client.get_transaction_receipt(&block_hash).await.unwrap();
+            let receipt = client.get_receipt(&block_hash).await.unwrap();
             println!("Receipt: {}", receipt);
 
             // read
@@ -98,7 +116,7 @@ mod tests {
                 .submit_transaction(&signed_transaction)
                 .await
                 .unwrap();
-            let receipt = client.get_transaction_receipt(&block_hash).await.unwrap();
+            let receipt = client.get_receipt(&block_hash).await.unwrap();
             println!("Receipt: {}", receipt);
 
             // read
@@ -161,7 +179,7 @@ mod tests {
                 .submit_transaction(&signed_transaction)
                 .await
                 .unwrap();
-            let receipt = client.get_transaction_receipt(&block_hash).await.unwrap();
+            let receipt = client.get_receipt(&block_hash).await.unwrap();
             println!("Receipt: {}", receipt);
 
             // read
@@ -243,7 +261,7 @@ mod tests {
                 .await
                 .unwrap();
 
-            client.get_transaction_receipt(&block_hash).await.unwrap()
+            client.get_receipt(&block_hash).await.unwrap()
         }
 
         async fn build_and_submit_revoke_role_transaction(
@@ -264,7 +282,7 @@ mod tests {
                 .await
                 .unwrap();
 
-            client.get_transaction_receipt(&block_hash).await.unwrap()
+            client.get_receipt(&block_hash).await.unwrap()
         }
 
         async fn build_and_submit_get_role_transaction(
