@@ -1,11 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
+import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
+
+import { Unauthorized } from "./AuthErrors.sol";
 import { RoleControlInterface } from "./RoleControlInterface.sol";
 
-contract RoleControl is RoleControlInterface {
+contract RoleControl is RoleControlInterface, ControlledUpgradeable {
+
     /**
-     * @dev Type describing single initial assignment
+     * @dev Type describing single initial assignment.
      */
     struct InitialAssignments {
         ROLES role;
@@ -23,13 +27,21 @@ contract RoleControl is RoleControlInterface {
      */
     mapping(ROLES role => ROLES ownerRole) private _roleOwners;
 
-    constructor() {
+    /**
+     * @dev Count of accounts with each roles.
+     */
+    mapping(ROLES role => uint) private _roleCounts;
+
+    function initialize(
+        address upgradeControlAddress
+    ) public reinitializer(1) {
         _initialTrustee();
         _initRoles();
+        _initializeUpgradeControl(upgradeControlAddress);
     }
 
     /**
-     * @dev Function to set initial owners for roles
+     * @dev Function to set initial owners for roles.
      */
     function _initRoles() private {
         _roleOwners[ROLES.TRUSTEE] = ROLES.TRUSTEE;
@@ -39,7 +51,7 @@ contract RoleControl is RoleControlInterface {
     }
 
     /**
-     * @dev Function to set party deployed the contrat as Trustee
+     * @dev Function to set the party deploying the contract as a trustee.
      */
     function _initialTrustee() private {
         assignRole(ROLES.TRUSTEE, msg.sender);
@@ -51,46 +63,48 @@ contract RoleControl is RoleControlInterface {
      */
     modifier _onlyRoleOwner(ROLES role) {
         ROLES ownerRole = _roleOwners[role];
-        require(
-            hasRole(ownerRole, msg.sender),
-            "Sender does not have required role to perform action"
-        );
+        if (!hasRole(ownerRole, msg.sender)) revert Unauthorized(msg.sender);
         _;
     }
 
-    /**
-     * @dev Function to check if an account has requested role assigned
-     */
+    /// @inheritdoc RoleControlInterface
     function hasRole(ROLES role, address account) public view virtual returns (bool) {
         return _roles[account] == role;
     }
 
     /**
-     * @dev Function to check if an account has requested role assigned
+     * @dev Function to check if an account has requested role assigned.
      */
     function getRole(address account) public view virtual returns (ROLES role) {
         return _roles[account];
     }
 
-    /**
-     * @dev Function to assign role to an account
-     */
+    /// @inheritdoc RoleControlInterface
     function assignRole(ROLES role, address account) public virtual _onlyRoleOwner(role) returns (ROLES assignedRole) {
         if (!hasRole(role, account)) {
             _roles[account] = role;
+            _roleCounts[role]++;
+
             emit RoleAssigned(role, account, msg.sender);
         }
         return role;
     }
 
-    /**
-     * @dev Function to revoke role from an account
-     */
+    /// @inheritdoc RoleControlInterface
     function revokeRole(ROLES role, address account) public virtual _onlyRoleOwner(role) returns (bool) {
         if (hasRole(role, account)) {
             delete _roles[account];
+            _roleCounts[role]--;
+
             emit RoleRevoked(role, account, msg.sender);
+
+           return true;
         }
         return false;
+    }
+
+    /// @inheritdoc RoleControlInterface
+    function getRoleCount(ROLES role) public view virtual returns (uint) {
+        return _roleCounts[role];
     }
 }

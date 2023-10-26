@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
-import { FieldRequired, InvalidSchemaId } from "./ErrorTypes.sol";
+import { FieldRequired, InvalidSchemaId } from "./ClErrors.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { Schema, SchemaWithMetadata } from "./SchemaTypes.sol";
 

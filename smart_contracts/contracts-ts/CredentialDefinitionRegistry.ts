@@ -1,7 +1,7 @@
 import {
   CredentialDefinitionStruct,
   CredentialDefinitionWithMetadataStruct,
-} from '../typechain-types/cl/CredentialDefinitionRegistryInterface'
+} from '../typechain-types/contracts/cl/CredentialDefinitionRegistryInterface'
 import { Contract } from '../utils/contract'
 
 export type CredentialDefinition = CredentialDefinitionStruct
