@@ -1,12 +1,14 @@
-use web3::types::U256;
+use std::str::FromStr;
+
+use web3::ethabi::ethereum_types::Address;
 
 use crate::{
     client::{
         ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
         TransactionType,
     },
-    contracts::auth::{HasRole, Role, RoleIndex},
-    error::VdrResult,
+    contracts::auth::{HasRole, Role},
+    error::{VdrError, VdrResult},
 };
 
 pub struct RoleControl;
@@ -24,13 +26,13 @@ impl RoleControl {
         role: &Role,
         account: &str,
     ) -> VdrResult<Transaction> {
-        let role_index: RoleIndex = (*role).into();
+        let acc_address = Address::from_str(account).map_err(|_| VdrError::Unexpected)?;
 
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_ASSIGN_ROLE)
-            .add_param(ContractParam::Uint(U256::from(role_index)))
-            .add_param(ContractParam::Address(account.parse().unwrap()))
+            .add_param(role.clone().into())
+            .add_param(ContractParam::Address(acc_address))
             .set_type(TransactionType::Write)
             .set_from(from)
             .build(&client)
@@ -42,13 +44,13 @@ impl RoleControl {
         role: &Role,
         account: &str,
     ) -> VdrResult<Transaction> {
-        let role_index: RoleIndex = (*role).into();
+        let acc_address = Address::from_str(account).map_err(|_| VdrError::Unexpected)?;
 
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_REVOKE_ROLE)
-            .add_param(ContractParam::Uint(U256::from(role_index)))
-            .add_param(ContractParam::Address(account.parse().unwrap()))
+            .add_param(role.clone().into())
+            .add_param(ContractParam::Address(acc_address))
             .set_type(TransactionType::Write)
             .set_from(from)
             .build(&client)
@@ -59,13 +61,13 @@ impl RoleControl {
         role: &Role,
         account: &str,
     ) -> VdrResult<Transaction> {
-        let role_index: RoleIndex = (*role).into();
+        let acc_address = Address::from_str(account).map_err(|_| VdrError::Unexpected)?;
 
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_HAS_ROLE)
-            .add_param(ContractParam::Uint(U256::from(role_index)))
-            .add_param(ContractParam::Address(account.parse().unwrap()))
+            .add_param(role.clone().into())
+            .add_param(ContractParam::Address(acc_address))
             .set_type(TransactionType::Read)
             .build(&client)
     }

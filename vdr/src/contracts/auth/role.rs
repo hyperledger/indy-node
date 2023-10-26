@@ -3,7 +3,7 @@ use crate::{
     error::VdrError,
 };
 
-#[derive(Clone, PartialEq, Debug, Copy)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum Role {
     Empty,
     Trustee,
@@ -16,7 +16,7 @@ pub type RoleIndex = u8;
 
 impl Into<ContractParam> for Role {
     fn into(self) -> ContractParam {
-        let role_index: RoleIndex = Role::into(self);
+        let role_index: RoleIndex = self.into();
         ContractParam::Uint(role_index.into())
     }
 }
@@ -26,7 +26,6 @@ impl TryFrom<ContractOutput> for Role {
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
         let role_index = value.get_u8(0).map_err(|_err| VdrError::Unexpected)?;
-
         let role = Role::try_from(role_index)?;
 
         Ok(role)
