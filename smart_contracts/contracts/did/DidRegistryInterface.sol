@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import {DidDocument, DidDocumentStorage} from "./DidTypes.sol";
+import { DidDocument, DidDocumentStorage } from "./DidTypes.sol";
 
 /**
  * @dev The interface that defines functions for managing DID documents.

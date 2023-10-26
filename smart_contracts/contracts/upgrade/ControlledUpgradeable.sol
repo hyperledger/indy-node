@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import {UUPSUpgradeable} from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
-import {UpgradeControlInterface} from "contracts/upgrade/UpgradeControlInterface.sol";
+import { UpgradeControlInterface } from "contracts/upgrade/UpgradeControlInterface.sol";
 
 /**
  * @title ControlledUpgradeable

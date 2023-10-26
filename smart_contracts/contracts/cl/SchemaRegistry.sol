@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import {DidNotFound} from "../did/DidErrors.sol";
-import {DidRegistryInterface} from "../did/DidRegistry.sol";
-import {DidDocumentStorage} from "../did/DidTypes.sol";
-import {ControlledUpgradeable} from "../upgrade/ControlledUpgradeable.sol";
-import {Errors} from "../utils/Errors.sol";
+import { DidNotFound } from "../did/DidErrors.sol";
+import { DidRegistryInterface } from "../did/DidRegistry.sol";
+import { DidDocumentStorage } from "../did/DidTypes.sol";
+import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
+import { Errors } from "../utils/Errors.sol";
 
-import {IssuerHasBeenDeactivated, IssuerNotFound, SchemaAlreadyExist, SchemaNotFound} from "./ClErrors.sol";
-import {SchemaRegistryInterface} from "./SchemaRegistryInterface.sol";
-import {Schema, SchemaWithMetadata} from "./SchemaTypes.sol";
-import {SchemaValidator} from "./SchemaValidator.sol";
-import {toSlice} from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { IssuerHasBeenDeactivated, IssuerNotFound, SchemaAlreadyExist, SchemaNotFound } from "./ClErrors.sol";
+import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
+import { Schema, SchemaWithMetadata } from "./SchemaTypes.sol";
+import { SchemaValidator } from "./SchemaValidator.sol";
+import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
 using SchemaValidator for Schema;
-using {toSlice} for string;
+using { toSlice } for string;
 
 contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable {
     /**

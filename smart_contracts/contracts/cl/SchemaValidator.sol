@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import {toSlice} from "@dk1a/solidity-stringutils/src/StrSlice.sol";
-import {FieldRequired, InvalidSchemaId} from "./ClErrors.sol";
-import {Schema} from "./SchemaTypes.sol";
+import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { FieldRequired, InvalidSchemaId } from "./ClErrors.sol";
+import { Schema } from "./SchemaTypes.sol";
 
-using {toSlice} for string;
+using { toSlice } for string;
 
 library SchemaValidator {
     string private constant _DELIMITER = "/";

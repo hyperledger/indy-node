@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import {Schema, SchemaWithMetadata} from "./SchemaTypes.sol";
+import { Schema, SchemaWithMetadata } from "./SchemaTypes.sol";
 
 interface SchemaRegistryInterface {
     /**

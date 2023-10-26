@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import {Unauthorized} from "../auth/AuthErrors.sol";
-import {RoleControlInterface} from "../auth/RoleControl.sol";
-import {ControlledUpgradeable} from "../upgrade/ControlledUpgradeable.sol";
+import { Unauthorized } from "../auth/AuthErrors.sol";
+import { RoleControlInterface } from "../auth/RoleControl.sol";
+import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
 
-import {ValidatorSmartContractInterface} from "./ValidatorSmartContractInterface.sol";
+import { ValidatorSmartContractInterface } from "./ValidatorSmartContractInterface.sol";
 
 contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradeable {
     /**

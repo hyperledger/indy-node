@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import {StrSlice, toSlice} from "@dk1a/solidity-stringutils/src/StrSlice.sol";
-import {AuthenticationKeyNotFound, AuthenticationKeyRequired, IncorrectDid} from "./DidErrors.sol";
-import {IncorrectDid} from "./DidErrors.sol";
-import {DidRegex} from "./DidRegex.sol";
-import {DidDocument, VerificationMethod} from "./DidTypes.sol";
+import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { AuthenticationKeyNotFound, AuthenticationKeyRequired, IncorrectDid } from "./DidErrors.sol";
+import { IncorrectDid } from "./DidErrors.sol";
+import { DidRegex } from "./DidRegex.sol";
+import { DidDocument, VerificationMethod } from "./DidTypes.sol";
 
-using {toSlice} for string;
+using { toSlice } for string;
 
 library DidValidator {
     /**

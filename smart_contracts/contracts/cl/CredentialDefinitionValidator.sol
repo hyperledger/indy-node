@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import {toSlice} from "@dk1a/solidity-stringutils/src/StrSlice.sol";
-import {FieldRequired, InvalidCredentialDefinitionId, UnsupportedCredentialDefintionType} from "./ClErrors.sol";
-import {CredentialDefinition} from "./CredentialDefinitionTypes.sol";
+import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { FieldRequired, InvalidCredentialDefinitionId, UnsupportedCredentialDefintionType } from "./ClErrors.sol";
+import { CredentialDefinition } from "./CredentialDefinitionTypes.sol";
 
-using {toSlice} for string;
+using { toSlice } for string;
 
 library CredentialDefinitionValidator {
     string private constant _DELIMITER = "/";

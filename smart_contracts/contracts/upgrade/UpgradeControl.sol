@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import {IERC1822Proxiable} from "@openzeppelin/contracts/interfaces/draft-IERC1822.sol";
-import {ERC1967Utils} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
-import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import {UUPSUpgradeable} from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+import { IERC1822Proxiable } from "@openzeppelin/contracts/interfaces/draft-IERC1822.sol";
+import { ERC1967Utils } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
+import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
-import {Unauthorized} from "../auth/AuthErrors.sol";
-import {RoleControlInterface} from "../auth/RoleControlInterface.sol";
+import { Unauthorized } from "../auth/AuthErrors.sol";
+import { RoleControlInterface } from "../auth/RoleControlInterface.sol";
 
-import {UpgradeControlInterface} from "./UpgradeControlInterface.sol";
+import { UpgradeControlInterface } from "./UpgradeControlInterface.sol";
 
 contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializable {
     /**
