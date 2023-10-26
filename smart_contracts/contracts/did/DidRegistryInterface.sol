@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { DidDocument, DidDocumentStorage } from "./DidTypes.sol";
+import {DidDocument, DidDocumentStorage} from "./DidTypes.sol";
 
 /**
  * @dev The interface that defines functions for managing DID documents.
@@ -33,42 +33,41 @@ interface DidRegistryInterface {
 
     /**
      * @dev Updates an existing DID.
-     * 
+     *
      * Restrictions:
      *
      * - DID must not already exist; otherwise, will revert with a `DidAlreadyExist` error.
      * - DID must be active; otherwise, will revert with a `DidHasBeenDeactivated` error.
-     * 
+     *
      * Events:
      * - On succesful DID update, will emit a `DIDDeactivated` event.
-     * 
+     *
      * @param document The updated DID Document
      */
     function updateDid(DidDocument calldata document) external;
 
     /**
      * @dev Deactivates a DID.
-     * 
+     *
      * Restrictions:
      * - DID must be active; otherwise, will revert with a `DidHasBeenDeactivated` error.
      * - DID must exist; otherwise, will revert with a `DidNotFound` error.
-     * 
+     *
      * Events:
      * - On succesful DID deactivation, will emit a `DIDDeactivated` event.
-     * 
+     *
      * @param id The DID to be deactivated.
      */
     function deactivateDid(string calldata id) external;
 
     /**
      * @dev Function to resolve DID Document for the given DID.
-     * 
+     *
      * Restrictions:
      * - DID must exist; otherwise, will revert with a `DidNotFound` error.
-     * 
+     *
      * @param id The DID to be resolved.
      * @return didDocumentStorage The resolved DID document associated with provided DID.
      */
     function resolveDid(string calldata id) external returns (DidDocumentStorage memory didDocumentStorage);
 }
-

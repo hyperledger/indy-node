@@ -1,5 +1,6 @@
 {
   "extends": "solhint:recommended",
+  "plugins": ["prettier"],
   "rules": {
     "named-parameters-mapping": "warn",
     "private-vars-leading-underscore": "warn",

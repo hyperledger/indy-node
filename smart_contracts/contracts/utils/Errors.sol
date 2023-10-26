@@ -6,7 +6,6 @@ pragma solidity ^0.8.20;
  * @dev A library that provides utility functions for error handling.
  */
 library Errors {
-    
     /**
      * @dev Compares the selector of the provided error reason with a custom error selector.
      * @param reason The error reason returned by a failed contract call, encoded in bytes.

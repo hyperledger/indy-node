@@ -1,22 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
+import {ControlledUpgradeable} from "../upgrade/ControlledUpgradeable.sol";
 
-import { AccountControlInterface } from "./AccountControlInterface.sol";
-import { RoleControlInterface } from "./RoleControlInterface.sol";
+import {AccountControlInterface} from "./AccountControlInterface.sol";
+import {RoleControlInterface} from "./RoleControlInterface.sol";
 
 contract AccountControl is AccountControlInterface, ControlledUpgradeable {
-
     /**
      * @dev Reference to the contract that manages auth roles
      */
     RoleControlInterface private _roleControl;
 
-    function initialize(
-        address roleControlAddress,
-        address upgradeControlAddress
-    ) public initializer {
+    function initialize(address roleControlAddress, address upgradeControlAddress) public initializer {
         _roleControl = RoleControlInterface(roleControlAddress);
         _initializeUpgradeControl(upgradeControlAddress);
     }

@@ -12,11 +12,7 @@ interface ValidatorSmartContractInterface {
      * @param byAccount The address of the account that added the validator.
      * @param numValidators The total number of active validators after adding.
      */
-    event ValidatorAdded (
-        address indexed validator,
-        address indexed byAccount,
-        uint8 numValidators
-    );
+    event ValidatorAdded(address indexed validator, address indexed byAccount, uint8 numValidators);
 
     /**
      * @dev Event emitting when removed validator.
@@ -24,11 +20,7 @@ interface ValidatorSmartContractInterface {
      * @param byAccount The address of the account that removed the validator.
      * @param numValidators The total number of active validators after removal.
      */
-    event ValidatorRemoved (
-        address indexed validator,
-        address indexed byAccount,
-        uint8 numValidators
-    );
+    event ValidatorRemoved(address indexed validator, address indexed byAccount, uint8 numValidators);
 
     /**
      * @dev Error that occurs when initial validators are required but not provided.

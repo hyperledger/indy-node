@@ -1,18 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { IERC1822Proxiable } from "@openzeppelin/contracts/interfaces/draft-IERC1822.sol";
-import { ERC1967Utils } from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
-import { Initializable } from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+import {IERC1822Proxiable} from "@openzeppelin/contracts/interfaces/draft-IERC1822.sol";
+import {ERC1967Utils} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
+import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
-import { Unauthorized } from "../auth/AuthErrors.sol";
-import { RoleControlInterface } from "../auth/RoleControlInterface.sol";
+import {Unauthorized} from "../auth/AuthErrors.sol";
+import {RoleControlInterface} from "../auth/RoleControlInterface.sol";
 
-import { UpgradeControlInterface } from "./UpgradeControlInterface.sol";
+import {UpgradeControlInterface} from "./UpgradeControlInterface.sol";
 
 contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializable {
-
     /**
      * @dev Reference to the contract that manages auth roles
      */
@@ -20,7 +19,7 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
 
     /**
      * @dev Double mapping proxy and implmentation addresses to upgrade proposal
-     * The key relationship can be visualized as: 
+     * The key relationship can be visualized as:
      * `proxy address -> implementation address -> upgrade proposal`
      */
     mapping(address proxy => mapping(address implementation => UpgradeProposal proposal)) private _upgradeProposals;
@@ -47,11 +46,12 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
         _;
     }
 
-     /**
+    /**
      * Modifier that checks that the upgrade proposal exists
      */
     modifier _hasProposal(address proxy, address implementation) {
-        if (_upgradeProposals[proxy][implementation].created == 0) revert UpgradeProposalNotFound(proxy, implementation);
+        if (_upgradeProposals[proxy][implementation].created == 0)
+            revert UpgradeProposalNotFound(proxy, implementation);
         _;
     }
 
@@ -67,21 +67,20 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
      * Modifier that checks that the sender has not approved the upgrade yet
      */
     modifier _hasNotApproved(address proxy, address implementation) {
-        if (_upgradeProposals[proxy][implementation].approvals[msg.sender]) revert UpgradeAlreadyApproved(proxy, implementation);
+        if (_upgradeProposals[proxy][implementation].approvals[msg.sender])
+            revert UpgradeAlreadyApproved(proxy, implementation);
         _;
     }
 
-     function initialize(address roleControlAddress) public reinitializer(1) {
+    function initialize(address roleControlAddress) public reinitializer(1) {
         _roleControl = RoleControlInterface(roleControlAddress);
     }
 
     /// @inheritdoc UpgradeControlInterface
-    function propose(address proxy, address implementation)
-        public override 
-        _onlyTrustee() 
-        _isUupsProxy(implementation) 
-        _hasNotProposed(proxy, implementation) 
-    {
+    function propose(
+        address proxy,
+        address implementation
+    ) public override _onlyTrustee _isUupsProxy(implementation) _hasNotProposed(proxy, implementation) {
         _upgradeProposals[proxy][implementation].author = msg.sender;
         _upgradeProposals[proxy][implementation].created = block.timestamp;
 
@@ -89,12 +88,10 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
     }
 
     /// @inheritdoc UpgradeControlInterface
-    function approve(address proxy, address implementation) 
-        public override 
-        _onlyTrustee()
-        _hasProposal(proxy, implementation)
-        _hasNotApproved(proxy, implementation) 
-    {
+    function approve(
+        address proxy,
+        address implementation
+    ) public override _onlyTrustee _hasProposal(proxy, implementation) _hasNotApproved(proxy, implementation) {
         _upgradeProposals[proxy][implementation].approvals[msg.sender] = true;
         _upgradeProposals[proxy][implementation].approvalsCount++;
 
@@ -110,7 +107,7 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
         if (!_isSufficientApprovals(proxy, implementation)) revert InsufficientApprovals();
     }
 
-     /// @inheritdoc UUPSUpgradeable
+    /// @inheritdoc UUPSUpgradeable
     function _authorizeUpgrade(address newImplementation) internal view override {
         ensureSufficientApprovals(address(this), newImplementation);
     }

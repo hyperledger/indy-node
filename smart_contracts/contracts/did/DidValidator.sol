@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
-import { AuthenticationKeyNotFound, AuthenticationKeyRequired, IncorrectDid } from "./DidErrors.sol";
-import { IncorrectDid } from "./DidErrors.sol";
-import { DidRegex } from "./DidRegex.sol";
-import { DidDocument, VerificationMethod } from "./DidTypes.sol";
+import {StrSlice, toSlice} from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import {AuthenticationKeyNotFound, AuthenticationKeyRequired, IncorrectDid} from "./DidErrors.sol";
+import {IncorrectDid} from "./DidErrors.sol";
+import {DidRegex} from "./DidRegex.sol";
+import {DidDocument, VerificationMethod} from "./DidTypes.sol";
 
-using { toSlice } for string;
+using {toSlice} for string;
 
 library DidValidator {
     /**
@@ -28,14 +28,14 @@ library DidValidator {
                 continue;
             }
 
-            if (!_contains(didDocument.verificationMethod, didDocument.authentication[i].id)) {              
+            if (!_contains(didDocument.verificationMethod, didDocument.authentication[i].id)) {
                 revert AuthenticationKeyNotFound(didDocument.authentication[i].id);
             }
         }
     }
 
     function _contains(VerificationMethod[] memory methods, string memory methodId) private pure returns (bool) {
-         StrSlice methodIdSlice = methodId.toSlice();
+        StrSlice methodIdSlice = methodId.toSlice();
 
         for (uint256 i; i < methods.length; i++) {
             if (methods[i].id.toSlice().eq(methodIdSlice)) {

@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { Unauthorized} from "../auth/AuthErrors.sol";
-import { RoleControlInterface } from "../auth/RoleControl.sol";
-import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
+import {Unauthorized} from "../auth/AuthErrors.sol";
+import {RoleControlInterface} from "../auth/RoleControl.sol";
+import {ControlledUpgradeable} from "../upgrade/ControlledUpgradeable.sol";
 
-import { ValidatorSmartContractInterface } from "./ValidatorSmartContractInterface.sol";
+import {ValidatorSmartContractInterface} from "./ValidatorSmartContractInterface.sol";
 
 contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradeable {
-
     /**
      * @dev Type describing initial validator details.
      */
@@ -58,7 +57,7 @@ contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradea
      */
     modifier _nonZeroValidatorAddress(address validator) {
         if (validator == address(0)) revert InvalidValidatorAddress();
-         _;
+        _;
     }
 
     function initialize(
@@ -83,16 +82,16 @@ contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradea
         _initializeUpgradeControl(upgradeControlAddress);
     }
 
-   /**
+    /**
      * @dev Adds a new validator to the list.
-     * 
+     *
      * Restrictions:
      * - Only accounts with the steward role are permitted to call this method; otherwise, will revert with an `Unauthorized` error.
      * - The validator address must be non-zero; otherwise, will revert with an `InvalidValidatorAddress` error.
      * - The total number of validators must not exceed 256; otherwise, will revert with an `ExceedsValidatorLimit` error.
      * - The validator must not already exist in the list; otherwise, will revert with an `ValidatorAlreadyExists` error.
      * - The sender of the transaction must not have an active validator; otherwise, will revert with a `SenderHasActiveValidator` error.
-     * 
+     *
      * Events:
      * - On successful validator creation, will emit a `ValidatorAdded` event.
      */
@@ -115,13 +114,13 @@ contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradea
 
     /**
      * @dev Remove an existing validator from the list.
-     * 
+     *
      * Restrcitions:
      * - Only accounts with the steward role are permitted to call this method; otherwise, will revert with an `Unauthorized` error.
      * - The validator address must be non-zero; otherwise, will revert with an `InvalidValidatorAddress` error.
      * - The validator must not be last one; otherwise, will revert with an `CannotDeactivateLastValidator` error.
      * - The validator must exist; otherwise, will revert with an `ValidatorNotFound` error.
-     * 
+     *
      * Events:
      * - On successful validator removal, will emit a `ValidatorRemoved` event.
      */
@@ -135,7 +134,7 @@ contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradea
 
         // put last validator in the list on place of removed validator
         address validatorRemoved = _validators[removedValidatorIndex];
-        address validatorToBeMoved = _validators[_validators.length-1];
+        address validatorToBeMoved = _validators[_validators.length - 1];
         _validators[removedValidatorIndex] = validatorToBeMoved;
 
         // update indexes
@@ -143,7 +142,7 @@ contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradea
 
         // remove last validator which was copied to new place
         _validators.pop();
-        delete(_validatorInfos[validatorRemoved]);
+        delete (_validatorInfos[validatorRemoved]);
 
         // emit success event
         emit ValidatorRemoved(validatorRemoved, msg.sender, uint8(_validators.length));
@@ -152,7 +151,7 @@ contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradea
     /**
      * @dev Get the list of active validators.
      */
-    function getValidators() override public view returns (address[] memory) {
+    function getValidators() public view override returns (address[] memory) {
         return _validators;
     }
 }

@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
+import {ControlledUpgradeable} from "../upgrade/ControlledUpgradeable.sol";
 
-import { Unauthorized } from "./AuthErrors.sol";
-import { RoleControlInterface } from "./RoleControlInterface.sol";
+import {Unauthorized} from "./AuthErrors.sol";
+import {RoleControlInterface} from "./RoleControlInterface.sol";
 
 contract RoleControl is RoleControlInterface, ControlledUpgradeable {
-
     /**
      * @dev Type describing single initial assignment.
      */
@@ -41,9 +40,7 @@ contract RoleControl is RoleControlInterface, ControlledUpgradeable {
         _;
     }
 
-    function initialize(
-        address upgradeControlAddress
-    ) public reinitializer(1) {
+    function initialize(address upgradeControlAddress) public reinitializer(1) {
         _initialTrustee();
         _initRoles();
         _initializeUpgradeControl(upgradeControlAddress);
@@ -68,7 +65,7 @@ contract RoleControl is RoleControlInterface, ControlledUpgradeable {
 
             emit RoleRevoked(role, account, msg.sender);
 
-           return true;
+            return true;
         }
         return false;
     }
@@ -77,7 +74,7 @@ contract RoleControl is RoleControlInterface, ControlledUpgradeable {
     function hasRole(ROLES role, address account) public view virtual returns (bool) {
         return _roles[account] == role;
     }
-    
+
     /**
      * @notice Function to check if an account has requested role assigned.
      * @param account The address of the account whose role is being queried.

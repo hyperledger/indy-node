@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
+import {ControlledUpgradeable} from "../upgrade/ControlledUpgradeable.sol";
 
-import { DidAlreadyExist, DidHasBeenDeactivated, DidNotFound } from "./DidErrors.sol";
-import { DidRegistryInterface } from "./DidRegistryInterface.sol";
-import { DidDocument, DidDocumentStorage } from "./DidTypes.sol";
-import { DidValidator } from "./DidValidator.sol";
+import {DidAlreadyExist, DidHasBeenDeactivated, DidNotFound} from "./DidErrors.sol";
+import {DidRegistryInterface} from "./DidRegistryInterface.sol";
+import {DidDocument, DidDocumentStorage} from "./DidTypes.sol";
+import {DidValidator} from "./DidValidator.sol";
 
 contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     /**
@@ -39,13 +39,11 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     }
 
     function initialize(address upgradeControlAddress) public reinitializer(1) {
-      _initializeUpgradeControl(upgradeControlAddress);
+        _initializeUpgradeControl(upgradeControlAddress);
     }
 
     /// @inheritdoc DidRegistryInterface
-    function createDid(
-        DidDocument calldata document
-    ) public _didNotExist(document.id) {
+    function createDid(DidDocument calldata document) public _didNotExist(document.id) {
         DidValidator.validateDid(document.id);
         DidValidator.validateVerificationKey(document);
 
@@ -57,9 +55,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     }
 
     /// @inheritdoc DidRegistryInterface
-    function updateDid(
-        DidDocument calldata document
-    ) public _didExist(document.id) _didIsActive(document.id) {
+    function updateDid(DidDocument calldata document) public _didExist(document.id) _didIsActive(document.id) {
         DidValidator.validateVerificationKey(document);
 
         _dids[document.id].document = document;
@@ -69,9 +65,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     }
 
     /// @inheritdoc DidRegistryInterface
-    function deactivateDid(
-        string calldata id
-    ) public _didExist(id) _didIsActive(id) {
+    function deactivateDid(string calldata id) public _didExist(id) _didIsActive(id) {
         _dids[id].metadata.deactivated = true;
 
         emit DIDDeactivated(id);
@@ -80,7 +74,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     /// @inheritdoc DidRegistryInterface
     function resolveDid(
         string calldata id
-    ) public _didExist(id) view virtual returns (DidDocumentStorage memory didDocumentStorage) {
+    ) public view virtual _didExist(id) returns (DidDocumentStorage memory didDocumentStorage) {
         return _dids[id];
     }
 }
