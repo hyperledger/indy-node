@@ -94,7 +94,7 @@ export class DidRegistry extends Contract {
     return {
       id: service.id,
       serviceType: service.serviceType,
-      serviceEndpoint: service.serviceEndpoint.map((serviceEndpoint: string) => serviceEndpoint),
+      serviceEndpoint: service.serviceEndpoint,
       accept: service.accept.map((accept: string) => accept),
       routingKeys: service.routingKeys.map((routingKey: string) => routingKey),
     }

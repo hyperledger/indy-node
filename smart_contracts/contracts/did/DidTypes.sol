@@ -22,7 +22,7 @@ struct DidMetadata {
  * @dev DidDocument represent the main DID Document structure.
  */
 struct DidDocument {
-    // 
+    //
     string[] context;
     string id;
     string[] controller;
@@ -61,7 +61,22 @@ struct VerificationRelationship {
 struct Service {
     string id;
     string serviceType;
-    string[] serviceEndpoint;
+    string serviceEndpoint;
     string[] accept;
     string[] routingKeys;
 }
+/*
+TODO: Service definition must be like bellow but it cause contract compilation issue
+struct Service {
+    string id;
+    string serviceType;
+    ServiceEndpoint[] serviceEndpoint;
+}
+
+struct ServiceEndpoint {
+    string uri;
+    string[] accept;
+    string[] routingKeys;
+}
+
+*/

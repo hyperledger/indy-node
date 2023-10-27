@@ -10,7 +10,7 @@ async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
 async-trait = "0.1.73"
 bs58 = "0.5.0"
 futures = "0.1.23"
-indy2_vdr = { path = "../../vdr", features = ["migration"] }
+indy2_vdr = { path = "../../vdr", features = ["migration", "basic_signer"] }
 vdrtools = { git = "https://gitlab.com/evernym/verity/vdr-tools.git" }
 serde = "1.0.188"
 serde_json = "1.0.107"

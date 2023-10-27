@@ -26,7 +26,11 @@ pub use contracts::{
         },
     },
 };
-pub use signer::{BasicSigner, Signer};
+pub use error::{VdrError, VdrResult};
+pub use signer::Signer;
+
+#[cfg(feature = "basic_signer")]
+pub use signer::BasicSigner;
 
 #[cfg(feature = "ledger_test")]
 #[cfg(test)]
@@ -42,7 +46,7 @@ mod tests {
             did::{did_registry::test::create_did, types::did_doc::test::did_doc},
         },
         error::VdrResult,
-        signer::signer::test::ACCOUNT,
+        signer::basic_signer::test::ACCOUNT,
     };
 
     mod did {

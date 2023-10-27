@@ -1,10 +1,11 @@
 use crate::error::{VdrError, VdrResult};
 
 use serde::Deserialize;
+use serde_derive::Serialize;
 use web3::ethabi::Token;
 
 /// Contract configuration
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ContractConfig {
     /// Address of deployed contract
     pub address: String,

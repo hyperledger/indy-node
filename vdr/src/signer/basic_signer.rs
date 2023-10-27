@@ -6,6 +6,7 @@ use crate::{
 use secp256k1::{All, Message, PublicKey, Secp256k1, SecretKey};
 use std::collections::HashMap;
 
+use crate::signer::SignatureData;
 use crate::client::Address;
 use std::str::FromStr;
 use web3::signing::keccak256;
@@ -63,14 +64,17 @@ impl BasicSigner {
 }
 
 impl Signer for BasicSigner {
-    fn sign(&self, message: &[u8], account: &str) -> VdrResult<(i32, Vec<u8>)> {
+    fn sign(&self, message: &[u8], account: &str) -> VdrResult<SignatureData> {
         let key = self.key_for_account(account)?;
         let message = Message::from_digest_slice(message)?;
         let (recovery_id, signature) = self
             .secp
             .sign_ecdsa_recoverable(&message, &key.private_key)
             .serialize_compact();
-        Ok((recovery_id.to_i32(), signature.to_vec()))
+        Ok(SignatureData {
+            recovery_id: recovery_id.to_i32() as u64,
+            signature: signature.to_vec(),
+        })
     }
 }
 

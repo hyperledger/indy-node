@@ -15,9 +15,10 @@ path = "src/lib.rs"
 crate-type = ["staticlib", "rlib", "cdylib"]
 
 [features]
-default = ["migration"]
+default = []
 ledger_test = []
 migration = []
+basic_signer = []
 
 [dependencies]
 async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }

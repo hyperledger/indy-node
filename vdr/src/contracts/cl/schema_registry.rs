@@ -120,7 +120,7 @@ pub mod test {
             cl::types::schema::test::{schema, SCHEMA_NAME},
             did::types::did_doc::test::ISSUER_ID,
         },
-        signer::signer::test::ACCOUNT,
+        signer::basic_signer::test::ACCOUNT,
         DID,
     };
 
