@@ -220,7 +220,7 @@ pub mod test {
     use super::*;
     use crate::{
         client::test::{client, CHAIN_ID, ROLE_CONTROL_ADDRESS},
-        signer::signer::test::ACCOUNT,
+        signer::basic_signer::test::ACCOUNT,
     };
 
     pub const NEW_ACCOUNT: &'static str = "0x0886328869e4e1f401e1052a5f4aae8b45f42610";

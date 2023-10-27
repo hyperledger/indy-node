@@ -7,7 +7,7 @@ mod utils;
 #[cfg(feature = "migration")]
 pub mod migration;
 
-pub use client::{Client, ContractConfig, LedgerClient, PingStatus, Status};
+pub use client::{Client, ContractConfig, LedgerClient, PingStatus, Status, Address};
 pub use contracts::{
     auth::{Role, RoleControl},
     cl::{
@@ -244,7 +244,7 @@ mod tests {
 
     mod role {
         use super::*;
-        use crate::{client::Address, signer::signer::test::basic_signer};
+        use crate::{client::Address, signer::basic_signer::test::basic_signer};
 
         async fn build_and_submit_assign_role_transaction(
             client: &LedgerClient,

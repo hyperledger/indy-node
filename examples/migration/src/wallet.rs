@@ -1,4 +1,4 @@
-use indy2_vdr::BasicSigner;
+use indy2_vdr::{Address, BasicSigner};
 use serde_json::json;
 use vdrtoolsrs::{future::Future, WalletHandle};
 
@@ -28,7 +28,7 @@ impl IndyWallet {
 }
 
 pub struct BesuWallet {
-    pub account: String,
+    pub account: Address,
     pub secpkey: String,
     pub signer: BasicSigner,
 }

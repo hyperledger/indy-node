@@ -2,10 +2,7 @@ use crate::{
     ledger::{BesuLedger, IndyLedger, Ledgers},
     wallet::{BesuWallet, IndyWallet},
 };
-use indy2_vdr::{
-    CredentialDefinition, CredentialDefinitionRegistry, DidDocument, DidDocumentBuilder,
-    DidRegistry, Schema, SchemaRegistry, VerificationKey, VerificationKeyType, DID,
-};
+use indy2_vdr::{CredentialDefinition, CredentialDefinitionRegistry, DidDocument, DidDocumentBuilder, DidRegistry, Schema, SchemaRegistry, VerificationKey, VerificationKeyType, DID, Address};
 use serde_json::json;
 use std::time::Duration;
 use vdrtoolsrs::future::Future;
@@ -15,7 +12,7 @@ pub struct Issuer {
     indy_ledger: IndyLedger,
     besu_ledger: BesuLedger,
     pub did: String,
-    pub account: String,
+    pub account: Address,
     pub edkey: String,
     pub secpkey: String,
     pub service: String,
