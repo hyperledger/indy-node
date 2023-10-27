@@ -16,10 +16,7 @@ pub struct Web3Signer<'a> {
 }
 
 impl<'a> Web3Signer<'a> {
-    pub fn new(
-        account: Address,
-        signer: &'a Box<dyn Signer>,
-    ) -> Web3Signer<'a> {
+    pub fn new(account: Address, signer: &'a Box<dyn Signer>) -> Web3Signer<'a> {
         Web3Signer { account, signer }
     }
 }

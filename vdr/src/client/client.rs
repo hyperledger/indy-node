@@ -124,9 +124,8 @@ impl LedgerClient {
 #[cfg(test)]
 pub mod test {
     use super::*;
+    use crate::signer::{basic_signer::test::basic_signer, BasicSigner};
     use std::{env, fs};
-    use crate::signer::BasicSigner;
-    use crate::signer::basic_signer::test::basic_signer;
 
     pub const CHAIN_ID: u64 = 1337;
     pub const NODE_ADDRESS: &'static str = "http://127.0.0.1:8545";
@@ -139,6 +138,10 @@ pub mod test {
         "0x0000000000000000000000000000000000004444";
     pub const CRED_DEF_REGISTRY_SPEC_PATH: &'static str =
         "cl/CredentialDefinitionRegistry.sol/CredentialDefinitionRegistry.json";
+    pub const VALIDATOR_CONTROL_ADDRESS: &'static str =
+        "0x0000000000000000000000000000000000007777";
+    pub const VALIDATOR_CONTROL_PATH: &'static str =
+        "network/ValidatorControl.sol/ValidatorControl.json";
     pub const ROLE_CONTROL_ADDRESS: &'static str = "0x0000000000000000000000000000000000006666";
     pub const ROLE_CONTROL_PATH: &'static str = "auth/RoleControl.sol/RoleControl.json";
 
@@ -166,6 +169,10 @@ pub mod test {
             ContractConfig {
                 address: CRED_DEF_REGISTRY_ADDRESS.to_string(),
                 spec_path: build_contract_path(CRED_DEF_REGISTRY_SPEC_PATH),
+            },
+            ContractConfig {
+                address: VALIDATOR_CONTROL_ADDRESS.to_string(),
+                spec_path: build_contract_path(VALIDATOR_CONTROL_PATH),
             },
             ContractConfig {
                 address: ROLE_CONTROL_ADDRESS.to_string(),

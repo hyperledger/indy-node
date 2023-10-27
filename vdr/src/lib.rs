@@ -7,7 +7,7 @@ mod utils;
 #[cfg(feature = "migration")]
 pub mod migration;
 
-pub use client::{Client, ContractConfig, LedgerClient, PingStatus, Status, Address};
+pub use client::{Address, Client, ContractConfig, LedgerClient, PingStatus, Status};
 pub use contracts::{
     auth::{Role, RoleControl},
     cl::{
@@ -25,6 +25,7 @@ pub use contracts::{
             did_doc_builder::DidDocumentBuilder,
         },
     },
+    network::ValidatorControl,
 };
 pub use error::{VdrError, VdrResult};
 pub use signer::Signer;
@@ -37,7 +38,7 @@ pub use signer::BasicSigner;
 mod tests {
     use super::*;
     use crate::{
-        client::test::client,
+        client::{test::client, Address},
         contracts::{
             cl::{
                 schema_registry::test::create_schema,
@@ -46,7 +47,7 @@ mod tests {
             did::{did_registry::test::create_did, types::did_doc::test::did_doc},
         },
         error::VdrResult,
-        signer::basic_signer::test::ACCOUNT,
+        signer::basic_signer::test::{basic_signer, ACCOUNT},
     };
 
     mod did {
@@ -244,7 +245,6 @@ mod tests {
 
     mod role {
         use super::*;
-        use crate::{client::Address, signer::basic_signer::test::basic_signer};
 
         async fn build_and_submit_assign_role_transaction(
             client: &LedgerClient,
@@ -377,6 +377,113 @@ mod tests {
                 .await
                 .unwrap();
             assert!(!has_role);
+
+            Ok(())
+        }
+    }
+
+    mod validator {
+        use crate::contracts::network::ValidatorAddresses;
+
+        use super::*;
+
+        async fn build_and_submit_get_validators_transaction(
+            client: &LedgerClient,
+        ) -> ValidatorAddresses {
+            let transaction = ValidatorControl::build_get_validators_transaction(&client).unwrap();
+            let result = client.submit_transaction(&transaction).await.unwrap();
+
+            ValidatorControl::parse_get_validators_result(&client, &result).unwrap()
+        }
+
+        async fn build_and_submit_add_validator_transaction(
+            client: &LedgerClient,
+            new_validator_address: &Address,
+        ) -> String {
+            let transaction = ValidatorControl::build_add_validator_transaction(
+                &client,
+                &ACCOUNT,
+                new_validator_address,
+            )
+            .unwrap();
+            let signed_transaction = client.sign_transaction(&transaction).await.unwrap();
+            let block_hash = client
+                .submit_transaction(&signed_transaction)
+                .await
+                .unwrap();
+
+            client.get_receipt(&block_hash).await.unwrap()
+        }
+
+        async fn build_and_submit_remove_validator_transaction(
+            client: &LedgerClient,
+            validator_address: &Address,
+        ) -> String {
+            // write
+            let transaction = ValidatorControl::build_remove_validator_transaction(
+                &client,
+                &ACCOUNT,
+                validator_address,
+            )
+            .unwrap();
+            let signed_transaction = client.sign_transaction(&transaction).await.unwrap();
+            let block_hash = client
+                .submit_transaction(&signed_transaction)
+                .await
+                .unwrap();
+
+            client.get_receipt(&block_hash).await.unwrap()
+        }
+
+        #[ignore] // FIXME: Validator test must create new account and assign Validator role to him
+        #[async_std::test]
+        async fn demo_build_and_submit_transaction_test() -> VdrResult<()> {
+            let signer = basic_signer();
+            let (new_validator_address, _) = signer.create_account(None).unwrap();
+            let client = client(Some(signer));
+
+            let receipt =
+                build_and_submit_add_validator_transaction(&client, &new_validator_address).await;
+            println!("Receipt: {}", receipt);
+
+            let validator_list = build_and_submit_get_validators_transaction(&client).await;
+            assert_eq!(validator_list.len(), 5);
+            assert!(validator_list.contains(&new_validator_address));
+
+            let receipt =
+                build_and_submit_remove_validator_transaction(&client, &new_validator_address)
+                    .await;
+            println!("Receipt: {}", receipt);
+
+            let validator_list = build_and_submit_get_validators_transaction(&client).await;
+            assert_eq!(validator_list.len(), 4);
+            assert!(!validator_list.contains(&new_validator_address));
+
+            Ok(())
+        }
+
+        #[ignore] // FIXME: Validator test must create new account and assign Validator role to him
+        #[async_std::test]
+        async fn demo_single_step_transaction_execution_test() -> VdrResult<()> {
+            let signer = basic_signer();
+            let (new_validator_address, _) = signer.create_account(None).unwrap();
+            let client = client(Some(signer));
+
+            ValidatorControl::add_validator(&client, &ACCOUNT, &new_validator_address)
+                .await
+                .unwrap();
+
+            let validator_list = ValidatorControl::get_validators(&client).await.unwrap();
+            assert_eq!(validator_list.len(), 5);
+            assert!(validator_list.contains(&new_validator_address));
+
+            ValidatorControl::remove_validator(&client, &ACCOUNT, &new_validator_address)
+                .await
+                .unwrap();
+
+            let validator_list = ValidatorControl::get_validators(&client).await.unwrap();
+            assert_eq!(validator_list.len(), 4);
+            assert!(!validator_list.contains(&new_validator_address));
 
             Ok(())
         }

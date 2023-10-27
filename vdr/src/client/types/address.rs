@@ -10,7 +10,11 @@ pub struct Address(String);
 
 impl Address {
     pub fn new(address: &str) -> Address {
-        Address(address.to_string())
+        if address.starts_with("0x") {
+            Address(address.to_string())
+        } else {
+            Address(format!("0x{}", address))
+        }
     }
 
     pub fn value(&self) -> &str {
