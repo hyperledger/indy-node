@@ -917,6 +917,7 @@ dependencies = [
  "async-trait",
  "futures 0.3.28",
  "hex",
+ "once_cell",
  "rand",
  "secp256k1 0.28.0",
  "serde",

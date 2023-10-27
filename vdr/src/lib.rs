@@ -7,7 +7,7 @@ mod utils;
 #[cfg(feature = "migration")]
 pub mod migration;
 
-pub use client::{Client, ContractConfig, LedgerClient, PingStatus, Status};
+pub use client::{Client, ContractConfig, LedgerClient, PingStatus, Status, Address};
 pub use contracts::{
     auth::{Role, RoleControl},
     cl::{
@@ -26,7 +26,11 @@ pub use contracts::{
         },
     },
 };
-pub use signer::{BasicSigner, Signer};
+pub use error::{VdrError, VdrResult};
+pub use signer::Signer;
+
+#[cfg(feature = "basic_signer")]
+pub use signer::BasicSigner;
 
 #[cfg(feature = "ledger_test")]
 #[cfg(test)]
@@ -42,7 +46,7 @@ mod tests {
             did::{did_registry::test::create_did, types::did_doc::test::did_doc},
         },
         error::VdrResult,
-        signer::signer::test::ACCOUNT,
+        signer::basic_signer::test::ACCOUNT,
     };
 
     mod did {
@@ -240,7 +244,7 @@ mod tests {
 
     mod role {
         use super::*;
-        use crate::{client::Address, signer::signer::test::basic_signer};
+        use crate::{client::Address, signer::basic_signer::test::basic_signer};
 
         async fn build_and_submit_assign_role_transaction(
             client: &LedgerClient,

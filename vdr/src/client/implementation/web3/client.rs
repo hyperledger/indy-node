@@ -16,17 +16,14 @@ use web3::{
 
 pub struct Web3Client {
     client: Web3<Http>,
-    signer: Option<Box<dyn Signer + 'static + Send + Sync>>,
+    signer: Option<Box<dyn Signer>>,
 }
 
 const POLL_INTERVAL: u64 = 200;
 const NUMBER_TX_CONFIRMATIONS: usize = 1; // FIXME: what number of confirmation events should we wait? 2n+1?
 
 impl Web3Client {
-    pub fn new(
-        node_address: &str,
-        signer: Option<Box<dyn Signer + 'static + Send + Sync>>,
-    ) -> VdrResult<Web3Client> {
+    pub fn new(node_address: &str, signer: Option<Box<dyn Signer>>) -> VdrResult<Web3Client> {
         let transport = Http::new(node_address).map_err(|_| VdrError::ClientNodeUnreachable)?;
         let web3 = Web3::new(transport);
         Ok(Web3Client {

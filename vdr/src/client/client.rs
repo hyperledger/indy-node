@@ -30,7 +30,11 @@ impl LedgerClient {
         chain_id: u64,
         node_address: &str,
         contract_configs: &Vec<ContractConfig>,
-        signer: Option<Box<dyn Signer + 'static + Send + Sync>>,
+        // TODO: It is simplier to just pass signer only into corresponding `sign_transaction` function.
+        //  But we also have single step functions like `create_did` where we will have to to pass call back as well
+        //  Transaction methods already depends on the client, so it make sence to accept signer on client create
+        //   Same time we can be rework it to accept callback instead of interface -> simplier from FFI perspective
+        signer: Option<Box<dyn Signer>>,
     ) -> VdrResult<LedgerClient> {
         let client = Web3Client::new(node_address, signer)?;
         let contracts = Self::init_contracts(&client, &contract_configs)?;
@@ -120,8 +124,9 @@ impl LedgerClient {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::{signer::signer::test::basic_signer, BasicSigner};
     use std::{env, fs};
+    use crate::signer::BasicSigner;
+    use crate::signer::basic_signer::test::basic_signer;
 
     pub const CHAIN_ID: u64 = 1337;
     pub const NODE_ADDRESS: &'static str = "http://127.0.0.1:8545";

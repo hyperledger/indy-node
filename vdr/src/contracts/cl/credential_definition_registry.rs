@@ -141,7 +141,7 @@ pub mod test {
             },
             did::types::did_doc::test::ISSUER_ID,
         },
-        signer::signer::test::ACCOUNT,
+        signer::basic_signer::test::ACCOUNT,
         DID,
     };
 
