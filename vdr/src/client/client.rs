@@ -124,9 +124,8 @@ impl LedgerClient {
 #[cfg(test)]
 pub mod test {
     use super::*;
+    use crate::signer::{basic_signer::test::basic_signer, BasicSigner};
     use std::{env, fs};
-    use crate::signer::BasicSigner;
-    use crate::signer::basic_signer::test::basic_signer;
 
     pub const CHAIN_ID: u64 = 1337;
     pub const NODE_ADDRESS: &'static str = "http://127.0.0.1:8545";

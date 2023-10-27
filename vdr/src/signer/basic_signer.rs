@@ -6,8 +6,7 @@ use crate::{
 use secp256k1::{All, Message, PublicKey, Secp256k1, SecretKey};
 use std::collections::HashMap;
 
-use crate::signer::SignatureData;
-use crate::client::Address;
+use crate::{client::Address, signer::SignatureData};
 use std::str::FromStr;
 use web3::signing::keccak256;
 

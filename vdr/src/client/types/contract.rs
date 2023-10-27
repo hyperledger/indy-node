@@ -1,7 +1,7 @@
 use crate::error::{VdrError, VdrResult};
 
-use serde::Deserialize;
-use serde_derive::Serialize;
+use crate::Address;
+use serde::{Deserialize, Serialize};
 use web3::ethabi::Token;
 
 /// Contract configuration
@@ -157,7 +157,7 @@ impl ContractOutput {
             .collect()
     }
 
-    pub fn get_address_string_array(&self, index: usize) -> VdrResult<Vec<String>> {
+    pub fn get_address_array(&self, index: usize) -> VdrResult<Vec<Address>> {
         Ok(self
             .0
             .get(index)
@@ -170,7 +170,7 @@ impl ContractOutput {
                 "Missing address string array value".to_string(),
             ))?
             .into_iter()
-            .map(|token| format!("0x{}", token.to_string()))
+            .map(|token| Address::new(&token.to_string()))
             .collect())
     }
 

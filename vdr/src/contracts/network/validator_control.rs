@@ -1,11 +1,7 @@
-use std::str::FromStr;
-
-use web3::ethabi::ethereum_types::Address;
-
 use crate::{
-    client::{ContractParam, Transaction, TransactionBuilder, TransactionParser, TransactionType},
-    error::{VdrError, VdrResult},
-    LedgerClient,
+    client::{Transaction, TransactionBuilder, TransactionParser, TransactionType},
+    error::VdrResult,
+    Address, LedgerClient,
 };
 
 use super::validator_info::ValidatorAddresses;
@@ -30,20 +26,13 @@ impl ValidatorControl {
     /// Write transaction to sign and submit
     pub fn build_add_validator_transaction(
         client: &LedgerClient,
-        from: &str,
-        validator_address: &str,
+        from: &Address,
+        validator_address: &Address,
     ) -> VdrResult<Transaction> {
-        let parsed_val_address = Address::from_str(validator_address).map_err(|err| {
-            VdrError::CommonInvalidData(format!(
-                "Unable to parse validator address. Err: {:?}",
-                err.to_string()
-            ))
-        })?;
-
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_ADD_VALIDATOR)
-            .add_param(ContractParam::Address(parsed_val_address))
+            .add_param(validator_address.clone().try_into()?)
             .set_type(TransactionType::Write)
             .set_from(from)
             .build(&client)
@@ -60,20 +49,13 @@ impl ValidatorControl {
     /// Write transaction to sign and submit
     pub fn build_remove_validator_transaction(
         client: &LedgerClient,
-        from: &str,
-        validator_address: &str,
+        from: &Address,
+        validator_address: &Address,
     ) -> VdrResult<Transaction> {
-        let parsed_val_address = Address::from_str(validator_address).map_err(|err| {
-            VdrError::CommonInvalidData(format!(
-                "Unable to parse validator address. Err: {:?}",
-                err.to_string()
-            ))
-        })?;
-
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_REMOVE_VALIDATOR)
-            .add_param(ContractParam::Address(parsed_val_address))
+            .add_param(validator_address.clone().try_into()?)
             .set_type(TransactionType::Write)
             .set_from(from)
             .build(&client)
@@ -123,8 +105,8 @@ impl ValidatorControl {
     /// Receipt of executed transaction
     pub async fn add_validator(
         client: &LedgerClient,
-        from: &str,
-        validator_address: &str,
+        from: &Address,
+        validator_address: &Address,
     ) -> VdrResult<String> {
         let transaction = Self::build_add_validator_transaction(client, from, validator_address)?;
         client.sign_and_submit(&transaction).await
@@ -141,8 +123,8 @@ impl ValidatorControl {
     /// Receipt of executed transaction
     pub async fn remove_validator(
         client: &LedgerClient,
-        from: &str,
-        validator_address: &str,
+        from: &Address,
+        validator_address: &Address,
     ) -> VdrResult<String> {
         let transaction =
             Self::build_remove_validator_transaction(client, from, validator_address)?;
@@ -168,21 +150,23 @@ pub mod test {
     use super::*;
     use crate::{
         client::test::{client, CHAIN_ID, VALIDATOR_CONTROL_ADDRESS},
-        signer::signer::test::ACCOUNT,
+        signer::basic_signer::test::ACCOUNT,
     };
+    use once_cell::sync::Lazy;
 
-    pub const VALIDATOR_ADDRESS: &'static str = "0x93917cadbace5dfce132b991732c6cda9bcc5b8a";
+    pub static VALIDATOR_ADDRESS: Lazy<Address> =
+        Lazy::new(|| Address::new("0x93917cadbace5dfce132b991732c6cda9bcc5b8a"));
 
     mod build_add_validator_transaction {
         use super::*;
 
         #[test]
         fn build_add_validator_transaction_test() {
-            let client = client();
+            let client = client(None);
             let transaction = ValidatorControl::build_add_validator_transaction(
                 &client,
-                ACCOUNT,
-                VALIDATOR_ADDRESS,
+                &ACCOUNT,
+                &VALIDATOR_ADDRESS,
             )
             .unwrap();
             let expected_data = [
@@ -192,7 +176,7 @@ pub mod test {
 
             let expected_transaction = Transaction {
                 type_: TransactionType::Write,
-                from: Some(ACCOUNT.to_string()),
+                from: Some(ACCOUNT.clone()),
                 to: VALIDATOR_CONTROL_ADDRESS.to_string(),
                 chain_id: CHAIN_ID,
                 data: expected_data.into(),
@@ -208,11 +192,11 @@ pub mod test {
 
         #[test]
         fn build_remove_validator_transaction_test() {
-            let client = client();
+            let client = client(None);
             let transaction = ValidatorControl::build_remove_validator_transaction(
                 &client,
-                ACCOUNT,
-                VALIDATOR_ADDRESS,
+                &ACCOUNT,
+                &VALIDATOR_ADDRESS,
             )
             .unwrap();
             let expected_data = [
@@ -222,7 +206,7 @@ pub mod test {
 
             let expected_transaction = Transaction {
                 type_: TransactionType::Write,
-                from: Some(ACCOUNT.to_string()),
+                from: Some(ACCOUNT.clone()),
                 to: VALIDATOR_CONTROL_ADDRESS.to_string(),
                 chain_id: CHAIN_ID,
                 data: expected_data.into(),
@@ -238,7 +222,7 @@ pub mod test {
 
         #[test]
         fn build_get_validators_transaction_test() {
-            let client = client();
+            let client = client(None);
             let transaction = ValidatorControl::build_get_validators_transaction(&client).unwrap();
             let encoded_method = [183, 171, 77, 181];
 
