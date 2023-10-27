@@ -3,12 +3,13 @@ use crate::{
     error::VdrError,
 };
 
+#[repr(u8)]
 #[derive(Clone, PartialEq, Debug)]
 pub enum Role {
-    Empty,
-    Trustee,
-    Endorser,
-    Steward,
+    Empty = 0,
+    Trustee = 1,
+    Endorser = 2,
+    Steward = 3,
 }
 
 pub type HasRole = bool;
@@ -27,19 +28,13 @@ impl TryFrom<ContractOutput> for Role {
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
         let role_index = value.get_u8(0)?;
         let role = Role::try_from(role_index)?;
-
         Ok(role)
     }
 }
 
 impl Into<RoleIndex> for Role {
     fn into(self) -> RoleIndex {
-        match self {
-            Role::Empty => 0,
-            Role::Trustee => 1,
-            Role::Endorser => 2,
-            Role::Steward => 3,
-        }
+        self as u8
     }
 }
 
@@ -64,7 +59,6 @@ impl TryFrom<ContractOutput> for HasRole {
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
         let has_role = value.get_bool(0)?;
-
         Ok(has_role)
     }
 }

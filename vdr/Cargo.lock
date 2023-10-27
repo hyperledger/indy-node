@@ -911,6 +911,7 @@ dependencies = [
  "bs58",
  "futures",
  "hex",
+ "once_cell",
  "rand",
  "secp256k1 0.28.0",
  "serde",

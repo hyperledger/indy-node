@@ -1,5 +1,5 @@
 use crate::{
-    client::{ContractOutput, ContractParam},
+    client::{Address, ContractOutput, ContractParam},
     error::{VdrError, VdrResult},
     LedgerClient,
 };
@@ -25,7 +25,7 @@ pub struct Transaction {
     /// depending on the transaction type different client methods will be executed to submit transaction
     pub type_: TransactionType,
     /// transaction sender account address
-    pub from: Option<String>,
+    pub from: Option<Address>,
     /// transaction recipient address
     pub to: String,
     /// chain id of the ledger
@@ -47,7 +47,7 @@ impl Transaction {
 pub struct TransactionBuilder {
     contract: String,
     method: String,
-    from: Option<String>,
+    from: Option<Address>,
     params: Vec<ContractParam>,
     type_: TransactionType,
 }
@@ -77,8 +77,8 @@ impl TransactionBuilder {
         self
     }
 
-    pub fn set_from(mut self, from: &str) -> TransactionBuilder {
-        self.from = Some(from.to_string());
+    pub fn set_from(mut self, from: &Address) -> TransactionBuilder {
+        self.from = Some(from.clone());
         self
     }
 

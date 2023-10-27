@@ -120,7 +120,7 @@ impl LedgerClient {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::signer::signer::test::signer;
+    use crate::{signer::signer::test::basic_signer, BasicSigner};
     use std::{env, fs};
 
     pub const CHAIN_ID: u64 = 1337;
@@ -169,14 +169,9 @@ pub mod test {
         ]
     }
 
-    pub fn client() -> LedgerClient {
-        LedgerClient::new(
-            CHAIN_ID,
-            NODE_ADDRESS,
-            &contracts(),
-            Some(Box::new(signer())),
-        )
-        .unwrap()
+    pub fn client(signer: Option<BasicSigner>) -> LedgerClient {
+        let signer = signer.unwrap_or_else(|| basic_signer());
+        LedgerClient::new(CHAIN_ID, NODE_ADDRESS, &contracts(), Some(Box::new(signer))).unwrap()
     }
 
     mod create {
@@ -184,7 +179,7 @@ pub mod test {
 
         #[test]
         fn create_client_test() {
-            client();
+            client(None);
         }
     }
 
@@ -195,7 +190,7 @@ pub mod test {
 
         #[async_std::test]
         async fn client_ping_test() {
-            let client = client();
+            let client = client(None);
             assert_eq!(PingStatus::ok(), client.ping().await.unwrap())
         }
 
@@ -206,7 +201,7 @@ pub mod test {
                 CHAIN_ID,
                 wrong_node_address,
                 &contracts(),
-                Some(Box::new(signer())),
+                Some(Box::new(basic_signer())),
             )
             .unwrap();
             match client.ping().await.unwrap().status {

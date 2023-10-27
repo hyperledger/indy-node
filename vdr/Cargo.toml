@@ -24,6 +24,7 @@ async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
 async-trait = "0.1.73"
 hex = "0.4.3"
 futures = "0.3.28"
+once_cell = "1.18.0"
 secp256k1 = { version = "0.28.0", features = ["recovery", "rand"] }
 serde = "1.0.188"
 serde_derive = "1.0.188"

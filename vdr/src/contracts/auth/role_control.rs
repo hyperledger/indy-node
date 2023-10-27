@@ -1,14 +1,9 @@
-use std::str::FromStr;
-
-use web3::ethabi::ethereum_types::Address;
-
 use crate::{
     client::{
-        ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
-        TransactionType,
+        Address, LedgerClient, Transaction, TransactionBuilder, TransactionParser, TransactionType,
     },
     contracts::auth::{HasRole, Role},
-    error::{VdrError, VdrResult},
+    error::VdrResult,
 };
 
 /// RoleControl contract methods
@@ -33,22 +28,15 @@ impl RoleControl {
     /// Write transaction to sign and submit
     pub fn build_assign_role_transaction(
         client: &LedgerClient,
-        from: &str,
+        from: &Address,
         role: &Role,
-        account: &str,
+        account: &Address,
     ) -> VdrResult<Transaction> {
-        let acc_address = Address::from_str(account).map_err(|err| {
-            VdrError::CommonInvalidData(format!(
-                "Unable to parse account address. Err: {:?}",
-                err.to_string()
-            ))
-        })?;
-
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_ASSIGN_ROLE)
             .add_param(role.clone().into())
-            .add_param(ContractParam::Address(acc_address))
+            .add_param(account.clone().try_into()?)
             .set_type(TransactionType::Write)
             .set_from(from)
             .build(&client)
@@ -66,22 +54,15 @@ impl RoleControl {
     /// Write transaction to sign and submit
     pub fn build_revoke_role_transaction(
         client: &LedgerClient,
-        from: &str,
+        from: &Address,
         role: &Role,
-        account: &str,
+        account: &Address,
     ) -> VdrResult<Transaction> {
-        let acc_address = Address::from_str(account).map_err(|err| {
-            VdrError::CommonInvalidData(format!(
-                "Unable to parse account address. Err: {:?}",
-                err.to_string()
-            ))
-        })?;
-
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_REVOKE_ROLE)
             .add_param(role.clone().into())
-            .add_param(ContractParam::Address(acc_address))
+            .add_param(account.clone().try_into()?)
             .set_type(TransactionType::Write)
             .set_from(from)
             .build(&client)
@@ -99,20 +80,13 @@ impl RoleControl {
     pub fn build_has_role_transaction(
         client: &LedgerClient,
         role: &Role,
-        account: &str,
+        account: &Address,
     ) -> VdrResult<Transaction> {
-        let acc_address = Address::from_str(account).map_err(|err| {
-            VdrError::CommonInvalidData(format!(
-                "Unable to parse account address. Err: {:?}",
-                err.to_string()
-            ))
-        })?;
-
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_HAS_ROLE)
             .add_param(role.clone().into())
-            .add_param(ContractParam::Address(acc_address))
+            .add_param(account.clone().try_into()?)
             .set_type(TransactionType::Read)
             .build(&client)
     }
@@ -127,12 +101,12 @@ impl RoleControl {
     /// Read transaction to submit
     pub fn build_get_role_transaction(
         client: &LedgerClient,
-        account: &str,
+        account: &Address,
     ) -> VdrResult<Transaction> {
         TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_GET_ROLE)
-            .add_param(ContractParam::Address(account.parse().unwrap()))
+            .add_param(account.clone().try_into()?)
             .set_type(TransactionType::Read)
             .build(&client)
     }
@@ -179,9 +153,9 @@ impl RoleControl {
     /// Receipt of executed transaction
     pub async fn assign_role(
         client: &LedgerClient,
-        from: &str,
+        from: &Address,
         role: &Role,
-        account: &str,
+        account: &Address,
     ) -> VdrResult<String> {
         let transaction = Self::build_assign_role_transaction(client, from, role, account)?;
         client.sign_and_submit(&transaction).await
@@ -199,9 +173,9 @@ impl RoleControl {
     /// Receipt of executed transaction
     pub async fn revoke_role(
         client: &LedgerClient,
-        from: &str,
+        from: &Address,
         role: &Role,
-        account: &str,
+        account: &Address,
     ) -> VdrResult<String> {
         let transaction = Self::build_revoke_role_transaction(client, from, role, account)?;
         client.sign_and_submit(&transaction).await
@@ -216,7 +190,11 @@ impl RoleControl {
     ///
     /// # Returns
     /// Account has role result
-    pub async fn has_role(client: &LedgerClient, role: &Role, account: &str) -> VdrResult<bool> {
+    pub async fn has_role(
+        client: &LedgerClient,
+        role: &Role,
+        account: &Address,
+    ) -> VdrResult<bool> {
         let transaction = Self::build_has_role_transaction(client, role, account)?;
         let result = client.submit_transaction(&transaction).await?;
         Self::parse_has_role_result(client, &result)
@@ -230,7 +208,7 @@ impl RoleControl {
     ///
     /// # Returns
     /// Account's role
-    pub async fn get_role(client: &LedgerClient, account: &str) -> VdrResult<Role> {
+    pub async fn get_role(client: &LedgerClient, account: &Address) -> VdrResult<Role> {
         let transaction = Self::build_get_role_transaction(client, account)?;
         let result = client.submit_transaction(&transaction).await?;
         Self::parse_get_role_result(client, &result)
@@ -247,12 +225,16 @@ pub mod test {
 
     pub const NEW_ACCOUNT: &'static str = "0x0886328869e4e1f401e1052a5f4aae8b45f42610";
 
+    fn account() -> Address {
+        Address::new(NEW_ACCOUNT)
+    }
+
     mod build_assign_role_transaction {
         use super::*;
 
         #[test]
         fn build_assign_role_transaction_test() {
-            let client = client();
+            let client = client(None);
             let expected_data = vec![
                 136, 165, 191, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 134, 50,
@@ -261,15 +243,15 @@ pub mod test {
 
             let transaction = RoleControl::build_assign_role_transaction(
                 &client,
-                ACCOUNT,
+                &ACCOUNT,
                 &Role::Trustee,
-                NEW_ACCOUNT,
+                &account(),
             )
             .unwrap();
 
             let expected_transaction = Transaction {
                 type_: TransactionType::Write,
-                from: Some(ACCOUNT.to_string()),
+                from: Some(ACCOUNT.clone()),
                 to: ROLE_CONTROL_ADDRESS.to_string(),
                 chain_id: CHAIN_ID,
                 data: expected_data,
@@ -285,7 +267,7 @@ pub mod test {
 
         #[test]
         fn build_revoke_role_transaction_test() {
-            let client = client();
+            let client = client(None);
             let expected_data = vec![
                 76, 187, 135, 211, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 134, 50,
@@ -294,15 +276,15 @@ pub mod test {
 
             let transaction = RoleControl::build_revoke_role_transaction(
                 &client,
-                ACCOUNT,
+                &ACCOUNT,
                 &Role::Trustee,
-                NEW_ACCOUNT,
+                &account(),
             )
             .unwrap();
 
             let expected_transaction = Transaction {
                 type_: TransactionType::Write,
-                from: Some(ACCOUNT.to_string()),
+                from: Some(ACCOUNT.clone()),
                 to: ROLE_CONTROL_ADDRESS.to_string(),
                 chain_id: CHAIN_ID,
                 data: expected_data,
@@ -318,13 +300,13 @@ pub mod test {
 
         #[test]
         fn build_get_role_transaction_test() {
-            let client = client();
+            let client = client(None);
             let expected_data = vec![
-                68, 39, 103, 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 226, 219, 108, 141, 198,
-                198, 129, 187, 93, 106, 209, 33, 161, 7, 243, 0, 233, 178, 181,
+                68, 39, 103, 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 134, 50, 136, 105, 228,
+                225, 244, 1, 225, 5, 42, 95, 74, 174, 139, 69, 244, 38, 16,
             ];
 
-            let transaction = RoleControl::build_get_role_transaction(&client, ACCOUNT).unwrap();
+            let transaction = RoleControl::build_get_role_transaction(&client, &account()).unwrap();
 
             let expected_transaction = Transaction {
                 type_: TransactionType::Read,
@@ -344,7 +326,7 @@ pub mod test {
 
         #[test]
         fn parse_get_role_result_test() {
-            let client = client();
+            let client = client(None);
             let result = vec![0; 32];
             let expected_role = Role::Empty;
 
@@ -359,15 +341,16 @@ pub mod test {
 
         #[test]
         fn build_has_role_transaction_test() {
-            let client = client();
+            let client = client(None);
             let expected_data = vec![
                 158, 151, 184, 246, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 240, 226, 219,
-                108, 141, 198, 198, 129, 187, 93, 106, 209, 33, 161, 7, 243, 0, 233, 178, 181,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 134, 50,
+                136, 105, 228, 225, 244, 1, 225, 5, 42, 95, 74, 174, 139, 69, 244, 38, 16,
             ];
 
             let transaction =
-                RoleControl::build_has_role_transaction(&client, &Role::Trustee, ACCOUNT).unwrap();
+                RoleControl::build_has_role_transaction(&client, &Role::Trustee, &account())
+                    .unwrap();
 
             let expected_transaction = Transaction {
                 type_: TransactionType::Read,
@@ -387,7 +370,7 @@ pub mod test {
 
         #[test]
         fn parse_has_role_result_test() {
-            let client = client();
+            let client = client(None);
             let result = vec![0; 32];
             let expected_has_role = false;
 
