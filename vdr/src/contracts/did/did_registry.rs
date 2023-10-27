@@ -1,6 +1,6 @@
 use crate::{
     client::{
-        ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
+        Address, ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
         TransactionType,
     },
     contracts::did::types::did_doc::{DidDocument, DidDocumentWithMeta},
@@ -29,7 +29,7 @@ impl DidRegistry {
     /// Write transaction to sign and submit
     pub fn build_create_did_transaction(
         client: &LedgerClient,
-        from: &str,
+        from: &Address,
         did_doc: &DidDocument,
     ) -> VdrResult<Transaction> {
         TransactionBuilder::new()
@@ -52,7 +52,7 @@ impl DidRegistry {
     /// Write transaction to sign and submit
     pub fn build_update_did_transaction(
         client: &LedgerClient,
-        from: &str,
+        from: &Address,
         did_doc: &DidDocument,
     ) -> VdrResult<Transaction> {
         TransactionBuilder::new()
@@ -75,7 +75,7 @@ impl DidRegistry {
     /// Write transaction to sign and submit
     pub fn build_deactivate_did_transaction(
         client: &LedgerClient,
-        from: &str,
+        from: &Address,
         did: &DID,
     ) -> VdrResult<Transaction> {
         TransactionBuilder::new()
@@ -134,7 +134,7 @@ impl DidRegistry {
     /// receipt of executed transaction
     pub async fn create_did(
         client: &LedgerClient,
-        from: &str,
+        from: &Address,
         did_doc: &DidDocument,
     ) -> VdrResult<String> {
         let transaction = Self::build_create_did_transaction(client, from, did_doc)?;
@@ -152,7 +152,7 @@ impl DidRegistry {
     /// receipt of executed transaction
     pub async fn update_did(
         client: &LedgerClient,
-        from: &str,
+        from: &Address,
         did_doc: &DidDocument,
     ) -> VdrResult<String> {
         let transaction = Self::build_update_did_transaction(client, from, did_doc)?;
@@ -168,7 +168,11 @@ impl DidRegistry {
     ///
     /// # Returns
     /// receipt of executed transaction
-    pub async fn deactivate_did(client: &LedgerClient, from: &str, did: &DID) -> VdrResult<String> {
+    pub async fn deactivate_did(
+        client: &LedgerClient,
+        from: &Address,
+        did: &DID,
+    ) -> VdrResult<String> {
         let transaction = Self::build_deactivate_did_transaction(client, from, did)?;
         client.sign_and_submit(&transaction).await
     }
@@ -195,7 +199,7 @@ pub mod test {
     use crate::{
         client::test::{client, CHAIN_ID, DID_REGISTRY_ADDRESS},
         contracts::did::types::did_doc::test::{did_doc, ISSUER_ID},
-        signer::signer::test::ACCOUNT,
+        signer::basic_signer::test::ACCOUNT,
         DID,
     };
 
@@ -204,7 +208,7 @@ pub mod test {
     #[cfg(feature = "ledger_test")]
     pub async fn create_did(client: &LedgerClient) -> DidDocument {
         let did_doc = did_doc(None);
-        let _receipt = DidRegistry::create_did(&client, ACCOUNT, &did_doc)
+        let _receipt = DidRegistry::create_did(&client, &ACCOUNT, &did_doc)
             .await
             .unwrap();
         did_doc
@@ -223,20 +227,20 @@ pub mod test {
 
         #[test]
         fn build_create_did_transaction_test() {
-            let client = client();
+            let client = client(None);
             let transaction = DidRegistry::build_create_did_transaction(
                 &client,
-                ACCOUNT,
+                &ACCOUNT,
                 &did_doc(Some(ISSUER_ID)),
             )
             .unwrap();
             let expected_transaction = Transaction {
                 type_: TransactionType::Write,
-                from: Some(ACCOUNT.to_string()),
+                from: Some(ACCOUNT.clone()),
                 to: DID_REGISTRY_ADDRESS.to_string(),
                 chain_id: CHAIN_ID,
                 data: vec![
-                    37, 193, 124, 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    134, 153, 87, 165, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 96, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 224, 0, 0,
@@ -326,7 +330,7 @@ pub mod test {
 
         #[test]
         fn build_create_did_transaction_with_two_keys_and_service_test() {
-            let client = client();
+            let client = client(None);
 
             let did = DidDocument {
                 context: StringOrVector::Vector(vec!["https://www.w3.org/ns/did/v1".to_string()]),
@@ -368,14 +372,14 @@ pub mod test {
                 also_known_as: Some(vec![]),
             };
             let transaction =
-                DidRegistry::build_create_did_transaction(&client, ACCOUNT, &did).unwrap();
+                DidRegistry::build_create_did_transaction(&client, &ACCOUNT, &did).unwrap();
             let expected_transaction = Transaction {
                 type_: TransactionType::Write,
-                from: Some(ACCOUNT.to_string()),
+                from: Some(ACCOUNT.clone()),
                 to: DID_REGISTRY_ADDRESS.to_string(),
                 chain_id: CHAIN_ID,
                 data: vec![
-                    37, 193, 124, 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    134, 153, 87, 165, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 96, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 224, 0, 0,
@@ -390,10 +394,10 @@ pub mod test {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 192, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 224, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 14, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 28, 104, 116,
+                    0, 0, 13, 224, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 28, 104, 116,
                     116, 112, 115, 58, 47, 47, 119, 119, 119, 46, 119, 51, 46, 111, 114, 103, 47,
                     110, 115, 47, 100, 105, 100, 47, 118, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 100,
@@ -511,8 +515,8 @@ pub mod test {
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 1, 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 1, 192, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 224, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 1, 128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 160, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 100, 105, 100,
                     58, 105, 110, 100, 121, 50, 58, 116, 101, 115, 116, 110, 101, 116, 58, 51, 76,
                     112, 106, 115, 122, 107, 103, 84, 109, 69, 51, 113, 84, 104, 103, 101, 50, 53,
@@ -521,14 +525,12 @@ pub mod test {
                     0, 0, 0, 0, 0, 0, 0, 14, 68, 73, 68, 67, 111, 109, 109, 83, 101, 114, 118, 105,
                     99, 101, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 49, 50, 55, 46, 48, 46, 48, 46, 49, 58,
-                    53, 53, 53, 53, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    14, 49, 50, 55, 46, 48, 46, 48, 46, 49, 58, 53, 53, 53, 53, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0,
                 ],
                 signed: None,
             };
@@ -541,7 +543,7 @@ pub mod test {
 
         #[test]
         fn build_resolve_did_transaction_test() {
-            let client = client();
+            let client = client(None);
             let transaction =
                 DidRegistry::build_resolve_did_transaction(&client, &DID::new(ISSUER_ID)).unwrap();
             let expected_transaction = Transaction {
@@ -568,7 +570,7 @@ pub mod test {
 
         #[test]
         fn parse_resolve_did_result_test() {
-            let client = client();
+            let client = client(None);
             let data = vec![
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

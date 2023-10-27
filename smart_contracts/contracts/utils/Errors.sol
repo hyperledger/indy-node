@@ -6,7 +6,6 @@ pragma solidity ^0.8.20;
  * @dev A library that provides utility functions for error handling.
  */
 library Errors {
-    
     /**
      * @dev Compares the selector of the provided error reason with a custom error selector.
      * @param reason The error reason returned by a failed contract call, encoded in bytes.
@@ -23,6 +22,7 @@ library Errors {
      * @param reason The error reason returned by a failed contract call, encoded in bytes.
      */
     function rethrow(bytes memory reason) internal pure {
+        // solhint-disable-next-line no-inline-assembly
         assembly {
             let start := add(reason, 0x20)
             let end := add(reason, mload(reason))

@@ -30,7 +30,11 @@ impl LedgerClient {
         chain_id: u64,
         node_address: &str,
         contract_configs: &Vec<ContractConfig>,
-        signer: Option<Box<dyn Signer + 'static + Send + Sync>>,
+        // TODO: It is simplier to just pass signer only into corresponding `sign_transaction` function.
+        //  But we also have single step functions like `create_did` where we will have to to pass call back as well
+        //  Transaction methods already depends on the client, so it make sence to accept signer on client create
+        //   Same time we can be rework it to accept callback instead of interface -> simplier from FFI perspective
+        signer: Option<Box<dyn Signer>>,
     ) -> VdrResult<LedgerClient> {
         let client = Web3Client::new(node_address, signer)?;
         let contracts = Self::init_contracts(&client, &contract_configs)?;
@@ -120,8 +124,9 @@ impl LedgerClient {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::signer::signer::test::signer;
     use std::{env, fs};
+    use crate::signer::BasicSigner;
+    use crate::signer::basic_signer::test::basic_signer;
 
     pub const CHAIN_ID: u64 = 1337;
     pub const NODE_ADDRESS: &'static str = "http://127.0.0.1:8545";
@@ -138,6 +143,8 @@ pub mod test {
         "0x0000000000000000000000000000000000007777";
     pub const VALIDATOR_CONTROL_PATH: &'static str =
         "network/ValidatorControl.sol/ValidatorControl.json";
+    pub const ROLE_CONTROL_ADDRESS: &'static str = "0x0000000000000000000000000000000000006666";
+    pub const ROLE_CONTROL_PATH: &'static str = "auth/RoleControl.sol/RoleControl.json";
 
     fn build_contract_path(contract_path: &str) -> String {
         let mut cur_dir = env::current_dir().unwrap();
@@ -168,17 +175,16 @@ pub mod test {
                 address: VALIDATOR_CONTROL_ADDRESS.to_string(),
                 spec_path: build_contract_path(VALIDATOR_CONTROL_PATH),
             },
+            ContractConfig {
+                address: ROLE_CONTROL_ADDRESS.to_string(),
+                spec_path: build_contract_path(ROLE_CONTROL_PATH),
+            },
         ]
     }
 
-    pub fn client() -> LedgerClient {
-        LedgerClient::new(
-            CHAIN_ID,
-            NODE_ADDRESS,
-            &contracts(),
-            Some(Box::new(signer())),
-        )
-        .unwrap()
+    pub fn client(signer: Option<BasicSigner>) -> LedgerClient {
+        let signer = signer.unwrap_or_else(|| basic_signer());
+        LedgerClient::new(CHAIN_ID, NODE_ADDRESS, &contracts(), Some(Box::new(signer))).unwrap()
     }
 
     mod create {
@@ -186,7 +192,7 @@ pub mod test {
 
         #[test]
         fn create_client_test() {
-            client();
+            client(None);
         }
     }
 
@@ -197,7 +203,7 @@ pub mod test {
 
         #[async_std::test]
         async fn client_ping_test() {
-            let client = client();
+            let client = client(None);
             assert_eq!(PingStatus::ok(), client.ping().await.unwrap())
         }
 
@@ -208,7 +214,7 @@ pub mod test {
                 CHAIN_ID,
                 wrong_node_address,
                 &contracts(),
-                Some(Box::new(signer())),
+                Some(Box::new(basic_signer())),
             )
             .unwrap();
             match client.ping().await.unwrap().status {

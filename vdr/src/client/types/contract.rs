@@ -1,10 +1,11 @@
 use crate::error::{VdrError, VdrResult};
 
 use serde::Deserialize;
+use serde_derive::Serialize;
 use web3::ethabi::Token;
 
 /// Contract configuration
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct ContractConfig {
     /// Address of deployed contract
     pub address: String,
@@ -117,6 +118,21 @@ impl ContractOutput {
                 "Missing uint value".to_string(),
             ))?
             .as_u128())
+    }
+
+    pub fn get_u8(&self, index: usize) -> VdrResult<u8> {
+        Ok(self
+            .0
+            .get(index)
+            .ok_or(VdrError::ContractInvalidResponseData(
+                "Missing uint value".to_string(),
+            ))?
+            .clone()
+            .into_uint()
+            .ok_or(VdrError::ContractInvalidResponseData(
+                "Missing uint value".to_string(),
+            ))?
+            .as_u32() as u8)
     }
 
     pub fn get_string_array(&self, index: usize) -> VdrResult<Vec<String>> {

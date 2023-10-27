@@ -8,26 +8,26 @@ import { UpgradeControlInterface } from "contracts/upgrade/UpgradeControlInterfa
 
 /**
  * @title ControlledUpgradeable
- * @dev This contract provides a foundational structure for upgradeable contracts, 
+ * @dev This contract provides a foundational structure for upgradeable contracts,
  * encapsulating common boilerplate code necessary for such functionality.
  */
 abstract contract ControlledUpgradeable is UUPSUpgradeable, Initializable {
-  /**
-   * @dev Reference to the contract that manages contract upgrades.
-   */
-  UpgradeControlInterface private _upgradeControl;
+    /**
+     * @dev Reference to the contract that manages contract upgrades.
+     */
+    UpgradeControlInterface private _upgradeControl;
 
-  /**
-   * @dev Function to initialize the upgrade control reference. 
-   * @notice Must be called during initialization of derived contract.
-   * @param upgradeControlAddress The address of the upgrade control contract.
-   */
-  function _initializeUpgradeControl(address upgradeControlAddress) internal onlyInitializing {
-    _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
-  }
+    /**
+     * @dev Function to initialize the upgrade control reference.
+     * @notice Must be called during initialization of derived contract.
+     * @param upgradeControlAddress The address of the upgrade control contract.
+     */
+    function _initializeUpgradeControl(address upgradeControlAddress) internal onlyInitializing {
+        _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
+    }
 
-  /// @inheritdoc UUPSUpgradeable
-  function _authorizeUpgrade(address newImplementation) internal view override {
-      _upgradeControl.ensureSufficientApprovals(address(this), newImplementation);
-  }
+    /// @inheritdoc UUPSUpgradeable
+    function _authorizeUpgrade(address newImplementation) internal view override {
+        _upgradeControl.ensureSufficientApprovals(address(this), newImplementation);
+    }
 }

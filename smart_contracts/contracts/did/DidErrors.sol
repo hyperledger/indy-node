@@ -30,4 +30,3 @@ error DidHasBeenDeactivated(string did);
  * @dev Error that occurs when the specified DID is incorrect.
  */
 error IncorrectDid(string did);
-

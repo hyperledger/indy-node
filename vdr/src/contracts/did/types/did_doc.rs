@@ -324,12 +324,12 @@ impl Into<ContractParam> for Service {
     fn into(self) -> ContractParam {
         let (endpoint, accept, routing_keys) = match self.service_endpoint {
             ServiceEndpoint::String(endpoint) => (
-                ContractParam::Array(vec![ContractParam::String(endpoint.to_string())]),
+                ContractParam::String(endpoint.to_string()),
                 ContractParam::Array(vec![]),
                 ContractParam::Array(vec![]),
             ),
             ServiceEndpoint::Object(endpoint) => (
-                ContractParam::Array(vec![ContractParam::String(endpoint.uri.to_string())]),
+                ContractParam::String(endpoint.uri.to_string()),
                 ContractParam::Array(
                     endpoint
                         .accept
