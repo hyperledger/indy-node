@@ -7,18 +7,17 @@ import { UUPSUpgradeable } from "@openzeppelin/contracts/proxy/utils/UUPSUpgrade
 import { UpgradeControlInterface } from "../upgrade/UpgradeControlInterface.sol";
 
 contract UpgradablePrototypeV2 is UUPSUpgradeable, Initializable {
-
-    UpgradeControlInterface _upgradeControl;
+    UpgradeControlInterface private _upgradeControl;
 
     function initialize(address upgradeControlAddress) public initializer {
-         _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
-    }
-
-    function _authorizeUpgrade(address newImplementation) internal view override {
-        _upgradeControl.ensureSufficientApprovals(address(this), newImplementation);
+        _upgradeControl = UpgradeControlInterface(upgradeControlAddress);
     }
 
     function getVersion() public pure returns (string memory version) {
         return "2.0";
+    }
+
+    function _authorizeUpgrade(address newImplementation) internal view override {
+        _upgradeControl.ensureSufficientApprovals(address(this), newImplementation);
     }
 }

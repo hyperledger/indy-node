@@ -10,20 +10,14 @@ import { Errors } from "../utils/Errors.sol";
 import { CredentialDefinition, CredentialDefinitionWithMetadata } from "./CredentialDefinitionTypes.sol";
 import { CredentialDefinitionRegistryInterface } from "./CredentialDefinitionRegistryInterface.sol";
 import { CredentialDefinitionValidator } from "./CredentialDefinitionValidator.sol";
-import {
-    CredentialDefinitionAlreadyExist,
-    CredentialDefinitionNotFound,
-    IssuerHasBeenDeactivated,
-    IssuerNotFound 
-} from "./ClErrors.sol";
+import { CredentialDefinitionAlreadyExist, CredentialDefinitionNotFound, IssuerHasBeenDeactivated, IssuerNotFound } from "./ClErrors.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
-import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
 using CredentialDefinitionValidator for CredentialDefinition;
 using { toSlice } for string;
 
 contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, ControlledUpgradeable {
-
     /**
      * @dev Reference to the contract that manages DIDs
      */
@@ -51,8 +45,8 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
      * Сhecks that the credential definition exist
      */
     modifier _credDefExist(string memory id) {
-         if (_credDefs[id].metadata.created == 0) revert CredentialDefinitionNotFound(id);
-         _;
+        if (_credDefs[id].metadata.created == 0) revert CredentialDefinitionNotFound(id);
+        _;
     }
 
     /**
@@ -90,12 +84,9 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
     }
 
     /// @inheritdoc CredentialDefinitionRegistryInterface
-    function createCredentialDefinition(CredentialDefinition calldata credDef)
-        public virtual
-        _uniqueCredDefId(credDef.id)
-        _schemaExist(credDef.schemaId)
-        _issuerActive(credDef.issuerId)
-    {
+    function createCredentialDefinition(
+        CredentialDefinition calldata credDef
+    ) public virtual _uniqueCredDefId(credDef.id) _schemaExist(credDef.schemaId) _issuerActive(credDef.issuerId) {
         // credDef.requireValidId(); For migration from Indy we need to disable this check as schema id there represented as seq_no
         credDef.requireValidType();
         credDef.requireTag();
@@ -108,11 +99,9 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
     }
 
     /// @inheritdoc CredentialDefinitionRegistryInterface
-    function resolveCredentialDefinition(string calldata id)
-        public view virtual
-        _credDefExist(id)
-        returns (CredentialDefinitionWithMetadata memory credDefWithMetadata)
-    {
+    function resolveCredentialDefinition(
+        string calldata id
+    ) public view virtual _credDefExist(id) returns (CredentialDefinitionWithMetadata memory credDefWithMetadata) {
         return _credDefs[id];
     }
 }

@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { Unauthorized} from "../auth/AuthErrors.sol";
+import { Unauthorized } from "../auth/AuthErrors.sol";
 import { RoleControlInterface } from "../auth/RoleControl.sol";
 import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
 
 import { ValidatorSmartContractInterface } from "./ValidatorSmartContractInterface.sol";
 
 contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradeable {
-
     /**
      * @dev Type describing initial validator details.
      */
@@ -28,7 +27,7 @@ contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradea
     /**
      * @dev Max allowed number of validators.
      */
-    uint constant MAX_VALIDATORS = 256;
+    uint16 private constant _MAX_VALIDATORS = 256;
 
     /**
      * @dev Reference to the contract managing auth permissions.
@@ -38,12 +37,12 @@ contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradea
     /**
      * @dev List of active validators.
      */
-    address[] private validators;
+    address[] private _validators;
 
     /**
      * @dev Mapping of validator address to validator info (owner, index, active).
      */
-    mapping(address validatorAddress => ValidatorInfo validatorInfo) private validatorInfos;
+    mapping(address validatorAddress => ValidatorInfo validatorInfo) private _validatorInfos;
 
     /**
      * @dev Modifier that checks that the sender account has Steward role assigned.
@@ -58,7 +57,7 @@ contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradea
      */
     modifier _nonZeroValidatorAddress(address validator) {
         if (validator == address(0)) revert InvalidValidatorAddress();
-         _;
+        _;
     }
 
     function initialize(
@@ -67,16 +66,16 @@ contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradea
         InitialValidatorInfo[] memory initialValidators
     ) public reinitializer(1) {
         if (initialValidators.length == 0) revert InitialValidatorsRequired();
-        if (initialValidators.length >= MAX_VALIDATORS) revert ExceedsValidatorLimit(MAX_VALIDATORS);
+        if (initialValidators.length >= _MAX_VALIDATORS) revert ExceedsValidatorLimit(_MAX_VALIDATORS);
 
-        for (uint i = 0; i < initialValidators.length; i++) {
+        for (uint256 i = 0; i < initialValidators.length; i++) {
             if (initialValidators[i].account == address(0)) revert InvalidValidatorAccountAddress();
             if (initialValidators[i].validator == address(0)) revert InvalidValidatorAddress();
 
             InitialValidatorInfo memory validator = initialValidators[i];
 
-            validators.push(validator.validator);
-            validatorInfos[validator.validator] = ValidatorInfo(validator.account, uint8(i));
+            _validators.push(validator.validator);
+            _validatorInfos[validator.validator] = ValidatorInfo(validator.account, uint8(i));
         }
 
         _roleControl = RoleControlInterface(roleControlContractAddress);
@@ -84,75 +83,73 @@ contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradea
     }
 
     /**
-     * @dev Get the list of active validators.
-     */
-    function getValidators() override external view returns (address[] memory) {
-        return validators;
-    }
-
-   /**
      * @dev Adds a new validator to the list.
-     * 
+     *
      * Restrictions:
      * - Only accounts with the steward role are permitted to call this method; otherwise, will revert with an `Unauthorized` error.
      * - The validator address must be non-zero; otherwise, will revert with an `InvalidValidatorAddress` error.
      * - The total number of validators must not exceed 256; otherwise, will revert with an `ExceedsValidatorLimit` error.
      * - The validator must not already exist in the list; otherwise, will revert with an `ValidatorAlreadyExists` error.
      * - The sender of the transaction must not have an active validator; otherwise, will revert with a `SenderHasActiveValidator` error.
-     * 
+     *
      * Events:
      * - On successful validator creation, will emit a `ValidatorAdded` event.
      */
-    function addValidator(address newValidator) external _senderIsSteward _nonZeroValidatorAddress(newValidator) {
-        if (validators.length >= MAX_VALIDATORS) revert ExceedsValidatorLimit(MAX_VALIDATORS);
+    function addValidator(address newValidator) public _senderIsSteward _nonZeroValidatorAddress(newValidator) {
+        if (_validators.length >= _MAX_VALIDATORS) revert ExceedsValidatorLimit(_MAX_VALIDATORS);
 
-        uint256 validatorsCount = validators.length;
-        for (uint i=0; i < validatorsCount; i++) {
-            ValidatorInfo memory validatorInfo = validatorInfos[validators[i]];
-            if (newValidator == validators[i]) revert ValidatorAlreadyExists(validators[i]);
+        uint8 validatorsCount = uint8(_validators.length);
+        for (uint8 i = 0; i < validatorsCount; i++) {
+            ValidatorInfo memory validatorInfo = _validatorInfos[_validators[i]];
+            if (newValidator == _validators[i]) revert ValidatorAlreadyExists(_validators[i]);
             if (msg.sender == validatorInfo.account) revert SenderHasActiveValidator(msg.sender);
         }
 
-        validatorInfos[newValidator] = ValidatorInfo(msg.sender, uint8(validatorsCount));
-        validators.push(newValidator);
+        _validatorInfos[newValidator] = ValidatorInfo(msg.sender, validatorsCount);
+        _validators.push(newValidator);
 
         // emit success event
-        emit ValidatorAdded(newValidator, msg.sender, validators.length);
+        emit ValidatorAdded(newValidator, msg.sender, uint8(_validators.length));
     }
 
     /**
      * @dev Remove an existing validator from the list.
-     * 
+     *
      * Restrcitions:
      * - Only accounts with the steward role are permitted to call this method; otherwise, will revert with an `Unauthorized` error.
      * - The validator address must be non-zero; otherwise, will revert with an `InvalidValidatorAddress` error.
      * - The validator must not be last one; otherwise, will revert with an `CannotDeactivateLastValidator` error.
      * - The validator must exist; otherwise, will revert with an `ValidatorNotFound` error.
-     * 
+     *
      * Events:
      * - On successful validator removal, will emit a `ValidatorRemoved` event.
      */
-    function removeValidator(address validator) external _senderIsSteward _nonZeroValidatorAddress(validator) {
-        if (validators.length == 1) revert CannotDeactivateLastValidator();
+    function removeValidator(address validator) public _senderIsSteward _nonZeroValidatorAddress(validator) {
+        if (_validators.length == 1) revert CannotDeactivateLastValidator();
 
-        ValidatorInfo memory removedValidatorInfo = validatorInfos[validator];
+        ValidatorInfo memory removedValidatorInfo = _validatorInfos[validator];
         if (removedValidatorInfo.account == address(0)) revert ValidatorNotFound(validator);
 
         uint8 removedValidatorIndex = removedValidatorInfo.validatorIndex;
 
         // put last validator in the list on place of removed validator
-        address validatorRemoved = validators[removedValidatorIndex];
-        address validatorToBeMoved = validators[validators.length-1];
-        validators[removedValidatorIndex] = validatorToBeMoved;
+        address validatorRemoved = _validators[removedValidatorIndex];
+        address validatorToBeMoved = _validators[_validators.length - 1];
+        _validators[removedValidatorIndex] = validatorToBeMoved;
 
         // update indexes
-        validatorInfos[validatorToBeMoved].validatorIndex = removedValidatorIndex;
+        _validatorInfos[validatorToBeMoved].validatorIndex = removedValidatorIndex;
 
         // remove last validator which was copied to new place
-        validators.pop();
-        delete(validatorInfos[validatorRemoved]);
+        _validators.pop();
+        delete (_validatorInfos[validatorRemoved]);
 
         // emit success event
-        emit ValidatorRemoved(validatorRemoved, msg.sender, validators.length);
+        emit ValidatorRemoved(validatorRemoved, msg.sender, uint8(_validators.length));
+    }
+
+    /// @inheritdoc ValidatorSmartContractInterface
+    function getValidators() public view override returns (address[] memory) {
+        return _validators;
     }
 }
