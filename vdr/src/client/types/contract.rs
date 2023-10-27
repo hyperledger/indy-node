@@ -119,6 +119,21 @@ impl ContractOutput {
             .as_u128())
     }
 
+    pub fn get_u8(&self, index: usize) -> VdrResult<u8> {
+        Ok(self
+            .0
+            .get(index)
+            .ok_or(VdrError::ContractInvalidResponseData(
+                "Missing uint value".to_string(),
+            ))?
+            .clone()
+            .into_uint()
+            .ok_or(VdrError::ContractInvalidResponseData(
+                "Missing uint value".to_string(),
+            ))?
+            .as_u32() as u8)
+    }
+
     pub fn get_string_array(&self, index: usize) -> VdrResult<Vec<String>> {
         self.0
             .get(index)

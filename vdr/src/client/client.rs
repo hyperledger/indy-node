@@ -120,7 +120,7 @@ impl LedgerClient {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::signer::signer::test::signer;
+    use crate::{signer::signer::test::basic_signer, BasicSigner};
     use std::{env, fs};
 
     pub const CHAIN_ID: u64 = 1337;
@@ -134,6 +134,8 @@ pub mod test {
         "0x0000000000000000000000000000000000004444";
     pub const CRED_DEF_REGISTRY_SPEC_PATH: &'static str =
         "cl/CredentialDefinitionRegistry.sol/CredentialDefinitionRegistry.json";
+    pub const ROLE_CONTROL_ADDRESS: &'static str = "0x0000000000000000000000000000000000006666";
+    pub const ROLE_CONTROL_PATH: &'static str = "auth/RoleControl.sol/RoleControl.json";
 
     fn build_contract_path(contract_path: &str) -> String {
         let mut cur_dir = env::current_dir().unwrap();
@@ -160,17 +162,16 @@ pub mod test {
                 address: CRED_DEF_REGISTRY_ADDRESS.to_string(),
                 spec_path: build_contract_path(CRED_DEF_REGISTRY_SPEC_PATH),
             },
+            ContractConfig {
+                address: ROLE_CONTROL_ADDRESS.to_string(),
+                spec_path: build_contract_path(ROLE_CONTROL_PATH),
+            },
         ]
     }
 
-    pub fn client() -> LedgerClient {
-        LedgerClient::new(
-            CHAIN_ID,
-            NODE_ADDRESS,
-            &contracts(),
-            Some(Box::new(signer())),
-        )
-        .unwrap()
+    pub fn client(signer: Option<BasicSigner>) -> LedgerClient {
+        let signer = signer.unwrap_or_else(|| basic_signer());
+        LedgerClient::new(CHAIN_ID, NODE_ADDRESS, &contracts(), Some(Box::new(signer))).unwrap()
     }
 
     mod create {
@@ -178,7 +179,7 @@ pub mod test {
 
         #[test]
         fn create_client_test() {
-            client();
+            client(None);
         }
     }
 
@@ -189,7 +190,7 @@ pub mod test {
 
         #[async_std::test]
         async fn client_ping_test() {
-            let client = client();
+            let client = client(None);
             assert_eq!(PingStatus::ok(), client.ping().await.unwrap())
         }
 
@@ -200,7 +201,7 @@ pub mod test {
                 CHAIN_ID,
                 wrong_node_address,
                 &contracts(),
-                Some(Box::new(signer())),
+                Some(Box::new(basic_signer())),
             )
             .unwrap();
             match client.ping().await.unwrap().status {

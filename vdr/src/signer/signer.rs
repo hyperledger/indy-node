@@ -6,6 +6,7 @@ use crate::{
 use secp256k1::{All, Message, PublicKey, Secp256k1, SecretKey};
 use std::collections::HashMap;
 
+use crate::client::Address;
 use std::str::FromStr;
 use web3::signing::keccak256;
 
@@ -28,21 +29,10 @@ impl BasicSigner {
         })
     }
 
-    pub fn create_key(&mut self, private_key: Option<&str>) -> VdrResult<(String, Vec<u8>)> {
-        let private_key = match private_key {
-            Some(private_key) => SecretKey::from_str(private_key)?,
-            None => SecretKey::new(&mut rand::thread_rng()),
-        };
-        let public_key = PublicKey::from_secret_key(&self.secp, &private_key);
-        let account = self.account_from_key(&public_key);
-        self.keys.insert(
-            account.clone(),
-            KeyPair {
-                public_key,
-                private_key,
-            },
-        );
-        let public_key_bytes = public_key.serialize_uncompressed().to_vec();
+    pub fn create_key(&mut self, private_key: Option<&str>) -> VdrResult<(Address, Vec<u8>)> {
+        let (account, key_pair) = self.create_account(private_key)?;
+        let public_key_bytes = key_pair.public_key.serialize_uncompressed().to_vec();
+        self.keys.insert(account.value().to_string(), key_pair);
         Ok((account, public_key_bytes))
     }
 
@@ -55,6 +45,20 @@ impl BasicSigner {
     fn account_from_key(&self, public_key: &PublicKey) -> String {
         let hash = keccak256(&public_key.serialize_uncompressed()[1..]);
         format!("0x{}", hex::encode(&hash[12..]))
+    }
+
+    pub fn create_account(&self, private_key: Option<&str>) -> VdrResult<(Address, KeyPair)> {
+        let private_key = match private_key {
+            Some(private_key) => SecretKey::from_str(private_key)?,
+            None => SecretKey::new(&mut rand::thread_rng()),
+        };
+        let public_key = PublicKey::from_secret_key(&self.secp, &private_key);
+        let address = Address::new(&self.account_from_key(&public_key));
+        let key_pair = KeyPair {
+            public_key,
+            private_key,
+        };
+        Ok((address, key_pair))
     }
 }
 
@@ -73,12 +77,15 @@ impl Signer for BasicSigner {
 #[cfg(test)]
 pub mod test {
     use super::*;
+    use once_cell::sync::Lazy;
 
-    pub const ACCOUNT: &'static str = "0xf0e2db6c8dc6c681bb5d6ad121a107f300e9b2b5";
+    pub static ACCOUNT: Lazy<Address> =
+        Lazy::new(|| Address::new("0xf0e2db6c8dc6c681bb5d6ad121a107f300e9b2b5"));
+
     pub const PRIVATE_KEY: &'static str =
         "8bbbb1b345af56b560a5b20bd4b0ed1cd8cc9958a16262bc75118453cb546df7";
 
-    pub fn signer() -> BasicSigner {
+    pub fn basic_signer() -> BasicSigner {
         let mut signer = BasicSigner::new().unwrap();
         signer.create_key(Some(PRIVATE_KEY)).unwrap();
         signer
@@ -86,7 +93,7 @@ pub mod test {
 
     #[test]
     fn add_key_test() {
-        let basic_signer = signer();
-        basic_signer.key_for_account(ACCOUNT).unwrap();
+        let basic_signer = basic_signer();
+        basic_signer.key_for_account(ACCOUNT.value()).unwrap();
     }
 }

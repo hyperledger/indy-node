@@ -1,6 +1,6 @@
 use crate::{
     client::{
-        ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
+        Address, ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
         TransactionType,
     },
     contracts::cl::types::{
@@ -30,7 +30,7 @@ impl CredentialDefinitionRegistry {
     /// Write transaction to sign and submit
     pub fn build_create_credential_definition_transaction(
         client: &LedgerClient,
-        from: &str,
+        from: &Address,
         credential_definition: &CredentialDefinition,
     ) -> VdrResult<Transaction> {
         TransactionBuilder::new()
@@ -97,7 +97,7 @@ impl CredentialDefinitionRegistry {
     /// receipt of executed transaction
     pub async fn create_credential_definition(
         client: &LedgerClient,
-        from: &str,
+        from: &Address,
         credential_definition: &CredentialDefinition,
     ) -> VdrResult<String> {
         let transaction = Self::build_create_credential_definition_transaction(
@@ -150,11 +150,11 @@ pub mod test {
 
         #[test]
         fn build_create_credential_definition_transaction_test() {
-            let client = client();
+            let client = client(None);
             let transaction =
                 CredentialDefinitionRegistry::build_create_credential_definition_transaction(
                     &client,
-                    ACCOUNT,
+                    &ACCOUNT,
                     &credential_definition(
                         &DID::new(ISSUER_ID),
                         &SchemaId::new(SCHEMA_ID),
@@ -164,7 +164,7 @@ pub mod test {
                 .unwrap();
             let expected_transaction = Transaction {
                 type_: TransactionType::Write,
-                from: Some(ACCOUNT.to_string()),
+                from: Some(ACCOUNT.clone()),
                 to: CRED_DEF_REGISTRY_ADDRESS.to_string(),
                 chain_id: CHAIN_ID,
                 data: vec![
@@ -221,7 +221,7 @@ pub mod test {
 
         #[test]
         fn build_resolve_credential_definition_transaction_test() {
-            let client = client();
+            let client = client(None);
             let transaction =
                 CredentialDefinitionRegistry::build_resolve_credential_definition_transaction(
                     &client,
@@ -263,7 +263,7 @@ pub mod test {
 
         #[test]
         fn parse_resolve_credential_definition_result_test() {
-            let client = client();
+            let client = client(None);
             let data = vec![
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

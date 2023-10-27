@@ -1,20 +1,21 @@
 use crate::signer::Signer;
 use std::str::FromStr;
 
+use crate::client::Address;
 use web3::{
-    ethabi::Address,
+    ethabi::Address as EtabiAddress,
     signing::{Key, Signature, SigningError},
     types::H256,
 };
 
 pub struct Web3Signer<'a> {
-    account: String,
+    account: Address,
     signer: &'a Box<dyn Signer + 'static + Send + Sync>,
 }
 
 impl<'a> Web3Signer<'a> {
     pub fn new(
-        account: String,
+        account: Address,
         signer: &'a Box<dyn Signer + 'static + Send + Sync>,
     ) -> Web3Signer<'a> {
         Web3Signer { account, signer }
@@ -25,7 +26,7 @@ impl<'a> Key for Web3Signer<'a> {
     fn sign(&self, message: &[u8], chain_id: Option<u64>) -> Result<Signature, SigningError> {
         let (recovery_id, signature) = self
             .signer
-            .sign(message, &self.account)
+            .sign(message, &self.account.value())
             .map_err(|_| SigningError::InvalidMessage)?;
 
         let v = match chain_id {
@@ -43,7 +44,7 @@ impl<'a> Key for Web3Signer<'a> {
     fn sign_message(&self, message: &[u8]) -> Result<Signature, SigningError> {
         let (recovery_id, signature) = self
             .signer
-            .sign(message, &self.account)
+            .sign(message, &self.account.value())
             .map_err(|_| SigningError::InvalidMessage)?;
 
         Ok(Signature {
@@ -53,7 +54,7 @@ impl<'a> Key for Web3Signer<'a> {
         })
     }
 
-    fn address(&self) -> Address {
-        Address::from_str(&self.account).unwrap_or_default()
+    fn address(&self) -> EtabiAddress {
+        EtabiAddress::from_str(&self.account.value()).unwrap_or_default()
     }
 }

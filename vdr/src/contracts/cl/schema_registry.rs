@@ -1,6 +1,6 @@
 use crate::{
     client::{
-        ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
+        Address, ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
         TransactionType,
     },
     contracts::cl::types::{
@@ -29,7 +29,7 @@ impl SchemaRegistry {
     /// Write transaction to sign and submit
     pub fn build_create_schema_transaction(
         client: &LedgerClient,
-        from: &str,
+        from: &Address,
         schema: &Schema,
     ) -> VdrResult<Transaction> {
         TransactionBuilder::new()
@@ -88,7 +88,7 @@ impl SchemaRegistry {
     /// receipt of executed transaction
     pub async fn create_schema(
         client: &LedgerClient,
-        from: &str,
+        from: &Address,
         schema: &Schema,
     ) -> VdrResult<String> {
         let transaction = Self::build_create_schema_transaction(client, from, schema)?;
@@ -127,7 +127,7 @@ pub mod test {
     #[cfg(feature = "ledger_test")]
     pub async fn create_schema(client: &LedgerClient, issuer_id: &DID) -> Schema {
         let schema = schema(issuer_id, None);
-        let _receipt = SchemaRegistry::create_schema(&client, ACCOUNT, &schema)
+        let _receipt = SchemaRegistry::create_schema(&client, &ACCOUNT, &schema)
             .await
             .unwrap();
         schema
@@ -138,16 +138,16 @@ pub mod test {
 
         #[test]
         fn build_create_schema_transaction_test() {
-            let client = client();
+            let client = client(None);
             let transaction = SchemaRegistry::build_create_schema_transaction(
                 &client,
-                ACCOUNT,
+                &ACCOUNT,
                 &schema(&DID::new(ISSUER_ID), Some(SCHEMA_NAME)),
             )
             .unwrap();
             let expected_transaction = Transaction {
                 type_: TransactionType::Write,
-                from: Some(ACCOUNT.to_string()),
+                from: Some(ACCOUNT.clone()),
                 to: SCHEMA_REGISTRY_ADDRESS.to_string(),
                 chain_id: CHAIN_ID,
                 data: vec![
@@ -196,7 +196,7 @@ pub mod test {
 
         #[test]
         fn build_resolve_schema_transaction_test() {
-            let client = client();
+            let client = client(None);
             let transaction = SchemaRegistry::build_resolve_schema_transaction(
                 &client,
                 &schema(&DID::new(ISSUER_ID), Some(SCHEMA_NAME)).id,
@@ -229,7 +229,7 @@ pub mod test {
 
         #[test]
         fn parse_resolve_schema_result_test() {
-            let client = client();
+            let client = client(None);
             let data = vec![
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
