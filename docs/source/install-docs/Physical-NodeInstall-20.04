@@ -63,6 +63,8 @@ The following steps are one way to adhere to the Indy Node guidelines for instal
                                 - 8.8.8.8
                                 - 8.8.4.4
                                 - 1.1.1.1
+                        dhcp6: no
+                        link-local: [ ]
                     ens6:
                         addresses:
                            - 172.31.128.159/24
@@ -83,6 +85,8 @@ The following steps are one way to adhere to the Indy Node guidelines for instal
                                 - 8.8.8.8
                                 - 8.8.4.4
                                 - 1.1.1.1
+                        dhcp6: no
+                        link-local: [ ]
     7. Please double and triple check that all of the information in the above file is correct before proceeding. Mistakes in the netplan file can cause you to lose access to your VM and you might have to start over.
     8. `netplan generate`
     9. If no output appears (no errors) run:
