@@ -66,6 +66,7 @@ export class DidRegistry extends Contract {
         alsoKnownAs: didDocumentStorage.document.alsoKnownAs.map((alsoKnownAs: string) => alsoKnownAs),
       },
       metadata: {
+        creatorAddress: didDocumentStorage.metadata.creatorAddress,
         created: didDocumentStorage.metadata.created,
         updated: didDocumentStorage.metadata.updated,
         deactivated: didDocumentStorage.metadata.deactivated,

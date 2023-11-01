@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
 
-import { DidAlreadyExist, DidHasBeenDeactivated, DidNotFound } from "./DidErrors.sol";
+import { DidAlreadyExist, DidHasBeenDeactivated, DidNotFound, SenderIsNotCreator } from "./DidErrors.sol";
 import { DidRegistryInterface } from "./DidRegistryInterface.sol";
 import { DidDocument, DidDocumentStorage } from "./DidTypes.sol";
 import { DidValidator } from "./DidValidator.sol";
@@ -38,6 +38,15 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
         _;
     }
 
+    /**
+     * Сhecks that method was called by did creator
+     */
+    modifier _calledByCreator(string memory did) {
+        if (msg.sender != _dids[did].metadata.creatorAddress)
+            revert SenderIsNotCreator(msg.sender, _dids[did].metadata.creatorAddress);
+        _;
+    }
+
     function initialize(address upgradeControlAddress) public reinitializer(1) {
         _initializeUpgradeControl(upgradeControlAddress);
     }
@@ -48,6 +57,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
         DidValidator.validateVerificationKey(document);
 
         _dids[document.id].document = document;
+        _dids[document.id].metadata.creatorAddress = msg.sender;
         _dids[document.id].metadata.created = block.timestamp;
         _dids[document.id].metadata.updated = block.timestamp;
 
@@ -55,7 +65,9 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     }
 
     /// @inheritdoc DidRegistryInterface
-    function updateDid(DidDocument calldata document) public _didExist(document.id) _didIsActive(document.id) {
+    function updateDid(
+        DidDocument calldata document
+    ) public _didExist(document.id) _didIsActive(document.id) _calledByCreator(document.id) {
         DidValidator.validateVerificationKey(document);
 
         _dids[document.id].document = document;
@@ -65,7 +77,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     }
 
     /// @inheritdoc DidRegistryInterface
-    function deactivateDid(string calldata id) public _didExist(id) _didIsActive(id) {
+    function deactivateDid(string calldata id) public _didExist(id) _didIsActive(id) _calledByCreator(id) {
         _dids[id].metadata.deactivated = true;
 
         emit DIDDeactivated(id);

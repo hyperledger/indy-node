@@ -13,6 +13,7 @@ struct DidDocumentStorage {
  * @dev VerificationRelationship links a DID to a verification method
  */
 struct DidMetadata {
+    address creatorAddress;
     uint256 created;
     uint256 updated;
     bool deactivated;

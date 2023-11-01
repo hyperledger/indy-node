@@ -27,6 +27,11 @@ error DidAlreadyExist(string did);
 error DidHasBeenDeactivated(string did);
 
 /**
+ * @dev Error that occurs when message sender address is not equal to DID creator address.
+ */
+error SenderIsNotCreator(address sender, address creator);
+
+/**
  * @dev Error that occurs when the specified DID is incorrect.
  */
 error IncorrectDid(string did);
