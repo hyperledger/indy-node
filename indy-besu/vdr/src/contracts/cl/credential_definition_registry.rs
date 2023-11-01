@@ -141,7 +141,7 @@ pub mod test {
             },
             did::types::did_doc::test::ISSUER_ID,
         },
-        signer::basic_signer::test::ACCOUNT,
+        signer::basic_signer::test::TRUSTEE_ACC,
         DID,
     };
 
@@ -154,7 +154,7 @@ pub mod test {
             let transaction =
                 CredentialDefinitionRegistry::build_create_credential_definition_transaction(
                     &client,
-                    &ACCOUNT,
+                    &TRUSTEE_ACC,
                     &credential_definition(
                         &DID::new(ISSUER_ID),
                         &SchemaId::new(SCHEMA_ID),
@@ -164,7 +164,7 @@ pub mod test {
                 .unwrap();
             let expected_transaction = Transaction {
                 type_: TransactionType::Write,
-                from: Some(ACCOUNT.clone()),
+                from: Some(TRUSTEE_ACC.clone()),
                 to: CRED_DEF_REGISTRY_ADDRESS.to_string(),
                 chain_id: CHAIN_ID,
                 data: vec![
