@@ -6,7 +6,6 @@ mod utils;
 
 #[cfg(feature = "migration")]
 pub mod migration;
-
 pub use client::{Address, Client, ContractConfig, LedgerClient, PingStatus, Status};
 pub use contracts::{
     auth::{Role, RoleControl},
@@ -26,6 +25,7 @@ pub use contracts::{
         },
     },
     network::ValidatorControl,
+    StringOrVector,
 };
 pub use error::{VdrError, VdrResult};
 pub use signer::Signer;
@@ -47,11 +47,20 @@ mod tests {
             did::{did_registry::test::create_did, types::did_doc::test::did_doc},
         },
         error::VdrResult,
-        signer::basic_signer::test::{basic_signer, ACCOUNT},
+        signer::basic_signer::test::{
+            basic_signer, basic_signer_custom_key, TRUSTEE2_ACC, TRUSTEE2_PRIVATE_KEY, TRUSTEE_ACC,
+            TRUSTEE_PRIVATE_KEY,
+        },
     };
 
     mod did {
         use super::*;
+
+        async fn create_client(private_key: &str) -> LedgerClient {
+            let signer = basic_signer_custom_key(private_key);
+
+            return client(Some(signer));
+        }
 
         #[async_std::test]
         async fn demo_build_and_submit_did_transaction_test() -> VdrResult<()> {
@@ -60,7 +69,7 @@ mod tests {
             // write
             let did_doc = did_doc(None);
             let transaction =
-                DidRegistry::build_create_did_transaction(&client, &ACCOUNT, &did_doc).unwrap();
+                DidRegistry::build_create_did_transaction(&client, &TRUSTEE_ACC, &did_doc).unwrap();
             let signed_transaction = client.sign_transaction(&transaction).await.unwrap();
             let block_hash = client
                 .submit_transaction(&signed_transaction)
@@ -87,7 +96,7 @@ mod tests {
 
             // write
             let did_doc = did_doc(None);
-            let _receipt = DidRegistry::create_did(&client, &ACCOUNT, &did_doc)
+            let _receipt = DidRegistry::create_did(&client, &TRUSTEE_ACC, &did_doc)
                 .await
                 .unwrap();
 
@@ -96,6 +105,51 @@ mod tests {
                 .await
                 .unwrap();
             assert_eq!(did_doc, resolved_did_doc);
+
+            Ok(())
+        }
+
+        #[async_std::test]
+        async fn add_and_deactivate_did_by_different_trustees_test() -> VdrResult<()> {
+            let first_client = create_client(TRUSTEE_PRIVATE_KEY).await;
+            let second_client = create_client(TRUSTEE2_PRIVATE_KEY).await;
+
+            let did_doc = did_doc(None);
+            let _receipt = DidRegistry::create_did(&first_client, &TRUSTEE_ACC, &did_doc)
+                .await
+                .unwrap();
+
+            let receipt = DidRegistry::deactivate_did(&second_client, &TRUSTEE2_ACC, &did_doc.id)
+                .await
+                .unwrap();
+            println!("Receipt: {}", receipt);
+
+            Ok(())
+        }
+
+        #[async_std::test]
+        async fn add_and_update_did_by_different_trustees_test() -> VdrResult<()> {
+            let first_client = create_client(TRUSTEE_PRIVATE_KEY).await;
+            let second_client = create_client(TRUSTEE2_PRIVATE_KEY).await;
+            let mut did_doc = did_doc(None);
+
+            let _receipt = DidRegistry::create_did(&first_client, &TRUSTEE_ACC, &did_doc)
+                .await
+                .unwrap();
+
+            let old_context = did_doc.context;
+            did_doc.context = StringOrVector::String("https://www.w3.org/ns/did/v2".to_string());
+
+            let receipt = DidRegistry::update_did(&second_client, &TRUSTEE2_ACC, &did_doc)
+                .await
+                .unwrap();
+            println!("Receipt: {}", receipt);
+
+            let not_updated_did_doc = DidRegistry::resolve_did(&first_client, &did_doc.id)
+                .await
+                .unwrap();
+
+            assert_eq!(old_context, not_updated_did_doc.context);
 
             Ok(())
         }
@@ -114,7 +168,7 @@ mod tests {
             // write
             let schema = schema(&did_doc.id, None);
             let transaction =
-                SchemaRegistry::build_create_schema_transaction(&client, &ACCOUNT, &schema)
+                SchemaRegistry::build_create_schema_transaction(&client, &TRUSTEE_ACC, &schema)
                     .unwrap();
             let signed_transaction = client.sign_transaction(&transaction).await.unwrap();
             let block_hash = client
@@ -144,7 +198,7 @@ mod tests {
 
             // write
             let schema = schema(&did_doc.id, None);
-            let _receipt = SchemaRegistry::create_schema(&client, &ACCOUNT, &schema)
+            let _receipt = SchemaRegistry::create_schema(&client, &TRUSTEE_ACC, &schema)
                 .await
                 .unwrap();
 
@@ -174,7 +228,7 @@ mod tests {
             let transaction =
                 CredentialDefinitionRegistry::build_create_credential_definition_transaction(
                     &client,
-                    &ACCOUNT,
+                    &TRUSTEE_ACC,
                     &credential_definition,
                 )
                 .unwrap();
@@ -223,7 +277,7 @@ mod tests {
             let credential_definition = credential_definition(&did_doc.id, &schema.id, None);
             let _receipt = CredentialDefinitionRegistry::create_credential_definition(
                 &client,
-                &ACCOUNT,
+                &TRUSTEE_ACC,
                 &credential_definition,
             )
             .await
@@ -246,14 +300,14 @@ mod tests {
     mod role {
         use super::*;
 
-        async fn build_and_submit_assign_role_transaction(
+        pub(crate) async fn build_and_submit_assign_role_transaction(
             client: &LedgerClient,
             assignee_account: &Address,
             role_to_assign: &Role,
         ) -> String {
             let transaction = RoleControl::build_assign_role_transaction(
                 client,
-                &ACCOUNT,
+                &TRUSTEE_ACC,
                 role_to_assign,
                 assignee_account,
             )
@@ -274,7 +328,7 @@ mod tests {
         ) -> String {
             let transaction = RoleControl::build_revoke_role_transaction(
                 client,
-                &ACCOUNT,
+                &TRUSTEE_ACC,
                 role_to_revoke,
                 revokee_account,
             )
@@ -353,7 +407,7 @@ mod tests {
 
             // write
             let receipt =
-                RoleControl::assign_role(&client, &ACCOUNT, &role_to_assign, &assignee_account)
+                RoleControl::assign_role(&client, &TRUSTEE_ACC, &role_to_assign, &assignee_account)
                     .await
                     .unwrap();
 
@@ -367,7 +421,7 @@ mod tests {
 
             // write
             let receipt =
-                RoleControl::revoke_role(&client, &ACCOUNT, &role_to_assign, &assignee_account)
+                RoleControl::revoke_role(&client, &TRUSTEE_ACC, &role_to_assign, &assignee_account)
                     .await
                     .unwrap();
             println!("Receipt: {}", receipt);
@@ -402,7 +456,7 @@ mod tests {
         ) -> String {
             let transaction = ValidatorControl::build_add_validator_transaction(
                 &client,
-                &ACCOUNT,
+                &TRUSTEE_ACC,
                 new_validator_address,
             )
             .unwrap();
@@ -422,7 +476,7 @@ mod tests {
             // write
             let transaction = ValidatorControl::build_remove_validator_transaction(
                 &client,
-                &ACCOUNT,
+                &TRUSTEE_ACC,
                 validator_address,
             )
             .unwrap();
@@ -469,7 +523,7 @@ mod tests {
             let (new_validator_address, _) = signer.create_account(None).unwrap();
             let client = client(Some(signer));
 
-            ValidatorControl::add_validator(&client, &ACCOUNT, &new_validator_address)
+            ValidatorControl::add_validator(&client, &TRUSTEE_ACC, &new_validator_address)
                 .await
                 .unwrap();
 
@@ -477,7 +531,7 @@ mod tests {
             assert_eq!(validator_list.len(), 5);
             assert!(validator_list.contains(&new_validator_address));
 
-            ValidatorControl::remove_validator(&client, &ACCOUNT, &new_validator_address)
+            ValidatorControl::remove_validator(&client, &TRUSTEE_ACC, &new_validator_address)
                 .await
                 .unwrap();
 
