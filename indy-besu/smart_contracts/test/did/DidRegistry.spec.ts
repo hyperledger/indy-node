@@ -1,11 +1,11 @@
 import { loadFixture } from '@nomicfoundation/hardhat-toolbox/network-helpers'
 import { expect } from 'chai'
 import { VerificationMethod } from '../../contracts-ts/DidRegistry'
+import { RoleControl } from '../../contracts-ts/RoleControl'
 import { createBaseDidDocument } from '../../utils/entity-factories'
 import { deployDidRegistry } from '../utils/contract-helpers'
 import { DidError } from '../utils/errors'
-import { ZERO_ADDRESS, getTestAccounts } from '../utils/test-entities'
-import { RoleControl } from '../../contracts-ts/RoleControl'
+import { getTestAccounts, ZERO_ADDRESS } from '../utils/test-entities'
 
 describe('DIDContract', function () {
   // We define a fixture to reuse the same setup in every test.
