@@ -303,7 +303,11 @@ impl RoleControl {
         let result = client.submit_transaction(&transaction).await?;
         let has_role_result = Self::parse_has_role_result(client, &result);
 
-        info!("{} check has finished", Self::METHOD_HAS_ROLE,);
+        info!(
+            "{} check has finished. Result: {:?}",
+            Self::METHOD_HAS_ROLE,
+            has_role_result
+        );
 
         has_role_result
     }
@@ -323,7 +327,11 @@ impl RoleControl {
         let result = client.submit_transaction(&transaction).await?;
         let get_role_result = Self::parse_get_role_result(client, &result);
 
-        info!("{} process has finished", Self::METHOD_GET_ROLE,);
+        info!(
+            "{} process has finished. Result: {:?}",
+            Self::METHOD_GET_ROLE,
+            get_role_result
+        );
 
         get_role_result
     }

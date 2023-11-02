@@ -1,3 +1,5 @@
+use log::{debug, info};
+
 use crate::{
     client::{
         Address, ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
@@ -33,13 +35,28 @@ impl CredentialDefinitionRegistry {
         from: &Address,
         credential_definition: &CredentialDefinition,
     ) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!(
+            "{} txn build started. Sender: {}, CredentialDefinition: {:?}",
+            Self::METHOD_CREATE_CREDENTIAL_DEFINITION,
+            from.value(),
+            credential_definition
+        );
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_CREATE_CREDENTIAL_DEFINITION)
             .add_param(credential_definition.clone().into())
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result: {:?}",
+            Self::METHOD_CREATE_CREDENTIAL_DEFINITION,
+            transaction
+        );
+
+        transaction
     }
 
     /// Build transaction to execute CredentialDefinitionRegistry.resolveCredentialDefinition contract
@@ -55,12 +72,26 @@ impl CredentialDefinitionRegistry {
         client: &LedgerClient,
         id: &CredentialDefinitionId,
     ) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!(
+            "{} txn build started. CredentialDefinitionId: {:?}",
+            Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION,
+            id
+        );
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION)
             .add_param(ContractParam::String(id.value().into()))
             .set_type(TransactionType::Read)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result: {:?}",
+            Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION,
+            transaction
+        );
+
+        transaction
     }
 
     /// Parse the result of execution CredentialDefinitionRegistry.resolveCredentialDefinition contract
@@ -76,13 +107,26 @@ impl CredentialDefinitionRegistry {
         client: &LedgerClient,
         bytes: &[u8],
     ) -> VdrResult<CredentialDefinition> {
-        TransactionParser::new()
+        debug!(
+            "{} result parse started",
+            Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION,
+        );
+
+        let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION)
             .parse::<CredentialDefinitionWithMeta>(&client, bytes)
             .map(|credential_definition_with_meta| {
                 credential_definition_with_meta.credential_definition
-            })
+            });
+
+        info!(
+            "{} result parse finished. Result: {:?}",
+            Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION,
+            result
+        );
+
+        result
     }
 
     /// Single step function executing CredentialDefinitionRegistry.createCredentialDefinition smart contract
@@ -100,12 +144,25 @@ impl CredentialDefinitionRegistry {
         from: &Address,
         credential_definition: &CredentialDefinition,
     ) -> VdrResult<String> {
+        debug!(
+            "{} process has started",
+            Self::METHOD_CREATE_CREDENTIAL_DEFINITION,
+        );
+
         let transaction = Self::build_create_credential_definition_transaction(
             client,
             from,
             credential_definition,
         )?;
-        client.sign_and_submit(&transaction).await
+        let receipt = client.sign_and_submit(&transaction).await;
+
+        info!(
+            "{} process has finished. Result: {:?}",
+            Self::METHOD_CREATE_CREDENTIAL_DEFINITION,
+            receipt
+        );
+
+        receipt
     }
 
     /// Single step function executing CredentialDefinitionRegistry.resolveCredentialDefinition smart contract
@@ -122,9 +179,23 @@ impl CredentialDefinitionRegistry {
         client: &LedgerClient,
         id: &CredentialDefinitionId,
     ) -> VdrResult<CredentialDefinition> {
+        debug!(
+            "{} process has started",
+            Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION,
+        );
+
         let transaction = Self::build_resolve_credential_definition_transaction(client, id)?;
         let result = client.submit_transaction(&transaction).await?;
-        Self::parse_resolve_credential_definition_result(client, &result)
+        let resolve_cred_def_result =
+            Self::parse_resolve_credential_definition_result(client, &result);
+
+        info!(
+            "{} process has finished. Result: {:?}",
+            Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION,
+            resolve_cred_def_result
+        );
+
+        resolve_cred_def_result
     }
 }
 

@@ -7,6 +7,7 @@ use crate::{
 use crate::contracts::cl::types::{
     credential_definition_id::CredentialDefinitionId, schema_id::SchemaId,
 };
+use log::{debug, error, trace, warn};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -37,14 +38,26 @@ pub struct CredentialDefinitionMetadata {
 
 impl Into<ContractParam> for CredentialDefinition {
     fn into(self) -> ContractParam {
-        ContractParam::Tuple(vec![
+        trace!(
+            "CredentialDefinition: {:?} convert to ContractParam started",
+            self
+        );
+
+        let cred_def_contract_param = ContractParam::Tuple(vec![
             ContractParam::String(self.id.value().to_string()),
             ContractParam::String(self.issuer_id.value().to_string()),
             ContractParam::String(self.schema_id.value().to_string()),
             ContractParam::String(self.cred_def_type.to_string()),
             ContractParam::String(self.tag.to_string()),
             ContractParam::String(self.value.to_string()),
-        ])
+        ]);
+
+        debug!(
+            "CredentialDefinition: {:?} convert to ContractParam finished. Result: {:?}",
+            self, cred_def_contract_param
+        );
+
+        cred_def_contract_param
     }
 }
 
@@ -52,20 +65,40 @@ impl TryFrom<ContractOutput> for CredentialDefinition {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
+        trace!(
+            "CredentialDefinition convert from ContractOutput: {:?} started",
+            value
+        );
+
         let cred_def_value =
             serde_json::from_str::<Value>(&value.get_string(5)?).map_err(|_err| {
-                VdrError::ContractInvalidResponseData(
-                    "Unable to credential definition value".to_string(),
-                )
+                let vdr_error = VdrError::ContractInvalidResponseData(
+                    "Unable get to credential definition value".to_string(),
+                );
+
+                warn!(
+                    "Error: {} during CredentialDefinition convert from ContractOutput: {:?}",
+                    vdr_error, value
+                );
+
+                vdr_error
             })?;
-        Ok(CredentialDefinition {
+
+        let cred_def = CredentialDefinition {
             id: CredentialDefinitionId::new(&value.get_string(0)?),
             issuer_id: DID::new(&value.get_string(1)?),
             schema_id: SchemaId::new(&value.get_string(2)?),
             cred_def_type: value.get_string(3)?,
             tag: value.get_string(4)?,
             value: cred_def_value,
-        })
+        };
+
+        debug!(
+            "CredentialDefinition convert from ContractOutput: {:?} finished. Result: {:?}",
+            value, cred_def
+        );
+
+        Ok(cred_def)
     }
 }
 
@@ -73,8 +106,20 @@ impl TryFrom<ContractOutput> for CredentialDefinitionMetadata {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
+        trace!(
+            "CredentialDefinitionMetadata convert from ContractOutput: {:?} started",
+            value
+        );
+
         let created = value.get_u128(0)?;
-        Ok(CredentialDefinitionMetadata { created })
+        let cred_def_metadata = CredentialDefinitionMetadata { created };
+
+        debug!(
+            "CredentialDefinitionMetadata convert from ContractOutput: {:?} finished. Result: {:?}",
+            value, cred_def_metadata
+        );
+
+        Ok(cred_def_metadata)
     }
 }
 
@@ -82,13 +127,26 @@ impl TryFrom<ContractOutput> for CredentialDefinitionWithMeta {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
+        trace!(
+            "CredentialDefinitionWithMeta convert from ContractOutput: {:?} started",
+            value
+        );
+
         let output_tuple = value.get_tuple(0)?;
         let credential_definition = output_tuple.get_tuple(0)?;
         let metadata = output_tuple.get_tuple(1)?;
-        Ok(CredentialDefinitionWithMeta {
+
+        let cred_def_with_metadata = CredentialDefinitionWithMeta {
             credential_definition: CredentialDefinition::try_from(credential_definition)?,
             metadata: CredentialDefinitionMetadata::try_from(metadata)?,
-        })
+        };
+
+        debug!(
+            "CredentialDefinitionWithMeta convert from ContractOutput: {:?} finished. Result: {:?}",
+            value, cred_def_with_metadata
+        );
+
+        Ok(cred_def_with_metadata)
     }
 }
 

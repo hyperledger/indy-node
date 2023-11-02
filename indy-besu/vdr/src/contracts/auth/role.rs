@@ -1,4 +1,4 @@
-use log::debug;
+use log::{debug, trace};
 
 use crate::{
     client::{ContractOutput, ContractParam},
@@ -19,7 +19,7 @@ pub type RoleIndex = u8;
 
 impl Into<ContractParam> for Role {
     fn into(self) -> ContractParam {
-        debug!("Role: {:?} convert to ContractParam started", self);
+        trace!("Role: {:?} convert to ContractParam started", self);
 
         let role_index: RoleIndex = self.into();
         let role_contract_param = ContractParam::Uint(role_index.into());
@@ -37,13 +37,13 @@ impl TryFrom<ContractOutput> for Role {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
-        debug!("Role convert from ContractParam: {:?} started", value);
+        trace!("Role convert from ContractOutput: {:?} started", value);
 
         let role_index = value.get_u8(0)?;
         let role = Role::try_from(role_index)?;
 
         debug!(
-            "Role convert from ContractParam: {:?} finished. Result: {:?}",
+            "Role convert from ContractOutput: {:?} finished. Result: {:?}",
             value, role
         );
 
@@ -53,7 +53,7 @@ impl TryFrom<ContractOutput> for Role {
 
 impl Into<RoleIndex> for Role {
     fn into(self) -> RoleIndex {
-        debug!("Role: {:?} convert to RoleIndex started", self);
+        trace!("Role: {:?} convert to RoleIndex started", self);
 
         let role_index = self as u8;
 
@@ -70,7 +70,7 @@ impl TryFrom<RoleIndex> for Role {
     type Error = VdrError;
 
     fn try_from(index: RoleIndex) -> Result<Self, Self::Error> {
-        debug!("RoleIndex: {} convert to Role started", index);
+        trace!("RoleIndex: {} convert to Role started", index);
 
         let result = match index {
             0 => Ok(Role::Empty),
@@ -95,7 +95,7 @@ impl TryFrom<ContractOutput> for HasRole {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
-        debug!("ContractOutput: {:?} convert to HasRole started", value);
+        trace!("ContractOutput: {:?} convert to HasRole started", value);
 
         let has_role = value.get_bool(0)?;
 

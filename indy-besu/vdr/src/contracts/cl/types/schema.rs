@@ -4,6 +4,7 @@ use crate::{
 };
 
 use crate::{contracts::cl::types::schema_id::SchemaId, DID};
+use log::{debug, trace};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -31,7 +32,9 @@ pub struct SchemaMetadata {
 
 impl Into<ContractParam> for Schema {
     fn into(self) -> ContractParam {
-        ContractParam::Tuple(vec![
+        trace!("Schema: {:?} convert to ContractParam started", self);
+
+        let schema_contract_param = ContractParam::Tuple(vec![
             ContractParam::String(self.id.value().to_string()),
             ContractParam::String(self.issuer_id.value().to_string()),
             ContractParam::String(self.name.to_string()),
@@ -42,7 +45,14 @@ impl Into<ContractParam> for Schema {
                     .map(|attr_name| ContractParam::String(attr_name.to_string()))
                     .collect(),
             ),
-        ])
+        ]);
+
+        debug!(
+            "Schema: {:?} convert to ContractParam finished. Result: {:?}",
+            self, schema_contract_param
+        );
+
+        schema_contract_param
     }
 }
 
@@ -50,13 +60,22 @@ impl TryFrom<ContractOutput> for Schema {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
-        Ok(Schema {
+        trace!("Schema convert from ContractOutput: {:?} started", value);
+
+        let schema = Schema {
             id: SchemaId::new(&value.get_string(0)?),
             issuer_id: DID::new(&value.get_string(1)?),
             name: value.get_string(2)?,
             version: value.get_string(3)?,
             attr_names: value.get_string_array(4)?,
-        })
+        };
+
+        debug!(
+            "Schema convert from ContractOutput: {:?} finished. Result: {:?}",
+            value, schema
+        );
+
+        Ok(schema)
     }
 }
 
@@ -64,8 +83,20 @@ impl TryFrom<ContractOutput> for SchemaMetadata {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
+        trace!(
+            "SchemaMetadata convert from ContractOutput: {:?} started",
+            value
+        );
+
         let created = value.get_u128(0)?;
-        Ok(SchemaMetadata { created })
+        let schema_metadata = SchemaMetadata { created };
+
+        debug!(
+            "SchemaMetadata convert from ContractOutput: {:?} finished. Result: {:?}",
+            value, schema_metadata
+        );
+
+        Ok(schema_metadata)
     }
 }
 
@@ -73,13 +104,26 @@ impl TryFrom<ContractOutput> for SchemaWithMeta {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
+        trace!(
+            "SchemaWithMeta convert from ContractOutput: {:?} started",
+            value
+        );
+
         let output_tuple = value.get_tuple(0)?;
         let schema = output_tuple.get_tuple(0)?;
         let metadata = output_tuple.get_tuple(1)?;
-        Ok(SchemaWithMeta {
+
+        let schema_with_meta = SchemaWithMeta {
             schema: Schema::try_from(schema)?,
             metadata: SchemaMetadata::try_from(metadata)?,
-        })
+        };
+
+        debug!(
+            "SchemaWithMeta convert from ContractOutput: {:?} finished. Result: {:?}",
+            value, schema_with_meta
+        );
+
+        Ok(schema_with_meta)
     }
 }
 

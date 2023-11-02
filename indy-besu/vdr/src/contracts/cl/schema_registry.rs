@@ -1,3 +1,5 @@
+use log::{debug, info};
+
 use crate::{
     client::{
         Address, ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
@@ -32,13 +34,28 @@ impl SchemaRegistry {
         from: &Address,
         schema: &Schema,
     ) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!(
+            "{} txn build started. Sender: {}, schema: {:?}",
+            Self::METHOD_CREATE_SCHEMA,
+            from.value(),
+            schema
+        );
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_CREATE_SCHEMA)
             .add_param(schema.clone().into())
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result: {:?}",
+            Self::METHOD_CREATE_SCHEMA,
+            transaction
+        );
+
+        transaction
     }
 
     /// Build transaction to execute SchemaRegistry.resolveSchema contract method to retrieve an existing Schema by the given id
@@ -53,12 +70,26 @@ impl SchemaRegistry {
         client: &LedgerClient,
         id: &SchemaId,
     ) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!(
+            "{} txn build started. Schema ID: {:?}",
+            Self::METHOD_RESOLVE_SCHEMA,
+            id
+        );
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_RESOLVE_SCHEMA)
             .add_param(ContractParam::String(id.value().into()))
             .set_type(TransactionType::Read)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result: {:?}",
+            Self::METHOD_RESOLVE_SCHEMA,
+            transaction
+        );
+
+        transaction
     }
 
     /// Parse the result of execution SchemaRegistry.resolveSchema contract method to receive a Schema associated with the id
@@ -70,11 +101,21 @@ impl SchemaRegistry {
     /// # Returns
     /// parsed Schema
     pub fn parse_resolve_schema_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<Schema> {
-        TransactionParser::new()
+        debug!("{} result parse started", Self::METHOD_RESOLVE_SCHEMA,);
+
+        let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_RESOLVE_SCHEMA)
             .parse::<SchemaWithMeta>(&client, bytes)
-            .map(|schema_with_meta| schema_with_meta.schema)
+            .map(|schema_with_meta| schema_with_meta.schema);
+
+        info!(
+            "{} result parse finished. Result: {:?}",
+            Self::METHOD_RESOLVE_SCHEMA,
+            result
+        );
+
+        result
     }
 
     /// Single step function executing SchemaRegistry.createSchema smart contract method to create a new Schema
@@ -91,8 +132,18 @@ impl SchemaRegistry {
         from: &Address,
         schema: &Schema,
     ) -> VdrResult<String> {
+        debug!("{} process has started", Self::METHOD_CREATE_SCHEMA,);
+
         let transaction = Self::build_create_schema_transaction(client, from, schema)?;
-        client.sign_and_submit(&transaction).await
+        let receipt = client.sign_and_submit(&transaction).await;
+
+        info!(
+            "{} process has finished. Result: {:?}",
+            Self::METHOD_CREATE_SCHEMA,
+            receipt
+        );
+
+        receipt
     }
 
     /// Single step function executing SchemaRegistry.resolveSchema smart contract method to resolve Schema for an existing id
@@ -105,9 +156,19 @@ impl SchemaRegistry {
     /// # Returns
     /// resolved Schema
     pub async fn resolve_schema(client: &LedgerClient, id: &SchemaId) -> VdrResult<Schema> {
+        debug!("{} process has started", Self::METHOD_RESOLVE_SCHEMA,);
+
         let transaction = Self::build_resolve_schema_transaction(client, id)?;
         let result = client.submit_transaction(&transaction).await?;
-        Self::parse_resolve_schema_result(client, &result)
+        let resolve_schema_result = Self::parse_resolve_schema_result(client, &result);
+
+        info!(
+            "{} process has finished. Result: {:?}",
+            Self::METHOD_RESOLVE_SCHEMA,
+            resolve_schema_result
+        );
+
+        resolve_schema_result
     }
 }
 
