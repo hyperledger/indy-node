@@ -63,7 +63,8 @@ RUN apt-get update -y && apt-get install -y \
 RUN pip3 install -U \
     # Required by setup.py
     setuptools==50.3.2 \
-    'pyzmq==22.3.0'
+    'pyzmq==22.3.0' \
+    Cython==0.29.36
 
 
 # install fpm
