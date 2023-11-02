@@ -1,4 +1,4 @@
 mod common;
 
 #[cfg(test)]
-pub use common::{rand_bytes, rand_string};
+pub use common::{init_env_logger, rand_bytes, rand_string};

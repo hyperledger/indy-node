@@ -5,6 +5,7 @@ use crate::{
     contracts::auth::{HasRole, Role},
     error::VdrResult,
 };
+use log::{debug, info};
 
 /// RoleControl contract methods
 pub struct RoleControl;
@@ -32,14 +33,30 @@ impl RoleControl {
         role: &Role,
         account: &Address,
     ) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!(
+            "{} txn build started. Sender: {}, assignee: {}, role: {:?}",
+            Self::METHOD_ASSIGN_ROLE,
+            from.value(),
+            account.value(),
+            role
+        );
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_ASSIGN_ROLE)
             .add_param(role.clone().into())
             .add_param(account.clone().try_into()?)
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result: {:?}",
+            Self::METHOD_ASSIGN_ROLE,
+            transaction
+        );
+
+        transaction
     }
 
     /// Build transaction to execute RoleControl.revokeRole contract method to revoke a role from an account
@@ -58,14 +75,30 @@ impl RoleControl {
         role: &Role,
         account: &Address,
     ) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!(
+            "{} txn build started. Sender: {}, revokee: {}, role: {:?}",
+            Self::METHOD_REVOKE_ROLE,
+            from.value(),
+            account.value(),
+            role
+        );
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_REVOKE_ROLE)
             .add_param(role.clone().into())
             .add_param(account.clone().try_into()?)
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result: {:?}",
+            Self::METHOD_REVOKE_ROLE,
+            transaction
+        );
+
+        transaction
     }
 
     /// Build transaction to execute RoleControl.hasRole contract method to check an account has a role
@@ -82,13 +115,28 @@ impl RoleControl {
         role: &Role,
         account: &Address,
     ) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!(
+            "{} txn build started. Account to check: {}, role: {:?}",
+            Self::METHOD_HAS_ROLE,
+            account.value(),
+            role
+        );
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_HAS_ROLE)
             .add_param(role.clone().into())
             .add_param(account.clone().try_into()?)
             .set_type(TransactionType::Read)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result {:?}",
+            Self::METHOD_HAS_ROLE,
+            transaction
+        );
+
+        transaction
     }
 
     /// Build transaction to execute RoleControl.getRole contract method to get account's role
@@ -103,12 +151,26 @@ impl RoleControl {
         client: &LedgerClient,
         account: &Address,
     ) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!(
+            "{} txn build started. Account to get: {}",
+            Self::METHOD_GET_ROLE,
+            account.value(),
+        );
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_GET_ROLE)
             .add_param(account.clone().try_into()?)
             .set_type(TransactionType::Read)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result: {:?}",
+            Self::METHOD_GET_ROLE,
+            transaction
+        );
+
+        transaction
     }
 
     /// Parse the result of execution RoleControl.HasRole contract method to check an account has a role
@@ -120,10 +182,20 @@ impl RoleControl {
     /// # Returns
     /// Account has role result
     pub fn parse_has_role_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<bool> {
-        TransactionParser::new()
+        debug!("{} result parse started", Self::METHOD_HAS_ROLE,);
+
+        let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_HAS_ROLE)
-            .parse::<HasRole>(&client, bytes)
+            .parse::<HasRole>(&client, bytes);
+
+        info!(
+            "{} result parse finished. Result: {:?}",
+            Self::METHOD_HAS_ROLE,
+            result
+        );
+
+        result
     }
 
     /// Parse the result of execution RoleControl.GetRole contract method to get account's role
@@ -135,10 +207,20 @@ impl RoleControl {
     /// # Returns
     /// Account's role
     pub fn parse_get_role_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<Role> {
-        TransactionParser::new()
+        debug!("{} result parse started", Self::METHOD_GET_ROLE,);
+
+        let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_GET_ROLE)
-            .parse::<Role>(&client, bytes)
+            .parse::<Role>(&client, bytes);
+
+        info!(
+            "{} result parse finished. Result: {:?}",
+            Self::METHOD_GET_ROLE,
+            result
+        );
+
+        result
     }
 
     /// Single step function executing RoleControl.assignRole contract method to assign a role to an account
@@ -157,8 +239,18 @@ impl RoleControl {
         role: &Role,
         account: &Address,
     ) -> VdrResult<String> {
+        debug!("{} process has started", Self::METHOD_ASSIGN_ROLE,);
+
         let transaction = Self::build_assign_role_transaction(client, from, role, account)?;
-        client.sign_and_submit(&transaction).await
+        let receipt = client.sign_and_submit(&transaction).await;
+
+        info!(
+            "{} process has finished. Result: {:?}",
+            Self::METHOD_ASSIGN_ROLE,
+            receipt
+        );
+
+        receipt
     }
 
     /// Single step function executing RoleControl.revokeRole contract method to revoke a role from an account
@@ -177,8 +269,18 @@ impl RoleControl {
         role: &Role,
         account: &Address,
     ) -> VdrResult<String> {
+        debug!("{} process has started", Self::METHOD_REVOKE_ROLE,);
+
         let transaction = Self::build_revoke_role_transaction(client, from, role, account)?;
-        client.sign_and_submit(&transaction).await
+        let receipt = client.sign_and_submit(&transaction).await;
+
+        info!(
+            "{} process has finished. Result: {:?}",
+            Self::METHOD_REVOKE_ROLE,
+            receipt
+        );
+
+        receipt
     }
 
     /// Single step function executing RoleControl.hasRole contract method to check an account has a role
@@ -195,9 +297,15 @@ impl RoleControl {
         role: &Role,
         account: &Address,
     ) -> VdrResult<bool> {
+        debug!("{} check has started", Self::METHOD_HAS_ROLE,);
+
         let transaction = Self::build_has_role_transaction(client, role, account)?;
         let result = client.submit_transaction(&transaction).await?;
-        Self::parse_has_role_result(client, &result)
+        let has_role_result = Self::parse_has_role_result(client, &result);
+
+        info!("{} check has finished", Self::METHOD_HAS_ROLE,);
+
+        has_role_result
     }
 
     /// Single step function executing RoleControl.getRole contract method to get account's role
@@ -209,9 +317,15 @@ impl RoleControl {
     /// # Returns
     /// Account's role
     pub async fn get_role(client: &LedgerClient, account: &Address) -> VdrResult<Role> {
+        debug!("{} process has started", Self::METHOD_GET_ROLE,);
+
         let transaction = Self::build_get_role_transaction(client, account)?;
         let result = client.submit_transaction(&transaction).await?;
-        Self::parse_get_role_result(client, &result)
+        let get_role_result = Self::parse_get_role_result(client, &result);
+
+        info!("{} process has finished", Self::METHOD_GET_ROLE,);
+
+        get_role_result
     }
 }
 
@@ -221,6 +335,7 @@ pub mod test {
     use crate::{
         client::test::{client, CHAIN_ID, ROLE_CONTROL_ADDRESS},
         signer::basic_signer::test::TRUSTEE_ACC,
+        utils::init_env_logger,
     };
 
     pub const NEW_ACCOUNT: &'static str = "0x0886328869e4e1f401e1052a5f4aae8b45f42610";
@@ -234,6 +349,7 @@ pub mod test {
 
         #[test]
         fn build_assign_role_transaction_test() {
+            init_env_logger();
             let client = client(None);
             let expected_data = vec![
                 136, 165, 191, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -267,6 +383,7 @@ pub mod test {
 
         #[test]
         fn build_revoke_role_transaction_test() {
+            init_env_logger();
             let client = client(None);
             let expected_data = vec![
                 76, 187, 135, 211, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -300,6 +417,7 @@ pub mod test {
 
         #[test]
         fn build_get_role_transaction_test() {
+            init_env_logger();
             let client = client(None);
             let expected_data = vec![
                 68, 39, 103, 51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 134, 50, 136, 105, 228,
@@ -326,6 +444,7 @@ pub mod test {
 
         #[test]
         fn parse_get_role_result_test() {
+            init_env_logger();
             let client = client(None);
             let result = vec![0; 32];
             let expected_role = Role::Empty;
@@ -341,6 +460,7 @@ pub mod test {
 
         #[test]
         fn build_has_role_transaction_test() {
+            init_env_logger();
             let client = client(None);
             let expected_data = vec![
                 158, 151, 184, 246, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -370,6 +490,7 @@ pub mod test {
 
         #[test]
         fn parse_has_role_result_test() {
+            init_env_logger();
             let client = client(None);
             let result = vec![0; 32];
             let expected_has_role = false;

@@ -16,3 +16,8 @@ pub fn rand_bytes() -> Vec<u8> {
     rand::thread_rng().fill_bytes(&mut data);
     data.to_vec()
 }
+
+#[cfg(test)]
+pub fn init_env_logger() {
+    let _ = env_logger::builder().is_test(true).try_init();
+}
