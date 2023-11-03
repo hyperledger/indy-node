@@ -1,3 +1,5 @@
+use log::{debug, info};
+
 use crate::{
     client::{Transaction, TransactionBuilder, TransactionParser, TransactionType},
     error::VdrResult,
@@ -29,13 +31,28 @@ impl ValidatorControl {
         from: &Address,
         validator_address: &Address,
     ) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!(
+            "{} txn build started. Sender: {}, validator address: {}",
+            Self::METHOD_ADD_VALIDATOR,
+            from.value(),
+            validator_address.value()
+        );
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_ADD_VALIDATOR)
             .add_param(validator_address.clone().try_into()?)
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result: {:?}",
+            Self::METHOD_ADD_VALIDATOR,
+            transaction
+        );
+
+        transaction
     }
 
     /// Build transaction to execute ValidatorControl.removeValidator contract method to remove an existing Validator
@@ -52,13 +69,28 @@ impl ValidatorControl {
         from: &Address,
         validator_address: &Address,
     ) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!(
+            "{} txn build started. Sender: {}, validator address: {}",
+            Self::METHOD_REMOVE_VALIDATOR,
+            from.value(),
+            validator_address.value()
+        );
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_REMOVE_VALIDATOR)
             .add_param(validator_address.clone().try_into()?)
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result: {:?}",
+            Self::METHOD_REMOVE_VALIDATOR,
+            transaction
+        );
+
+        transaction
     }
 
     /// Build transaction to execute ValidatorControl.getValidators contract method to get existing validators
@@ -69,11 +101,21 @@ impl ValidatorControl {
     /// # Returns
     /// Read transaction to submit
     pub fn build_get_validators_transaction(client: &LedgerClient) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!("{} txn build started", Self::METHOD_GET_VALIDATORS,);
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_GET_VALIDATORS)
             .set_type(TransactionType::Read)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result: {:?}",
+            Self::METHOD_GET_VALIDATORS,
+            transaction
+        );
+
+        transaction
     }
 
     /// Parse the result of execution ValidatorControl.getValidators contract method to get existing validators
@@ -88,10 +130,20 @@ impl ValidatorControl {
         client: &LedgerClient,
         bytes: &[u8],
     ) -> VdrResult<ValidatorAddresses> {
-        TransactionParser::new()
+        debug!("{} result parse started", Self::METHOD_GET_VALIDATORS,);
+
+        let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_GET_VALIDATORS)
-            .parse::<ValidatorAddresses>(&client, bytes)
+            .parse::<ValidatorAddresses>(&client, bytes);
+
+        info!(
+            "{} result parse finished. Result: {:?}",
+            Self::METHOD_GET_VALIDATORS,
+            result
+        );
+
+        result
     }
 
     /// Single step function executing ValidatorControl.addValidator contract method to add a new Validator
@@ -108,8 +160,18 @@ impl ValidatorControl {
         from: &Address,
         validator_address: &Address,
     ) -> VdrResult<String> {
+        debug!("{} process has started", Self::METHOD_ADD_VALIDATOR,);
+
         let transaction = Self::build_add_validator_transaction(client, from, validator_address)?;
-        client.sign_and_submit(&transaction).await
+        let receipt = client.sign_and_submit(&transaction).await;
+
+        info!(
+            "{} process has finished. Result: {:?}",
+            Self::METHOD_ADD_VALIDATOR,
+            receipt
+        );
+
+        receipt
     }
 
     /// Single step function executing ValidatorControl.removeValidator contract method to remove an existing Validator
@@ -126,9 +188,19 @@ impl ValidatorControl {
         from: &Address,
         validator_address: &Address,
     ) -> VdrResult<String> {
+        debug!("{} process has started", Self::METHOD_REMOVE_VALIDATOR,);
+
         let transaction =
             Self::build_remove_validator_transaction(client, from, validator_address)?;
-        client.sign_and_submit(&transaction).await
+        let receipt = client.sign_and_submit(&transaction).await;
+
+        info!(
+            "{} process has finished. Result: {:?}",
+            Self::METHOD_REMOVE_VALIDATOR,
+            receipt
+        );
+
+        receipt
     }
 
     /// Single step function executing ValidatorControl.getValidators contract method to get existing validators
@@ -139,9 +211,19 @@ impl ValidatorControl {
     /// # Returns
     /// Existing validator addresses
     pub async fn get_validators(client: &LedgerClient) -> VdrResult<ValidatorAddresses> {
+        debug!("{} process has started", Self::METHOD_GET_VALIDATORS,);
+
         let transaction = Self::build_get_validators_transaction(client)?;
         let result = client.submit_transaction(&transaction).await?;
-        Self::parse_get_validators_result(client, &result)
+        let get_validators_result = Self::parse_get_validators_result(client, &result);
+
+        info!(
+            "{} process has finished. Result: {:?}",
+            Self::METHOD_REMOVE_VALIDATOR,
+            get_validators_result
+        );
+
+        get_validators_result
     }
 }
 
