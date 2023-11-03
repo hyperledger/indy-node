@@ -4,6 +4,7 @@ use crate::{
     Address,
 };
 
+use log::{debug, trace, warn};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
@@ -111,7 +112,9 @@ impl Default for VerificationKeyType {
 
 impl ToString for VerificationKeyType {
     fn to_string(&self) -> String {
-        match self {
+        trace!("VerificationKeyType: {:?} convert to String started", self);
+
+        let ver_key_type_str = match self {
             VerificationKeyType::Ed25519VerificationKey2018 => {
                 "Ed25519VerificationKey2018".to_string()
             }
@@ -128,7 +131,14 @@ impl ToString for VerificationKeyType {
             VerificationKeyType::EcdsaSecp256k1VerificationKey2019 => {
                 "EcdsaSecp256k1VerificationKey2019".to_string()
             }
-        }
+        };
+
+        debug!(
+            "VerificationKeyType: {:?} convert to String finished. Result: {:?}",
+            self, ver_key_type_str
+        );
+
+        ver_key_type_str
     }
 }
 
@@ -136,7 +146,9 @@ impl TryFrom<&str> for VerificationKeyType {
     type Error = VdrError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        match value {
+        trace!("VerificationKeyType convert from String: {} started", value);
+
+        let ver_key_type = match value {
             "Ed25519VerificationKey2018" => Ok(VerificationKeyType::Ed25519VerificationKey2018),
             "X25519KeyAgreementKey2019" => Ok(VerificationKeyType::X25519KeyAgreementKey2019),
             "Ed25519VerificationKey2020" => Ok(VerificationKeyType::Ed25519VerificationKey2020),
@@ -145,11 +157,27 @@ impl TryFrom<&str> for VerificationKeyType {
             "EcdsaSecp256k1VerificationKey2019" => {
                 Ok(VerificationKeyType::EcdsaSecp256k1VerificationKey2019)
             }
-            _type => Err(VdrError::CommonInvalidData(format!(
-                "Unexpected verification key type {}",
-                _type
-            ))),
-        }
+            _type => Err({
+                let vdr_error = VdrError::CommonInvalidData(format!(
+                    "Unexpected verification key type {}",
+                    _type
+                ));
+
+                warn!(
+                    "Error: {} during converting VerificationKeyType from from String: {} ",
+                    vdr_error, value
+                );
+
+                vdr_error
+            }),
+        };
+
+        debug!(
+            "VerificationKeyType convert from String: {} finished. Result: {:?}",
+            value, ver_key_type
+        );
+
+        ver_key_type
     }
 }
 
@@ -201,12 +229,21 @@ pub enum StringOrVector {
 
 impl Default for StringOrVector {
     fn default() -> Self {
-        StringOrVector::Vector(Vec::new())
+        let vector = StringOrVector::Vector(Vec::new());
+
+        trace!("Created new StringOrVerctor::vector: {:?}", vector);
+
+        vector
     }
 }
 
 impl Into<ContractParam> for VerificationMethod {
     fn into(self) -> ContractParam {
+        trace!(
+            "VerificationMethod: {:?} convert to ContractParam started",
+            self
+        );
+
         let public_key_jwk = match self.verification_key {
             VerificationKey::JWK { ref public_key_jwk } => json!(public_key_jwk).to_string(),
             _ => "".to_string(),
@@ -218,13 +255,20 @@ impl Into<ContractParam> for VerificationMethod {
             _ => "".to_string(),
         };
 
-        ContractParam::Tuple(vec![
+        let ver_method_contract_param = ContractParam::Tuple(vec![
             ContractParam::String(self.id.to_string()),
             ContractParam::String(self.type_.to_string()),
             ContractParam::String(self.controller.to_string()),
             ContractParam::String(public_key_jwk),
             ContractParam::String(public_key_multibase),
-        ])
+        ]);
+
+        debug!(
+            "VerificationMethod convert to ContractParam finished. Result: {:?}",
+            ver_method_contract_param
+        );
+
+        ver_method_contract_param
     }
 }
 
@@ -232,12 +276,27 @@ impl TryFrom<ContractOutput> for VerificationMethod {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
+        trace!(
+            "VerificationMethod convert from ContractOutput: {:?} started",
+            value
+        );
+
         let public_key_jwk = value.get_string(3)?;
         let public_key_multibase = value.get_string(4)?;
         let verification_key = if !public_key_jwk.is_empty() {
             VerificationKey::JWK {
                 public_key_jwk: serde_json::from_str::<Value>(&public_key_jwk).map_err(|err| {
-                    VdrError::CommonInvalidData(format!("Unable to parse JWK key. Err: {:?}", err))
+                    let vdr_error = VdrError::CommonInvalidData(format!(
+                        "Unable to parse JWK key. Err: {:?}",
+                        err
+                    ));
+
+                    warn!(
+                        "Error: {:?} during parsing JWK key: {}",
+                        vdr_error, public_key_jwk
+                    );
+
+                    vdr_error
                 })?,
             }
         } else if !public_key_multibase.is_empty() {
@@ -245,35 +304,58 @@ impl TryFrom<ContractOutput> for VerificationMethod {
                 public_key_multibase: public_key_multibase.to_string(),
             }
         } else {
-            return Err(VdrError::ContractInvalidResponseData(
+            let error = Err(VdrError::ContractInvalidResponseData(
                 "Unable to parse verification method".to_string(),
             ));
+
+            warn!("Error: {:?} during VerificationMethod parsing", error);
+
+            return error;
         };
 
-        Ok(VerificationMethod {
+        let verification_method = VerificationMethod {
             id: value.get_string(0)?,
             type_: VerificationKeyType::try_from(value.get_string(1)?.as_str())?,
             controller: value.get_string(2)?,
             verification_key,
-        })
+        };
+
+        debug!(
+            "VerificationMethod convert from ContractOutput finished. Result: {:?}",
+            verification_method
+        );
+
+        Ok(verification_method)
     }
 }
 
 impl VerificationMethod {
     pub fn empty() -> ContractParam {
-        ContractParam::Tuple(vec![
+        let ver_method_contract_param = ContractParam::Tuple(vec![
             ContractParam::String("".to_string()),
             ContractParam::String("".to_string()),
             ContractParam::String("".to_string()),
             ContractParam::String("".to_string()),
             ContractParam::String("".to_string()),
-        ])
+        ]);
+
+        trace!(
+            "Created new empty VerificationMethod contract param: {:?}",
+            ver_method_contract_param
+        );
+
+        ver_method_contract_param
     }
 }
 
 impl Into<ContractParam> for VerificationMethodOrReference {
     fn into(self) -> ContractParam {
-        match self {
+        trace!(
+            "VerificationMethodOrReference: {:?} convert to ContractParam started",
+            self
+        );
+
+        let token = match self {
             VerificationMethodOrReference::String(reference) => ContractParam::Tuple(vec![
                 ContractParam::String(reference.to_string()),
                 VerificationMethod::empty(),
@@ -284,7 +366,14 @@ impl Into<ContractParam> for VerificationMethodOrReference {
                     verification_method.into(),
                 ])
             }
-        }
+        };
+
+        debug!(
+            "VerificationMethodOrReference convert to ContractParam finished. Result: {:?}",
+            token
+        );
+
+        token
     }
 }
 
@@ -292,23 +381,38 @@ impl TryFrom<ContractOutput> for VerificationMethodOrReference {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
+        trace!(
+            "VerificationMethodOrReference convert from ContractOutput: {:?} started",
+            value
+        );
+
         let id = value.get_string(0)?;
         let verification_method =
             VerificationMethod::try_from(value.get_tuple(1)?).unwrap_or_default();
 
-        if !verification_method.id.is_empty() {
-            Ok(VerificationMethodOrReference::VerificationMethod(
-                verification_method,
-            ))
+        let token = if !verification_method.id.is_empty() {
+            VerificationMethodOrReference::VerificationMethod(verification_method)
         } else {
-            Ok(VerificationMethodOrReference::String(id))
-        }
+            VerificationMethodOrReference::String(id)
+        };
+
+        debug!(
+            "VerificationMethodOrReference convert from ContractOutput: {:?} finished. Result: {:?}",
+            value, token
+        );
+
+        Ok(token)
     }
 }
 
 impl Into<ContractParam> for StringOrVector {
     fn into(self) -> ContractParam {
-        match self {
+        trace!(
+            "StringOrVector convert to ContractParam: {:?} started",
+            self
+        );
+
+        let contract_param = match self {
             StringOrVector::String(ref value) => {
                 ContractParam::Array(vec![ContractParam::String(value.to_string())])
             }
@@ -318,12 +422,21 @@ impl Into<ContractParam> for StringOrVector {
                     .map(|value| ContractParam::String(value.to_string()))
                     .collect(),
             ),
-        }
+        };
+
+        debug!(
+            "StringOrVector convert to ContractParam: {:?} started. Result: {:?}",
+            self, contract_param
+        );
+
+        contract_param
     }
 }
 
 impl Into<ContractParam> for Service {
     fn into(self) -> ContractParam {
+        trace!("Service: {:?} convert to ContractParam started", self);
+
         let (endpoint, accept, routing_keys) = match self.service_endpoint {
             ServiceEndpoint::String(endpoint) => (
                 ContractParam::String(endpoint.to_string()),
@@ -350,13 +463,20 @@ impl Into<ContractParam> for Service {
             ServiceEndpoint::Set(_) => unimplemented!(),
         };
 
-        ContractParam::Tuple(vec![
+        let service_contract_param = ContractParam::Tuple(vec![
             ContractParam::String(self.id.to_string()),
             ContractParam::String(self.type_.to_string()),
             endpoint,
             accept,
             routing_keys,
-        ])
+        ]);
+
+        debug!(
+            "Service convert to ContractParam finished. Result: {:?}",
+            service_contract_param
+        );
+
+        service_contract_param
     }
 }
 
@@ -364,11 +484,12 @@ impl TryFrom<ContractOutput> for Service {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
+        trace!("Service convert from ContractOutput: {:?} started", value);
+
         let uri = value.get_string(2)?;
         let accept = value.get_string_array(3)?;
         let routing_keys = value.get_string_array(4)?;
-
-        Ok(Service {
+        let service = Service {
             id: value.get_string(0)?,
             type_: value.get_string(1)?,
             service_endpoint: ServiceEndpoint::Object(ServiceEndpointObject {
@@ -376,12 +497,21 @@ impl TryFrom<ContractOutput> for Service {
                 accept,
                 routing_keys,
             }),
-        })
+        };
+
+        debug!(
+            "Service convert from ContractOutput finished. Result: {:?}",
+            service
+        );
+
+        Ok(service)
     }
 }
 
 impl Into<ContractParam> for DidDocument {
     fn into(self) -> ContractParam {
+        trace!("DidDocument: {:?} convert to ContractParam started", self);
+
         let context: ContractParam = self.context.into();
         let id = ContractParam::String(self.id.value().to_string());
         let controller: ContractParam = self.controller.into();
@@ -431,7 +561,7 @@ impl Into<ContractParam> for DidDocument {
                 .collect(),
         );
 
-        ContractParam::Tuple(vec![
+        let did_doc_contract_param = ContractParam::Tuple(vec![
             context,
             id,
             controller,
@@ -443,7 +573,14 @@ impl Into<ContractParam> for DidDocument {
             key_agreement,
             service,
             also_known_as,
-        ])
+        ]);
+
+        debug!(
+            "DidDocument convert to ContractParam finished. Result: {:?}",
+            did_doc_contract_param
+        );
+
+        did_doc_contract_param
     }
 }
 
@@ -451,6 +588,11 @@ impl TryFrom<ContractOutput> for DidDocument {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
+        trace!(
+            "DidDocument convert from ContractOutput: {:?} started",
+            value
+        );
+
         let context = value.get_string_array(0)?;
         let id = value.get_string(1)?;
         let controller = value.get_string_array(2)?;
@@ -491,7 +633,7 @@ impl TryFrom<ContractOutput> for DidDocument {
             .collect::<VdrResult<Vec<Service>>>()?;
         let also_known_as = value.get_string_array(10)?;
 
-        Ok(DidDocument {
+        let did_doc = DidDocument {
             context: StringOrVector::Vector(context),
             id: DID::new(&id),
             controller: StringOrVector::Vector(controller),
@@ -503,7 +645,14 @@ impl TryFrom<ContractOutput> for DidDocument {
             key_agreement,
             service,
             also_known_as: Some(also_known_as),
-        })
+        };
+
+        debug!(
+            "DidDocument convert from ContractOutput finished. Result: {:?}",
+            did_doc
+        );
+
+        Ok(did_doc)
     }
 }
 
@@ -511,16 +660,29 @@ impl TryFrom<ContractOutput> for DidMetadata {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
-        let creator_address = value.get_address(0)?;
+        trace!(
+            "DidMetadata convert from ContractOutput: {:?} has started",
+            value
+        );
+
+        let creator = value.get_address(0)?;
         let created = value.get_u128(1)?;
         let updated = value.get_u128(2)?;
         let deactivated = value.get_bool(3)?;
-        Ok(DidMetadata {
-            creator_address,
+
+        let did_metadata = DidMetadata {
+            creator,
             created,
             updated,
             deactivated,
-        })
+        };
+
+        trace!(
+            "DidMetadata convert from ContractOutput has finished. Result: {:?}",
+            did_metadata
+        );
+
+        Ok(did_metadata)
     }
 }
 
@@ -528,13 +690,26 @@ impl TryFrom<ContractOutput> for DidDocumentWithMeta {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
+        trace!(
+            "DidDocumentWithMeta convert from ContractOutput: {:?} started",
+            value
+        );
+
         let output_tuple = value.get_tuple(0)?;
         let document = output_tuple.get_tuple(0)?;
         let metadata = output_tuple.get_tuple(1)?;
-        Ok(DidDocumentWithMeta {
+
+        let did_doc_with_metadata = DidDocumentWithMeta {
             document: DidDocument::try_from(document)?,
             metadata: DidMetadata::try_from(metadata)?,
-        })
+        };
+
+        debug!(
+            "DidDocumentWithMeta convert from ContractOutput finished. Result: {:?}",
+            did_doc_with_metadata
+        );
+
+        Ok(did_doc_with_metadata)
     }
 }
 

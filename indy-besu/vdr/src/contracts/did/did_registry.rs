@@ -1,3 +1,5 @@
+use log::{debug, info};
+
 use crate::{
     client::{
         Address, ContractParam, LedgerClient, Transaction, TransactionBuilder, TransactionParser,
@@ -32,13 +34,28 @@ impl DidRegistry {
         from: &Address,
         did_doc: &DidDocument,
     ) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!(
+            "{} txn build started. Sender: {}, DidDocument: {:?}",
+            Self::METHOD_CREATE_DID,
+            from.value(),
+            did_doc
+        );
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_CREATE_DID)
             .add_param(did_doc.clone().into())
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result: {:?}",
+            Self::METHOD_CREATE_DID,
+            transaction
+        );
+
+        transaction
     }
 
     /// Build transaction to execute DidRegistry.updateDid contract method to update DID document for an existing DID
@@ -55,13 +72,28 @@ impl DidRegistry {
         from: &Address,
         did_doc: &DidDocument,
     ) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!(
+            "{} txn build started. Sender: {}, DidDocument: {:?}",
+            Self::METHOD_UPDATE_DID,
+            from.value(),
+            did_doc
+        );
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_UPDATE_DID)
             .add_param(did_doc.clone().into())
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result: {:?}",
+            Self::METHOD_UPDATE_DID,
+            transaction
+        );
+
+        transaction
     }
 
     /// Build transaction to execute DidRegistry.deactivateDid contract method to deactivate an existing DID
@@ -78,13 +110,28 @@ impl DidRegistry {
         from: &Address,
         did: &DID,
     ) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!(
+            "{} txn build started. Sender: {}, Did: {:?}",
+            Self::METHOD_DEACTIVATE_DID,
+            from.value(),
+            did
+        );
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_DEACTIVATE_DID)
             .add_param(ContractParam::String(did.value().to_string()))
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result: {:?}",
+            Self::METHOD_DEACTIVATE_DID,
+            transaction
+        );
+
+        transaction
     }
 
     /// Build transaction to execute DidRegistry.resolveDid contract method to receive a DID Document associated with the DID
@@ -99,12 +146,26 @@ impl DidRegistry {
         client: &LedgerClient,
         did: &DID,
     ) -> VdrResult<Transaction> {
-        TransactionBuilder::new()
+        debug!(
+            "{} txn build started. Did: {:?}",
+            Self::METHOD_RESOLVE_DID,
+            did
+        );
+
+        let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_RESOLVE_DID)
             .add_param(ContractParam::String(did.value().to_string()))
             .set_type(TransactionType::Read)
-            .build(&client)
+            .build(&client);
+
+        info!(
+            "{} txn build finished. Result: {:?}",
+            Self::METHOD_RESOLVE_DID,
+            transaction
+        );
+
+        transaction
     }
 
     /// Parse the result of execution DidRegistry.resolveDid contract method to receive a DID Document associated with the DID
@@ -116,11 +177,21 @@ impl DidRegistry {
     /// # Returns
     /// parsed DID Document
     pub fn parse_resolve_did_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<DidDocument> {
-        TransactionParser::new()
+        debug!("{} result parse started", Self::METHOD_RESOLVE_DID,);
+
+        let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_RESOLVE_DID)
             .parse::<DidDocumentWithMeta>(&client, bytes)
-            .map(|did_with_meta| did_with_meta.document)
+            .map(|did_with_meta| did_with_meta.document);
+
+        info!(
+            "{} result parse finished. Result: {:?}",
+            Self::METHOD_RESOLVE_DID,
+            result
+        );
+
+        result
     }
 
     /// Single step function executing DidRegistry.createDid smart contract method to create a new DID
@@ -137,8 +208,18 @@ impl DidRegistry {
         from: &Address,
         did_doc: &DidDocument,
     ) -> VdrResult<String> {
+        debug!("{} process has started", Self::METHOD_CREATE_DID,);
+
         let transaction = Self::build_create_did_transaction(client, from, did_doc)?;
-        client.sign_and_submit(&transaction).await
+        let receipt = client.sign_and_submit(&transaction).await;
+
+        info!(
+            "{} process has finished. Result: {:?}",
+            Self::METHOD_CREATE_DID,
+            receipt
+        );
+
+        receipt
     }
 
     /// Single step function executing DidRegistry.updateDid smart contract method to update DID Document for an existing DID
@@ -155,8 +236,18 @@ impl DidRegistry {
         from: &Address,
         did_doc: &DidDocument,
     ) -> VdrResult<String> {
+        debug!("{} process has started", Self::METHOD_UPDATE_DID,);
+
         let transaction = Self::build_update_did_transaction(client, from, did_doc)?;
-        client.sign_and_submit(&transaction).await
+        let receipt = client.sign_and_submit(&transaction).await;
+
+        info!(
+            "{} process has finished. Result: {:?}",
+            Self::METHOD_UPDATE_DID,
+            receipt
+        );
+
+        receipt
     }
 
     /// Single step function executing DidRegistry.deactivateDid smart contract method to deactivate as existing DID
@@ -173,8 +264,18 @@ impl DidRegistry {
         from: &Address,
         did: &DID,
     ) -> VdrResult<String> {
+        debug!("{} process has started", Self::METHOD_DEACTIVATE_DID,);
+
         let transaction = Self::build_deactivate_did_transaction(client, from, did)?;
-        client.sign_and_submit(&transaction).await
+        let receipt = client.sign_and_submit(&transaction).await;
+
+        info!(
+            "{} process has finished. Result: {:?}",
+            Self::METHOD_DEACTIVATE_DID,
+            receipt
+        );
+
+        receipt
     }
 
     /// Single step function executing DidRegistry.resolveDid smart contract method to resolve DID Document for an existing DID
@@ -187,9 +288,19 @@ impl DidRegistry {
     /// # Returns
     /// resolved DID Document
     pub async fn resolve_did(client: &LedgerClient, did: &DID) -> VdrResult<DidDocument> {
+        debug!("{} process has started", Self::METHOD_RESOLVE_DID,);
+
         let transaction = Self::build_resolve_did_transaction(client, did)?;
         let result = client.submit_transaction(&transaction).await?;
-        Self::parse_resolve_did_result(client, &result)
+        let resolve_did_result = Self::parse_resolve_did_result(client, &result);
+
+        info!(
+            "{} process has finished. Result: {:?}",
+            Self::METHOD_RESOLVE_DID,
+            resolve_did_result
+        );
+
+        resolve_did_result
     }
 }
 
