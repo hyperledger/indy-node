@@ -35,7 +35,7 @@ impl SchemaRegistry {
         schema: &Schema,
     ) -> VdrResult<Transaction> {
         debug!(
-            "{} txn build started. Sender: {}, schema: {:?}",
+            "{} txn build has started. Sender: {}, schema: {:?}",
             Self::METHOD_CREATE_SCHEMA,
             from.value(),
             schema
@@ -50,7 +50,7 @@ impl SchemaRegistry {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result: {:?}",
+            "{} txn build has finished. Result: {:?}",
             Self::METHOD_CREATE_SCHEMA,
             transaction
         );
@@ -71,7 +71,7 @@ impl SchemaRegistry {
         id: &SchemaId,
     ) -> VdrResult<Transaction> {
         debug!(
-            "{} txn build started. Schema ID: {:?}",
+            "{} txn build has started. Schema ID: {:?}",
             Self::METHOD_RESOLVE_SCHEMA,
             id
         );
@@ -84,7 +84,7 @@ impl SchemaRegistry {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result: {:?}",
+            "{} txn build has finished. Result: {:?}",
             Self::METHOD_RESOLVE_SCHEMA,
             transaction
         );
@@ -101,7 +101,7 @@ impl SchemaRegistry {
     /// # Returns
     /// parsed Schema
     pub fn parse_resolve_schema_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<Schema> {
-        debug!("{} result parse started", Self::METHOD_RESOLVE_SCHEMA,);
+        debug!("{} result parse has started", Self::METHOD_RESOLVE_SCHEMA,);
 
         let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -110,7 +110,7 @@ impl SchemaRegistry {
             .map(|schema_with_meta| schema_with_meta.schema);
 
         info!(
-            "{} result parse finished. Result: {:?}",
+            "{} result parse has finished. Result: {:?}",
             Self::METHOD_RESOLVE_SCHEMA,
             result
         );
@@ -160,15 +160,15 @@ impl SchemaRegistry {
 
         let transaction = Self::build_resolve_schema_transaction(client, id)?;
         let result = client.submit_transaction(&transaction).await?;
-        let resolve_schema_result = Self::parse_resolve_schema_result(client, &result);
+        let parsed_result = Self::parse_resolve_schema_result(client, &result);
 
         info!(
             "{} process has finished. Result: {:?}",
             Self::METHOD_RESOLVE_SCHEMA,
-            resolve_schema_result
+            parsed_result
         );
 
-        resolve_schema_result
+        parsed_result
     }
 }
 

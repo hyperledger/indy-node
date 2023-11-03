@@ -7,7 +7,7 @@ use crate::{
 use crate::contracts::cl::types::{
     credential_definition_id::CredentialDefinitionId, schema_id::SchemaId,
 };
-use log::{debug, error, trace, warn};
+use log::{debug, trace, warn};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -39,7 +39,7 @@ pub struct CredentialDefinitionMetadata {
 impl Into<ContractParam> for CredentialDefinition {
     fn into(self) -> ContractParam {
         trace!(
-            "CredentialDefinition: {:?} convert to ContractParam started",
+            "CredentialDefinition: {:?} convert into ContractParam has started",
             self
         );
 
@@ -53,7 +53,7 @@ impl Into<ContractParam> for CredentialDefinition {
         ]);
 
         debug!(
-            "CredentialDefinition: {:?} convert to ContractParam finished. Result: {:?}",
+            "CredentialDefinition: {:?} convert into ContractParam has finished. Result: {:?}",
             self, cred_def_contract_param
         );
 
@@ -66,7 +66,7 @@ impl TryFrom<ContractOutput> for CredentialDefinition {
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
         trace!(
-            "CredentialDefinition convert from ContractOutput: {:?} started",
+            "CredentialDefinition convert from ContractOutput: {:?} has started",
             value
         );
 
@@ -94,7 +94,7 @@ impl TryFrom<ContractOutput> for CredentialDefinition {
         };
 
         debug!(
-            "CredentialDefinition convert from ContractOutput: {:?} finished. Result: {:?}",
+            "CredentialDefinition convert from ContractOutput: {:?} has finished. Result: {:?}",
             value, cred_def
         );
 
@@ -107,7 +107,7 @@ impl TryFrom<ContractOutput> for CredentialDefinitionMetadata {
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
         trace!(
-            "CredentialDefinitionMetadata convert from ContractOutput: {:?} started",
+            "CredentialDefinitionMetadata convert from ContractOutput: {:?} has started",
             value
         );
 
@@ -115,7 +115,7 @@ impl TryFrom<ContractOutput> for CredentialDefinitionMetadata {
         let cred_def_metadata = CredentialDefinitionMetadata { created };
 
         debug!(
-            "CredentialDefinitionMetadata convert from ContractOutput: {:?} finished. Result: {:?}",
+            "CredentialDefinitionMetadata convert from ContractOutput: {:?} has finished. Result: {:?}",
             value, cred_def_metadata
         );
 
@@ -128,7 +128,7 @@ impl TryFrom<ContractOutput> for CredentialDefinitionWithMeta {
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
         trace!(
-            "CredentialDefinitionWithMeta convert from ContractOutput: {:?} started",
+            "CredentialDefinitionWithMeta convert from ContractOutput: {:?} has started",
             value
         );
 
@@ -142,7 +142,7 @@ impl TryFrom<ContractOutput> for CredentialDefinitionWithMeta {
         };
 
         debug!(
-            "CredentialDefinitionWithMeta convert from ContractOutput: {:?} finished. Result: {:?}",
+            "CredentialDefinitionWithMeta convert from ContractOutput: {:?} has finished. Result: {:?}",
             value, cred_def_with_metadata
         );
 

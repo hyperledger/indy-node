@@ -32,7 +32,7 @@ pub struct SchemaMetadata {
 
 impl Into<ContractParam> for Schema {
     fn into(self) -> ContractParam {
-        trace!("Schema: {:?} convert to ContractParam started", self);
+        trace!("Schema: {:?} convert into ContractParam has started", self);
 
         let schema_contract_param = ContractParam::Tuple(vec![
             ContractParam::String(self.id.value().to_string()),
@@ -48,7 +48,7 @@ impl Into<ContractParam> for Schema {
         ]);
 
         debug!(
-            "Schema: {:?} convert to ContractParam finished. Result: {:?}",
+            "Schema: {:?} convert into ContractParam has finished. Result: {:?}",
             self, schema_contract_param
         );
 
@@ -60,7 +60,10 @@ impl TryFrom<ContractOutput> for Schema {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
-        trace!("Schema convert from ContractOutput: {:?} started", value);
+        trace!(
+            "Schema convert from ContractOutput: {:?} has started",
+            value
+        );
 
         let schema = Schema {
             id: SchemaId::new(&value.get_string(0)?),
@@ -71,7 +74,7 @@ impl TryFrom<ContractOutput> for Schema {
         };
 
         debug!(
-            "Schema convert from ContractOutput: {:?} finished. Result: {:?}",
+            "Schema convert from ContractOutput: {:?} has finished. Result: {:?}",
             value, schema
         );
 
@@ -84,7 +87,7 @@ impl TryFrom<ContractOutput> for SchemaMetadata {
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
         trace!(
-            "SchemaMetadata convert from ContractOutput: {:?} started",
+            "SchemaMetadata convert from ContractOutput: {:?} has started",
             value
         );
 
@@ -92,7 +95,7 @@ impl TryFrom<ContractOutput> for SchemaMetadata {
         let schema_metadata = SchemaMetadata { created };
 
         debug!(
-            "SchemaMetadata convert from ContractOutput: {:?} finished. Result: {:?}",
+            "SchemaMetadata convert from ContractOutput: {:?} has finished. Result: {:?}",
             value, schema_metadata
         );
 
@@ -105,7 +108,7 @@ impl TryFrom<ContractOutput> for SchemaWithMeta {
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
         trace!(
-            "SchemaWithMeta convert from ContractOutput: {:?} started",
+            "SchemaWithMeta convert from ContractOutput: {:?} has started",
             value
         );
 
@@ -119,7 +122,7 @@ impl TryFrom<ContractOutput> for SchemaWithMeta {
         };
 
         debug!(
-            "SchemaWithMeta convert from ContractOutput: {:?} finished. Result: {:?}",
+            "SchemaWithMeta convert from ContractOutput: {:?} has finished. Result: {:?}",
             value, schema_with_meta
         );
 

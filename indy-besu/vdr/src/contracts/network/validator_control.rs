@@ -32,7 +32,7 @@ impl ValidatorControl {
         validator_address: &Address,
     ) -> VdrResult<Transaction> {
         debug!(
-            "{} txn build started. Sender: {}, validator address: {}",
+            "{} txn build has started. Sender: {}, validator address: {}",
             Self::METHOD_ADD_VALIDATOR,
             from.value(),
             validator_address.value()
@@ -47,7 +47,7 @@ impl ValidatorControl {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result: {:?}",
+            "{} txn build has finished. Result: {:?}",
             Self::METHOD_ADD_VALIDATOR,
             transaction
         );
@@ -70,7 +70,7 @@ impl ValidatorControl {
         validator_address: &Address,
     ) -> VdrResult<Transaction> {
         debug!(
-            "{} txn build started. Sender: {}, validator address: {}",
+            "{} txn build has started. Sender: {}, validator address: {}",
             Self::METHOD_REMOVE_VALIDATOR,
             from.value(),
             validator_address.value()
@@ -85,7 +85,7 @@ impl ValidatorControl {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result: {:?}",
+            "{} txn build has finished. Result: {:?}",
             Self::METHOD_REMOVE_VALIDATOR,
             transaction
         );
@@ -101,7 +101,7 @@ impl ValidatorControl {
     /// # Returns
     /// Read transaction to submit
     pub fn build_get_validators_transaction(client: &LedgerClient) -> VdrResult<Transaction> {
-        debug!("{} txn build started", Self::METHOD_GET_VALIDATORS,);
+        debug!("{} txn build has started", Self::METHOD_GET_VALIDATORS,);
 
         let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -110,7 +110,7 @@ impl ValidatorControl {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result: {:?}",
+            "{} txn build has finished. Result: {:?}",
             Self::METHOD_GET_VALIDATORS,
             transaction
         );
@@ -130,7 +130,7 @@ impl ValidatorControl {
         client: &LedgerClient,
         bytes: &[u8],
     ) -> VdrResult<ValidatorAddresses> {
-        debug!("{} result parse started", Self::METHOD_GET_VALIDATORS,);
+        debug!("{} result parse has started", Self::METHOD_GET_VALIDATORS,);
 
         let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -138,7 +138,7 @@ impl ValidatorControl {
             .parse::<ValidatorAddresses>(&client, bytes);
 
         info!(
-            "{} result parse finished. Result: {:?}",
+            "{} result parse has finished. Result: {:?}",
             Self::METHOD_GET_VALIDATORS,
             result
         );
@@ -215,15 +215,15 @@ impl ValidatorControl {
 
         let transaction = Self::build_get_validators_transaction(client)?;
         let result = client.submit_transaction(&transaction).await?;
-        let get_validators_result = Self::parse_get_validators_result(client, &result);
+        let parsed_result = Self::parse_get_validators_result(client, &result);
 
         info!(
             "{} process has finished. Result: {:?}",
             Self::METHOD_REMOVE_VALIDATOR,
-            get_validators_result
+            parsed_result
         );
 
-        get_validators_result
+        parsed_result
     }
 }
 

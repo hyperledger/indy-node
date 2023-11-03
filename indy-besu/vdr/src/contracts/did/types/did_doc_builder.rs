@@ -114,22 +114,7 @@ impl DidDocumentBuilder {
     }
 
     pub fn add_assertion_method_reference(mut self, index: usize) -> VdrResult<DidDocumentBuilder> {
-        let kid = self
-            .verification_method
-            .get(index)
-            .ok_or({
-                let vdr_error =
-                    VdrError::CommonInvalidData("Missing verification method".to_string());
-
-                warn!(
-                    "Error: {} during getting verification method by index: {} from DidDocumentBuilder: {:?}",
-                    vdr_error, index, self
-                );
-
-                vdr_error
-            })?
-            .id
-            .to_string();
+        let kid = Self::get_kid_by_index(&self, index)?;
         let assertion_reference = VerificationMethodOrReference::String(kid);
         self.assertion_method.push(assertion_reference.clone());
 
@@ -146,22 +131,7 @@ impl DidDocumentBuilder {
         mut self,
         index: usize,
     ) -> VdrResult<DidDocumentBuilder> {
-        let kid = self
-            .verification_method
-            .get(index)
-            .ok_or({
-                let vdr_error =
-                    VdrError::CommonInvalidData("Missing verification method".to_string());
-
-                warn!(
-                    "Error: {} during getting verification method by index: {} from DidDocumentBuilder: {:?}",
-                    vdr_error, index, self
-                );
-
-                vdr_error
-            })?
-            .id
-            .to_string();
+        let kid = Self::get_kid_by_index(&self, index)?;
         let capability_invocation_reference = VerificationMethodOrReference::String(kid);
         self.capability_invocation
             .push(capability_invocation_reference.clone());
@@ -179,23 +149,7 @@ impl DidDocumentBuilder {
         mut self,
         index: usize,
     ) -> VdrResult<DidDocumentBuilder> {
-        //TODO: make seperate method get_kid_by_index
-        let kid = self
-            .verification_method
-            .get(index)
-            .ok_or({
-                let vdr_error =
-                    VdrError::CommonInvalidData("Missing verification method".to_string());
-
-                warn!(
-                    "Error: {} during getting verification method by index: {} from DidDocumentBuilder: {:?}",
-                    vdr_error, index, self
-                );
-
-                vdr_error
-            })?
-            .id
-            .to_string();
+        let kid = Self::get_kid_by_index(&self, index)?;
         let capability_delegation_reference = VerificationMethodOrReference::String(kid);
         self.capability_delegation
             .push(capability_delegation_reference.clone());
@@ -210,22 +164,7 @@ impl DidDocumentBuilder {
     }
 
     pub fn add_key_agreement_reference(mut self, index: usize) -> VdrResult<DidDocumentBuilder> {
-        let kid = self
-            .verification_method
-            .get(index)
-            .ok_or({
-                let vdr_error =
-                    VdrError::CommonInvalidData("Missing verification method".to_string());
-
-                warn!(
-                    "Error: {} during getting verification method by index: {} from DidDocumentBuilder: {:?}",
-                    vdr_error, index, self
-                );
-
-                vdr_error
-            })?
-            .id
-            .to_string();
+        let kid = Self::get_kid_by_index(&self, index)?;
         let key_agreement_reference = VerificationMethodOrReference::String(kid);
         self.key_agreement.push(key_agreement_reference.clone());
 
@@ -273,5 +212,26 @@ impl DidDocumentBuilder {
         debug!("Built DidDocument: {:?}", did_document);
 
         did_document
+    }
+
+    fn get_kid_by_index(&self, index: usize) -> VdrResult<String> {
+        let kid = self
+        .verification_method
+        .get(index)
+        .ok_or({
+            let vdr_error =
+                VdrError::CommonInvalidData("Missing verification method".to_string());
+
+            warn!(
+                "Error: {} during getting verification method by index: {} from DidDocumentBuilder: {:?}",
+                vdr_error, index, self
+            );
+
+            vdr_error
+        })?
+        .id
+        .to_string();
+
+        Ok(kid)
     }
 }

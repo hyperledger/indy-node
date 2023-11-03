@@ -35,7 +35,7 @@ impl DidRegistry {
         did_doc: &DidDocument,
     ) -> VdrResult<Transaction> {
         debug!(
-            "{} txn build started. Sender: {}, DidDocument: {:?}",
+            "{} txn build has started. Sender: {}, DidDocument: {:?}",
             Self::METHOD_CREATE_DID,
             from.value(),
             did_doc
@@ -50,7 +50,7 @@ impl DidRegistry {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result: {:?}",
+            "{} txn build has finished. Result: {:?}",
             Self::METHOD_CREATE_DID,
             transaction
         );
@@ -73,7 +73,7 @@ impl DidRegistry {
         did_doc: &DidDocument,
     ) -> VdrResult<Transaction> {
         debug!(
-            "{} txn build started. Sender: {}, DidDocument: {:?}",
+            "{} txn build has started. Sender: {}, DidDocument: {:?}",
             Self::METHOD_UPDATE_DID,
             from.value(),
             did_doc
@@ -88,7 +88,7 @@ impl DidRegistry {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result: {:?}",
+            "{} txn build has finished. Result: {:?}",
             Self::METHOD_UPDATE_DID,
             transaction
         );
@@ -111,7 +111,7 @@ impl DidRegistry {
         did: &DID,
     ) -> VdrResult<Transaction> {
         debug!(
-            "{} txn build started. Sender: {}, Did: {:?}",
+            "{} txn build has started. Sender: {}, Did: {:?}",
             Self::METHOD_DEACTIVATE_DID,
             from.value(),
             did
@@ -126,7 +126,7 @@ impl DidRegistry {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result: {:?}",
+            "{} txn build has finished. Result: {:?}",
             Self::METHOD_DEACTIVATE_DID,
             transaction
         );
@@ -147,7 +147,7 @@ impl DidRegistry {
         did: &DID,
     ) -> VdrResult<Transaction> {
         debug!(
-            "{} txn build started. Did: {:?}",
+            "{} txn build has started. Did: {:?}",
             Self::METHOD_RESOLVE_DID,
             did
         );
@@ -160,7 +160,7 @@ impl DidRegistry {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result: {:?}",
+            "{} txn build has finished. Result: {:?}",
             Self::METHOD_RESOLVE_DID,
             transaction
         );
@@ -177,7 +177,7 @@ impl DidRegistry {
     /// # Returns
     /// parsed DID Document
     pub fn parse_resolve_did_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<DidDocument> {
-        debug!("{} result parse started", Self::METHOD_RESOLVE_DID,);
+        debug!("{} result parse has started", Self::METHOD_RESOLVE_DID,);
 
         let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -186,7 +186,7 @@ impl DidRegistry {
             .map(|did_with_meta| did_with_meta.document);
 
         info!(
-            "{} result parse finished. Result: {:?}",
+            "{} result parse has finished. Result: {:?}",
             Self::METHOD_RESOLVE_DID,
             result
         );
@@ -292,15 +292,15 @@ impl DidRegistry {
 
         let transaction = Self::build_resolve_did_transaction(client, did)?;
         let result = client.submit_transaction(&transaction).await?;
-        let resolve_did_result = Self::parse_resolve_did_result(client, &result);
+        let parsed_result = Self::parse_resolve_did_result(client, &result);
 
         info!(
             "{} process has finished. Result: {:?}",
             Self::METHOD_RESOLVE_DID,
-            resolve_did_result
+            parsed_result
         );
 
-        resolve_did_result
+        parsed_result
     }
 }
 

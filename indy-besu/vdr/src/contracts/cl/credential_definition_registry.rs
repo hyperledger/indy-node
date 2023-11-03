@@ -36,7 +36,7 @@ impl CredentialDefinitionRegistry {
         credential_definition: &CredentialDefinition,
     ) -> VdrResult<Transaction> {
         debug!(
-            "{} txn build started. Sender: {}, CredentialDefinition: {:?}",
+            "{} txn build has started. Sender: {}, CredentialDefinition: {:?}",
             Self::METHOD_CREATE_CREDENTIAL_DEFINITION,
             from.value(),
             credential_definition
@@ -51,7 +51,7 @@ impl CredentialDefinitionRegistry {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result: {:?}",
+            "{} txn build has finished. Result: {:?}",
             Self::METHOD_CREATE_CREDENTIAL_DEFINITION,
             transaction
         );
@@ -73,7 +73,7 @@ impl CredentialDefinitionRegistry {
         id: &CredentialDefinitionId,
     ) -> VdrResult<Transaction> {
         debug!(
-            "{} txn build started. CredentialDefinitionId: {:?}",
+            "{} txn build has started. CredentialDefinitionId: {:?}",
             Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION,
             id
         );
@@ -86,7 +86,7 @@ impl CredentialDefinitionRegistry {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result: {:?}",
+            "{} txn build has finished. Result: {:?}",
             Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION,
             transaction
         );
@@ -108,7 +108,7 @@ impl CredentialDefinitionRegistry {
         bytes: &[u8],
     ) -> VdrResult<CredentialDefinition> {
         debug!(
-            "{} result parse started",
+            "{} result parse has started",
             Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION,
         );
 
@@ -121,7 +121,7 @@ impl CredentialDefinitionRegistry {
             });
 
         info!(
-            "{} result parse finished. Result: {:?}",
+            "{} result parse has finished. Result: {:?}",
             Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION,
             result
         );
@@ -186,16 +186,15 @@ impl CredentialDefinitionRegistry {
 
         let transaction = Self::build_resolve_credential_definition_transaction(client, id)?;
         let result = client.submit_transaction(&transaction).await?;
-        let resolve_cred_def_result =
-            Self::parse_resolve_credential_definition_result(client, &result);
+        let parsed_result = Self::parse_resolve_credential_definition_result(client, &result);
 
         info!(
             "{} process has finished. Result: {:?}",
             Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION,
-            resolve_cred_def_result
+            parsed_result
         );
 
-        resolve_cred_def_result
+        parsed_result
     }
 }
 

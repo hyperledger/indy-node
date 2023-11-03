@@ -34,7 +34,7 @@ impl RoleControl {
         account: &Address,
     ) -> VdrResult<Transaction> {
         debug!(
-            "{} txn build started. Sender: {}, assignee: {}, role: {:?}",
+            "{} txn build has started. Sender: {}, assignee: {}, role: {:?}",
             Self::METHOD_ASSIGN_ROLE,
             from.value(),
             account.value(),
@@ -51,7 +51,7 @@ impl RoleControl {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result: {:?}",
+            "{} txn build has finished. Result: {:?}",
             Self::METHOD_ASSIGN_ROLE,
             transaction
         );
@@ -76,7 +76,7 @@ impl RoleControl {
         account: &Address,
     ) -> VdrResult<Transaction> {
         debug!(
-            "{} txn build started. Sender: {}, revokee: {}, role: {:?}",
+            "{} txn build has started. Sender: {}, revokee: {}, role: {:?}",
             Self::METHOD_REVOKE_ROLE,
             from.value(),
             account.value(),
@@ -93,7 +93,7 @@ impl RoleControl {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result: {:?}",
+            "{} txn build has finished. Result: {:?}",
             Self::METHOD_REVOKE_ROLE,
             transaction
         );
@@ -116,7 +116,7 @@ impl RoleControl {
         account: &Address,
     ) -> VdrResult<Transaction> {
         debug!(
-            "{} txn build started. Account to check: {}, role: {:?}",
+            "{} txn build has started. Account to check: {}, role: {:?}",
             Self::METHOD_HAS_ROLE,
             account.value(),
             role
@@ -131,7 +131,7 @@ impl RoleControl {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result {:?}",
+            "{} txn build has finished. Result {:?}",
             Self::METHOD_HAS_ROLE,
             transaction
         );
@@ -152,7 +152,7 @@ impl RoleControl {
         account: &Address,
     ) -> VdrResult<Transaction> {
         debug!(
-            "{} txn build started. Account to get: {}",
+            "{} txn build has started. Account to get: {}",
             Self::METHOD_GET_ROLE,
             account.value(),
         );
@@ -165,7 +165,7 @@ impl RoleControl {
             .build(&client);
 
         info!(
-            "{} txn build finished. Result: {:?}",
+            "{} txn build has finished. Result: {:?}",
             Self::METHOD_GET_ROLE,
             transaction
         );
@@ -182,20 +182,20 @@ impl RoleControl {
     /// # Returns
     /// Account has role result
     pub fn parse_has_role_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<bool> {
-        debug!("{} result parse started", Self::METHOD_HAS_ROLE,);
+        debug!("{} result parse has started", Self::METHOD_HAS_ROLE,);
 
-        let result = TransactionParser::new()
+        let parse_result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_HAS_ROLE)
             .parse::<HasRole>(&client, bytes);
 
         info!(
-            "{} result parse finished. Result: {:?}",
+            "{} result parse has finished. Result: {:?}",
             Self::METHOD_HAS_ROLE,
-            result
+            parse_result
         );
 
-        result
+        parse_result
     }
 
     /// Parse the result of execution RoleControl.GetRole contract method to get account's role
@@ -207,20 +207,20 @@ impl RoleControl {
     /// # Returns
     /// Account's role
     pub fn parse_get_role_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<Role> {
-        debug!("{} result parse started", Self::METHOD_GET_ROLE,);
+        debug!("{} result parse has started", Self::METHOD_GET_ROLE,);
 
-        let result = TransactionParser::new()
+        let parse_result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_GET_ROLE)
             .parse::<Role>(&client, bytes);
 
         info!(
-            "{} result parse finished. Result: {:?}",
+            "{} result parse has finished. Result: {:?}",
             Self::METHOD_GET_ROLE,
-            result
+            parse_result
         );
 
-        result
+        parse_result
     }
 
     /// Single step function executing RoleControl.assignRole contract method to assign a role to an account
@@ -301,15 +301,15 @@ impl RoleControl {
 
         let transaction = Self::build_has_role_transaction(client, role, account)?;
         let result = client.submit_transaction(&transaction).await?;
-        let has_role_result = Self::parse_has_role_result(client, &result);
+        let parsed_result = Self::parse_has_role_result(client, &result);
 
         info!(
             "{} check has finished. Result: {:?}",
             Self::METHOD_HAS_ROLE,
-            has_role_result
+            parsed_result
         );
 
-        has_role_result
+        parsed_result
     }
 
     /// Single step function executing RoleControl.getRole contract method to get account's role
@@ -325,15 +325,15 @@ impl RoleControl {
 
         let transaction = Self::build_get_role_transaction(client, account)?;
         let result = client.submit_transaction(&transaction).await?;
-        let get_role_result = Self::parse_get_role_result(client, &result);
+        let parsed_result = Self::parse_get_role_result(client, &result);
 
         info!(
             "{} process has finished. Result: {:?}",
             Self::METHOD_GET_ROLE,
-            get_role_result
+            parsed_result
         );
 
-        get_role_result
+        parsed_result
     }
 }
 

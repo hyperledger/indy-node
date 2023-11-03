@@ -9,14 +9,14 @@ impl TryFrom<ContractOutput> for ValidatorAddresses {
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
         trace!(
-            "ValidatorAddresses convert from ContractOutput: {:?} started",
+            "ValidatorAddresses convert from ContractOutput: {:?} has started",
             value
         );
 
         let validator_addresses = value.get_address_array(0);
 
         debug!(
-            "ValidatorAddresses convert from ContractOutput finished. Result: {:?}",
+            "ValidatorAddresses convert from ContractOutput has finished. Result: {:?}",
             validator_addresses
         );
 

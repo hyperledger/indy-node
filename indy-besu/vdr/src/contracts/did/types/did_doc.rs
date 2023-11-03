@@ -112,7 +112,10 @@ impl Default for VerificationKeyType {
 
 impl ToString for VerificationKeyType {
     fn to_string(&self) -> String {
-        trace!("VerificationKeyType: {:?} convert to String started", self);
+        trace!(
+            "VerificationKeyType: {:?} convert to String has started",
+            self
+        );
 
         let ver_key_type_str = match self {
             VerificationKeyType::Ed25519VerificationKey2018 => {
@@ -134,7 +137,7 @@ impl ToString for VerificationKeyType {
         };
 
         debug!(
-            "VerificationKeyType: {:?} convert to String finished. Result: {:?}",
+            "VerificationKeyType: {:?} convert to String has finished. Result: {:?}",
             self, ver_key_type_str
         );
 
@@ -146,7 +149,10 @@ impl TryFrom<&str> for VerificationKeyType {
     type Error = VdrError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        trace!("VerificationKeyType convert from String: {} started", value);
+        trace!(
+            "VerificationKeyType convert from String: {} has started",
+            value
+        );
 
         let ver_key_type = match value {
             "Ed25519VerificationKey2018" => Ok(VerificationKeyType::Ed25519VerificationKey2018),
@@ -164,7 +170,7 @@ impl TryFrom<&str> for VerificationKeyType {
                 ));
 
                 warn!(
-                    "Error: {} during converting VerificationKeyType from from String: {} ",
+                    "Error: {} during converting VerificationKeyType from String: {} ",
                     vdr_error, value
                 );
 
@@ -173,7 +179,7 @@ impl TryFrom<&str> for VerificationKeyType {
         };
 
         debug!(
-            "VerificationKeyType convert from String: {} finished. Result: {:?}",
+            "VerificationKeyType convert from String: {} has finished. Result: {:?}",
             value, ver_key_type
         );
 
@@ -231,7 +237,7 @@ impl Default for StringOrVector {
     fn default() -> Self {
         let vector = StringOrVector::Vector(Vec::new());
 
-        trace!("Created new StringOrVerctor::vector: {:?}", vector);
+        trace!("Created new StringOrVerctor::Vector: {:?}", vector);
 
         vector
     }
@@ -240,7 +246,7 @@ impl Default for StringOrVector {
 impl Into<ContractParam> for VerificationMethod {
     fn into(self) -> ContractParam {
         trace!(
-            "VerificationMethod: {:?} convert to ContractParam started",
+            "VerificationMethod: {:?} convert into ContractParam has started",
             self
         );
 
@@ -264,7 +270,7 @@ impl Into<ContractParam> for VerificationMethod {
         ]);
 
         debug!(
-            "VerificationMethod convert to ContractParam finished. Result: {:?}",
+            "VerificationMethod convert into ContractParam has finished. Result: {:?}",
             ver_method_contract_param
         );
 
@@ -277,7 +283,7 @@ impl TryFrom<ContractOutput> for VerificationMethod {
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
         trace!(
-            "VerificationMethod convert from ContractOutput: {:?} started",
+            "VerificationMethod convert from ContractOutput: {:?} has started",
             value
         );
 
@@ -321,7 +327,7 @@ impl TryFrom<ContractOutput> for VerificationMethod {
         };
 
         debug!(
-            "VerificationMethod convert from ContractOutput finished. Result: {:?}",
+            "VerificationMethod convert from ContractOutput has finished. Result: {:?}",
             verification_method
         );
 
@@ -351,7 +357,7 @@ impl VerificationMethod {
 impl Into<ContractParam> for VerificationMethodOrReference {
     fn into(self) -> ContractParam {
         trace!(
-            "VerificationMethodOrReference: {:?} convert to ContractParam started",
+            "VerificationMethodOrReference: {:?} convert into ContractParam has started",
             self
         );
 
@@ -369,7 +375,7 @@ impl Into<ContractParam> for VerificationMethodOrReference {
         };
 
         debug!(
-            "VerificationMethodOrReference convert to ContractParam finished. Result: {:?}",
+            "VerificationMethodOrReference convert into ContractParam has finished. Result: {:?}",
             token
         );
 
@@ -382,7 +388,7 @@ impl TryFrom<ContractOutput> for VerificationMethodOrReference {
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
         trace!(
-            "VerificationMethodOrReference convert from ContractOutput: {:?} started",
+            "VerificationMethodOrReference convert from ContractOutput: {:?} has started",
             value
         );
 
@@ -397,7 +403,7 @@ impl TryFrom<ContractOutput> for VerificationMethodOrReference {
         };
 
         debug!(
-            "VerificationMethodOrReference convert from ContractOutput: {:?} finished. Result: {:?}",
+            "VerificationMethodOrReference convert from ContractOutput: {:?} has finished. Result: {:?}",
             value, token
         );
 
@@ -408,7 +414,7 @@ impl TryFrom<ContractOutput> for VerificationMethodOrReference {
 impl Into<ContractParam> for StringOrVector {
     fn into(self) -> ContractParam {
         trace!(
-            "StringOrVector convert to ContractParam: {:?} started",
+            "StringOrVector convert into ContractParam: {:?} has started",
             self
         );
 
@@ -425,7 +431,7 @@ impl Into<ContractParam> for StringOrVector {
         };
 
         debug!(
-            "StringOrVector convert to ContractParam: {:?} started. Result: {:?}",
+            "StringOrVector convert into ContractParam: {:?} has started. Result: {:?}",
             self, contract_param
         );
 
@@ -435,7 +441,7 @@ impl Into<ContractParam> for StringOrVector {
 
 impl Into<ContractParam> for Service {
     fn into(self) -> ContractParam {
-        trace!("Service: {:?} convert to ContractParam started", self);
+        trace!("Service: {:?} convert into ContractParam has started", self);
 
         let (endpoint, accept, routing_keys) = match self.service_endpoint {
             ServiceEndpoint::String(endpoint) => (
@@ -472,7 +478,7 @@ impl Into<ContractParam> for Service {
         ]);
 
         debug!(
-            "Service convert to ContractParam finished. Result: {:?}",
+            "Service convert into ContractParam has finished. Result: {:?}",
             service_contract_param
         );
 
@@ -484,7 +490,10 @@ impl TryFrom<ContractOutput> for Service {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
-        trace!("Service convert from ContractOutput: {:?} started", value);
+        trace!(
+            "Service convert from ContractOutput: {:?} has started",
+            value
+        );
 
         let uri = value.get_string(2)?;
         let accept = value.get_string_array(3)?;
@@ -500,7 +509,7 @@ impl TryFrom<ContractOutput> for Service {
         };
 
         debug!(
-            "Service convert from ContractOutput finished. Result: {:?}",
+            "Service convert from ContractOutput has finished. Result: {:?}",
             service
         );
 
@@ -510,7 +519,10 @@ impl TryFrom<ContractOutput> for Service {
 
 impl Into<ContractParam> for DidDocument {
     fn into(self) -> ContractParam {
-        trace!("DidDocument: {:?} convert to ContractParam started", self);
+        trace!(
+            "DidDocument: {:?} convert into ContractParam has started",
+            self
+        );
 
         let context: ContractParam = self.context.into();
         let id = ContractParam::String(self.id.value().to_string());
@@ -576,7 +588,7 @@ impl Into<ContractParam> for DidDocument {
         ]);
 
         debug!(
-            "DidDocument convert to ContractParam finished. Result: {:?}",
+            "DidDocument convert into ContractParam has finished. Result: {:?}",
             did_doc_contract_param
         );
 
@@ -589,7 +601,7 @@ impl TryFrom<ContractOutput> for DidDocument {
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
         trace!(
-            "DidDocument convert from ContractOutput: {:?} started",
+            "DidDocument convert from ContractOutput: {:?} has started",
             value
         );
 
@@ -648,7 +660,7 @@ impl TryFrom<ContractOutput> for DidDocument {
         };
 
         debug!(
-            "DidDocument convert from ContractOutput finished. Result: {:?}",
+            "DidDocument convert from ContractOutput has finished. Result: {:?}",
             did_doc
         );
 
@@ -691,7 +703,7 @@ impl TryFrom<ContractOutput> for DidDocumentWithMeta {
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
         trace!(
-            "DidDocumentWithMeta convert from ContractOutput: {:?} started",
+            "DidDocumentWithMeta convert from ContractOutput: {:?} has started",
             value
         );
 
@@ -705,7 +717,7 @@ impl TryFrom<ContractOutput> for DidDocumentWithMeta {
         };
 
         debug!(
-            "DidDocumentWithMeta convert from ContractOutput finished. Result: {:?}",
+            "DidDocumentWithMeta convert from ContractOutput has finished. Result: {:?}",
             did_doc_with_metadata
         );
 

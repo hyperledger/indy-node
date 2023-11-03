@@ -31,7 +31,7 @@ impl LedgerClient {
         node_address: &str,
         contract_configs: &Vec<ContractConfig>,
         // TODO: It is simplier to just pass signer only into corresponding `sign_transaction` function.
-        //  But we also have single step functions like `create_did` where we will have to to pass call back as well
+        //  But we also have single step functions like `create_did` where we will have to pass call back as well
         //  Transaction methods already depends on the client, so it make sence to accept signer on client create
         //   Same time we can be rework it to accept callback instead of interface -> simplier from FFI perspective
         signer: Option<Box<dyn Signer>>,
