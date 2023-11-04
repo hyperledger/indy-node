@@ -17,7 +17,7 @@
     "demo/account": "yarn run-on-besu demos/account-control.ts",
     "demo/upgrade": "yarn run-on-besu demos/upgrade-control.ts",
     "genesis/generate": "ts-node scripts/genesis/generate.ts",
-    "postinstall": "cd ../ && husky install smart_contracts/.husky"
+    "postinstall": "cd ../../ && husky install indy-besu/smart_contracts/.husky"
   },
   "license": "Apache-2.0",
   "dependencies": {
