@@ -1,0 +1,7 @@
+export * from './AccountControl'
+export * from './CredentialDefinitionRegistry'
+export * from './DidRegistry'
+export * from './RoleControl'
+export * from './SchemaRegistry'
+export * from './UpgradeControl'
+export * from './ValidatorControl'

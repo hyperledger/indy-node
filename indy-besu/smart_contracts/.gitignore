@@ -1,0 +1,9 @@
+.vscode
+node_modules
+
+cache
+artifacts
+typechain
+typechain-types
+
+.openzeppelin
