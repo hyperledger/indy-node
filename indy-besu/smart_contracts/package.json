@@ -11,6 +11,7 @@
     "lint": "yarn ts-lint && yarn solhint",
     "format": "prettier --write \"contracts/**/*.sol\" \"scripts/**/*.ts\" \"contracts-ts/**/*.ts\" \"demos/**/*.ts\" \"test/**/*.ts\"",
     "run-on-besu": "hardhat run --network besu",
+    "demos": "find demos -name '*.ts' -maxdepth 1 -print0 | xargs -0 -n 1 yarn run-on-besu",
     "demo/roles": "yarn run-on-besu demos/role-control.ts",
     "demo/validators": "yarn run-on-besu demos/validator-control.ts",
     "demo/flow": "yarn run-on-besu demos/flow.ts",

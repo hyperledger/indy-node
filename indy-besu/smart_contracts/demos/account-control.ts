@@ -6,8 +6,8 @@ import { SimpleContract } from './utils/contracts/SimpleContract'
 
 async function demo() {
   const trustee = await new Actor(environment.accounts.account1).init()
-  const endorser = await new Actor(environment.accounts.account2).init()
-  const steward = await new Actor(environment.accounts.account3).init()
+  const endorser = await new Actor().init()
+  const steward = await new Actor().init()
   const unauthorized = await new Actor().init()
 
   console.log('1. Assign Endorser role to the target account')

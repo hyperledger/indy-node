@@ -21,7 +21,7 @@ async function getValidatorsForLastBLock() {
 
 async function demo() {
   const trustee = await new Actor(environment.accounts.account1).init()
-  const steward = await new Actor(environment.accounts.account2).init()
+  const steward = await new Actor().init()
 
   console.log('1. Get the lst of current validate nodes')
   let validators = await trustee.validatorControl.getValidators()
@@ -54,6 +54,10 @@ async function demo() {
   console.log('8. Get the list of validate for last block')
   data = await getValidatorsForLastBLock()
   console.log(`Response: ${JSON.stringify(data, null, 2)}`)
+
+  console.log('9. Remove the validator node')
+  const removeValidatorReceipt = await steward.validatorControl.removeValidator(nodeAddress)
+  console.log(`Validator ${nodeAddress} removed from the network -- ${JSON.stringify(addValidatorReceipt)}`)
 }
 
 if (require.main === module) {
