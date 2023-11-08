@@ -1,3 +1,5 @@
+use log::{debug, trace, warn};
+
 use crate::{
     client::{Address, ContractOutput, ContractParam},
     error::{VdrError, VdrResult},
@@ -59,40 +61,72 @@ impl TransactionBuilder {
 
     pub fn set_contract(mut self, contract: &str) -> TransactionBuilder {
         self.contract = contract.to_string();
+
+        trace!(
+            "Set contract: {} to TransactionBuilder: {:?}",
+            contract,
+            self
+        );
+
         self
     }
 
     pub fn set_method(mut self, method: &str) -> TransactionBuilder {
         self.method = method.to_string();
+
+        trace!("Set method: {} to TransactionBuilder: {:?}", method, self);
+
         self
     }
 
     pub fn add_param(mut self, param: ContractParam) -> TransactionBuilder {
-        self.params.push(param);
+        self.params.push(param.clone());
+
+        trace!(
+            "Added ContractParam: {:?} to TransactionBuilder: {:?}",
+            param,
+            self
+        );
+
         self
     }
 
     pub fn set_type(mut self, type_: TransactionType) -> TransactionBuilder {
-        self.type_ = type_;
+        self.type_ = type_.clone();
+
+        trace!(
+            "Set TransactionType: {:?} to TransactionBuilder: {:?}",
+            type_,
+            self
+        );
+
         self
     }
 
     pub fn set_from(mut self, from: &Address) -> TransactionBuilder {
         self.from = Some(from.clone());
+
+        trace!("Set from: {:?} to TransactionBuilder: {:?}", from, self);
+
         self
     }
 
     pub fn build(self, client: &LedgerClient) -> VdrResult<Transaction> {
         let contract = client.contract(&self.contract)?;
         let data = contract.encode_input(&self.method, &self.params)?;
-        Ok(Transaction {
+
+        let transaction = Transaction {
             type_: self.type_,
             from: self.from,
             to: contract.address(),
             chain_id: client.chain_id(),
             data,
             signed: None,
-        })
+        };
+
+        debug!("Built transaction: {:?}", transaction);
+
+        Ok(transaction)
     }
 }
 
@@ -109,11 +143,21 @@ impl TransactionParser {
 
     pub fn set_contract(mut self, contract: &str) -> TransactionParser {
         self.contract = contract.to_string();
+
+        trace!(
+            "Set contract: {} to TransactionParser: {:?}",
+            contract,
+            self
+        );
+
         self
     }
 
     pub fn set_method(mut self, method: &str) -> TransactionParser {
         self.method = method.to_string();
+
+        trace!("Set method: {} to TransactionParser: {:?}", method, self);
+
         self
     }
 
@@ -123,18 +167,26 @@ impl TransactionParser {
         bytes: &[u8],
     ) -> VdrResult<T> {
         if bytes.is_empty() {
-            return Err(VdrError::ContractInvalidResponseData(
-                "Empty response bytes".to_string(),
-            ));
+            let vdr_error =
+                VdrError::ContractInvalidResponseData("Empty response bytes".to_string());
+
+            warn!("Error: {:?} during transaction output parse", vdr_error);
+
+            return Err(vdr_error);
         }
         let contract = client.contract(&self.contract)?;
         let output = contract.decode_output(&self.method, bytes)?;
 
         if output.is_empty() {
-            return Err(VdrError::ContractInvalidResponseData(
-                "Unable to parse response".to_string(),
-            ));
+            let vdr_error =
+                VdrError::ContractInvalidResponseData("Unable to parse response".to_string());
+
+            warn!("Error: {:?} during transaction output parse", vdr_error);
+
+            return Err(vdr_error);
         }
+
+        debug!("Decoded transaction output: {:?}", output);
 
         T::try_from(output)
     }

@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use log::{info, warn};
+
 use crate::{
     client::{
         implementation::web3::{client::Web3Client, contract::Web3Contract},
@@ -38,11 +40,16 @@ impl LedgerClient {
     ) -> VdrResult<LedgerClient> {
         let client = Web3Client::new(node_address, signer)?;
         let contracts = Self::init_contracts(&client, &contract_configs)?;
-        Ok(LedgerClient {
+
+        let ledger_client = LedgerClient {
             chain_id,
             client: Box::new(client),
             contracts,
-        })
+        };
+
+        info!("Created new LedgerClient");
+
+        Ok(ledger_client)
     }
 
     /// Ping Ledger.
@@ -98,9 +105,13 @@ impl LedgerClient {
     }
 
     pub(crate) fn contract(&self, name: &str) -> VdrResult<&Box<dyn Contract>> {
-        self.contracts
-            .get(name)
-            .ok_or(VdrError::ContractInvalidName(name.to_string()))
+        self.contracts.get(name).ok_or({
+            let vdr_error = VdrError::ContractInvalidName(name.to_string());
+
+            warn!("Error during getting contract: {:?}", vdr_error);
+
+            vdr_error
+        })
     }
 
     pub(crate) fn chain_id(&self) -> u64 {
@@ -117,6 +128,7 @@ impl LedgerClient {
             let contract = Web3Contract::new(client, &contract_config.address, &contract_spec)?;
             contracts.insert(contract_spec.name.clone(), Box::new(contract));
         }
+
         Ok(contracts)
     }
 }

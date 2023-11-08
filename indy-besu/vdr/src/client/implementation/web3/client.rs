@@ -5,6 +5,7 @@ use crate::{
 };
 
 use crate::client::{PingStatus, TransactionType};
+use log::{debug, warn};
 use serde_json::json;
 use std::{str::FromStr, time::Duration};
 use web3::{
@@ -26,10 +27,14 @@ impl Web3Client {
     pub fn new(node_address: &str, signer: Option<Box<dyn Signer>>) -> VdrResult<Web3Client> {
         let transport = Http::new(node_address).map_err(|_| VdrError::ClientNodeUnreachable)?;
         let web3 = Web3::new(transport);
-        Ok(Web3Client {
+        let web3_client = Web3Client {
             client: web3,
             signer,
-        })
+        };
+
+        debug!("Created new Web3Client");
+
+        Ok(web3_client)
     }
 
     pub fn eth(&self) -> Eth<Http> {
@@ -40,23 +45,44 @@ impl Web3Client {
 #[async_trait::async_trait]
 impl Client for Web3Client {
     async fn sign_transaction(&self, transaction: &Transaction) -> VdrResult<Transaction> {
-        let signer = self.signer.as_ref().ok_or(VdrError::ClientInvalidState(
-            "Signer is not set".to_string(),
-        ))?;
-        let account = transaction
-            .from
-            .clone()
-            .ok_or(VdrError::ClientInvalidTransaction(
-                "Missing sender address".to_string(),
-            ))?;
+        debug!("Sign transaction process has started");
+
+        let signer = self.signer.as_ref().ok_or({
+            let vdr_error = VdrError::ClientInvalidState("Signer is not set".to_string());
+
+            warn!(
+                "Error: {} during signing transaction: {:?}",
+                vdr_error, transaction
+            );
+
+            vdr_error
+        })?;
+        let account = transaction.from.clone().ok_or({
+            let vdr_error =
+                VdrError::ClientInvalidTransaction("Missing sender address".to_string());
+
+            warn!(
+                "Error: {} during signing transaction: {:?}",
+                vdr_error, transaction
+            );
+
+            vdr_error
+        })?;
 
         let signer = Web3Signer::new(account, signer);
 
         let to = Address::from_str(&transaction.to).map_err(|_| {
-            VdrError::ClientInvalidTransaction(format!(
+            let vdr_error = VdrError::ClientInvalidTransaction(format!(
                 "Invalid transaction target address {}",
                 transaction.to
-            ))
+            ));
+
+            warn!(
+                "Error: {} during signing transaction: {:?}",
+                vdr_error, transaction
+            );
+
+            vdr_error
         })?;
         let web3_transaction = TransactionParameters {
             to: Some(to),
@@ -75,6 +101,8 @@ impl Client for Web3Client {
             .raw_transaction
             .0;
 
+        debug!("Signed transaction: {:?}", transaction);
+
         Ok(Transaction {
             signed: Some(signed_transaction),
             ..transaction.clone()
@@ -82,18 +110,29 @@ impl Client for Web3Client {
     }
 
     async fn submit_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>> {
+        debug!("Submit transaction process has started");
+
         if transaction.type_ != TransactionType::Write {
-            return Err(VdrError::ClientInvalidTransaction(
-                "Write transaction expected".to_string(),
-            ));
+            let vdr_error =
+                VdrError::ClientInvalidTransaction("Write transaction expected".to_string());
+
+            warn!(
+                "Error: {} during submitting transaction: {:?}",
+                vdr_error, transaction
+            );
+
+            return Err(vdr_error);
         }
-        let signed_transaction =
-            transaction
-                .signed
-                .as_ref()
-                .ok_or(VdrError::ClientInvalidTransaction(
-                    "Missing signature".to_string(),
-                ))?;
+        let signed_transaction = transaction.signed.as_ref().ok_or({
+            let vdr_error = VdrError::ClientInvalidTransaction("Missing signature".to_string());
+
+            warn!(
+                "Error: {} during submitting transaction: {:?}",
+                vdr_error, transaction
+            );
+
+            vdr_error
+        })?;
 
         let receipt = self
             .client
@@ -103,44 +142,79 @@ impl Client for Web3Client {
                 NUMBER_TX_CONFIRMATIONS,
             )
             .await?;
+
+        debug!("Submitted transaction: {:?}", transaction);
+
         Ok(receipt.transaction_hash.0.to_vec())
     }
 
     async fn call_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>> {
+        debug!("Call transaction process has started");
+
         if transaction.type_ != TransactionType::Read {
-            return Err(VdrError::ClientInvalidTransaction(
-                "Read transaction expected".to_string(),
-            ));
+            let vdr_error =
+                VdrError::ClientInvalidTransaction("Read transaction expected".to_string());
+
+            warn!(
+                "Error: {} during calling transaction: {:?}",
+                vdr_error, transaction
+            );
+
+            return Err(vdr_error);
         }
         let address = Address::from_str(&transaction.to).map_err(|_| {
-            VdrError::ClientInvalidTransaction(format!(
+            let vdr_error = VdrError::ClientInvalidTransaction(format!(
                 "Invalid transaction target address {}",
                 transaction.to
-            ))
+            ));
+
+            warn!(
+                "Error: {} during calling transaction: {:?}",
+                vdr_error, transaction
+            );
+
+            vdr_error
         })?;
         let request = CallRequest::builder()
             .to(address)
             .data(Bytes(transaction.data.clone()))
             .build();
         let response = self.client.eth().call(request, None).await?;
+
+        debug!("Called transaction: {:?}", transaction);
+
         Ok(response.0.to_vec())
     }
 
     async fn get_receipt(&self, hash: &[u8]) -> VdrResult<String> {
-        self.client
+        let receipt = self
+            .client
             .eth()
             .transaction_receipt(H256::from_slice(hash))
             .await?
-            .ok_or(VdrError::ClientInvalidResponse(
-                "Missing transaction receipt".to_string(),
-            ))
-            .map(|receipt| json!(receipt).to_string())
+            .ok_or({
+                let vdr_error =
+                    VdrError::ClientInvalidResponse("Missing transaction receipt".to_string());
+
+                warn!("Error: {} getting receipt", vdr_error,);
+
+                vdr_error
+            })
+            .map(|receipt| json!(receipt).to_string());
+
+        debug!("Got receipt: {:?}", receipt);
+
+        receipt
     }
 
     async fn ping(&self) -> VdrResult<PingStatus> {
-        match self.client.eth().block_number().await {
+        let ping_result = match self.client.eth().block_number().await {
             Ok(_current_block) => Ok(PingStatus::ok()),
             Err(_) => Ok(PingStatus::err("Could not get current network block")),
-        }
+        };
+
+        debug!("Ping result: {:?}", ping_result);
+
+        ping_result
     }
 }

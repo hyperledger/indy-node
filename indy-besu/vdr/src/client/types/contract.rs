@@ -1,6 +1,7 @@
 use crate::error::{VdrError, VdrResult};
 
 use crate::Address;
+use log::{debug, warn};
 use serde::{Deserialize, Serialize};
 use web3::ethabi::Token;
 
@@ -27,17 +28,38 @@ impl ContractSpec {
     /// Read and parse contract specification from a JSON file
     pub fn from_file(spec_path: &str) -> VdrResult<Self> {
         let contract_spec = std::fs::read_to_string(spec_path).map_err(|err| {
-            VdrError::ContractInvalidSpec(format!(
+            let vdr_error = VdrError::ContractInvalidSpec(format!(
                 "Unable to read contract spec file. Err: {:?}",
                 err
-            ))
+            ));
+
+            warn!(
+                "Error: {:?} during reading contract spec from file",
+                vdr_error
+            );
+
+            vdr_error
         })?;
-        serde_json::from_str(&contract_spec).map_err(|err| {
-            VdrError::ContractInvalidSpec(format!(
+        let contract_spec = serde_json::from_str(&contract_spec).map_err(|err| {
+            let vdr_error = VdrError::ContractInvalidSpec(format!(
                 "Unable to parse contract specification. Err: {:?}",
                 err.to_string()
-            ))
-        })
+            ));
+
+            warn!(
+                "Error: {:?} during paring contract specification",
+                vdr_error
+            );
+
+            vdr_error
+        });
+
+        debug!(
+            "Read contract specification from file. Result: {:?}",
+            contract_spec
+        );
+
+        contract_spec
     }
 }
 

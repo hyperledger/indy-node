@@ -3,6 +3,7 @@ use crate::{
     signer::Signer,
 };
 
+use log::warn;
 use secp256k1::{All, Message, PublicKey, Secp256k1, SecretKey};
 use std::collections::HashMap;
 
@@ -37,9 +38,16 @@ impl BasicSigner {
     }
 
     fn key_for_account(&self, account: &str) -> VdrResult<&KeyPair> {
-        self.keys
-            .get(account)
-            .ok_or(VdrError::SignerMissingKey(account.to_string()))
+        self.keys.get(account).ok_or({
+            let vdr_error = VdrError::SignerMissingKey(account.to_string());
+
+            warn!(
+                "Error: {:?} during getting keys for account: {}",
+                vdr_error, account
+            );
+
+            vdr_error
+        })
     }
 
     fn account_from_key(&self, public_key: &PublicKey) -> String {

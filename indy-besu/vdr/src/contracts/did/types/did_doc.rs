@@ -310,13 +310,13 @@ impl TryFrom<ContractOutput> for VerificationMethod {
                 public_key_multibase: public_key_multibase.to_string(),
             }
         } else {
-            let error = Err(VdrError::ContractInvalidResponseData(
+            let vdr_error = VdrError::ContractInvalidResponseData(
                 "Unable to parse verification method".to_string(),
-            ));
+            );
 
-            warn!("Error: {:?} during VerificationMethod parsing", error);
+            warn!("Error: {} during VerificationMethod parsing", vdr_error);
 
-            return error;
+            return Err(vdr_error);
         };
 
         let verification_method = VerificationMethod {

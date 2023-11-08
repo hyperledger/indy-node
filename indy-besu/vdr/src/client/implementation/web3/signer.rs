@@ -2,6 +2,7 @@ use crate::signer::Signer;
 use std::str::FromStr;
 
 use crate::client::Address;
+use log::{debug, warn};
 use web3::{
     ethabi::Address as EtabiAddress,
     signing::{Key, Signature, SigningError},
@@ -17,7 +18,11 @@ pub struct Web3Signer<'a> {
 
 impl<'a> Web3Signer<'a> {
     pub fn new(account: Address, signer: &'a Box<dyn Signer>) -> Web3Signer<'a> {
-        Web3Signer { account, signer }
+        let signer = Web3Signer { account, signer };
+
+        debug!("Created new signer");
+
+        signer
     }
 }
 
@@ -27,18 +32,28 @@ impl<'a> Key for Web3Signer<'a> {
         let signature_data = self
             .signer
             .sign(message, &self.account.value())
-            .map_err(|_| SigningError::InvalidMessage)?;
+            .map_err(|_| {
+                let web3_err = SigningError::InvalidMessage;
+
+                warn!("Error:{} during signing message: {:?}", web3_err, message);
+
+                web3_err
+            })?;
 
         let v = match chain_id {
             Some(chain_id) => signature_data.recovery_id as u64 + 35 + chain_id * 2,
             None => signature_data.recovery_id as u64 + 27,
         };
 
-        Ok(Signature {
+        let signature = Signature {
             v,
             r: H256::from_slice(&signature_data.signature[..32]),
             s: H256::from_slice(&signature_data.signature[32..]),
-        })
+        };
+
+        debug!("Signed message: {:?}", message);
+
+        Ok(signature)
     }
 
     fn sign_message(&self, message: &[u8]) -> Result<Signature, SigningError> {
@@ -47,11 +62,15 @@ impl<'a> Key for Web3Signer<'a> {
             .sign(message, &self.account.value())
             .map_err(|_| SigningError::InvalidMessage)?;
 
-        Ok(Signature {
+        let signature = Signature {
             v: signature_data.recovery_id as u64,
             r: H256::from_slice(&signature_data.signature[..32]),
             s: H256::from_slice(&signature_data.signature[32..]),
-        })
+        };
+
+        debug!("Signed message: {:?}", message);
+
+        Ok(signature)
     }
 
     fn address(&self) -> EtabiAddress {
