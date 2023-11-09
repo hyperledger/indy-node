@@ -3,7 +3,7 @@ use crate::{
     error::{VdrError, VdrResult},
 };
 
-use log::{debug, warn};
+use log::{debug, trace, warn};
 use std::str::FromStr;
 use web3::{
     contract::Contract as Web3ContractImpl,
@@ -45,7 +45,7 @@ impl Web3Contract {
         let contract =
             Web3ContractImpl::from_json(web3_client.eth(), parsed_address, abi.as_slice())?;
 
-        debug!("Created new contract: {:?}", contract);
+        trace!("Created new contract: {:?}", contract);
 
         Ok(Web3Contract {
             contract,

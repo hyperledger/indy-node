@@ -1,7 +1,7 @@
 use crate::error::{VdrError, VdrResult};
 
 use crate::Address;
-use log::{debug, warn};
+use log::{trace, warn};
 use serde::{Deserialize, Serialize};
 use web3::ethabi::Token;
 
@@ -54,7 +54,7 @@ impl ContractSpec {
             vdr_error
         });
 
-        debug!(
+        trace!(
             "Read contract specification from file. Result: {:?}",
             contract_spec
         );
