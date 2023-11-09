@@ -41,9 +41,9 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     /**
      * Сhecks that method was called by did creator
      */
-    modifier _calledByCreator(string memory did) {
-        if (msg.sender != _dids[did].metadata.creatorAddress)
-            revert SenderIsNotCreator(msg.sender, _dids[did].metadata.creatorAddress);
+    modifier _senderIsCreator(string memory did) {
+        if (msg.sender != _dids[did].metadata.creator)
+            revert SenderIsNotCreator(msg.sender, _dids[did].metadata.creator);
         _;
     }
 
@@ -57,7 +57,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
         DidValidator.validateVerificationKey(document);
 
         _dids[document.id].document = document;
-        _dids[document.id].metadata.creatorAddress = msg.sender;
+        _dids[document.id].metadata.creator = msg.sender;
         _dids[document.id].metadata.created = block.timestamp;
         _dids[document.id].metadata.updated = block.timestamp;
 
@@ -67,7 +67,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     /// @inheritdoc DidRegistryInterface
     function updateDid(
         DidDocument calldata document
-    ) public _didExist(document.id) _didIsActive(document.id) _calledByCreator(document.id) {
+    ) public _didExist(document.id) _didIsActive(document.id) _senderIsCreator(document.id) {
         DidValidator.validateVerificationKey(document);
 
         _dids[document.id].document = document;
@@ -77,7 +77,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     }
 
     /// @inheritdoc DidRegistryInterface
-    function deactivateDid(string calldata id) public _didExist(id) _didIsActive(id) _calledByCreator(id) {
+    function deactivateDid(string calldata id) public _didExist(id) _didIsActive(id) _senderIsCreator(id) {
         _dids[id].metadata.deactivated = true;
 
         emit DIDDeactivated(id);
