@@ -182,6 +182,7 @@ pub mod test {
             did::types::did_doc::test::ISSUER_ID,
         },
         signer::basic_signer::test::TRUSTEE_ACC,
+        utils::init_env_logger,
         DID,
     };
 
@@ -199,6 +200,7 @@ pub mod test {
 
         #[test]
         fn build_create_schema_transaction_test() {
+            init_env_logger();
             let client = client(None);
             let transaction = SchemaRegistry::build_create_schema_transaction(
                 &client,
@@ -257,6 +259,7 @@ pub mod test {
 
         #[test]
         fn build_resolve_schema_transaction_test() {
+            init_env_logger();
             let client = client(None);
             let transaction = SchemaRegistry::build_resolve_schema_transaction(
                 &client,
@@ -290,6 +293,7 @@ pub mod test {
 
         #[test]
         fn parse_resolve_schema_result_test() {
+            init_env_logger();
             let client = client(None);
             let data = vec![
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

@@ -233,6 +233,7 @@ pub mod test {
     use crate::{
         client::test::{client, CHAIN_ID, VALIDATOR_CONTROL_ADDRESS},
         signer::basic_signer::test::TRUSTEE_ACC,
+        utils::init_env_logger,
     };
     use once_cell::sync::Lazy;
 
@@ -244,6 +245,7 @@ pub mod test {
 
         #[test]
         fn build_add_validator_transaction_test() {
+            init_env_logger();
             let client = client(None);
             let transaction = ValidatorControl::build_add_validator_transaction(
                 &client,
@@ -274,6 +276,7 @@ pub mod test {
 
         #[test]
         fn build_remove_validator_transaction_test() {
+            init_env_logger();
             let client = client(None);
             let transaction = ValidatorControl::build_remove_validator_transaction(
                 &client,
@@ -304,6 +307,7 @@ pub mod test {
 
         #[test]
         fn build_get_validators_transaction_test() {
+            init_env_logger();
             let client = client(None);
             let transaction = ValidatorControl::build_get_validators_transaction(&client).unwrap();
             let encoded_method = [183, 171, 77, 181];
