@@ -36,14 +36,14 @@
 | DidRegistry   | createDid                      | Trustee, Endorser, Steward  | Create a new DID Document       |
 | DidRegistry   | updateDid                      | DID owner                   | Update DID an existing Document |
 | DidRegistry   | deactivateDid                  | DID owner                   | Deactivate an existing DID      |
-| DidRegistry   | resolveCredentialDefinition    | any                         | Resolve DID Document for a DID  |
+| DidRegistry   | resolveDid                     | any                         | Resolve DID Document for a DID  |
 
 ## CL Registry management
 
 | Contract                     | Method                      | Required Role               | Action Description                       |
 |------------------------------|-----------------------------|-----------------------------|------------------------------------------|
-| SchemaRegistry               | createCredentialDefinition  | Trustee, Endorser, Steward  | Create a new Schema                      |
-| SchemaRegistry               | resolveCredentialDefinition | any                         | Resolve Schema by id                     |
+| SchemaRegistry               | createSchema                | Trustee, Endorser, Steward  | Create a new Schema                      |
+| SchemaRegistry               | resolveSchema               | any                         | Resolve Schema by id                     |
 | CredentialDefinitionRegistry | createCredentialDefinition  | Trustee, Endorser, Steward  | Create a new Credential Definition       |
 | CredentialDefinitionRegistry | resolveCredentialDefinition | any                         | Resolve Credential Definition by id      |
 
