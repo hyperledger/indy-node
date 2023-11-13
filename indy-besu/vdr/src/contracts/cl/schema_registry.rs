@@ -120,14 +120,14 @@ pub mod test {
             cl::types::schema::test::{schema, SCHEMA_NAME},
             did::types::did_doc::test::ISSUER_ID,
         },
-        signer::basic_signer::test::ACCOUNT,
+        signer::basic_signer::test::TRUSTEE_ACC,
         DID,
     };
 
     #[cfg(feature = "ledger_test")]
     pub async fn create_schema(client: &LedgerClient, issuer_id: &DID) -> Schema {
         let schema = schema(issuer_id, None);
-        let _receipt = SchemaRegistry::create_schema(&client, &ACCOUNT, &schema)
+        let _receipt = SchemaRegistry::create_schema(&client, &TRUSTEE_ACC, &schema)
             .await
             .unwrap();
         schema
@@ -141,13 +141,13 @@ pub mod test {
             let client = client(None);
             let transaction = SchemaRegistry::build_create_schema_transaction(
                 &client,
-                &ACCOUNT,
+                &TRUSTEE_ACC,
                 &schema(&DID::new(ISSUER_ID), Some(SCHEMA_NAME)),
             )
             .unwrap();
             let expected_transaction = Transaction {
                 type_: TransactionType::Write,
-                from: Some(ACCOUNT.clone()),
+                from: Some(TRUSTEE_ACC.clone()),
                 to: SCHEMA_REGISTRY_ADDRESS.to_string(),
                 chain_id: CHAIN_ID,
                 data: vec![

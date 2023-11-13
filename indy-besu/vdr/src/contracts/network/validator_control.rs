@@ -150,7 +150,7 @@ pub mod test {
     use super::*;
     use crate::{
         client::test::{client, CHAIN_ID, VALIDATOR_CONTROL_ADDRESS},
-        signer::basic_signer::test::ACCOUNT,
+        signer::basic_signer::test::TRUSTEE_ACC,
     };
     use once_cell::sync::Lazy;
 
@@ -165,7 +165,7 @@ pub mod test {
             let client = client(None);
             let transaction = ValidatorControl::build_add_validator_transaction(
                 &client,
-                &ACCOUNT,
+                &TRUSTEE_ACC,
                 &VALIDATOR_ADDRESS,
             )
             .unwrap();
@@ -176,7 +176,7 @@ pub mod test {
 
             let expected_transaction = Transaction {
                 type_: TransactionType::Write,
-                from: Some(ACCOUNT.clone()),
+                from: Some(TRUSTEE_ACC.clone()),
                 to: VALIDATOR_CONTROL_ADDRESS.to_string(),
                 chain_id: CHAIN_ID,
                 data: expected_data.into(),
@@ -195,7 +195,7 @@ pub mod test {
             let client = client(None);
             let transaction = ValidatorControl::build_remove_validator_transaction(
                 &client,
-                &ACCOUNT,
+                &TRUSTEE_ACC,
                 &VALIDATOR_ADDRESS,
             )
             .unwrap();
@@ -206,7 +206,7 @@ pub mod test {
 
             let expected_transaction = Transaction {
                 type_: TransactionType::Write,
-                from: Some(ACCOUNT.clone()),
+                from: Some(TRUSTEE_ACC.clone()),
                 to: VALIDATOR_CONTROL_ADDRESS.to_string(),
                 chain_id: CHAIN_ID,
                 data: expected_data.into(),

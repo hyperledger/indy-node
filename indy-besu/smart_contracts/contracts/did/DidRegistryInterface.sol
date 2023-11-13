@@ -38,6 +38,7 @@ interface DidRegistryInterface {
      *
      * - DID must not already exist; otherwise, will revert with a `DidAlreadyExist` error.
      * - DID must be active; otherwise, will revert with a `DidHasBeenDeactivated` error.
+     * - Sender address must be equal to DID creator address; otherwise, will revert with a `SenderIsNotCreator` error.
      *
      * Events:
      * - On succesful DID update, will emit a `DIDDeactivated` event.
@@ -52,6 +53,7 @@ interface DidRegistryInterface {
      * Restrictions:
      * - DID must be active; otherwise, will revert with a `DidHasBeenDeactivated` error.
      * - DID must exist; otherwise, will revert with a `DidNotFound` error.
+     * - Sender address must be equal to DID creator address; otherwise, will revert with a `SenderIsNotCreator` error.
      *
      * Events:
      * - On succesful DID deactivation, will emit a `DIDDeactivated` event.

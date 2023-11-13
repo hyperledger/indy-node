@@ -220,7 +220,7 @@ pub mod test {
     use super::*;
     use crate::{
         client::test::{client, CHAIN_ID, ROLE_CONTROL_ADDRESS},
-        signer::basic_signer::test::ACCOUNT,
+        signer::basic_signer::test::TRUSTEE_ACC,
     };
 
     pub const NEW_ACCOUNT: &'static str = "0x0886328869e4e1f401e1052a5f4aae8b45f42610";
@@ -243,7 +243,7 @@ pub mod test {
 
             let transaction = RoleControl::build_assign_role_transaction(
                 &client,
-                &ACCOUNT,
+                &TRUSTEE_ACC,
                 &Role::Trustee,
                 &account(),
             )
@@ -251,7 +251,7 @@ pub mod test {
 
             let expected_transaction = Transaction {
                 type_: TransactionType::Write,
-                from: Some(ACCOUNT.clone()),
+                from: Some(TRUSTEE_ACC.clone()),
                 to: ROLE_CONTROL_ADDRESS.to_string(),
                 chain_id: CHAIN_ID,
                 data: expected_data,
@@ -276,7 +276,7 @@ pub mod test {
 
             let transaction = RoleControl::build_revoke_role_transaction(
                 &client,
-                &ACCOUNT,
+                &TRUSTEE_ACC,
                 &Role::Trustee,
                 &account(),
             )
@@ -284,7 +284,7 @@ pub mod test {
 
             let expected_transaction = Transaction {
                 type_: TransactionType::Write,
-                from: Some(ACCOUNT.clone()),
+                from: Some(TRUSTEE_ACC.clone()),
                 to: ROLE_CONTROL_ADDRESS.to_string(),
                 chain_id: CHAIN_ID,
                 data: expected_data,

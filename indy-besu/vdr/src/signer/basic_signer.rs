@@ -82,21 +82,33 @@ pub mod test {
     use super::*;
     use once_cell::sync::Lazy;
 
-    pub static ACCOUNT: Lazy<Address> =
+    pub static TRUSTEE_ACC: Lazy<Address> =
         Lazy::new(|| Address::new("0xf0e2db6c8dc6c681bb5d6ad121a107f300e9b2b5"));
 
-    pub const PRIVATE_KEY: &'static str =
+    pub static TRUSTEE2_ACC: Lazy<Address> =
+        Lazy::new(|| Address::new("0xca843569e3427144cead5e4d5999a3d0ccf92b8e"));
+
+    pub const TRUSTEE_PRIVATE_KEY: &'static str =
         "8bbbb1b345af56b560a5b20bd4b0ed1cd8cc9958a16262bc75118453cb546df7";
+
+    pub const TRUSTEE2_PRIVATE_KEY: &'static str =
+        "4762e04d10832808a0aebdaa79c12de54afbe006bfffd228b3abcc494fe986f9";
 
     pub fn basic_signer() -> BasicSigner {
         let mut signer = BasicSigner::new().unwrap();
-        signer.create_key(Some(PRIVATE_KEY)).unwrap();
+        signer.create_key(Some(TRUSTEE_PRIVATE_KEY)).unwrap();
+        signer
+    }
+
+    pub fn basic_signer_custom_key(private_key: &str) -> BasicSigner {
+        let mut signer = BasicSigner::new().unwrap();
+        signer.create_key(Some(private_key)).unwrap();
         signer
     }
 
     #[test]
     fn add_key_test() {
         let basic_signer = basic_signer();
-        basic_signer.key_for_account(ACCOUNT.value()).unwrap();
+        basic_signer.key_for_account(TRUSTEE_ACC.value()).unwrap();
     }
 }

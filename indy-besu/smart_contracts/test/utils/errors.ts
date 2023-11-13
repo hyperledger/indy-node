@@ -26,6 +26,7 @@ export namespace DidError {
   export const DidAlreadyExist = 'DidAlreadyExist'
   export const DidHasBeenDeactivated = 'DidHasBeenDeactivated'
   export const IncorrectDid = 'IncorrectDid'
+  export const SenderIsNotCreator = 'SenderIsNotCreator'
 }
 
 export namespace ProxyError {

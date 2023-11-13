@@ -1,6 +1,7 @@
 use crate::{
     client::{ContractOutput, ContractParam},
     error::{VdrError, VdrResult},
+    Address,
 };
 
 use serde_derive::{Deserialize, Serialize};
@@ -33,7 +34,7 @@ impl DID {
     }
 }
 
-#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DidDocumentWithMeta {
     pub document: DidDocument,
@@ -57,8 +58,9 @@ pub struct DidDocument {
     pub also_known_as: Option<Vec<String>>,
 }
 
-#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct DidMetadata {
+    pub creator_address: Address,
     pub created: u128,
     pub updated: u128,
     pub deactivated: bool,
@@ -509,10 +511,12 @@ impl TryFrom<ContractOutput> for DidMetadata {
     type Error = VdrError;
 
     fn try_from(value: ContractOutput) -> Result<Self, Self::Error> {
-        let created = value.get_u128(0)?;
-        let updated = value.get_u128(1)?;
-        let deactivated = value.get_bool(2)?;
+        let creator_address = value.get_address(0)?;
+        let created = value.get_u128(1)?;
+        let updated = value.get_u128(2)?;
+        let deactivated = value.get_bool(3)?;
         Ok(DidMetadata {
+            creator_address,
             created,
             updated,
             deactivated,

@@ -92,6 +92,19 @@ impl ContractOutput {
             ))
     }
 
+    pub fn get_address(&self, index: usize) -> VdrResult<Address> {
+        let address_str = self
+            .0
+            .get(index)
+            .ok_or(VdrError::ContractInvalidResponseData(
+                "Missing address value".to_string(),
+            ))?
+            .clone()
+            .to_string();
+
+        Ok(Address::new(&address_str))
+    }
+
     pub fn get_bool(&self, index: usize) -> VdrResult<bool> {
         self.0
             .get(index)
