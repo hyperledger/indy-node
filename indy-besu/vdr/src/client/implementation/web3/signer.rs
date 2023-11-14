@@ -2,7 +2,7 @@ use crate::signer::Signer;
 use std::str::FromStr;
 
 use crate::client::Address;
-use log::{debug, warn};
+use log::{trace, warn};
 use web3::{
     ethabi::Address as EtabiAddress,
     signing::{Key, Signature, SigningError},
@@ -23,7 +23,7 @@ impl<'a> Web3Signer<'a> {
             signer,
         };
 
-        debug!("Created new signer. Address: {:?}", account);
+        trace!("Created new signer. Address: {:?}", account);
 
         signer
     }
@@ -54,7 +54,7 @@ impl<'a> Key for Web3Signer<'a> {
             s: H256::from_slice(&signature_data.signature[32..]),
         };
 
-        debug!("Signed message: {:?}", message);
+        trace!("Signed message: {:?}", message);
 
         Ok(signature)
     }
@@ -71,7 +71,7 @@ impl<'a> Key for Web3Signer<'a> {
             s: H256::from_slice(&signature_data.signature[32..]),
         };
 
-        debug!("Signed message: {:?}", message);
+        trace!("Signed message: {:?}", message);
 
         Ok(signature)
     }

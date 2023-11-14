@@ -3,7 +3,7 @@ use crate::{
     error::{VdrError, VdrResult},
 };
 
-use log::{debug, trace, warn};
+use log::{trace, warn};
 use std::str::FromStr;
 use web3::{
     contract::Contract as Web3ContractImpl,
@@ -73,7 +73,7 @@ impl Contract for Web3Contract {
     }
 
     fn encode_input(&self, method: &str, params: &[Token]) -> VdrResult<Vec<u8>> {
-        debug!("Input params: {:?} encoding has started", params);
+        trace!("Input params: {:?} encoding has started", params);
 
         let encoded_input = self.function(method)?.encode_input(params).map_err(|err| {
             let vdr_error = VdrError::from(err);
@@ -86,16 +86,17 @@ impl Contract for Web3Contract {
             vdr_error
         });
 
-        debug!(
+        trace!(
             "Input params: {:?} encoding has finished. Result: {:?}",
-            params, encoded_input
+            params,
+            encoded_input
         );
 
         encoded_input
     }
 
     fn decode_output(&self, method: &str, output: &[u8]) -> VdrResult<ContractOutput> {
-        debug!("Output: {:?} decoding has started", output);
+        trace!("Output: {:?} decoding has started", output);
 
         let decoded_output = self
             .function(method)?
@@ -103,9 +104,10 @@ impl Contract for Web3Contract {
             .map_err(VdrError::from)
             .map(ContractOutput::from);
 
-        debug!(
+        trace!(
             "Output: {:?} decoding has finished. Result: {:?}",
-            output, decoded_output
+            output,
+            decoded_output
         );
 
         decoded_output

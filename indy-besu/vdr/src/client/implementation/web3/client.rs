@@ -5,7 +5,7 @@ use crate::{
 };
 
 use crate::client::{PingStatus, TransactionType};
-use log::{debug, trace, warn};
+use log::{trace, warn};
 use serde_json::json;
 use std::{str::FromStr, time::Duration};
 use web3::{
@@ -32,7 +32,7 @@ impl Web3Client {
             signer,
         };
 
-        debug!("Created new Web3Client. Node address: {}", node_address);
+        trace!("Created new Web3Client. Node address: {}", node_address);
 
         Ok(web3_client)
     }
@@ -45,7 +45,7 @@ impl Web3Client {
 #[async_trait::async_trait]
 impl Client for Web3Client {
     async fn sign_transaction(&self, transaction: &Transaction) -> VdrResult<Transaction> {
-        debug!(
+        trace!(
             "Sign transaction process has started. Transaction: {:?}",
             transaction
         );
@@ -104,7 +104,7 @@ impl Client for Web3Client {
             .raw_transaction
             .0;
 
-        debug!("Signed transaction: {:?}", transaction);
+        trace!("Signed transaction: {:?}", transaction);
 
         Ok(Transaction {
             signed: Some(signed_transaction),
@@ -113,7 +113,7 @@ impl Client for Web3Client {
     }
 
     async fn submit_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>> {
-        debug!(
+        trace!(
             "Submit transaction process has started. Transaction: {:?}",
             transaction
         );
@@ -149,13 +149,13 @@ impl Client for Web3Client {
             )
             .await?;
 
-        debug!("Submitted transaction: {:?}", transaction);
+        trace!("Submitted transaction: {:?}", transaction);
 
         Ok(receipt.transaction_hash.0.to_vec())
     }
 
     async fn call_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>> {
-        debug!(
+        trace!(
             "Call transaction process has started. Transaction: {:?}",
             transaction
         );
@@ -190,7 +190,7 @@ impl Client for Web3Client {
             .build();
         let response = self.client.eth().call(request, None).await?;
 
-        debug!("Called transaction: {:?}", transaction);
+        trace!("Called transaction: {:?}", transaction);
 
         Ok(response.0.to_vec())
     }
@@ -211,7 +211,7 @@ impl Client for Web3Client {
             })
             .map(|receipt| json!(receipt).to_string());
 
-        debug!("Got receipt: {:?}", receipt);
+        trace!("Got receipt: {:?}", receipt);
 
         receipt
     }

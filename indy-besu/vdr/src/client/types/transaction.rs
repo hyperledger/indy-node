@@ -1,4 +1,4 @@
-use log::{debug, trace, warn};
+use log::{trace, warn};
 
 use crate::{
     client::{Address, ContractOutput, ContractParam},
@@ -124,7 +124,7 @@ impl TransactionBuilder {
             signed: None,
         };
 
-        debug!("Built transaction: {:?}", transaction);
+        trace!("Built transaction: {:?}", transaction);
 
         Ok(transaction)
     }
@@ -186,7 +186,7 @@ impl TransactionParser {
             return Err(vdr_error);
         }
 
-        debug!("Decoded transaction output: {:?}", output);
+        trace!("Decoded transaction output: {:?}", output);
 
         T::try_from(output)
     }
