@@ -146,9 +146,9 @@ impl CredentialDefinitionRegistry {
         credential_definition: &CredentialDefinition,
     ) -> VdrResult<String> {
         debug!(
-            "{} process has started. Sender: {:?}, CredentialDefenition: {:?}",
+            "{} process has started. Sender: {}, CredentialDefenition: {:?}",
             Self::METHOD_CREATE_CREDENTIAL_DEFINITION,
-            from,
+            from.value(),
             credential_definition
         );
 

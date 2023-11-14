@@ -137,9 +137,9 @@ impl SchemaRegistry {
         schema: &Schema,
     ) -> VdrResult<String> {
         debug!(
-            "{} process has started. Sender: {:?}, Schema: {:?}",
+            "{} process has started. Sender: {}, Schema: {:?}",
             Self::METHOD_CREATE_SCHEMA,
-            from,
+            from.value(),
             schema
         );
 

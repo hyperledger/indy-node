@@ -213,9 +213,9 @@ impl DidRegistry {
         did_doc: &DidDocument,
     ) -> VdrResult<String> {
         debug!(
-            "{} process has started. Sender: {:?}, DidDocument: {:?}",
+            "{} process has started. Sender: {}, DidDocument: {:?}",
             Self::METHOD_CREATE_DID,
-            from,
+            from.value(),
             did_doc
         );
 
@@ -246,9 +246,9 @@ impl DidRegistry {
         did_doc: &DidDocument,
     ) -> VdrResult<String> {
         debug!(
-            "{} process has started. Sender: {:?}, DidDocument: {:?}",
+            "{} process has started. Sender: {}, DidDocument: {:?}",
             Self::METHOD_UPDATE_DID,
-            from,
+            from.value(),
             did_doc
         );
 
@@ -279,9 +279,9 @@ impl DidRegistry {
         did: &DID,
     ) -> VdrResult<String> {
         debug!(
-            "{} process has started. Sender: {:?}, DID: {:?}",
+            "{} process has started. Sender: {}, DID: {:?}",
             Self::METHOD_DEACTIVATE_DID,
-            from,
+            from.value(),
             did
         );
 

@@ -165,9 +165,9 @@ impl ValidatorControl {
         validator_address: &Address,
     ) -> VdrResult<String> {
         debug!(
-            "{} process has started. Sender: {:?}, validator address: {:?}",
+            "{} process has started. Sender: {}, validator address: {:?}",
             Self::METHOD_ADD_VALIDATOR,
-            from,
+            from.value(),
             validator_address
         );
 
@@ -198,9 +198,9 @@ impl ValidatorControl {
         validator_address: &Address,
     ) -> VdrResult<String> {
         debug!(
-            "{} process has started. Sender: {:?}, validator address: {:?}",
+            "{} process has started. Sender: {}, validator address: {:?}",
             Self::METHOD_REMOVE_VALIDATOR,
-            from,
+            from.value(),
             validator_address
         );
 
