@@ -47,7 +47,10 @@ impl LedgerClient {
             contracts,
         };
 
-        info!("Created new LedgerClient");
+        info!(
+            "Created new LedgerClient. Chain id: {}, node address: {}",
+            chain_id, node_address
+        );
 
         Ok(ledger_client)
     }

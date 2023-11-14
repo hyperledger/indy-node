@@ -101,7 +101,11 @@ impl SchemaRegistry {
     /// # Returns
     /// parsed Schema
     pub fn parse_resolve_schema_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<Schema> {
-        debug!("{} result parse has started", Self::METHOD_RESOLVE_SCHEMA,);
+        debug!(
+            "{} result parse has started. Bytes to parse: {:?}",
+            Self::METHOD_RESOLVE_SCHEMA,
+            bytes
+        );
 
         let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -132,7 +136,12 @@ impl SchemaRegistry {
         from: &Address,
         schema: &Schema,
     ) -> VdrResult<String> {
-        debug!("{} process has started", Self::METHOD_CREATE_SCHEMA,);
+        debug!(
+            "{} process has started. Sender: {:?}, Schema: {:?}",
+            Self::METHOD_CREATE_SCHEMA,
+            from,
+            schema
+        );
 
         let transaction = Self::build_create_schema_transaction(client, from, schema)?;
         let receipt = client.sign_and_submit(&transaction).await;
@@ -156,7 +165,11 @@ impl SchemaRegistry {
     /// # Returns
     /// resolved Schema
     pub async fn resolve_schema(client: &LedgerClient, id: &SchemaId) -> VdrResult<Schema> {
-        debug!("{} process has started", Self::METHOD_RESOLVE_SCHEMA,);
+        debug!(
+            "{} process has started. SchemaId: {:?}",
+            Self::METHOD_RESOLVE_SCHEMA,
+            id
+        );
 
         let transaction = Self::build_resolve_schema_transaction(client, id)?;
         let result = client.submit_transaction(&transaction).await?;

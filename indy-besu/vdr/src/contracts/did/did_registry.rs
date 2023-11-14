@@ -177,7 +177,11 @@ impl DidRegistry {
     /// # Returns
     /// parsed DID Document
     pub fn parse_resolve_did_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<DidDocument> {
-        debug!("{} result parse has started", Self::METHOD_RESOLVE_DID,);
+        debug!(
+            "{} result parse has started. Bytes to parse: {:?}",
+            Self::METHOD_RESOLVE_DID,
+            bytes
+        );
 
         let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -236,7 +240,12 @@ impl DidRegistry {
         from: &Address,
         did_doc: &DidDocument,
     ) -> VdrResult<String> {
-        debug!("{} process has started", Self::METHOD_UPDATE_DID,);
+        debug!(
+            "{} process has started. Sender: {:?}, DidDocument: {:?}",
+            Self::METHOD_UPDATE_DID,
+            from,
+            did_doc
+        );
 
         let transaction = Self::build_update_did_transaction(client, from, did_doc)?;
         let receipt = client.sign_and_submit(&transaction).await;
@@ -264,7 +273,12 @@ impl DidRegistry {
         from: &Address,
         did: &DID,
     ) -> VdrResult<String> {
-        debug!("{} process has started", Self::METHOD_DEACTIVATE_DID,);
+        debug!(
+            "{} process has started. Sender: {:?}, DID: {:?}",
+            Self::METHOD_DEACTIVATE_DID,
+            from,
+            did
+        );
 
         let transaction = Self::build_deactivate_did_transaction(client, from, did)?;
         let receipt = client.sign_and_submit(&transaction).await;
@@ -288,7 +302,11 @@ impl DidRegistry {
     /// # Returns
     /// resolved DID Document
     pub async fn resolve_did(client: &LedgerClient, did: &DID) -> VdrResult<DidDocument> {
-        debug!("{} process has started", Self::METHOD_RESOLVE_DID,);
+        debug!(
+            "{} process has started. DID: {:?}",
+            Self::METHOD_RESOLVE_DID,
+            did
+        );
 
         let transaction = Self::build_resolve_did_transaction(client, did)?;
         let result = client.submit_transaction(&transaction).await?;

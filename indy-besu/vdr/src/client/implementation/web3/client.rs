@@ -5,7 +5,7 @@ use crate::{
 };
 
 use crate::client::{PingStatus, TransactionType};
-use log::{debug, warn};
+use log::{debug, trace, warn};
 use serde_json::json;
 use std::{str::FromStr, time::Duration};
 use web3::{
@@ -32,7 +32,7 @@ impl Web3Client {
             signer,
         };
 
-        debug!("Created new Web3Client");
+        debug!("Created new Web3Client. Node address: {}", node_address);
 
         Ok(web3_client)
     }
@@ -45,7 +45,10 @@ impl Web3Client {
 #[async_trait::async_trait]
 impl Client for Web3Client {
     async fn sign_transaction(&self, transaction: &Transaction) -> VdrResult<Transaction> {
-        debug!("Sign transaction process has started");
+        debug!(
+            "Sign transaction process has started. Transaction: {:?}",
+            transaction
+        );
 
         let signer = self.signer.as_ref().ok_or({
             let vdr_error = VdrError::ClientInvalidState("Signer is not set".to_string());
@@ -110,7 +113,10 @@ impl Client for Web3Client {
     }
 
     async fn submit_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>> {
-        debug!("Submit transaction process has started");
+        debug!(
+            "Submit transaction process has started. Transaction: {:?}",
+            transaction
+        );
 
         if transaction.type_ != TransactionType::Write {
             let vdr_error =
@@ -149,7 +155,10 @@ impl Client for Web3Client {
     }
 
     async fn call_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>> {
-        debug!("Call transaction process has started");
+        debug!(
+            "Call transaction process has started. Transaction: {:?}",
+            transaction
+        );
 
         if transaction.type_ != TransactionType::Read {
             let vdr_error =
@@ -213,7 +222,7 @@ impl Client for Web3Client {
             Err(_) => Ok(PingStatus::err("Could not get current network block")),
         };
 
-        debug!("Ping result: {:?}", ping_result);
+        trace!("Ping result: {:?}", ping_result);
 
         ping_result
     }

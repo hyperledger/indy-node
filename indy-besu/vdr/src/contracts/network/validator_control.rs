@@ -130,7 +130,11 @@ impl ValidatorControl {
         client: &LedgerClient,
         bytes: &[u8],
     ) -> VdrResult<ValidatorAddresses> {
-        debug!("{} result parse has started", Self::METHOD_GET_VALIDATORS,);
+        debug!(
+            "{} result parse has started. Bytes to parse: {:?}",
+            Self::METHOD_GET_VALIDATORS,
+            bytes
+        );
 
         let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -160,7 +164,12 @@ impl ValidatorControl {
         from: &Address,
         validator_address: &Address,
     ) -> VdrResult<String> {
-        debug!("{} process has started", Self::METHOD_ADD_VALIDATOR,);
+        debug!(
+            "{} process has started. Sender: {:?}, validator address: {:?}",
+            Self::METHOD_ADD_VALIDATOR,
+            from,
+            validator_address
+        );
 
         let transaction = Self::build_add_validator_transaction(client, from, validator_address)?;
         let receipt = client.sign_and_submit(&transaction).await;
@@ -188,7 +197,12 @@ impl ValidatorControl {
         from: &Address,
         validator_address: &Address,
     ) -> VdrResult<String> {
-        debug!("{} process has started", Self::METHOD_REMOVE_VALIDATOR,);
+        debug!(
+            "{} process has started. Sender: {:?}, validator address: {:?}",
+            Self::METHOD_REMOVE_VALIDATOR,
+            from,
+            validator_address
+        );
 
         let transaction =
             Self::build_remove_validator_transaction(client, from, validator_address)?;

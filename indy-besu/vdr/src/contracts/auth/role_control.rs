@@ -182,7 +182,11 @@ impl RoleControl {
     /// # Returns
     /// Account has role result
     pub fn parse_has_role_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<bool> {
-        debug!("{} result parse has started", Self::METHOD_HAS_ROLE,);
+        debug!(
+            "{} result parse has started. Bytes to parse: {:?}",
+            Self::METHOD_HAS_ROLE,
+            bytes
+        );
 
         let parse_result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -207,7 +211,11 @@ impl RoleControl {
     /// # Returns
     /// Account's role
     pub fn parse_get_role_result(client: &LedgerClient, bytes: &[u8]) -> VdrResult<Role> {
-        debug!("{} result parse has started", Self::METHOD_GET_ROLE,);
+        debug!(
+            "{} result parse has started. Bytes to parse: {:?}",
+            Self::METHOD_GET_ROLE,
+            bytes
+        );
 
         let parse_result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
@@ -239,7 +247,13 @@ impl RoleControl {
         role: &Role,
         account: &Address,
     ) -> VdrResult<String> {
-        debug!("{} process has started", Self::METHOD_ASSIGN_ROLE,);
+        debug!(
+            "{} process has started. Assigner: {:?}, Assignee: {:?}, Role: {:?}",
+            Self::METHOD_ASSIGN_ROLE,
+            from,
+            account,
+            role
+        );
 
         let transaction = Self::build_assign_role_transaction(client, from, role, account)?;
         let receipt = client.sign_and_submit(&transaction).await;
@@ -269,7 +283,13 @@ impl RoleControl {
         role: &Role,
         account: &Address,
     ) -> VdrResult<String> {
-        debug!("{} process has started", Self::METHOD_REVOKE_ROLE,);
+        debug!(
+            "{} process has started. Revoker: {:?}, Revokee: {:?}, Role: {:?}",
+            Self::METHOD_REVOKE_ROLE,
+            from,
+            account,
+            role
+        );
 
         let transaction = Self::build_revoke_role_transaction(client, from, role, account)?;
         let receipt = client.sign_and_submit(&transaction).await;
@@ -297,7 +317,12 @@ impl RoleControl {
         role: &Role,
         account: &Address,
     ) -> VdrResult<bool> {
-        debug!("{} check has started", Self::METHOD_HAS_ROLE,);
+        debug!(
+            "{} check has started. Account: {:?}, Role: {:?}",
+            Self::METHOD_HAS_ROLE,
+            account,
+            role
+        );
 
         let transaction = Self::build_has_role_transaction(client, role, account)?;
         let result = client.submit_transaction(&transaction).await?;
@@ -321,7 +346,11 @@ impl RoleControl {
     /// # Returns
     /// Account's role
     pub async fn get_role(client: &LedgerClient, account: &Address) -> VdrResult<Role> {
-        debug!("{} process has started", Self::METHOD_GET_ROLE,);
+        debug!(
+            "{} process has started. Account: {:?}",
+            Self::METHOD_GET_ROLE,
+            account
+        );
 
         let transaction = Self::build_get_role_transaction(client, account)?;
         let result = client.submit_transaction(&transaction).await?;

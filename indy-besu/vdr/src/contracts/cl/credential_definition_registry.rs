@@ -108,8 +108,9 @@ impl CredentialDefinitionRegistry {
         bytes: &[u8],
     ) -> VdrResult<CredentialDefinition> {
         debug!(
-            "{} result parse has started",
+            "{} result parse has started. Bytes to parse: {:?}",
             Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION,
+            bytes
         );
 
         let result = TransactionParser::new()
@@ -145,8 +146,10 @@ impl CredentialDefinitionRegistry {
         credential_definition: &CredentialDefinition,
     ) -> VdrResult<String> {
         debug!(
-            "{} process has started",
+            "{} process has started. Sender: {:?}, CredentialDefenition: {:?}",
             Self::METHOD_CREATE_CREDENTIAL_DEFINITION,
+            from,
+            credential_definition
         );
 
         let transaction = Self::build_create_credential_definition_transaction(
@@ -180,8 +183,9 @@ impl CredentialDefinitionRegistry {
         id: &CredentialDefinitionId,
     ) -> VdrResult<CredentialDefinition> {
         debug!(
-            "{} process has started",
+            "{} process has started. CredentialDefenitionId: {:?}",
             Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION,
+            id
         );
 
         let transaction = Self::build_resolve_credential_definition_transaction(client, id)?;

@@ -73,7 +73,7 @@ impl Contract for Web3Contract {
     }
 
     fn encode_input(&self, method: &str, params: &[Token]) -> VdrResult<Vec<u8>> {
-        debug!("Input params encoding has started");
+        debug!("Input params: {:?} encoding has started", params);
 
         let encoded_input = self.function(method)?.encode_input(params).map_err(|err| {
             let vdr_error = VdrError::from(err);
@@ -95,7 +95,7 @@ impl Contract for Web3Contract {
     }
 
     fn decode_output(&self, method: &str, output: &[u8]) -> VdrResult<ContractOutput> {
-        debug!("Output decoding has started");
+        debug!("Output: {:?} decoding has started", output);
 
         let decoded_output = self
             .function(method)?
