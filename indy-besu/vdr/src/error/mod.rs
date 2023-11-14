@@ -61,7 +61,7 @@ impl From<web3::Error> for VdrError {
             _ => VdrError::ClientUnexpectedError(value.to_string()),
         };
 
-        debug!(
+        trace!(
             "VdrError convert from web3::Error has finished. Result: {:?}",
             vdr_error
         );
@@ -77,7 +77,7 @@ impl From<web3::ethabi::Error> for VdrError {
             _ => VdrError::ContractInvalidInputData,
         };
 
-        debug!(
+        trace!(
             "VdrError convert from web3::ethabi::Error has finished. Result: {:?}",
             vdr_error
         );
@@ -94,7 +94,7 @@ impl From<secp256k1::Error> for VdrError {
             err => VdrError::SignerUnexpectedError(err.to_string()),
         };
 
-        debug!(
+        trace!(
             "VdrError convert from secp256k1::Error has finished. Result: {:?}",
             vdr_error
         );

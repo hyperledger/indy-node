@@ -58,9 +58,10 @@ impl SchemaId {
 
         let besu_schema_id = SchemaId::build(&issuer_did, name, version);
 
-        debug!(
+        trace!(
             "SchemaId convert from Indy format: {} has finished. Result: {:?}",
-            id, besu_schema_id
+            id,
+            besu_schema_id
         );
 
         Ok(besu_schema_id)
@@ -84,9 +85,10 @@ impl Schema {
 
         let besu_schema = Schema::try_from(indy_schema);
 
-        debug!(
+        trace!(
             "Schema convert from Indy format: {} has finished. Result: {:?}",
-            schema, besu_schema
+            schema,
+            besu_schema
         );
 
         besu_schema
@@ -116,9 +118,10 @@ impl TryFrom<IndySchemaFormat> for Schema {
             attr_names: schema.attr_names.clone(),
         };
 
-        debug!(
+        trace!(
             "Schema convert from IndySchemaFormat: {:?} has finished. Result: {:?}",
-            schema, besu_schema
+            schema,
+            besu_schema
         );
 
         Ok(besu_schema)
@@ -146,9 +149,10 @@ impl Into<IndySchemaFormat> for Schema {
             ver: "1.0".to_string(),
         };
 
-        debug!(
+        trace!(
             "Schema: {:?} convert into IndySchemaFormat has finished. Result: {:?}",
-            self, indy_schema
+            self,
+            indy_schema
         );
 
         indy_schema

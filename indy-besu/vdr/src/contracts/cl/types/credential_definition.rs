@@ -52,9 +52,10 @@ impl Into<ContractParam> for CredentialDefinition {
             ContractParam::String(self.value.to_string()),
         ]);
 
-        debug!(
+        trace!(
             "CredentialDefinition: {:?} convert into ContractParam has finished. Result: {:?}",
-            self, cred_def_contract_param
+            self,
+            cred_def_contract_param
         );
 
         cred_def_contract_param
@@ -93,9 +94,10 @@ impl TryFrom<ContractOutput> for CredentialDefinition {
             value: cred_def_value,
         };
 
-        debug!(
+        trace!(
             "CredentialDefinition convert from ContractOutput: {:?} has finished. Result: {:?}",
-            value, cred_def
+            value,
+            cred_def
         );
 
         Ok(cred_def)
@@ -114,7 +116,7 @@ impl TryFrom<ContractOutput> for CredentialDefinitionMetadata {
         let created = value.get_u128(0)?;
         let cred_def_metadata = CredentialDefinitionMetadata { created };
 
-        debug!(
+        trace!(
             "CredentialDefinitionMetadata convert from ContractOutput: {:?} has finished. Result: {:?}",
             value, cred_def_metadata
         );
@@ -141,7 +143,7 @@ impl TryFrom<ContractOutput> for CredentialDefinitionWithMeta {
             metadata: CredentialDefinitionMetadata::try_from(metadata)?,
         };
 
-        debug!(
+        trace!(
             "CredentialDefinitionWithMeta convert from ContractOutput: {:?} has finished. Result: {:?}",
             value, cred_def_with_metadata
         );

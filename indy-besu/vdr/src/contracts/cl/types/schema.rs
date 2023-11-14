@@ -47,9 +47,10 @@ impl Into<ContractParam> for Schema {
             ),
         ]);
 
-        debug!(
+        trace!(
             "Schema: {:?} convert into ContractParam has finished. Result: {:?}",
-            self, schema_contract_param
+            self,
+            schema_contract_param
         );
 
         schema_contract_param
@@ -73,9 +74,10 @@ impl TryFrom<ContractOutput> for Schema {
             attr_names: value.get_string_array(4)?,
         };
 
-        debug!(
+        trace!(
             "Schema convert from ContractOutput: {:?} has finished. Result: {:?}",
-            value, schema
+            value,
+            schema
         );
 
         Ok(schema)
@@ -94,9 +96,10 @@ impl TryFrom<ContractOutput> for SchemaMetadata {
         let created = value.get_u128(0)?;
         let schema_metadata = SchemaMetadata { created };
 
-        debug!(
+        trace!(
             "SchemaMetadata convert from ContractOutput: {:?} has finished. Result: {:?}",
-            value, schema_metadata
+            value,
+            schema_metadata
         );
 
         Ok(schema_metadata)
@@ -121,9 +124,10 @@ impl TryFrom<ContractOutput> for SchemaWithMeta {
             metadata: SchemaMetadata::try_from(metadata)?,
         };
 
-        debug!(
+        trace!(
             "SchemaWithMeta convert from ContractOutput: {:?} has finished. Result: {:?}",
-            value, schema_with_meta
+            value,
+            schema_with_meta
         );
 
         Ok(schema_with_meta)

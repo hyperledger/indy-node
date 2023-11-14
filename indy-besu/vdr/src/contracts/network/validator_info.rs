@@ -15,7 +15,7 @@ impl TryFrom<ContractOutput> for ValidatorAddresses {
 
         let validator_addresses = value.get_address_array(0);
 
-        debug!(
+        trace!(
             "ValidatorAddresses convert from ContractOutput has finished. Result: {:?}",
             validator_addresses
         );

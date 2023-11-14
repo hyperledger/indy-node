@@ -24,9 +24,10 @@ impl Into<ContractParam> for Role {
         let role_index: RoleIndex = self.into();
         let role_contract_param = ContractParam::Uint(role_index.into());
 
-        debug!(
+        trace!(
             "Role: {:?} convert into ContractParam has finished. Result: {:?}",
-            self, role_contract_param
+            self,
+            role_contract_param
         );
 
         role_contract_param
@@ -42,9 +43,10 @@ impl TryFrom<ContractOutput> for Role {
         let role_index = value.get_u8(0)?;
         let role = Role::try_from(role_index)?;
 
-        debug!(
+        trace!(
             "Role convert from ContractOutput: {:?} has finished. Result: {:?}",
-            value, role
+            value,
+            role
         );
 
         Ok(role)
@@ -57,9 +59,10 @@ impl Into<RoleIndex> for Role {
 
         let role_index = self as u8;
 
-        debug!(
+        trace!(
             "Role: {:?} convert into RoleIndex has finished. Result: {}",
-            self, role_index
+            self,
+            role_index
         );
 
         role_index
@@ -82,9 +85,10 @@ impl TryFrom<RoleIndex> for Role {
             )),
         };
 
-        debug!(
+        trace!(
             "Role convert from RoleIndex: {} has finished. Result: {:?}",
-            index, result
+            index,
+            result
         );
 
         result
@@ -102,9 +106,10 @@ impl TryFrom<ContractOutput> for HasRole {
 
         let has_role = value.get_bool(0)?;
 
-        debug!(
+        trace!(
             "HasRole convert from ContractOutput: {:?} has finished. Result: {}",
-            value, has_role
+            value,
+            has_role
         );
 
         Ok(has_role)

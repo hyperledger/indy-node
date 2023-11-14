@@ -62,7 +62,7 @@ impl CredentialDefinitionId {
 
         let cred_def_id = CredentialDefinitionId::build(&issuer_did, schema_id, tag);
 
-        debug!(
+        trace!(
             "CredentialDefinitionId convert from Indy format: {} has finished. Result: {:?}",
             id, cred_def_id
         );
@@ -83,7 +83,7 @@ impl CredentialDefinition {
                 .map_err(|_err| VdrError::CommonInvalidData("Invalid indy cred def".to_string()))?;
         let besu_cred_def = CredentialDefinition::try_from(indy_cred_def);
 
-        debug!(
+        trace!(
             "CredentialDefinition convert from Indy format: {} has finished. Result: {:?}",
             credential_definition, besu_cred_def
         );
@@ -129,7 +129,7 @@ impl TryFrom<IndyCredentialDefinitionFormat> for CredentialDefinition {
             value: cred_def.value.clone(),
         };
 
-        debug!(
+        trace!(
             "CredentialDefinition convert from IndyCredentialDefinitionFormat: {:?} has finished. Result: {:?}",
             cred_def, besu_cred_def
         );
@@ -160,7 +160,7 @@ impl Into<IndyCredentialDefinitionFormat> for CredentialDefinition {
             ver: "1.0".to_string(),
         };
 
-        debug!(
+        trace!(
             "CredentialDefinition: {:?} convert into IndyCredentialDefinitionFormat has finished. Result: {:?}",
             self, indy_cred_def
         );

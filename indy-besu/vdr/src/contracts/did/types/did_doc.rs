@@ -136,9 +136,10 @@ impl ToString for VerificationKeyType {
             }
         };
 
-        debug!(
+        trace!(
             "VerificationKeyType: {:?} convert to String has finished. Result: {:?}",
-            self, ver_key_type_str
+            self,
+            ver_key_type_str
         );
 
         ver_key_type_str
@@ -178,9 +179,10 @@ impl TryFrom<&str> for VerificationKeyType {
             }),
         };
 
-        debug!(
+        trace!(
             "VerificationKeyType convert from String: {} has finished. Result: {:?}",
-            value, ver_key_type
+            value,
+            ver_key_type
         );
 
         ver_key_type
@@ -269,7 +271,7 @@ impl Into<ContractParam> for VerificationMethod {
             ContractParam::String(public_key_multibase),
         ]);
 
-        debug!(
+        trace!(
             "VerificationMethod convert into ContractParam has finished. Result: {:?}",
             ver_method_contract_param
         );
@@ -326,7 +328,7 @@ impl TryFrom<ContractOutput> for VerificationMethod {
             verification_key,
         };
 
-        debug!(
+        trace!(
             "VerificationMethod convert from ContractOutput has finished. Result: {:?}",
             verification_method
         );
@@ -374,7 +376,7 @@ impl Into<ContractParam> for VerificationMethodOrReference {
             }
         };
 
-        debug!(
+        trace!(
             "VerificationMethodOrReference convert into ContractParam has finished. Result: {:?}",
             token
         );
@@ -402,7 +404,7 @@ impl TryFrom<ContractOutput> for VerificationMethodOrReference {
             VerificationMethodOrReference::String(id)
         };
 
-        debug!(
+        trace!(
             "VerificationMethodOrReference convert from ContractOutput: {:?} has finished. Result: {:?}",
             value, token
         );
@@ -430,9 +432,10 @@ impl Into<ContractParam> for StringOrVector {
             ),
         };
 
-        debug!(
+        trace!(
             "StringOrVector convert into ContractParam: {:?} has started. Result: {:?}",
-            self, contract_param
+            self,
+            contract_param
         );
 
         contract_param
@@ -477,7 +480,7 @@ impl Into<ContractParam> for Service {
             routing_keys,
         ]);
 
-        debug!(
+        trace!(
             "Service convert into ContractParam has finished. Result: {:?}",
             service_contract_param
         );
@@ -508,7 +511,7 @@ impl TryFrom<ContractOutput> for Service {
             }),
         };
 
-        debug!(
+        trace!(
             "Service convert from ContractOutput has finished. Result: {:?}",
             service
         );
@@ -587,7 +590,7 @@ impl Into<ContractParam> for DidDocument {
             also_known_as,
         ]);
 
-        debug!(
+        trace!(
             "DidDocument convert into ContractParam has finished. Result: {:?}",
             did_doc_contract_param
         );
@@ -659,7 +662,7 @@ impl TryFrom<ContractOutput> for DidDocument {
             also_known_as: Some(also_known_as),
         };
 
-        debug!(
+        trace!(
             "DidDocument convert from ContractOutput has finished. Result: {:?}",
             did_doc
         );
@@ -716,7 +719,7 @@ impl TryFrom<ContractOutput> for DidDocumentWithMeta {
             metadata: DidMetadata::try_from(metadata)?,
         };
 
-        debug!(
+        trace!(
             "DidDocumentWithMeta convert from ContractOutput has finished. Result: {:?}",
             did_doc_with_metadata
         );

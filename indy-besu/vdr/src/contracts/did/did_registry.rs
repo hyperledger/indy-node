@@ -212,7 +212,12 @@ impl DidRegistry {
         from: &Address,
         did_doc: &DidDocument,
     ) -> VdrResult<String> {
-        debug!("{} process has started", Self::METHOD_CREATE_DID,);
+        debug!(
+            "{} process has started. Sender: {:?}, DidDocument: {:?}",
+            Self::METHOD_CREATE_DID,
+            from,
+            did_doc
+        );
 
         let transaction = Self::build_create_did_transaction(client, from, did_doc)?;
         let receipt = client.sign_and_submit(&transaction).await;

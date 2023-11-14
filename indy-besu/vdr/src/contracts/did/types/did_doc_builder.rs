@@ -209,7 +209,7 @@ impl DidDocumentBuilder {
             also_known_as: self.also_known_as,
         };
 
-        debug!("Built DidDocument: {:?}", did_document);
+        trace!("Built DidDocument: {:?}", did_document);
 
         did_document
     }

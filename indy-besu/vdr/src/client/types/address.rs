@@ -38,9 +38,10 @@ impl TryInto<ContractParam> for Address {
 
         let acc_address_contract_param = ContractParam::Address(acc_address);
 
-        debug!(
+        trace!(
             "Address: {:?} convert into ContractParam has finished. Result: {:?}",
-            self, acc_address_contract_param
+            self,
+            acc_address_contract_param
         );
 
         Ok(ContractParam::Address(acc_address))
