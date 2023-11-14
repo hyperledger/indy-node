@@ -50,7 +50,7 @@ impl Client for Web3Client {
             transaction
         );
 
-        let signer = self.signer.as_ref().ok_or({
+        let signer = self.signer.as_ref().ok_or_else(|| {
             let vdr_error = VdrError::ClientInvalidState("Signer is not set".to_string());
 
             warn!(
@@ -60,7 +60,7 @@ impl Client for Web3Client {
 
             vdr_error
         })?;
-        let account = transaction.from.clone().ok_or({
+        let account = transaction.from.clone().ok_or_else(|| {
             let vdr_error =
                 VdrError::ClientInvalidTransaction("Missing sender address".to_string());
 
@@ -129,7 +129,7 @@ impl Client for Web3Client {
 
             return Err(vdr_error);
         }
-        let signed_transaction = transaction.signed.as_ref().ok_or({
+        let signed_transaction = transaction.signed.as_ref().ok_or_else(|| {
             let vdr_error = VdrError::ClientInvalidTransaction("Missing signature".to_string());
 
             warn!(
@@ -201,7 +201,7 @@ impl Client for Web3Client {
             .eth()
             .transaction_receipt(H256::from_slice(hash))
             .await?
-            .ok_or({
+            .ok_or_else(|| {
                 let vdr_error =
                     VdrError::ClientInvalidResponse("Missing transaction receipt".to_string());
 
