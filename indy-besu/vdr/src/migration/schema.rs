@@ -3,7 +3,7 @@ use crate::{
     migration::{DID_METHOD, NETWORK},
     Schema, SchemaId, DID,
 };
-use log::{debug, trace, warn};
+use log::{trace, warn};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -24,7 +24,7 @@ impl SchemaId {
         trace!("SchemaId convert from Indy format: {} has started", id);
 
         let parts: Vec<&str> = id.split(':').collect();
-        let id = parts.get(0).ok_or({
+        let id = parts.get(0).ok_or_else(|| {
             let vdr_error = VdrError::CommonInvalidData("Invalid indy schema id".to_string());
 
             warn!(
@@ -34,7 +34,7 @@ impl SchemaId {
 
             vdr_error
         })?;
-        let name = parts.get(2).ok_or({
+        let name = parts.get(2).ok_or_else(|| {
             let vdr_error = VdrError::CommonInvalidData("Invalid indy schema name".to_string());
 
             warn!(
@@ -44,7 +44,7 @@ impl SchemaId {
 
             vdr_error
         })?;
-        let version = parts.get(3).ok_or({
+        let version = parts.get(3).ok_or_else(|| {
             let vdr_error = VdrError::CommonInvalidData("Invalid indy schema version".to_string());
 
             warn!(
@@ -105,9 +105,16 @@ impl TryFrom<IndySchemaFormat> for Schema {
         );
 
         let parts: Vec<&str> = schema.id.split(':').collect();
-        let id = parts.get(0).ok_or(VdrError::CommonInvalidData(
-            "Invalid indy schema".to_string(),
-        ))?;
+        let id = parts.get(0).ok_or_else(|| {
+            let vdr_error = VdrError::CommonInvalidData("Invalid indy schema".to_string());
+
+            warn!(
+                "Error: {:?} during converting Schema from IndySchemaFormat",
+                vdr_error
+            );
+
+            vdr_error
+        })?;
         let issuer_id = DID::build(DID_METHOD, NETWORK, id);
 
         let besu_schema = Schema {

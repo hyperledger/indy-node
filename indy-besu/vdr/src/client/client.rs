@@ -108,7 +108,7 @@ impl LedgerClient {
     }
 
     pub(crate) fn contract(&self, name: &str) -> VdrResult<&Box<dyn Contract>> {
-        self.contracts.get(name).ok_or({
+        self.contracts.get(name).ok_or_else(|| {
             let vdr_error = VdrError::ContractInvalidName(name.to_string());
 
             warn!("Error during getting contract: {:?}", vdr_error);

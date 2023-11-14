@@ -3,7 +3,7 @@ use crate::{
     migration::{DID_METHOD, NETWORK},
     CredentialDefinition, CredentialDefinitionId, SchemaId, DID,
 };
-use log::{debug, trace, warn};
+use log::{trace, warn};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -28,7 +28,7 @@ impl CredentialDefinitionId {
         );
 
         let parts: Vec<&str> = id.split(':').collect();
-        let id = parts.get(0).ok_or({
+        let id = parts.get(0).ok_or_else(|| {
             let vdr_error = VdrError::CommonInvalidData("Invalid indy cred def id".to_string());
 
             warn!(
@@ -38,7 +38,7 @@ impl CredentialDefinitionId {
 
             vdr_error
         })?;
-        let schema_id = parts.get(3).ok_or({
+        let schema_id = parts.get(3).ok_or_else(|| {
             let vdr_error = VdrError::CommonInvalidData("Invalid indy cred def schema id".to_string());
 
             warn!(
@@ -48,7 +48,7 @@ impl CredentialDefinitionId {
 
             vdr_error
         })?;
-        let tag = parts.get(4).ok_or({
+        let tag = parts.get(4).ok_or_else(|| {
             let vdr_error = VdrError::CommonInvalidData("Invalid indy cred def tag".to_string());
 
             warn!(
@@ -102,14 +102,14 @@ impl TryFrom<IndyCredentialDefinitionFormat> for CredentialDefinition {
         );
 
         let parts: Vec<&str> = cred_def.id.split(':').collect();
-        let id = parts.get(0).ok_or({
+        let id = parts.get(0).ok_or_else(|| {
             let vdr_error = VdrError::CommonInvalidData("Invalid indy cred def id".to_string());
             
             warn!("Error: {:?} during converting CredentialDefinition from IndyCredentialDefinitionFormat", vdr_error);
 
             vdr_error
         })?;
-        let schema_id_seq_no = parts.get(3).ok_or({
+        let schema_id_seq_no = parts.get(3).ok_or_else(|| {
             let vdr_error = VdrError::CommonInvalidData("Invalid indy cred def id".to_string());
 
             warn!("Error: {:?} during converting CredentialDefinition from IndyCredentialDefinitionFormat", vdr_error);

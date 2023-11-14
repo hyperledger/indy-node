@@ -88,7 +88,7 @@ impl DidDocumentBuilder {
         let kid = self
             .verification_method
             .get(index)
-            .ok_or({
+            .ok_or_else(|| {
                 let vdr_error =
                     VdrError::CommonInvalidData("Missing verification method".to_string());
 
@@ -218,7 +218,7 @@ impl DidDocumentBuilder {
         let kid = self
         .verification_method
         .get(index)
-        .ok_or({
+        .ok_or_else(|| {
             let vdr_error =
                 VdrError::CommonInvalidData("Missing verification method".to_string());
 

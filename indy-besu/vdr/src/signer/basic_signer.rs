@@ -38,7 +38,7 @@ impl BasicSigner {
     }
 
     fn key_for_account(&self, account: &str) -> VdrResult<&KeyPair> {
-        self.keys.get(account).ok_or({
+        self.keys.get(account).ok_or_else(|| {
             let vdr_error = VdrError::SignerMissingKey(account.to_string());
 
             warn!(
