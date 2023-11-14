@@ -1,4 +1,4 @@
-use log::{debug, trace, warn};
+use log::{trace, warn};
 
 use crate::{
     contracts::did::types::did_doc::{

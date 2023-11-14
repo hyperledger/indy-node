@@ -7,7 +7,7 @@ use crate::{
 use crate::contracts::cl::types::{
     credential_definition_id::CredentialDefinitionId, schema_id::SchemaId,
 };
-use log::{debug, trace, warn};
+use log::{trace, warn};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 

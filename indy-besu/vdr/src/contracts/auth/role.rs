@@ -1,4 +1,4 @@
-use log::{debug, trace};
+use log::trace;
 
 use crate::{
     client::{ContractOutput, ContractParam},

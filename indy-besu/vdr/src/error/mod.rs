@@ -1,4 +1,4 @@
-use log::debug;
+use log::trace;
 use serde_json::json;
 use thiserror::Error;
 

@@ -4,7 +4,7 @@ use crate::{
 };
 
 use crate::{contracts::cl::types::schema_id::SchemaId, DID};
-use log::{debug, trace};
+use log::trace;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]

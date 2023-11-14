@@ -4,7 +4,7 @@ use crate::{
     Address,
 };
 
-use log::{debug, trace, warn};
+use log::{trace, warn};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
