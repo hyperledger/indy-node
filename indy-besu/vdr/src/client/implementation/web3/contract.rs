@@ -22,6 +22,8 @@ impl Web3Contract {
         address: &str,
         contract_spec: &ContractSpec,
     ) -> VdrResult<Web3Contract> {
+        trace!("Started creating new Web3Contract. Address: {:?}", address);
+
         let abi = serde_json::to_vec(&contract_spec.abi).map_err(|err| {
             let vdr_error = VdrError::CommonInvalidData(format!(
                 "Unable to parse contract ABI from specification. Err: {:?}",

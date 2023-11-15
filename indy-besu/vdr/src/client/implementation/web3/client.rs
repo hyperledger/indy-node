@@ -25,6 +25,11 @@ const NUMBER_TX_CONFIRMATIONS: usize = 1; // FIXME: what number of confirmation 
 
 impl Web3Client {
     pub fn new(node_address: &str, signer: Option<Box<dyn Signer>>) -> VdrResult<Web3Client> {
+        trace!(
+            "Started creating new Web3Client. Node address: {}",
+            node_address
+        );
+
         let transport = Http::new(node_address).map_err(|_| VdrError::ClientNodeUnreachable)?;
         let web3 = Web3::new(transport);
         let web3_client = Web3Client {

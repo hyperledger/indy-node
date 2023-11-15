@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use log::{info, warn};
+use log::{info, trace, warn};
 
 use crate::{
     client::{
@@ -38,6 +38,12 @@ impl LedgerClient {
         //   Same time we can be rework it to accept callback instead of interface -> simplier from FFI perspective
         signer: Option<Box<dyn Signer>>,
     ) -> VdrResult<LedgerClient> {
+        trace!(
+            "Started creating new LedgerClient. Chain id: {}, node address: {}",
+            chain_id,
+            node_address
+        );
+
         let client = Web3Client::new(node_address, signer)?;
         let contracts = Self::init_contracts(&client, &contract_configs)?;
 
