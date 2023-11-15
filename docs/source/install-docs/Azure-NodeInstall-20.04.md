@@ -371,4 +371,4 @@ NOTE: Since Azure regularly updates their user interface, this document becomes 
             6. On your 2FA phone app, add an account, and then scan the barcode or enter the 16 character secret key from step 4’s output.
             7. Log out and then log back in to check and make sure it worked!
     5. All of your secondary admin users should be setup now.
-30. You can now begin the Indy Node installation using the Validator Preparation Guide.
+30. You can now begin the Indy Node installation using the [Validator Preparation Guide](https://github.com/hyperledger/indy-node/tree/main/docs/source/install-docs/validator-prep-20.04.md).
