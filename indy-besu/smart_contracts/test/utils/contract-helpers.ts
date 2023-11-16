@@ -11,13 +11,13 @@ import {
 import { Contract } from '../../utils'
 import { ZERO_ADDRESS } from './test-entities'
 
-class DidRegex extends testableContractMixin(Contract) {
+export class DidRegex extends testableContractMixin(Contract) {
   constructor() {
     super(DidRegex.name)
   }
 }
 
-class DidValidator extends testableContractMixin(Contract) {
+export class DidValidator extends testableContractMixin(Contract) {
   constructor() {
     super(DidValidator.name)
   }
