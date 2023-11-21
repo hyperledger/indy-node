@@ -5,6 +5,8 @@ The following steps are one way to adhere to the Indy Node guidelines for instal
 
 #### Installation
 
+TIP: Make a copy of the [Node Installation Setup Spreadsheet Template](https://github.com/hyperledger/indy-node/blob/main/docs/source/install-docs/node-installation-info.xlsx) to store your Node information during installation.
+
 1. Before you begin:
     1. For most governance frameworks' hardware requirements, you will need 2 NIC's and 2 subnets (one per NIC). Configure these before beginning the install.
     2. Hardware requirements might include the following, (or greater, depending on your network governance requirements):
@@ -220,4 +222,4 @@ The following steps are one way to adhere to the Indy Node guidelines for instal
             6. On your 2FA phone app, add an account, and then scan the barcode or enter the 16 character secret key from step 4’s output.
             7. Log out and then log back in to check and make sure it worked!
     5. All of your secondary admin users should be setup now.
-30. You can now begin the Indy Node installation using the Validator Preparation Guide.
+30. You can now begin the Indy Node installation using the [Validator Preparation Guide](https://github.com/hyperledger/indy-node/tree/main/docs/source/install-docs/validator-prep-20.04.md).

@@ -6,6 +6,8 @@ NOTE: Since AWS regularly updates their user interface, this document becomes ou
 
 #### Installation
 
+TIP: Make a copy of the [Node Installation Setup Spreadsheet Template](https://github.com/hyperledger/indy-node/blob/main/docs/source/install-docs/node-installation-info.xlsx) to store your Node information during installation.
+
 1. Before you begin the installation steps, login to your AWS console and select a region to run your VM in. Recommendation: Select the region matching the jurisdiction of your company's corporate offices.
 2. From the AWS EC2 services page, click 'Instances'
 3. Click 'Launch Instances'
@@ -340,4 +342,4 @@ NOTE: Since AWS regularly updates their user interface, this document becomes ou
             6. On your 2FA phone app, add an account, and then scan the barcode or enter the 16 character secret key from step 4’s output.
             7. Log out and then log back in to check and make sure it worked!
     5. All of your secondary admin users should be setup now.
-30. You can now begin the Indy Node installation using the Validator Preparation Guide.
+30. You can now begin the Indy Node installation using the [Validator Preparation Guide](https://github.com/hyperledger/indy-node/tree/main/docs/source/install-docs/validator-prep-20.04.md).
