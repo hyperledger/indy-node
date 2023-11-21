@@ -11,6 +11,7 @@ Note: Right now we have finished PoC implementation. Roadmap tasks and their pri
 ## Phase 1: MVP
 * Aries Framework Javascript integration Demo
 * Double-check did:indy, did:sov methods compatibility
+* Add `DidUniversalResolver` contract so that adding a support for new DID method
 * Implement a validation to check VerificationRelationship format (Can accept only id or verificationMethod)
 * Validate the DID identifier using its associated verification key (will probably need to be implemented sha2 hash and Base58 encoder)
 * Restrict the creation of DID, Schema, and Cred Def exclusively to users with Trustee and Endorser roles
