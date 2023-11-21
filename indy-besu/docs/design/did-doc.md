@@ -23,6 +23,7 @@
       }
 
       struct DidMetadata {
+          address creator;
           uint256 created;
           uint256 updated;
           bool deactivated;
@@ -69,6 +70,7 @@
         "did:indy2:testnet:SEp33q43PsdP7nDATyySSH": {
             document: DidDoc, 
             metadata: {
+                creator: 0x93917cadbace5dfce132b991732c6cda9bcc5b8a,
                 created: 1234,
                 updated: 1234,
                 deactivated: false
@@ -184,6 +186,7 @@ Contract name: **DidRegistry**
   * Restrictions:
     * DID must exist
     * DID must be active
+    * Sender must be DID creator
   * Format:
       ```
       DidRegistry.updateDid(
@@ -220,6 +223,7 @@ Contract name: **DidRegistry**
   * Restrictions:
     * DID must exist
     * DID must be active
+    * Sender must be DID creator
   * Format:
       ```
       DidRegistry.deactivateDid( 

@@ -7,10 +7,6 @@ if [ "$me" = ".common.sh" ];then
   exit 1
 fi
 
-# bold and normal text styles
-bold=$(tput bold)
-normal=$(tput sgr0)
-
 # checks docker installed
 hash docker 2>/dev/null || {
   echo >&2 "This script requires Docker but it's not installed."

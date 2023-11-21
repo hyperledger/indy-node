@@ -22,9 +22,9 @@ removeDockerImage(){
   fi
 }
 
-echo "${bold}*************************************"
+echo "*************************************"
 echo "Localnet"
-echo "*************************************${normal}"
+echo "*************************************"
 echo "Stop and remove network..."
 
 docker compose --profile services down -v

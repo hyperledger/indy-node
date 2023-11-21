@@ -19,9 +19,9 @@ source "$(dirname "$0")/common.sh"
 # Build and run containers and network
 echo "docker-compose.yml" > ${LOCK_FILE}
 
-echo "${bold}*************************************"
+echo "*************************************"
 echo "Localnet"
-echo "*************************************${normal}"
+echo "*************************************"
 echo "Start network"
 echo "--------------------"
 

@@ -61,7 +61,7 @@ pub struct DidDocument {
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct DidMetadata {
-    pub creator_address: Address,
+    pub creator: Address,
     pub created: u128,
     pub updated: u128,
     pub deactivated: bool,

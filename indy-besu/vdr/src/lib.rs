@@ -437,8 +437,9 @@ mod tests {
     }
 
     mod validator {
-        use crate::contracts::network::ValidatorAddresses;
-        use crate::signer::basic_signer::test::basic_signer;
+        use crate::{
+            contracts::network::ValidatorAddresses, signer::basic_signer::test::basic_signer,
+        };
 
         use super::*;
 
@@ -495,7 +496,8 @@ mod tests {
             let signer = basic_signer();
             let (new_validator_address, _) = signer.create_account(None).unwrap();
             let client = client(Some(signer));
-            role::build_and_submit_assign_role_transaction(&client, &ACCOUNT, &Role::Steward).await;
+            role::build_and_submit_assign_role_transaction(&client, &TRUSTEE_ACC, &Role::Steward)
+                .await;
 
             let receipt =
                 build_and_submit_add_validator_transaction(&client, &new_validator_address).await;
@@ -522,7 +524,8 @@ mod tests {
             let signer = basic_signer();
             let (new_validator_address, _) = signer.create_account(None).unwrap();
             let client = client(Some(signer));
-            role::build_and_submit_assign_role_transaction(&client, &ACCOUNT, &Role::Steward).await;
+            role::build_and_submit_assign_role_transaction(&client, &TRUSTEE_ACC, &Role::Steward)
+                .await;
 
             ValidatorControl::add_validator(&client, &TRUSTEE_ACC, &new_validator_address)
                 .await

@@ -16,9 +16,9 @@ NO_LOCK_REQUIRED=false
 . ./.env
 source "$(dirname "$0")/common.sh"
 
-echo "${bold}*************************************"
+echo "*************************************"
 echo "Localnet"
-echo "*************************************${normal}"
+echo "*************************************"
 echo "Resuming network..."
 echo "----------------------------------"
 

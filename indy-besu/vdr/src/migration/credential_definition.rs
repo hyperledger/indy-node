@@ -39,7 +39,8 @@ impl CredentialDefinitionId {
             vdr_error
         })?;
         let schema_id = parts.get(3).ok_or_else(|| {
-            let vdr_error = VdrError::CommonInvalidData("Invalid indy cred def schema id".to_string());
+            let vdr_error =
+                VdrError::CommonInvalidData("Invalid indy cred def schema id".to_string());
 
             warn!(
                 "Error: {:?} during converting CredentialDefinitionId from indy format",
@@ -64,7 +65,8 @@ impl CredentialDefinitionId {
 
         trace!(
             "CredentialDefinitionId convert from Indy format: {} has finished. Result: {:?}",
-            id, cred_def_id
+            id,
+            cred_def_id
         );
 
         Ok(cred_def_id)
@@ -85,7 +87,8 @@ impl CredentialDefinition {
 
         trace!(
             "CredentialDefinition convert from Indy format: {} has finished. Result: {:?}",
-            credential_definition, besu_cred_def
+            credential_definition,
+            besu_cred_def
         );
 
         besu_cred_def
@@ -104,7 +107,7 @@ impl TryFrom<IndyCredentialDefinitionFormat> for CredentialDefinition {
         let parts: Vec<&str> = cred_def.id.split(':').collect();
         let id = parts.get(0).ok_or_else(|| {
             let vdr_error = VdrError::CommonInvalidData("Invalid indy cred def id".to_string());
-            
+
             warn!("Error: {:?} during converting CredentialDefinition from IndyCredentialDefinitionFormat", vdr_error);
 
             vdr_error
@@ -145,7 +148,7 @@ impl Into<IndyCredentialDefinitionFormat> for CredentialDefinition {
             self
         );
 
-        let indy_cred_def =IndyCredentialDefinitionFormat {
+        let indy_cred_def = IndyCredentialDefinitionFormat {
             id: format!(
                 "{}:3:{}:{}:{}",
                 self.issuer_id.value(),
