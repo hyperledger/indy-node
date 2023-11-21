@@ -5,6 +5,9 @@ The following steps are one way to adhere to the Indy Node guidelines for instal
 NOTE: Since GC regularly updates their user interface, this document becomes outdated quickly. The general steps can still be followed with a good chance of success, but please submit a PR with any changes you see or inform the author of the updates (lynn@indicio.tech) to keep this document up to date.
 
 #### Installation
+
+TIP: Make a copy of the [Node Installation Setup Spreadsheet Template](https://github.com/hyperledger/indy-node/blob/main/docs/source/install-docs/node-installation-info.xlsx) to store your Node information during installation.
+
 1. To prepare for VM creation, there are a few preliminary steps needed. First you might need to create a project in which you will create your VM. You will then need to set up items needed for Node networking (detailed steps below). You will also need to create a snapshot schedule so that your VM can be backed up automatically (optional, but this is the only method described herein that satisfies the "backup" requirement).
 2. From the GCP console ([https://console.cloud.google.com/](https://console.cloud.google.com/)) scroll down in the upper left hamburger menu to the 'Networking' section, select 'VPC Network', then 'VPC Networks' If you haven’t already, you might need to “Enable” the compute engine API.
     1. Before you begin, decide on a 'region' in which to run your VM that closely matches the jurisdiction of your company's corporate offices. Record the region selected as it will be used later in these instructions. 

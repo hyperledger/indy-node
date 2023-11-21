@@ -5,6 +5,8 @@ The following steps are one way to adhere to the Indy Node guidelines for instal
 
 #### Installation
 
+TIP: Make a copy of the [Node Installation Setup Spreadsheet Template](https://github.com/hyperledger/indy-node/blob/main/docs/source/install-docs/node-installation-info.xlsx) to store your Node information during installation.
+
 1. Before you begin:
     1. For most governance frameworks' hardware requirements, you will need 2 NIC's and 2 subnets (one per NIC). Configure these before beginning the install.
     2. Hardware requirements might include the following, (or greater, depending on your network governance requirements):

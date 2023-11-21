@@ -6,6 +6,8 @@ NOTE: Since AWS regularly updates their user interface, this document becomes ou
 
 #### Installation
 
+TIP: Make a copy of the [Node Installation Setup Spreadsheet Template](https://github.com/hyperledger/indy-node/blob/main/docs/source/install-docs/node-installation-info.xlsx) to store your Node information during installation.
+
 1. Before you begin the installation steps, login to your AWS console and select a region to run your VM in. Recommendation: Select the region matching the jurisdiction of your company's corporate offices.
 2. From the AWS EC2 services page, click 'Instances'
 3. Click 'Launch Instances'
