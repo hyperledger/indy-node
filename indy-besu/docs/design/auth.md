@@ -1,69 +1,19 @@
 # Auth model
 
-## Roles
+## Role control
 
-| Label    | Value     |
-|----------|-----------|
-| Trustee  | 1         |
-| Endorser | 2         |
-| Steward  | 3         |
+Contract to manage roles assigned to accounts.
 
-## Account role management
+### Roles
 
-| Contract    | Method     | Value      | Required Role | Action Description                       |
-|-------------|------------|------------|---------------|------------------------------------------|
-| RoleControl | hasRole    | -          | any           | Check if an account has a requested role |
-| RoleControl | getRole    | -          | any           | Get account role                         |
-| RoleControl | assignRole | Trustee    | Trustee       | Assign Trustee role to an account        |
-| RoleControl | assignRole | Endorser   | Trustee       | Assign Endorser role to an account       |
-| RoleControl | assignRole | Steward    | Trustee       | Assign Steward role to an account        |
-| RoleControl | revokeRole | Trustee    | Trustee       | Revoke Trustee role from an account      |
-| RoleControl | revokeRole | Endorser   | Trustee       | Assign Endorser role to an account       |
-| RoleControl | revokeRole | Steward    | Trustee       | Assign Steward role to an account        |
+| Label              | Value                                  |
+|--------------------|----------------------------------------|
+| Trustee            | 1                                      |
+| Endorser           | 2                                      |
+| Steward            | 3                                      |
+| User without role  | 0 / "null" (not present on the ledger) |
 
-## Validator nodes management
-
-| Contract         | Method          | Required Role | Action Description                      |
-|------------------|-----------------|---------------|-----------------------------------------|
-| ValidatorControl | getValidators   | any           | Get the list of current validator nodes |
-| ValidatorControl | addValidator    | Steward       | Add new validator node                  |
-| ValidatorControl | removeValidator | Steward       | Remove validator node                   |
-
-## DID Document management
-
-| Contract      | Method                         | Required Role               | Action Description              |
-|---------------|--------------------------------|-----------------------------|---------------------------------|
-| DidRegistry   | createDid                      | Trustee, Endorser, Steward  | Create a new DID Document       |
-| DidRegistry   | updateDid                      | DID owner                   | Update DID an existing Document |
-| DidRegistry   | deactivateDid                  | DID owner                   | Deactivate an existing DID      |
-| DidRegistry   | resolveDid                     | any                         | Resolve DID Document for a DID  |
-
-## CL Registry management
-
-| Contract                     | Method                      | Required Role               | Action Description                       |
-|------------------------------|-----------------------------|-----------------------------|------------------------------------------|
-| SchemaRegistry               | createSchema                | Trustee, Endorser, Steward  | Create a new Schema                      |
-| SchemaRegistry               | resolveSchema               | any                         | Resolve Schema by id                     |
-| CredentialDefinitionRegistry | createCredentialDefinition  | Trustee, Endorser, Steward  | Create a new Credential Definition       |
-| CredentialDefinitionRegistry | resolveCredentialDefinition | any                         | Resolve Credential Definition by id      |
-
-## Contract upgrade management
-
-| Contract          | Method                    | Required Role     | Action Description                                                       |
-|-------------------|---------------------------|-------------------|--------------------------------------------------------------------------|
-| UpgradeControl    | propose                   | Trustee           | Propose the upgrade of a specefic contract implementation                |
-| UpgradeControl    | approve                   | Trustee           | Approve the upgrade of a specefic contract implementation                |
-| UpgradeControl    | ensureSufficientApprovals | any               | Ensures that an implementation upgrade has received sufficient approvals |
-
-## Transactions managment
-
-| Transaction              | Required Role               | Action Description                               |
-|--------------------------|-----------------------------|--------------------------------------------------|
-| Deploy contract          | Trustee                     | Deploy a new contract                            |
-| Modify contract state    | Trustee, Endorser, Steward  | Execute contract method to modify its state      |
-| Read contract state      | any                         | Execute contract method to read its state        |
-
-## Storage format
+### Storage format
 
 * Roles collection:
   * Description: Mapping holding the list of accounts with roles assigned to them. Accounts which does not have any role assigned are not present in the list. 
@@ -97,11 +47,11 @@
     }
     ```
   
-## Transactions (Smart Contract's methods)
+### Transactions (Smart Contract's methods)
 
 Contract name: **RoleControl**
 
-### Check if account has role assigned
+#### Check if account has role assigned
 
 * Method: `hasRole`
   * Description: Transaction to check if an account has requested role assigned.
@@ -122,7 +72,7 @@ Contract name: **RoleControl**
       ```
   * Raised Event: None
 
-### Get account role
+#### Get account role
 
 * Method: `getRole`
   * Description: Transaction to get the role assigned to an account 
@@ -141,7 +91,7 @@ Contract name: **RoleControl**
       ```
   * Raised Event: None
 
-### Assign role to an account 
+#### Assign role to an account 
 
 * Method: `assignRole`
   * Description: Transaction to assign role to an account
@@ -163,7 +113,7 @@ Contract name: **RoleControl**
   * Raised Event: 
     * RoleAssigned(ROLE, account, sender)
 
-### Revoke role from an account 
+#### Revoke role from an account 
 
 * Method: `revokeRole`
   * Description: Transaction to revive role from an account
@@ -185,3 +135,87 @@ Contract name: **RoleControl**
   * Raised Event: 
     * RoleRevoked(ROLE, account, sender)
 
+
+
+## Access control
+
+The first level validation whether to accept write transactions (execute target contract method) from a given account or not.
+
+### Transactions (Smart Contract's methods)
+
+Contract name: **transactionAllowed**
+
+#### Check if sender can perform an action
+
+* Method: `transactionAllowed`
+  * Description: Transaction to check whether to accept a transaction received from a given account.
+  * Restrictions: None
+  * Format
+      ```
+      AccountControl.transactionAllowed(
+        address sender,
+        address target,
+        uint256 value,
+        uint256 gasPrice,
+        uint256 gasLimit,
+        bytes calldata payload
+      ) returns (bool)
+      ```
+  * Raised Event: None
+
+## Ledger Permissions
+
+### Account role management
+
+| Contract    | Method     | Value      | Required Role | Action Description                       |
+|-------------|------------|------------|---------------|------------------------------------------|
+| RoleControl | hasRole    | -          | any           | Check if an account has a requested role |
+| RoleControl | getRole    | -          | any           | Get account role                         |
+| RoleControl | assignRole | Trustee    | Trustee       | Assign Trustee role to an account        |
+| RoleControl | assignRole | Endorser   | Trustee       | Assign Endorser role to an account       |
+| RoleControl | assignRole | Steward    | Trustee       | Assign Steward role to an account        |
+| RoleControl | revokeRole | Trustee    | Trustee       | Revoke Trustee role from an account      |
+| RoleControl | revokeRole | Endorser   | Trustee       | Assign Endorser role to an account       |
+| RoleControl | revokeRole | Steward    | Trustee       | Assign Steward role to an account        |
+
+### Validator nodes management
+
+| Contract         | Method          | Required Role | Action Description                      |
+|------------------|-----------------|---------------|-----------------------------------------|
+| ValidatorControl | getValidators   | any           | Get the list of current validator nodes |
+| ValidatorControl | addValidator    | Steward       | Add new validator node                  |
+| ValidatorControl | removeValidator | Steward       | Remove validator node                   |
+
+### DID Document management
+
+| Contract      | Method                         | Required Role               | Action Description              |
+|---------------|--------------------------------|-----------------------------|---------------------------------|
+| DidRegistry   | createDid                      | Trustee, Endorser, Steward  | Create a new DID Document       |
+| DidRegistry   | updateDid                      | DID owner                   | Update DID an existing Document |
+| DidRegistry   | deactivateDid                  | DID owner                   | Deactivate an existing DID      |
+| DidRegistry   | resolveDid                     | any                         | Resolve DID Document for a DID  |
+
+### CL Registry management
+
+| Contract                     | Method                      | Required Role               | Action Description                       |
+|------------------------------|-----------------------------|-----------------------------|------------------------------------------|
+| SchemaRegistry               | createSchema                | Trustee, Endorser, Steward  | Create a new Schema                      |
+| SchemaRegistry               | resolveSchema               | any                         | Resolve Schema by id                     |
+| CredentialDefinitionRegistry | createCredentialDefinition  | Trustee, Endorser, Steward  | Create a new Credential Definition       |
+| CredentialDefinitionRegistry | resolveCredentialDefinition | any                         | Resolve Credential Definition by id      |
+
+### Contract upgrade management
+
+| Contract          | Method                    | Required Role     | Action Description                                                       |
+|-------------------|---------------------------|-------------------|--------------------------------------------------------------------------|
+| UpgradeControl    | propose                   | Trustee           | Propose the upgrade of a specefic contract implementation                |
+| UpgradeControl    | approve                   | Trustee           | Approve the upgrade of a specefic contract implementation                |
+| UpgradeControl    | ensureSufficientApprovals | any               | Ensures that an implementation upgrade has received sufficient approvals |
+
+### General transactions management
+
+| Transaction              | Required Role                          | Action Description                               |
+|--------------------------|----------------------------------------|--------------------------------------------------|
+| Deploy contract          | Trustee                                | Deploy a new contract                            |
+| Modify contract state    | Per contract method as described above | Execute contract method to modify its state      |
+| Read contract state      | any                                    | Execute contract method to read its state        |
