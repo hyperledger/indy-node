@@ -8,7 +8,7 @@
     - access control - first level validation: whether to accept write transactions (execute target contract method) from a given account
   - [Upgrading contracts](design/upgradability.md) - control versions of deployed contracts (proposing and approving new versions).
   - [Validators node management](design/network.md) - control the list of network validator nodes
-- [DID Methods](design/did-registry.md) - DID method speification 
+- [DID Methods](design/did-registry.md) - Supported DID methods 
 - Registries:
   - [DID Document Registry](design/did-registry.md)
   - [CL Registry](design/cl-registry.md)
