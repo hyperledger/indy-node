@@ -10,7 +10,7 @@ import { Errors } from "../utils/Errors.sol";
 import { CredentialDefinition, CredentialDefinitionWithMetadata } from "./CredentialDefinitionTypes.sol";
 import { CredentialDefinitionRegistryInterface } from "./CredentialDefinitionRegistryInterface.sol";
 import { CredentialDefinitionValidator } from "./CredentialDefinitionValidator.sol";
-import { CredentialDefinitionAlreadyExist, CredentialDefinitionNotFound, IssuerHasBeenDeactivated, IssuerNotFound } from "./ClErrors.sol";
+import { CredentialDefinitionAlreadyExist, CredentialDefinitionNotFound, IssuerHasBeenDeactivated, IssuerNotFound, SenderIsNotIssuerDidOwner } from "./ClErrors.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
@@ -34,7 +34,7 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
     mapping(string id => CredentialDefinitionWithMetadata credDefWithMetadata) private _credDefs;
 
     /**
-     * Checks the uniqness of the credential definition ID
+     * Checks the uniqueness of the credential definition ID
      */
     modifier _uniqueCredDefId(string memory id) {
         if (_credDefs[id].metadata.created != 0) revert CredentialDefinitionAlreadyExist(id);
@@ -42,7 +42,7 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
     }
 
     /**
-     * Сhecks that the credential definition exist
+     * Checks that the credential definition exist
      */
     modifier _credDefExist(string memory id) {
         if (_credDefs[id].metadata.created == 0) revert CredentialDefinitionNotFound(id);
@@ -58,10 +58,13 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
     }
 
     /**
-     * Сhecks that the Issuer exist and active
+     * Checks that the Issuer DID exist, controlled by sender, and active
      */
-    modifier _issuerActive(string memory id) {
+    modifier _validIssuer(string memory id) {
         try _didRegistry.resolveDid(id) returns (DidDocumentStorage memory didDocumentStorage) {
+            if (msg.sender != didDocumentStorage.metadata.creator)
+                revert SenderIsNotIssuerDidOwner(msg.sender, didDocumentStorage.metadata.creator);
+            _;
             if (didDocumentStorage.metadata.deactivated) revert IssuerHasBeenDeactivated(id);
             _;
         } catch (bytes memory reason) {
@@ -86,7 +89,7 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
     /// @inheritdoc CredentialDefinitionRegistryInterface
     function createCredentialDefinition(
         CredentialDefinition calldata credDef
-    ) public virtual _uniqueCredDefId(credDef.id) _schemaExist(credDef.schemaId) _issuerActive(credDef.issuerId) {
+    ) public virtual _uniqueCredDefId(credDef.id) _schemaExist(credDef.schemaId) _validIssuer(credDef.issuerId) {
         // credDef.requireValidId(); For migration from Indy we need to disable this check as schema id there represented as seq_no
         credDef.requireValidType();
         credDef.requireTag();

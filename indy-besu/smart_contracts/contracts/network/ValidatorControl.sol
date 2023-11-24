@@ -115,7 +115,7 @@ contract ValidatorControl is ValidatorSmartContractInterface, ControlledUpgradea
     /**
      * @dev Remove an existing validator from the list.
      *
-     * Restrcitions:
+     * Restrictions:
      * - Only accounts with the steward role are permitted to call this method; otherwise, will revert with an `Unauthorized` error.
      * - The validator address must be non-zero; otherwise, will revert with an `InvalidValidatorAddress` error.
      * - The validator must not be last one; otherwise, will revert with an `CannotDeactivateLastValidator` error.

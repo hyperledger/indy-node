@@ -24,6 +24,7 @@ interface SchemaRegistryInterface {
      * - `IssuerHasBeenDeactivated`: Raised if the associated issuer is not active.
      * - `InvalidSchemaId`: Raised if the Schema ID syntax is invalid.
      * - `FieldRequired`: Raised when a mandatory Schema field such as `name`, `version` or `attributes` is not provided
+     * - `SenderIsNotIssuerDidOwner`: Raised when an issuer DID specified in Schema/CredentialDefinition is not owned by sender
      *
      * @param schema The new AnonCreds schema.
      */

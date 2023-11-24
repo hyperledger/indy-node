@@ -41,7 +41,7 @@ interface DidRegistryInterface {
      * - Sender address must be equal to DID creator address; otherwise, will revert with a `SenderIsNotCreator` error.
      *
      * Events:
-     * - On succesful DID update, will emit a `DIDDeactivated` event.
+     * - On successful DID update, will emit a `DIDDeactivated` event.
      *
      * @param document The updated DID Document
      */
@@ -56,7 +56,7 @@ interface DidRegistryInterface {
      * - Sender address must be equal to DID creator address; otherwise, will revert with a `SenderIsNotCreator` error.
      *
      * Events:
-     * - On succesful DID deactivation, will emit a `DIDDeactivated` event.
+     * - On successful DID deactivation, will emit a `DIDDeactivated` event.
      *
      * @param id The DID to be deactivated.
      */

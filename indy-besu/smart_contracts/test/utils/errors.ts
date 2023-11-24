@@ -6,6 +6,7 @@ export namespace ClErrors {
   export const FieldRequired = 'FieldRequired'
   export const IssuerNotFound = 'IssuerNotFound'
   export const IssuerHasBeenDeactivated = 'IssuerHasBeenDeactivated'
+  export const SenderIsNotIssuerDidOwner = 'SenderIsNotIssuerDidOwner'
 
   // Schema errors
   export const InvalidSchemaId = 'InvalidSchemaId'
@@ -14,7 +15,7 @@ export namespace ClErrors {
 
   // CredDef errors
   export const InvalidCredentialDefinitionId = 'InvalidCredentialDefinitionId'
-  export const UnsupportedCredentialDefintionType = 'UnsupportedCredentialDefintionType'
+  export const UnsupportedCredentialDefinitionType = 'UnsupportedCredentialDefinitionType'
   export const CredentialDefinitionAlreadyExist = 'CredentialDefinitionAlreadyExist'
   export const CredentialDefinitionNotFound = 'CredentialDefinitionNotFound'
 }

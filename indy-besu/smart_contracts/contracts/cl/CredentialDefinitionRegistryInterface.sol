@@ -25,6 +25,7 @@ interface CredentialDefinitionRegistryInterface {
      * - `IssuerHasBeenDeactivated`: Raised if the associated issuer is not active.
      * - `InvalidCredentialDefinitionId`: Raised if the Credential Definition ID syntax is invalid.
      * - `FieldRequired`: Raised when a mandatory Credential Definition field such as `type`, `tag` or `value` is not provided
+     * - `SenderIsNotIssuerDidOwner`: Raised when an issuer DID specified in Schema/CredentialDefinition is not owned by sender
      *
      * @param credDef The new AnonCreds Credential Definition.
      */

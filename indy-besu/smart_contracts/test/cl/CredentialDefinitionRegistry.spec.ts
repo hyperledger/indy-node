@@ -1,34 +1,41 @@
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
-import { createBaseDidDocument, createCredentialDefinitionObject, createSchemaObject } from '../../utils'
-import { deployCredentialDefinitionRegistry } from '../utils/contract-helpers'
+import { DidRegistry } from '../../contracts-ts'
+import { createCredentialDefinitionObject } from '../../utils'
+import { createDid, createSchema, deployCredentialDefinitionRegistry } from '../utils/contract-helpers'
 import { ClErrors } from '../utils/errors'
+import { TestAccounts } from '../utils/test-entities'
 
 describe('CredentialDefinitionRegistry', function () {
+  let didRegistry: DidRegistry
+  let schemaRegistry: any
+  let credentialDefinitionRegistry: any
+  let testAccounts: TestAccounts
+  let schemaId: string
   const issuerId = 'did:indy2:mainnet:SEp33q43PsdP7nDATyySSH'
 
-  async function deployCredDefContractFixture() {
-    const { credentialDefinitionRegistry, didRegistry, schemaRegistry } = await deployCredentialDefinitionRegistry()
+  beforeEach(async function () {
+    const {
+      didRegistry: didRegistryInit,
+      schemaRegistry: schemaRegistryInit,
+      credentialDefinitionRegistry: credentialDefinitionRegistryInit,
+      testAccounts: testAccountsInit,
+    } = await deployCredentialDefinitionRegistry()
 
-    const didDocument = createBaseDidDocument(issuerId)
+    didRegistryInit.connect(testAccountsInit.trustee.account)
+    schemaRegistryInit.connect(testAccountsInit.trustee.account)
+    credentialDefinitionRegistryInit.connect(testAccountsInit.trustee.account)
+    await createDid(didRegistryInit, issuerId)
+    const schema = await createSchema(schemaRegistryInit, issuerId)
 
-    await didRegistry.createDid(didDocument)
-
-    const schema = createSchemaObject({ issuerId })
-    await schemaRegistry.createSchema(schema)
-
-    return {
-      didRegistry,
-      credentialDefinitionRegistry,
-      schemaRegistry,
-      schemaId: schema.id,
-    }
-  }
+    didRegistry = didRegistryInit
+    testAccounts = testAccountsInit
+    schemaRegistry = schemaRegistryInit
+    credentialDefinitionRegistry = credentialDefinitionRegistryInit
+    schemaId = schema.id
+  })
 
   describe('Add/Resolve Credential Definition', function () {
     it('Should create and resolve Credential Definition', async function () {
-      const { credentialDefinitionRegistry, schemaId } = await loadFixture(deployCredDefContractFixture)
-
       const credDef = createCredentialDefinitionObject({ issuerId, schemaId })
 
       await credentialDefinitionRegistry.createCredentialDefinition(credDef)
@@ -38,8 +45,6 @@ describe('CredentialDefinitionRegistry', function () {
     })
 
     it('Should fail if resolving Credential Definition does not exist', async function () {
-      const { credentialDefinitionRegistry, schemaId } = await loadFixture(deployCredDefContractFixture)
-
       const credDef = createCredentialDefinitionObject({ issuerId, schemaId })
 
       await expect(credentialDefinitionRegistry.resolveCredentialDefinition(credDef.id))
@@ -48,8 +53,6 @@ describe('CredentialDefinitionRegistry', function () {
     })
 
     it('Should fail if Credential Definition is being already exists', async function () {
-      const { credentialDefinitionRegistry, schemaId } = await loadFixture(deployCredDefContractFixture)
-
       const credDef = createCredentialDefinitionObject({ issuerId, schemaId })
 
       await credentialDefinitionRegistry.createCredentialDefinition(credDef)
@@ -63,8 +66,6 @@ describe('CredentialDefinitionRegistry', function () {
     })
 
     it('Should fail if Credential Definition is being created with non-existing Issuer', async function () {
-      const { credentialDefinitionRegistry, schemaId } = await loadFixture(deployCredDefContractFixture)
-
       const credDef = createCredentialDefinitionObject({
         issuerId: 'did:indy2:mainnet:GEzcdDLhCpGCYRHW82kjHd',
         schemaId,
@@ -76,8 +77,6 @@ describe('CredentialDefinitionRegistry', function () {
     })
 
     it('Should fail if Credential Definition is being created with inactive Issuer', async function () {
-      const { didRegistry, credentialDefinitionRegistry, schemaId } = await loadFixture(deployCredDefContractFixture)
-
       didRegistry.deactivateDid(issuerId)
 
       const credDef = createCredentialDefinitionObject({ issuerId, schemaId })
@@ -88,8 +87,6 @@ describe('CredentialDefinitionRegistry', function () {
     })
 
     it('Should fail if Credential Definition is being created with non-existing Schema', async function () {
-      const { credentialDefinitionRegistry, schemaRegistry } = await loadFixture(deployCredDefContractFixture)
-
       const credDef = createCredentialDefinitionObject({
         issuerId,
         schemaId: 'did:indy2:mainnet:SEp33q43PsdP7nDATyySSH/anoncreds/v0/SCHEMA/Test/1.0.0',
@@ -101,21 +98,17 @@ describe('CredentialDefinitionRegistry', function () {
     })
 
     it('Should fail if Credential Definition is being created with unsupported type', async function () {
-      const { credentialDefinitionRegistry, schemaId } = await loadFixture(deployCredDefContractFixture)
-
       const credDef = createCredentialDefinitionObject({ issuerId, schemaId, credDefType: 'CL2' })
 
       await expect(credentialDefinitionRegistry.createCredentialDefinition(credDef))
         .to.be.revertedWithCustomError(
           credentialDefinitionRegistry.baseInstance,
-          ClErrors.UnsupportedCredentialDefintionType,
+          ClErrors.UnsupportedCredentialDefinitionType,
         )
         .withArgs(credDef.credDefType)
     })
 
     it('Should fail if Credential Definition is being created with empty tag', async function () {
-      const { credentialDefinitionRegistry, schemaId } = await loadFixture(deployCredDefContractFixture)
-
       const credDef = createCredentialDefinitionObject({ issuerId, schemaId, tag: '' })
 
       await expect(credentialDefinitionRegistry.createCredentialDefinition(credDef))
@@ -124,13 +117,24 @@ describe('CredentialDefinitionRegistry', function () {
     })
 
     it('Should fail if Credential Definition is being created with empty value', async function () {
-      const { credentialDefinitionRegistry, schemaId } = await loadFixture(deployCredDefContractFixture)
-
       const credDef = createCredentialDefinitionObject({ issuerId, schemaId, value: '' })
 
       await expect(credentialDefinitionRegistry.createCredentialDefinition(credDef))
         .to.be.revertedWithCustomError(credentialDefinitionRegistry.baseInstance, ClErrors.FieldRequired)
         .withArgs('value')
+    })
+
+    it('Should fail if Credential Definition is being created with not owned Issuer DID', async function () {
+      const issuerId2 = 'did:indy2:mainnet:SEp33q43PsdP7nDATyyDDA'
+      const credDef = createCredentialDefinitionObject({ issuerId, schemaId })
+
+      didRegistry.connect(testAccounts.trustee2.account)
+      credentialDefinitionRegistry.connect(testAccounts.trustee2.account)
+
+      await createDid(didRegistry, issuerId2)
+      await expect(credentialDefinitionRegistry.createCredentialDefinition(credDef))
+        .to.be.revertedWithCustomError(credentialDefinitionRegistry.baseInstance, ClErrors.SenderIsNotIssuerDidOwner)
+        .withArgs(testAccounts.trustee2.account.address, testAccounts.trustee.account.address)
     })
 
     // FIXME: for ledger migration purpose we disabled checking id validity for credential definition

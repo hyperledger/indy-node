@@ -15,7 +15,7 @@ async function demo() {
   console.log(`Role ${ROLES.ENDORSER} assigned to account ${faber.address}. Receipt: ${JSON.stringify(receipt)}`)
 
   console.log('2. Faber creates DID Document')
-  receipt = await trustee.didRegistry.createDid(faber.didDocument)
+  receipt = await faber.didRegistry.createDid(faber.didDocument)
   console.log(`Did Document created for DID ${faber.did}. Receipt: ${JSON.stringify(receipt)}`)
 
   console.log('3. Faber creates Test Schema')

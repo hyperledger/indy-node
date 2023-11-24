@@ -1,26 +1,34 @@
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
-import { createBaseDidDocument, createSchemaObject } from '../../utils'
-import { deploySchemaRegistry } from '../utils/contract-helpers'
+import { DidRegistry, SchemaRegistry } from '../../contracts-ts'
+import { createSchemaObject } from '../../utils'
+import { createDid, deploySchemaRegistry } from '../utils/contract-helpers'
 import { ClErrors } from '../utils/errors'
+import { TestAccounts } from '../utils/test-entities'
 
 describe('SchemaRegistry', function () {
+  let didRegistry: DidRegistry
+  let schemaRegistry: any
+  let testAccounts: TestAccounts
   const issuerId = 'did:indy2:mainnet:SEp33q43PsdP7nDATyySSH'
 
-  async function deploySchemaContractFixture() {
-    const { didRegistry, schemaRegistry } = await deploySchemaRegistry()
+  beforeEach(async function () {
+    const {
+      didRegistry: didRegistryInit,
+      schemaRegistry: schemaRegistryInit,
+      testAccounts: testAccountsInit,
+    } = await deploySchemaRegistry()
 
-    const didDocument = createBaseDidDocument(issuerId)
+    didRegistryInit.connect(testAccountsInit.trustee.account)
+    schemaRegistryInit.connect(testAccountsInit.trustee.account)
+    await createDid(didRegistryInit, issuerId)
 
-    await didRegistry.createDid(didDocument)
-
-    return { didRegistry, schemaRegistry }
-  }
+    didRegistry = didRegistryInit
+    testAccounts = testAccountsInit
+    schemaRegistry = schemaRegistryInit
+  })
 
   describe('Add/Resolve Schema', function () {
     it('Should create and resolve Schema', async function () {
-      const { schemaRegistry } = await loadFixture(deploySchemaContractFixture)
-
       const schema = createSchemaObject({ issuerId })
 
       await schemaRegistry.createSchema(schema)
@@ -30,8 +38,6 @@ describe('SchemaRegistry', function () {
     })
 
     it('Should fail if resolving a non-existing schema', async function () {
-      const { schemaRegistry } = await loadFixture(deploySchemaContractFixture)
-
       const schema = createSchemaObject({ issuerId })
 
       await expect(schemaRegistry.resolveSchema(schema.id))
@@ -40,8 +46,6 @@ describe('SchemaRegistry', function () {
     })
 
     it('Should fail if Schema is being created already exists', async function () {
-      const { schemaRegistry } = await loadFixture(deploySchemaContractFixture)
-
       const schema = createSchemaObject({ issuerId })
 
       await schemaRegistry.createSchema(schema)
@@ -52,8 +56,6 @@ describe('SchemaRegistry', function () {
     })
 
     it('Should fail if Schema is being created with non-existing Issuer', async function () {
-      const { schemaRegistry } = await loadFixture(deploySchemaContractFixture)
-
       const schema = createSchemaObject({ issuerId: 'did:indy2:mainnet:GEzcdDLhCpGCYRHW82kjHd' })
 
       await expect(schemaRegistry.createSchema(schema))
@@ -62,8 +64,6 @@ describe('SchemaRegistry', function () {
     })
 
     it('Should fail if Schema is being created with inactive Issuer', async function () {
-      const { didRegistry, schemaRegistry } = await loadFixture(deploySchemaContractFixture)
-
       didRegistry.deactivateDid(issuerId)
 
       const schema = createSchemaObject({ issuerId })
@@ -74,8 +74,6 @@ describe('SchemaRegistry', function () {
     })
 
     it('Should fail if Schema is being created with empty name', async function () {
-      const { schemaRegistry } = await loadFixture(deploySchemaContractFixture)
-
       const schema = createSchemaObject({ issuerId, name: '' })
 
       await expect(schemaRegistry.createSchema(schema))
@@ -84,8 +82,6 @@ describe('SchemaRegistry', function () {
     })
 
     it('Should fail if Schema is being created with empty version', async function () {
-      const { schemaRegistry } = await loadFixture(deploySchemaContractFixture)
-
       const schema = createSchemaObject({ issuerId, version: '' })
 
       await expect(schemaRegistry.createSchema(schema))
@@ -94,8 +90,6 @@ describe('SchemaRegistry', function () {
     })
 
     it('Should fail if Schema is being created without attributes', async function () {
-      const { schemaRegistry } = await loadFixture(deploySchemaContractFixture)
-
       const schema = createSchemaObject({ issuerId, attrNames: [] })
 
       await expect(schemaRegistry.createSchema(schema))
@@ -104,14 +98,25 @@ describe('SchemaRegistry', function () {
     })
 
     it('Should fail if Schema is being created with invalid Schema ID', async function () {
-      const { schemaRegistry } = await loadFixture(deploySchemaContractFixture)
-
       const schema = createSchemaObject({ issuerId })
       schema.id = 'SEp33q43PsdP7nDATyySSH:2:BasicSchema:1.0.0'
 
       await expect(schemaRegistry.createSchema(schema))
         .to.be.revertedWithCustomError(schemaRegistry.baseInstance, ClErrors.InvalidSchemaId)
         .withArgs(schema.id)
+    })
+
+    it('Should fail if Schema is being created with not owned Issuer DID', async function () {
+      const issuerId2 = 'did:indy2:mainnet:SEp33q43PsdP7nDATyyDDA'
+      const schema = createSchemaObject({ issuerId })
+
+      didRegistry.connect(testAccounts.trustee2.account)
+      schemaRegistry.connect(testAccounts.trustee2.account)
+
+      await createDid(didRegistry, issuerId2)
+      await expect(schemaRegistry.createSchema(schema))
+        .to.be.revertedWithCustomError(schemaRegistry.baseInstance, ClErrors.SenderIsNotIssuerDidOwner)
+        .withArgs(testAccounts.trustee2.account.address, testAccounts.trustee.account.address)
     })
   })
 })

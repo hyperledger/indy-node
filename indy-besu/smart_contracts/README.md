@@ -49,7 +49,7 @@ You can find sample scripts demonstrating the usage of deployed contracts in the
     ```
     > yarn demo/account
     ```
-* [Demo flow](./demos/flow.ts) - create/reolve DID/Schema/Credential Dedinition.
+* [Demo flow](./demos/flow.ts) - create/reolve DID/Schema/Credential Definition.
     ```
     > yarn demo/flow
     ```
@@ -84,7 +84,7 @@ This section describes how to inject smart contracts into the genesis state of t
 
 3. Compile runtime contracts byte code:
    ```
-   solc -o compiled-contracts --optimize --bin-runtime  --evm-version=constantinople  @dk1a=$(pwd)/node_modules/@dk1a @openzeppelin=$(pwd)/node_modules/@openzeppelin  contracts/**/*.sol node_modules/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol
+   yarn solc-compile
    ```
 * `compiled-contracts` folder with binary files will be generated as the result of the execution.
 

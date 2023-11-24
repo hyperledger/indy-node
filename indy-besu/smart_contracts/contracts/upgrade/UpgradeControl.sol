@@ -18,14 +18,14 @@ contract UpgradeControl is UpgradeControlInterface, UUPSUpgradeable, Initializab
     RoleControlInterface private _roleControl;
 
     /**
-     * @dev Double mapping proxy and implmentation addresses to upgrade proposal
+     * @dev Double mapping proxy and implementation addresses to upgrade proposal
      * The key relationship can be visualized as:
      * `proxy address -> implementation address -> upgrade proposal`
      */
     mapping(address proxy => mapping(address implementation => UpgradeProposal proposal)) private _upgradeProposals;
 
     /**
-     * @dev Modifier that checks that the implmentation is UUPSUpgradable
+     * @dev Modifier that checks that the implementation is UUPSUpgradable
      */
     modifier _isUupsProxy(address implementation) {
         try IERC1822Proxiable(implementation).proxiableUUID() returns (bytes32 slot) {

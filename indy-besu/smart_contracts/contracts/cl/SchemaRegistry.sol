@@ -7,7 +7,7 @@ import { DidDocumentStorage } from "../did/DidTypes.sol";
 import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
 import { Errors } from "../utils/Errors.sol";
 
-import { IssuerHasBeenDeactivated, IssuerNotFound, SchemaAlreadyExist, SchemaNotFound } from "./ClErrors.sol";
+import { IssuerHasBeenDeactivated, IssuerNotFound, SchemaAlreadyExist, SchemaNotFound, SenderIsNotIssuerDidOwner } from "./ClErrors.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { Schema, SchemaWithMetadata } from "./SchemaTypes.sol";
 import { SchemaValidator } from "./SchemaValidator.sol";
@@ -23,12 +23,12 @@ contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable {
     DidRegistryInterface private _didRegistry;
 
     /**
-     * Mapping Scheman ID to its Schema Details and Metadata.
+     * Mapping Schema ID to its Schema Details and Metadata.
      */
     mapping(string id => SchemaWithMetadata schemaWithMetadata) private _schemas;
 
     /**
-     * Checks the uniqness of the Schema ID
+     * Checks the uniqueness of the Schema ID
      */
     modifier _uniqueSchemaId(string memory id) {
         if (_schemas[id].metadata.created != 0) revert SchemaAlreadyExist(id);
@@ -36,7 +36,7 @@ contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable {
     }
 
     /**
-     * Сhecks that the Schema exist
+     * Checks that the Schema exist
      */
     modifier _schemaExist(string memory id) {
         if (_schemas[id].metadata.created == 0) revert SchemaNotFound(id);
@@ -44,10 +44,13 @@ contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable {
     }
 
     /**
-     * Сhecks that the Issuer exist and active
+     * Checks that the Issuer DID exist, controlled by sender, and active
      */
-    modifier _issuerActive(string memory id) {
+    modifier _validIssuer(string memory id) {
         try _didRegistry.resolveDid(id) returns (DidDocumentStorage memory didDocumentStorage) {
+            if (msg.sender != didDocumentStorage.metadata.creator)
+                revert SenderIsNotIssuerDidOwner(msg.sender, didDocumentStorage.metadata.creator);
+            _;
             if (didDocumentStorage.metadata.deactivated) revert IssuerHasBeenDeactivated(id);
             _;
         } catch (bytes memory reason) {
@@ -67,7 +70,7 @@ contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable {
     /// @inheritdoc SchemaRegistryInterface
     function createSchema(
         Schema calldata schema
-    ) public virtual _uniqueSchemaId(schema.id) _issuerActive(schema.issuerId) {
+    ) public virtual _uniqueSchemaId(schema.id) _validIssuer(schema.issuerId) {
         schema.requireValidId();
         schema.requireName();
         schema.requireVersion();
