@@ -11,17 +11,13 @@ import { IssuerHasBeenDeactivated, IssuerNotFound, SchemaAlreadyExist, SchemaNot
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { Schema, SchemaWithMetadata } from "./SchemaTypes.sol";
 import { SchemaValidator } from "./SchemaValidator.sol";
+import { CLRegistry } from "./CLRegistry.sol";
 import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
 using SchemaValidator for Schema;
 using { toSlice } for string;
 
-contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable {
-    /**
-     * @dev Reference to the contract that manages DIDs
-     */
-    DidRegistryInterface private _didRegistry;
-
+contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable, CLRegistry {
     /**
      * Mapping Schema ID to its Schema Details and Metadata.
      */
@@ -41,26 +37,6 @@ contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable {
     modifier _schemaExist(string memory id) {
         if (_schemas[id].metadata.created == 0) revert SchemaNotFound(id);
         _;
-    }
-
-    /**
-     * Checks that the Issuer DID exist, controlled by sender, and active
-     */
-    // FIXME: this function is duplicated at CredentialDefinitionRegistry smart contract
-    //  Find a way how to avoid duplication - for example add common CLRegistryLibrary
-    modifier _validIssuer(string memory id) {
-        try _didRegistry.resolveDid(id) returns (DidDocumentStorage memory didDocumentStorage) {
-            if (msg.sender != didDocumentStorage.metadata.creator)
-                revert SenderIsNotIssuerDidOwner(msg.sender, didDocumentStorage.metadata.creator);
-            if (didDocumentStorage.metadata.deactivated) revert IssuerHasBeenDeactivated(id);
-            _;
-        } catch (bytes memory reason) {
-            if (Errors.equals(reason, DidNotFound.selector)) {
-                revert IssuerNotFound(id);
-            }
-
-            Errors.rethrow(reason);
-        }
     }
 
     function initialize(address didRegistryAddress, address upgradeControlAddress) public reinitializer(1) {

@@ -11,18 +11,14 @@ import { CredentialDefinition, CredentialDefinitionWithMetadata } from "./Creden
 import { CredentialDefinitionRegistryInterface } from "./CredentialDefinitionRegistryInterface.sol";
 import { CredentialDefinitionValidator } from "./CredentialDefinitionValidator.sol";
 import { CredentialDefinitionAlreadyExist, CredentialDefinitionNotFound, IssuerHasBeenDeactivated, IssuerNotFound, SenderIsNotIssuerDidOwner } from "./ClErrors.sol";
+import { CLRegistry } from "./CLRegistry.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
 using CredentialDefinitionValidator for CredentialDefinition;
 using { toSlice } for string;
 
-contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, ControlledUpgradeable {
-    /**
-     * @dev Reference to the contract that manages DIDs
-     */
-    DidRegistryInterface private _didRegistry;
-
+contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, ControlledUpgradeable, CLRegistry {
     /**
      * @dev Reference to the contract that manages anoncreds schemas
      */
@@ -55,24 +51,6 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
     modifier _schemaExist(string memory id) {
         _schemaRegistry.resolveSchema(id);
         _;
-    }
-
-    /**
-     * Checks that the Issuer DID exist, controlled by sender, and active
-     */
-    modifier _validIssuer(string memory id) {
-        try _didRegistry.resolveDid(id) returns (DidDocumentStorage memory didDocumentStorage) {
-            if (msg.sender != didDocumentStorage.metadata.creator)
-                revert SenderIsNotIssuerDidOwner(msg.sender, didDocumentStorage.metadata.creator);
-            if (didDocumentStorage.metadata.deactivated) revert IssuerHasBeenDeactivated(id);
-            _;
-        } catch (bytes memory reason) {
-            if (Errors.equals(reason, DidNotFound.selector)) {
-                revert IssuerNotFound(id);
-            }
-
-            Errors.rethrow(reason);
-        }
     }
 
     function initialize(
