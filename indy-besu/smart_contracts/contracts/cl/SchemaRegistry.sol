@@ -46,11 +46,12 @@ contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable {
     /**
      * Checks that the Issuer DID exist, controlled by sender, and active
      */
+    // FIXME: this function is duplicated at CredentialDefinitionRegistry smart contract
+    //  Find a way how to avoid duplication - for example add common CLRegistryLibrary
     modifier _validIssuer(string memory id) {
         try _didRegistry.resolveDid(id) returns (DidDocumentStorage memory didDocumentStorage) {
             if (msg.sender != didDocumentStorage.metadata.creator)
                 revert SenderIsNotIssuerDidOwner(msg.sender, didDocumentStorage.metadata.creator);
-            _;
             if (didDocumentStorage.metadata.deactivated) revert IssuerHasBeenDeactivated(id);
             _;
         } catch (bytes memory reason) {

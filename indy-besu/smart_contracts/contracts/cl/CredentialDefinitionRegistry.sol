@@ -64,7 +64,6 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
         try _didRegistry.resolveDid(id) returns (DidDocumentStorage memory didDocumentStorage) {
             if (msg.sender != didDocumentStorage.metadata.creator)
                 revert SenderIsNotIssuerDidOwner(msg.sender, didDocumentStorage.metadata.creator);
-            _;
             if (didDocumentStorage.metadata.deactivated) revert IssuerHasBeenDeactivated(id);
             _;
         } catch (bytes memory reason) {
