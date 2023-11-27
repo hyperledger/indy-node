@@ -30,17 +30,18 @@ pub struct SchemaMetadata {
     pub created: u128,
 }
 
-impl Into<ContractParam> for Schema {
-    fn into(self) -> ContractParam {
-        trace!("Schema: {:?} convert into ContractParam has started", self);
+impl From<Schema> for ContractParam {
+    fn from(value: Schema) -> Self {
+        trace!("Schema: {:?} convert into ContractParam has started", value);
 
         let schema_contract_param = ContractParam::Tuple(vec![
-            ContractParam::String(self.id.value().to_string()),
-            ContractParam::String(self.issuer_id.value().to_string()),
-            ContractParam::String(self.name.to_string()),
-            ContractParam::String(self.version.to_string()),
+            ContractParam::String(value.id.value().to_string()),
+            ContractParam::String(value.issuer_id.value().to_string()),
+            ContractParam::String(value.name.to_string()),
+            ContractParam::String(value.version.to_string()),
             ContractParam::Array(
-                self.attr_names
+                value
+                    .attr_names
                     .iter()
                     .map(|attr_name| ContractParam::String(attr_name.to_string()))
                     .collect(),
@@ -49,7 +50,7 @@ impl Into<ContractParam> for Schema {
 
         trace!(
             "Schema: {:?} convert into ContractParam has finished. Result: {:?}",
-            self,
+            value,
             schema_contract_param
         );
 
@@ -139,21 +140,21 @@ pub mod test {
     use super::*;
     use crate::{contracts::did::types::did_doc::test::ISSUER_ID, utils::rand_string};
 
-    pub const SCHEMA_ID: &'static str =
+    pub const SCHEMA_ID: &str =
         "did:indy2:testnet:3LpjszkgTmE3qThge25FZw/anoncreds/v0/SCHEMA/F1DClaFEzi3t/1.0.0";
-    pub const SCHEMA_NAME: &'static str = "F1DClaFEzi3t";
-    pub const SCHEMA_VERSION: &'static str = "1.0.0";
-    pub const SCHEMA_ATTRIBUTE_FIRST_NAME: &'static str = "First Name";
-    pub const SCHEMA_ATTRIBUTE_LAST_NAME: &'static str = "Last Name";
+    pub const SCHEMA_NAME: &str = "F1DClaFEzi3t";
+    pub const SCHEMA_VERSION: &str = "1.0.0";
+    pub const SCHEMA_ATTRIBUTE_FIRST_NAME: &str = "First Name";
+    pub const SCHEMA_ATTRIBUTE_LAST_NAME: &str = "Last Name";
 
     pub fn schema_id(issuer_id: &DID, name: &str) -> SchemaId {
         SchemaId::build(issuer_id, name, SCHEMA_VERSION)
     }
 
     pub fn schema(issuer_id: &DID, name: Option<&str>) -> Schema {
-        let name = name.map(String::from).unwrap_or_else(|| rand_string());
+        let name = name.map(String::from).unwrap_or_else(rand_string);
         Schema {
-            id: schema_id(&issuer_id, name.as_str()),
+            id: schema_id(issuer_id, name.as_str()),
             issuer_id: issuer_id.clone(),
             name,
             version: SCHEMA_VERSION.to_string(),

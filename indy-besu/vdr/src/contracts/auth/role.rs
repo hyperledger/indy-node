@@ -17,16 +17,16 @@ pub enum Role {
 pub type HasRole = bool;
 pub type RoleIndex = u8;
 
-impl Into<ContractParam> for Role {
-    fn into(self) -> ContractParam {
-        trace!("Role: {:?} convert into ContractParam has started", self);
+impl From<Role> for ContractParam {
+    fn from(value: Role) -> Self {
+        trace!("Role: {:?} convert into ContractParam has started", value);
 
-        let role_index: RoleIndex = self.into();
+        let role_index: RoleIndex = value.into();
         let role_contract_param = ContractParam::Uint(role_index.into());
 
         trace!(
             "Role: {:?} convert into ContractParam has finished. Result: {:?}",
-            self,
+            value,
             role_contract_param
         );
 
@@ -53,15 +53,15 @@ impl TryFrom<ContractOutput> for Role {
     }
 }
 
-impl Into<RoleIndex> for Role {
-    fn into(self) -> RoleIndex {
-        trace!("Role: {:?} convert into RoleIndex has started", self);
+impl From<Role> for RoleIndex {
+    fn from(value: Role) -> Self {
+        trace!("Role: {:?} convert into RoleIndex has started", value);
 
-        let role_index = self as u8;
+        let role_index = value as u8;
 
         trace!(
             "Role: {:?} convert into RoleIndex has finished. Result: {}",
-            self,
+            value,
             role_index
         );
 

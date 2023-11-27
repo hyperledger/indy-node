@@ -55,16 +55,20 @@ impl Client for Web3Client {
             transaction
         );
 
-        let signer = self.signer.as_ref().ok_or_else(|| {
-            let vdr_error = VdrError::ClientInvalidState("Signer is not set".to_string());
+        let signer = self
+            .signer
+            .as_ref()
+            .ok_or_else(|| {
+                let vdr_error = VdrError::ClientInvalidState("Signer is not set".to_string());
 
-            warn!(
-                "Error: {} during signing transaction: {:?}",
-                vdr_error, transaction
-            );
+                warn!(
+                    "Error: {} during signing transaction: {:?}",
+                    vdr_error, transaction
+                );
 
-            vdr_error
-        })?;
+                vdr_error
+            })?
+            .as_ref();
         let account = transaction.from.clone().ok_or_else(|| {
             let vdr_error =
                 VdrError::ClientInvalidTransaction("Missing sender address".to_string());

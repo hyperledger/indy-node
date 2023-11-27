@@ -36,25 +36,25 @@ pub struct CredentialDefinitionMetadata {
     pub created: u128,
 }
 
-impl Into<ContractParam> for CredentialDefinition {
-    fn into(self) -> ContractParam {
+impl From<CredentialDefinition> for ContractParam {
+    fn from(value: CredentialDefinition) -> Self {
         trace!(
             "CredentialDefinition: {:?} convert into ContractParam has started",
-            self
+            value
         );
 
         let cred_def_contract_param = ContractParam::Tuple(vec![
-            ContractParam::String(self.id.value().to_string()),
-            ContractParam::String(self.issuer_id.value().to_string()),
-            ContractParam::String(self.schema_id.value().to_string()),
-            ContractParam::String(self.cred_def_type.to_string()),
-            ContractParam::String(self.tag.to_string()),
-            ContractParam::String(self.value.to_string()),
+            ContractParam::String(value.id.value().to_string()),
+            ContractParam::String(value.issuer_id.value().to_string()),
+            ContractParam::String(value.schema_id.value().to_string()),
+            ContractParam::String(value.cred_def_type.to_string()),
+            ContractParam::String(value.tag.to_string()),
+            ContractParam::String(value.value.to_string()),
         ]);
 
         trace!(
             "CredentialDefinition: {:?} convert into ContractParam has finished. Result: {:?}",
-            self,
+            value,
             cred_def_contract_param
         );
 
@@ -161,9 +161,9 @@ pub mod test {
     };
     use serde_json::json;
 
-    pub const _CREDENTIAL_DEFINITION_ID: &'static str = "did:indy2:testnet:3LpjszkgTmE3qThge25FZw/anoncreds/v0/CLAIM_DEF/did:indy2:testnet:3LpjszkgTmE3qThge25FZw/anoncreds/v0/SCHEMA/F1DClaFEzi3t/1.0.0/default";
-    pub const CREDENTIAL_DEFINITION_TAG: &'static str = "default";
-    pub const CREDENTIAL_DEFINITION_TYPE: &'static str = "CL";
+    pub const _CREDENTIAL_DEFINITION_ID: &str = "did:indy2:testnet:3LpjszkgTmE3qThge25FZw/anoncreds/v0/CLAIM_DEF/did:indy2:testnet:3LpjszkgTmE3qThge25FZw/anoncreds/v0/SCHEMA/F1DClaFEzi3t/1.0.0/default";
+    pub const CREDENTIAL_DEFINITION_TAG: &str = "default";
+    pub const CREDENTIAL_DEFINITION_TYPE: &str = "CL";
 
     pub fn credential_definition_id(
         issuer_id: &DID,
@@ -188,11 +188,11 @@ pub mod test {
         schema_id: &SchemaId,
         tag: Option<&str>,
     ) -> CredentialDefinition {
-        let tag = tag.map(String::from).unwrap_or_else(|| rand_string());
+        let tag = tag.map(String::from).unwrap_or_else(rand_string);
         CredentialDefinition {
-            id: credential_definition_id(&issuer_id, schema_id, tag.as_str()),
+            id: credential_definition_id(issuer_id, schema_id, tag.as_str()),
             issuer_id: issuer_id.clone(),
-            schema_id: SchemaId::new(&schema_id.value().to_string()),
+            schema_id: SchemaId::new(schema_id.value()),
             cred_def_type: CREDENTIAL_DEFINITION_TYPE.to_string(),
             tag: tag.to_string(),
             value: credential_definition_value(),

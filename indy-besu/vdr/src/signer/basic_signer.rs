@@ -96,10 +96,10 @@ pub mod test {
     pub static TRUSTEE2_ACC: Lazy<Address> =
         Lazy::new(|| Address::new("0xca843569e3427144cead5e4d5999a3d0ccf92b8e"));
 
-    pub const TRUSTEE_PRIVATE_KEY: &'static str =
+    pub const TRUSTEE_PRIVATE_KEY: &str =
         "8bbbb1b345af56b560a5b20bd4b0ed1cd8cc9958a16262bc75118453cb546df7";
 
-    pub const TRUSTEE2_PRIVATE_KEY: &'static str =
+    pub const TRUSTEE2_PRIVATE_KEY: &str =
         "4762e04d10832808a0aebdaa79c12de54afbe006bfffd228b3abcc494fe986f9";
 
     pub fn basic_signer() -> BasicSigner {
