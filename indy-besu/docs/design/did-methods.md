@@ -16,21 +16,7 @@ It is up to a User which DID method to use.
 Ethereum DID Method `did:ethr` described in
 the [specification](https://github.com/decentralized-identity/ethr-did-resolver/blob/master/doc/did-method-spec.md).
 
-### DID Syntax
-
-| parameter        | value                                                   |
-|------------------|---------------------------------------------------------|
-| did              | “did:” method-name “:” namespace “:” method-specific-id |
-| method-name      | "ethr"                                                  |
-| namespace        | “testnet”/"mainnet"                                     |
-| network-chain-id | "0x" *HEXDIG                                            |
-| ethereum-address | "0x" 40*HEXDIG                                          |
-| public-key-hex   | "0x" 66*HEXDIG                                          |
-
-Resource identifier refers to either the ethereum address or secp256k1 public key of an identity associated with this
-DID `0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266`.
-
-Example DID: `did:indy2:0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266`
+Example DID: `did:ethr:0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266`
 
 ## Indy2 DID method: did:indy2 - Indy/Sov DID methods adoption
 
