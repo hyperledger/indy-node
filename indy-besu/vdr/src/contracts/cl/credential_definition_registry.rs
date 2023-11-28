@@ -48,7 +48,7 @@ impl CredentialDefinitionRegistry {
             .add_param(credential_definition.clone().into())
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result: {:?}",
@@ -83,7 +83,7 @@ impl CredentialDefinitionRegistry {
             .set_method(Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION)
             .add_param(ContractParam::String(id.value().into()))
             .set_type(TransactionType::Read)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result: {:?}",
@@ -116,7 +116,7 @@ impl CredentialDefinitionRegistry {
         let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_RESOLVE_CREDENTIAL_DEFINITION)
-            .parse::<CredentialDefinitionWithMeta>(&client, bytes)
+            .parse::<CredentialDefinitionWithMeta>(client, bytes)
             .map(|credential_definition_with_meta| {
                 credential_definition_with_meta.credential_definition
             });

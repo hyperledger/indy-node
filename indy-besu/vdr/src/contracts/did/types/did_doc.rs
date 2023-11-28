@@ -8,7 +8,7 @@ use log::{trace, warn};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
-pub const CONTEXT: &'static str = "https://www.w3.org/ns/did/v1";
+pub const CONTEXT: &str = "https://www.w3.org/ns/did/v1";
 
 #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 pub struct DID(String);
@@ -245,18 +245,18 @@ impl Default for StringOrVector {
     }
 }
 
-impl Into<ContractParam> for VerificationMethod {
-    fn into(self) -> ContractParam {
+impl From<VerificationMethod> for ContractParam {
+    fn from(value: VerificationMethod) -> Self {
         trace!(
             "VerificationMethod: {:?} convert into ContractParam has started",
-            self
+            value
         );
 
-        let public_key_jwk = match self.verification_key {
+        let public_key_jwk = match value.verification_key {
             VerificationKey::JWK { ref public_key_jwk } => json!(public_key_jwk).to_string(),
             _ => "".to_string(),
         };
-        let public_key_multibase = match self.verification_key {
+        let public_key_multibase = match value.verification_key {
             VerificationKey::Multibase {
                 public_key_multibase,
             } => public_key_multibase,
@@ -264,9 +264,9 @@ impl Into<ContractParam> for VerificationMethod {
         };
 
         let ver_method_contract_param = ContractParam::Tuple(vec![
-            ContractParam::String(self.id.to_string()),
-            ContractParam::String(self.type_.to_string()),
-            ContractParam::String(self.controller.to_string()),
+            ContractParam::String(value.id.to_string()),
+            ContractParam::String(value.type_.to_string()),
+            ContractParam::String(value.controller.to_string()),
             ContractParam::String(public_key_jwk),
             ContractParam::String(public_key_multibase),
         ]);
@@ -309,7 +309,7 @@ impl TryFrom<ContractOutput> for VerificationMethod {
             }
         } else if !public_key_multibase.is_empty() {
             VerificationKey::Multibase {
-                public_key_multibase: public_key_multibase.to_string(),
+                public_key_multibase,
             }
         } else {
             let vdr_error = VdrError::ContractInvalidResponseData(
@@ -356,16 +356,16 @@ impl VerificationMethod {
     }
 }
 
-impl Into<ContractParam> for VerificationMethodOrReference {
-    fn into(self) -> ContractParam {
+impl From<VerificationMethodOrReference> for ContractParam {
+    fn from(value: VerificationMethodOrReference) -> Self {
         trace!(
             "VerificationMethodOrReference: {:?} convert into ContractParam has started",
-            self
+            value
         );
 
-        let token = match self {
+        let token = match value {
             VerificationMethodOrReference::String(reference) => ContractParam::Tuple(vec![
-                ContractParam::String(reference.to_string()),
+                ContractParam::String(reference),
                 VerificationMethod::empty(),
             ]),
             VerificationMethodOrReference::VerificationMethod(verification_method) => {
@@ -413,14 +413,14 @@ impl TryFrom<ContractOutput> for VerificationMethodOrReference {
     }
 }
 
-impl Into<ContractParam> for StringOrVector {
-    fn into(self) -> ContractParam {
+impl From<StringOrVector> for ContractParam {
+    fn from(value: StringOrVector) -> Self {
         trace!(
             "StringOrVector convert into ContractParam: {:?} has started",
-            self
+            value
         );
 
-        let contract_param = match self {
+        let contract_param = match value {
             StringOrVector::String(ref value) => {
                 ContractParam::Array(vec![ContractParam::String(value.to_string())])
             }
@@ -434,7 +434,7 @@ impl Into<ContractParam> for StringOrVector {
 
         trace!(
             "StringOrVector convert into ContractParam: {:?} has started. Result: {:?}",
-            self,
+            value,
             contract_param
         );
 
@@ -442,13 +442,16 @@ impl Into<ContractParam> for StringOrVector {
     }
 }
 
-impl Into<ContractParam> for Service {
-    fn into(self) -> ContractParam {
-        trace!("Service: {:?} convert into ContractParam has started", self);
+impl From<Service> for ContractParam {
+    fn from(value: Service) -> Self {
+        trace!(
+            "Service: {:?} convert into ContractParam has started",
+            value
+        );
 
-        let (endpoint, accept, routing_keys) = match self.service_endpoint {
+        let (endpoint, accept, routing_keys) = match value.service_endpoint {
             ServiceEndpoint::String(endpoint) => (
-                ContractParam::String(endpoint.to_string()),
+                ContractParam::String(endpoint),
                 ContractParam::Array(vec![]),
                 ContractParam::Array(vec![]),
             ),
@@ -473,8 +476,8 @@ impl Into<ContractParam> for Service {
         };
 
         let service_contract_param = ContractParam::Tuple(vec![
-            ContractParam::String(self.id.to_string()),
-            ContractParam::String(self.type_.to_string()),
+            ContractParam::String(value.id.to_string()),
+            ContractParam::String(value.type_.to_string()),
             endpoint,
             accept,
             routing_keys,
@@ -520,59 +523,66 @@ impl TryFrom<ContractOutput> for Service {
     }
 }
 
-impl Into<ContractParam> for DidDocument {
-    fn into(self) -> ContractParam {
+impl From<DidDocument> for ContractParam {
+    fn from(value: DidDocument) -> Self {
         trace!(
             "DidDocument: {:?} convert into ContractParam has started",
-            self
+            value
         );
 
-        let context: ContractParam = self.context.into();
-        let id = ContractParam::String(self.id.value().to_string());
-        let controller: ContractParam = self.controller.into();
+        let context: ContractParam = value.context.into();
+        let id = ContractParam::String(value.id.value().to_string());
+        let controller: ContractParam = value.controller.into();
         let verification_method: ContractParam = ContractParam::Array(
-            self.verification_method
+            value
+                .verification_method
                 .into_iter()
                 .map(VerificationMethod::into)
                 .collect(),
         );
         let authentication: ContractParam = ContractParam::Array(
-            self.authentication
+            value
+                .authentication
                 .into_iter()
                 .map(VerificationMethodOrReference::into)
                 .collect(),
         );
         let assertion_method: ContractParam = ContractParam::Array(
-            self.assertion_method
+            value
+                .assertion_method
                 .into_iter()
                 .map(VerificationMethodOrReference::into)
                 .collect(),
         );
         let capability_invocation: ContractParam = ContractParam::Array(
-            self.capability_invocation
+            value
+                .capability_invocation
                 .into_iter()
                 .map(VerificationMethodOrReference::into)
                 .collect(),
         );
         let capability_delegation: ContractParam = ContractParam::Array(
-            self.capability_delegation
+            value
+                .capability_delegation
                 .into_iter()
                 .map(VerificationMethodOrReference::into)
                 .collect(),
         );
         let key_agreement: ContractParam = ContractParam::Array(
-            self.key_agreement
+            value
+                .key_agreement
                 .into_iter()
                 .map(VerificationMethodOrReference::into)
                 .collect(),
         );
         let service: ContractParam =
-            ContractParam::Array(self.service.into_iter().map(Service::into).collect());
+            ContractParam::Array(value.service.into_iter().map(Service::into).collect());
         let also_known_as: ContractParam = ContractParam::Array(
-            self.also_known_as
+            value
+                .also_known_as
                 .unwrap_or_default()
                 .into_iter()
-                .map(|also_known_as| ContractParam::String(also_known_as))
+                .map(ContractParam::String)
                 .collect(),
         );
 
@@ -733,12 +743,12 @@ pub mod test {
     use super::*;
     use crate::utils::rand_bytes;
 
-    pub const ISSUER_ID: &'static str = "did:indy2:testnet:3LpjszkgTmE3qThge25FZw";
-    pub const CONTEXT: &'static str = "https://www.w3.org/ns/did/v1";
-    pub const MULTIBASE_KEY: &'static str = "zAKJP3f7BD6W4iWEQ9jwndVTCBq8ua2Utt8EEjJ6Vxsf";
-    pub const SERVICE_ENDPOINT: &'static str = "https://example.com/path";
-    pub const SERVICE_TYPE: &'static str = "DIDCommMessaging";
-    pub const KEY_1: &'static str = "KEY-1";
+    pub const ISSUER_ID: &str = "did:indy2:testnet:3LpjszkgTmE3qThge25FZw";
+    pub const CONTEXT: &str = "https://www.w3.org/ns/did/v1";
+    pub const MULTIBASE_KEY: &str = "zAKJP3f7BD6W4iWEQ9jwndVTCBq8ua2Utt8EEjJ6Vxsf";
+    pub const SERVICE_ENDPOINT: &str = "https://example.com/path";
+    pub const SERVICE_TYPE: &str = "DIDCommMessaging";
+    pub const KEY_1: &str = "KEY-1";
 
     pub fn verification_method(id: &str) -> VerificationMethod {
         VerificationMethod {
@@ -775,7 +785,7 @@ pub mod test {
     }
 
     pub fn did_doc(id: Option<&str>) -> DidDocument {
-        let id = id.map(String::from).unwrap_or_else(|| new_id());
+        let id = id.map(String::from).unwrap_or_else(new_id);
         DidDocument {
             context: StringOrVector::Vector(vec![CONTEXT.to_string()]),
             id: DID::new(&id),

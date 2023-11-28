@@ -44,7 +44,7 @@ impl ValidatorControl {
             .add_param(validator_address.clone().try_into()?)
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result: {:?}",
@@ -82,7 +82,7 @@ impl ValidatorControl {
             .add_param(validator_address.clone().try_into()?)
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result: {:?}",
@@ -107,7 +107,7 @@ impl ValidatorControl {
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_GET_VALIDATORS)
             .set_type(TransactionType::Read)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result: {:?}",
@@ -139,7 +139,7 @@ impl ValidatorControl {
         let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_GET_VALIDATORS)
-            .parse::<ValidatorAddresses>(&client, bytes);
+            .parse::<ValidatorAddresses>(client, bytes);
 
         info!(
             "{} result parse has finished. Result: {:?}",

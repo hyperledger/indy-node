@@ -47,7 +47,7 @@ impl SchemaRegistry {
             .add_param(schema.clone().into())
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result: {:?}",
@@ -81,7 +81,7 @@ impl SchemaRegistry {
             .set_method(Self::METHOD_RESOLVE_SCHEMA)
             .add_param(ContractParam::String(id.value().into()))
             .set_type(TransactionType::Read)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result: {:?}",
@@ -110,7 +110,7 @@ impl SchemaRegistry {
         let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_RESOLVE_SCHEMA)
-            .parse::<SchemaWithMeta>(&client, bytes)
+            .parse::<SchemaWithMeta>(client, bytes)
             .map(|schema_with_meta| schema_with_meta.schema);
 
         info!(

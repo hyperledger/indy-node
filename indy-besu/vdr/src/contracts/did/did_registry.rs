@@ -47,7 +47,7 @@ impl DidRegistry {
             .add_param(did_doc.clone().into())
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result: {:?}",
@@ -85,7 +85,7 @@ impl DidRegistry {
             .add_param(did_doc.clone().into())
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result: {:?}",
@@ -123,7 +123,7 @@ impl DidRegistry {
             .add_param(ContractParam::String(did.value().to_string()))
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result: {:?}",
@@ -157,7 +157,7 @@ impl DidRegistry {
             .set_method(Self::METHOD_RESOLVE_DID)
             .add_param(ContractParam::String(did.value().to_string()))
             .set_type(TransactionType::Read)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result: {:?}",
@@ -186,7 +186,7 @@ impl DidRegistry {
         let result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_RESOLVE_DID)
-            .parse::<DidDocumentWithMeta>(&client, bytes)
+            .parse::<DidDocumentWithMeta>(client, bytes)
             .map(|did_with_meta| did_with_meta.document);
 
         info!(

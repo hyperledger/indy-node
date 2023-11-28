@@ -44,11 +44,11 @@ impl RoleControl {
         let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_ASSIGN_ROLE)
-            .add_param(role.clone().into())
+            .add_param((*role).into())
             .add_param(account.clone().try_into()?)
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result: {:?}",
@@ -86,11 +86,11 @@ impl RoleControl {
         let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_REVOKE_ROLE)
-            .add_param(role.clone().into())
+            .add_param((*role).into())
             .add_param(account.clone().try_into()?)
             .set_type(TransactionType::Write)
             .set_from(from)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result: {:?}",
@@ -125,10 +125,10 @@ impl RoleControl {
         let transaction = TransactionBuilder::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_HAS_ROLE)
-            .add_param(role.clone().into())
+            .add_param((*role).into())
             .add_param(account.clone().try_into()?)
             .set_type(TransactionType::Read)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result {:?}",
@@ -162,7 +162,7 @@ impl RoleControl {
             .set_method(Self::METHOD_GET_ROLE)
             .add_param(account.clone().try_into()?)
             .set_type(TransactionType::Read)
-            .build(&client);
+            .build(client);
 
         info!(
             "{} txn build has finished. Result: {:?}",
@@ -191,7 +191,7 @@ impl RoleControl {
         let parse_result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_HAS_ROLE)
-            .parse::<HasRole>(&client, bytes);
+            .parse::<HasRole>(client, bytes);
 
         info!(
             "{} result parse has finished. Result: {:?}",
@@ -220,7 +220,7 @@ impl RoleControl {
         let parse_result = TransactionParser::new()
             .set_contract(Self::CONTRACT_NAME)
             .set_method(Self::METHOD_GET_ROLE)
-            .parse::<Role>(&client, bytes);
+            .parse::<Role>(client, bytes);
 
         info!(
             "{} result parse has finished. Result: {:?}",
@@ -375,7 +375,7 @@ pub mod test {
         utils::init_env_logger,
     };
 
-    pub const NEW_ACCOUNT: &'static str = "0x0886328869e4e1f401e1052a5f4aae8b45f42610";
+    pub const NEW_ACCOUNT: &str = "0x0886328869e4e1f401e1052a5f4aae8b45f42610";
 
     fn account() -> Address {
         Address::new(NEW_ACCOUNT)

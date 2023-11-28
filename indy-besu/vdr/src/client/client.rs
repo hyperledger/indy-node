@@ -31,7 +31,7 @@ impl LedgerClient {
     pub fn new(
         chain_id: u64,
         node_address: &str,
-        contract_configs: &Vec<ContractConfig>,
+        contract_configs: &[ContractConfig],
         // TODO: It is simplier to just pass signer only into corresponding `sign_transaction` function.
         //  But we also have single step functions like `create_did` where we will have to pass call back as well
         //  Transaction methods already depends on the client, so it make sence to accept signer on client create
@@ -45,7 +45,7 @@ impl LedgerClient {
         );
 
         let client = Web3Client::new(node_address, signer)?;
-        let contracts = Self::init_contracts(&client, &contract_configs)?;
+        let contracts = Self::init_contracts(&client, contract_configs)?;
 
         let ledger_client = LedgerClient {
             chain_id,
@@ -77,7 +77,7 @@ impl LedgerClient {
     /// # Returns
     ///  signed transaction to submit
     pub async fn sign_transaction(&self, transaction: &Transaction) -> VdrResult<Transaction> {
-        self.client.sign_transaction(&transaction).await
+        self.client.sign_transaction(transaction).await
     }
 
     /// Submit prepared transaction to the ledger
@@ -91,8 +91,8 @@ impl LedgerClient {
     ///    depending on the type it will be either result bytes or block hash
     pub async fn submit_transaction(&self, transaction: &Transaction) -> VdrResult<Vec<u8>> {
         match transaction.type_ {
-            TransactionType::Read => self.client.call_transaction(&transaction).await,
-            TransactionType::Write => self.client.submit_transaction(&transaction).await,
+            TransactionType::Read => self.client.call_transaction(transaction).await,
+            TransactionType::Write => self.client.submit_transaction(transaction).await,
         }
     }
 
@@ -108,19 +108,22 @@ impl LedgerClient {
     }
 
     pub(crate) async fn sign_and_submit(&self, transaction: &Transaction) -> VdrResult<String> {
-        let signed_transaction = self.sign_transaction(&transaction).await?;
+        let signed_transaction = self.sign_transaction(transaction).await?;
         let block_hash = self.submit_transaction(&signed_transaction).await?;
         self.get_receipt(&block_hash).await
     }
 
-    pub(crate) fn contract(&self, name: &str) -> VdrResult<&Box<dyn Contract>> {
-        self.contracts.get(name).ok_or_else(|| {
-            let vdr_error = VdrError::ContractInvalidName(name.to_string());
+    pub(crate) fn contract(&self, name: &str) -> VdrResult<&dyn Contract> {
+        self.contracts
+            .get(name)
+            .map(|contract| contract.as_ref())
+            .ok_or_else(|| {
+                let vdr_error = VdrError::ContractInvalidName(name.to_string());
 
-            warn!("Error during getting contract: {:?}", vdr_error);
+                warn!("Error during getting contract: {:?}", vdr_error);
 
-            vdr_error
-        })
+                vdr_error
+            })
     }
 
     pub(crate) fn chain_id(&self) -> u64 {
@@ -149,22 +152,19 @@ pub mod test {
     use std::{env, fs};
 
     pub const CHAIN_ID: u64 = 1337;
-    pub const NODE_ADDRESS: &'static str = "http://127.0.0.1:8545";
-    pub const CONTRACTS_SPEC_BASE_PATH: &'static str = "../smart_contracts/artifacts/contracts/";
-    pub const DID_REGISTRY_ADDRESS: &'static str = "0x0000000000000000000000000000000000003333";
-    pub const DID_REGISTRY_SPEC_PATH: &'static str = "did/DidRegistry.sol/DidRegistry.json";
-    pub const SCHEMA_REGISTRY_ADDRESS: &'static str = "0x0000000000000000000000000000000000005555";
-    pub const SCHEMA_REGISTRY_SPEC_PATH: &'static str = "cl/SchemaRegistry.sol/SchemaRegistry.json";
-    pub const CRED_DEF_REGISTRY_ADDRESS: &'static str =
-        "0x0000000000000000000000000000000000004444";
-    pub const CRED_DEF_REGISTRY_SPEC_PATH: &'static str =
+    pub const NODE_ADDRESS: &str = "http://127.0.0.1:8545";
+    pub const CONTRACTS_SPEC_BASE_PATH: &str = "../smart_contracts/artifacts/contracts/";
+    pub const DID_REGISTRY_ADDRESS: &str = "0x0000000000000000000000000000000000003333";
+    pub const DID_REGISTRY_SPEC_PATH: &str = "did/DidRegistry.sol/DidRegistry.json";
+    pub const SCHEMA_REGISTRY_ADDRESS: &str = "0x0000000000000000000000000000000000005555";
+    pub const SCHEMA_REGISTRY_SPEC_PATH: &str = "cl/SchemaRegistry.sol/SchemaRegistry.json";
+    pub const CRED_DEF_REGISTRY_ADDRESS: &str = "0x0000000000000000000000000000000000004444";
+    pub const CRED_DEF_REGISTRY_SPEC_PATH: &str =
         "cl/CredentialDefinitionRegistry.sol/CredentialDefinitionRegistry.json";
-    pub const VALIDATOR_CONTROL_ADDRESS: &'static str =
-        "0x0000000000000000000000000000000000007777";
-    pub const VALIDATOR_CONTROL_PATH: &'static str =
-        "network/ValidatorControl.sol/ValidatorControl.json";
-    pub const ROLE_CONTROL_ADDRESS: &'static str = "0x0000000000000000000000000000000000006666";
-    pub const ROLE_CONTROL_PATH: &'static str = "auth/RoleControl.sol/RoleControl.json";
+    pub const VALIDATOR_CONTROL_ADDRESS: &str = "0x0000000000000000000000000000000000007777";
+    pub const VALIDATOR_CONTROL_PATH: &str = "network/ValidatorControl.sol/ValidatorControl.json";
+    pub const ROLE_CONTROL_ADDRESS: &str = "0x0000000000000000000000000000000000006666";
+    pub const ROLE_CONTROL_PATH: &str = "auth/RoleControl.sol/RoleControl.json";
 
     fn build_contract_path(contract_path: &str) -> String {
         let mut cur_dir = env::current_dir().unwrap();
@@ -203,7 +203,7 @@ pub mod test {
     }
 
     pub fn client(signer: Option<BasicSigner>) -> LedgerClient {
-        let signer = signer.unwrap_or_else(|| basic_signer());
+        let signer = signer.unwrap_or_else(basic_signer);
         LedgerClient::new(CHAIN_ID, NODE_ADDRESS, &contracts(), Some(Box::new(signer))).unwrap()
     }
 
