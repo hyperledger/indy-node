@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 /**
  * @title ValidatorSmartContractInterface
- * @dev The contract interface that is used to getting an allowlist of validators.
+ * @dev The interface that defines function for controlling the list of the network validator nodes
  */
 interface ValidatorSmartContractInterface {
     /**

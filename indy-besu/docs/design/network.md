@@ -1,6 +1,6 @@
-## Validators node management
+# Validators node management
 
-### Storage format
+## Storage format
 
 * Validators list:
     * Description: List of current validator node addresses
