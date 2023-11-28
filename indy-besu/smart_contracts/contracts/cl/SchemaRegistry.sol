@@ -7,28 +7,24 @@ import { DidDocumentStorage } from "../did/DidTypes.sol";
 import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
 import { Errors } from "../utils/Errors.sol";
 
-import { IssuerHasBeenDeactivated, IssuerNotFound, SchemaAlreadyExist, SchemaNotFound } from "./ClErrors.sol";
+import { IssuerHasBeenDeactivated, IssuerNotFound, SchemaAlreadyExist, SchemaNotFound, SenderIsNotIssuerDidOwner } from "./ClErrors.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { Schema, SchemaWithMetadata } from "./SchemaTypes.sol";
 import { SchemaValidator } from "./SchemaValidator.sol";
+import { CLRegistry } from "./CLRegistry.sol";
 import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
 using SchemaValidator for Schema;
 using { toSlice } for string;
 
-contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable {
+contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable, CLRegistry {
     /**
-     * @dev Reference to the contract that manages DIDs
-     */
-    DidRegistryInterface private _didRegistry;
-
-    /**
-     * Mapping Scheman ID to its Schema Details and Metadata.
+     * Mapping Schema ID to its Schema Details and Metadata.
      */
     mapping(string id => SchemaWithMetadata schemaWithMetadata) private _schemas;
 
     /**
-     * Checks the uniqness of the Schema ID
+     * Checks the uniqueness of the Schema ID
      */
     modifier _uniqueSchemaId(string memory id) {
         if (_schemas[id].metadata.created != 0) revert SchemaAlreadyExist(id);
@@ -36,27 +32,11 @@ contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable {
     }
 
     /**
-     * Сhecks that the Schema exist
+     * Checks that the Schema exist
      */
     modifier _schemaExist(string memory id) {
         if (_schemas[id].metadata.created == 0) revert SchemaNotFound(id);
         _;
-    }
-
-    /**
-     * Сhecks that the Issuer exist and active
-     */
-    modifier _issuerActive(string memory id) {
-        try _didRegistry.resolveDid(id) returns (DidDocumentStorage memory didDocumentStorage) {
-            if (didDocumentStorage.metadata.deactivated) revert IssuerHasBeenDeactivated(id);
-            _;
-        } catch (bytes memory reason) {
-            if (Errors.equals(reason, DidNotFound.selector)) {
-                revert IssuerNotFound(id);
-            }
-
-            Errors.rethrow(reason);
-        }
     }
 
     function initialize(address didRegistryAddress, address upgradeControlAddress) public reinitializer(1) {
@@ -67,7 +47,7 @@ contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable {
     /// @inheritdoc SchemaRegistryInterface
     function createSchema(
         Schema calldata schema
-    ) public virtual _uniqueSchemaId(schema.id) _issuerActive(schema.issuerId) {
+    ) public virtual _uniqueSchemaId(schema.id) _validIssuer(schema.issuerId) {
         schema.requireValidId();
         schema.requireName();
         schema.requireVersion();

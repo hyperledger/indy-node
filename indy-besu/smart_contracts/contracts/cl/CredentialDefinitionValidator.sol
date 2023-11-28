@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
-import { FieldRequired, InvalidCredentialDefinitionId, UnsupportedCredentialDefintionType } from "./ClErrors.sol";
+import { FieldRequired, InvalidCredentialDefinitionId, UnsupportedCredentialDefinitionType } from "./ClErrors.sol";
 import { CredentialDefinition } from "./CredentialDefinitionTypes.sol";
 
 using { toSlice } for string;
@@ -32,7 +32,7 @@ library CredentialDefinitionValidator {
      */
     function requireValidType(CredentialDefinition memory self) internal pure {
         if (!self.credDefType.toSlice().eq(_ANONCREDS_TYPE.toSlice())) {
-            revert UnsupportedCredentialDefintionType(self.credDefType);
+            revert UnsupportedCredentialDefinitionType(self.credDefType);
         }
     }
 

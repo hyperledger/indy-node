@@ -51,7 +51,7 @@ error InvalidCredentialDefinitionId(string id);
  * @notice Error that occurs when an unsupported credential definition type is used.
  * @param credDefType Credential definition ID.
  */
-error UnsupportedCredentialDefintionType(string credDefType);
+error UnsupportedCredentialDefinitionType(string credDefType);
 
 /**
  * @notice Error that occurs when trying to create an existing credential definition.
@@ -64,3 +64,10 @@ error CredentialDefinitionAlreadyExist(string id);
  * @param id Credential definition ID.
  */
 error CredentialDefinitionNotFound(string id);
+
+/**
+ * @notice Error that occurs when issuer DID of Schema or CredentialDefinition is not owned by sender.
+ * @param sender Sender account address.
+ * @param owner DID owner account address.
+ */
+error SenderIsNotIssuerDidOwner(address sender, address owner);

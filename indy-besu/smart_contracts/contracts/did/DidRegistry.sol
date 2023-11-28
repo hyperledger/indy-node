@@ -31,7 +31,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     }
 
     /**
-     * Сhecks that the DID has not been deactivated
+     * Checks that the DID has not been deactivated
      */
     modifier _didIsActive(string memory did) {
         if (_dids[did].metadata.deactivated) revert DidHasBeenDeactivated(did);
@@ -39,7 +39,7 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
     }
 
     /**
-     * Сhecks that method was called by did creator
+     * Checks that method was called by did creator
      */
     modifier _senderIsCreator(string memory did) {
         if (msg.sender != _dids[did].metadata.creator)

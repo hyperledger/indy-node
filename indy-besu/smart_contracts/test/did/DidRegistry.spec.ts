@@ -1,11 +1,10 @@
 import { expect } from 'chai'
-import { DidRegistry, VerificationMethod } from '../../contracts-ts/DidRegistry'
-import { RoleControl } from '../../contracts-ts/RoleControl'
+import { VerificationMethod } from '../../contracts-ts/DidRegistry'
 import { createBaseDidDocument } from '../../utils/entity-factories'
 import { deployDidRegistry } from '../utils/contract-helpers'
 import { DidRegex, DidValidator } from '../utils/contract-helpers'
 import { DidError } from '../utils/errors'
-import { getTestAccounts, TestAccounts, ZERO_ADDRESS } from '../utils/test-entities'
+import { TestAccounts } from '../utils/test-entities'
 
 describe('DIDContract', function () {
   let didRegistry: any
@@ -14,19 +13,17 @@ describe('DIDContract', function () {
   let testAccounts: TestAccounts
 
   beforeEach(async function () {
-    const roleControl = await new RoleControl().deployProxy({ params: [ZERO_ADDRESS] })
-
-    testAccounts = await getTestAccounts(roleControl)
-
     const {
       didRegistry: didRegistryInit,
       didValidator: didValidatorInit,
       didRegex: didRegexInit,
+      testAccounts: testAccountsInit,
     } = await deployDidRegistry()
 
     didRegistry = didRegistryInit
     didValidator = didValidatorInit
     didRegex = didRegexInit
+    testAccounts = testAccountsInit
 
     didRegistry.connect(testAccounts.trustee.account)
   })

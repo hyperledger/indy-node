@@ -28,8 +28,8 @@ interface RoleControlInterface {
     /**
      * @dev Function to assign role to an account.
      *
-     * Restrcitions:
-     * - Only senders with certain roles as specified in the access rules are permitted assign specefic roles;
+     * Restrictions:
+     * - Only senders with certain roles as specified in the access rules are permitted assign specific roles;
      * otherwise, the transaction will revert with an `Unauthorized` error.
      *
      * Events:
@@ -44,12 +44,12 @@ interface RoleControlInterface {
     /**
      * @dev Function to revoke role from an account.
      *
-     * Restrcitions:
-     * - Only senders with certain roles as specified in the access rules are permitted revoke specefic roles;
+     * Restrictions:
+     * - Only senders with certain roles as specified in the access rules are permitted revoke specific roles;
      * otherwise, the transaction will revert with an `Unauthorized` error.
      *
      * Events:
-     * - On successful role revokation, will emit a `RoleRevoked` event.
+     * - On successful role revocation, will emit a `RoleRevoked` event.
      *
      * @param role The role to be revoked from the account.
      * @param account The address of the account from which the role will be revoked.

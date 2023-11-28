@@ -21,7 +21,8 @@
     "demo/account": "yarn run-on-besu demos/account-control.ts",
     "demo/upgrade": "yarn run-on-besu demos/upgrade-control.ts",
     "genesis/generate": "ts-node scripts/genesis/generate.ts",
-    "postinstall": "cd ../../ && husky install indy-besu/smart_contracts/.husky"
+    "postinstall": "cd ../../ && husky install indy-besu/smart_contracts/.husky",
+    "solc-compile":  "solc -o compiled-contracts --optimize --bin-runtime  --evm-version=constantinople  @dk1a=$(pwd)/node_modules/@dk1a @openzeppelin=$(pwd)/node_modules/@openzeppelin  contracts/**/*.sol node_modules/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol"
   },
   "license": "Apache-2.0",
   "dependencies": {

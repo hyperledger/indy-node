@@ -5,5 +5,7 @@ cache
 artifacts
 typechain
 typechain-types
+compiled-contracts
+ContractsGenesis.json
 
 .openzeppelin

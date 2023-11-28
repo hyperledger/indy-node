@@ -88,7 +88,7 @@ Contract name: **SchemaRegistry**
         * Schema must have name.
         * Schema must contain at least one attribute.
         * Schema must have version.
-        * Corresponding issuer DID must exist and be active.
+        * Corresponding issuer DID must exist, be active, and owned by sender.
     * Format:
         ```
         SchemaRegistry.createSchema(Schema schema)
@@ -126,7 +126,6 @@ Contract name: **SchemaRegistry**
         "did:indy2:mainnet:Y6LRXGU3ZCpm7yzjVRSaGu/anoncreds/v0/SCHEMA/BasicIdentity/1.0.0"
         )
     * Raised Event: None
-
 
 ## Credential Definition
 
@@ -217,7 +216,7 @@ Contract name: **CredentialDefinitionRegistry**
     * Description: Transaction to create a new AnonCreds Credential Definition
     * Restrictions:
         * Credential Definition must be unique.
-        * Corresponding issuer DID must exist and be active.
+        * Corresponding issuer DID must exist, be active, and owned by sender.
         * Corresponding schema must exist.
     * Format:
         ```
