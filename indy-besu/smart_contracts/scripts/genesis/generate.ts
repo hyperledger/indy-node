@@ -11,6 +11,7 @@ import {
   upgradeControl,
   validatorControl,
 } from './contracts'
+import { ethereumCLRegistry } from './contracts/ethereumCLRegistry'
 
 function main() {
   const contracts = {
@@ -23,6 +24,7 @@ function main() {
     ...didRegistry(),
     ...schemaRegistry(),
     ...credentialDefinitionRegistry(),
+    ...ethereumCLRegistry(),
   }
   writeJson(contracts, outFile)
 }

@@ -8,6 +8,7 @@ import {
   SchemasConfig,
   ValidatorsConfig,
 } from './contracts'
+import { EthereumCLRegistryConfig } from './contracts/ethereumCLRegistry'
 import { UpgradeControlConfig } from './contracts/upgradeControl'
 
 export const compiledContractsFolder = 'compiled-contracts'
@@ -24,6 +25,7 @@ export interface Config {
   schemaRegistry: SchemasConfig
   upgradeControl: UpgradeControlConfig
   validatorControl: ValidatorsConfig
+  ethereumCLRegistry: EthereumCLRegistryConfig
 }
 
 const contractsAddresses = {
@@ -36,6 +38,7 @@ const contractsAddresses = {
   validators: '0x0000000000000000000000000000000000007777',
   accountControl: '0x0000000000000000000000000000000000008888',
   upgradeControl: '0x0000000000000000000000000000000000009999',
+  ethereumCLRegistry: '0x0000000000000000000000000000000000111111',
 }
 
 export const config: Config = {
@@ -157,6 +160,14 @@ export const config: Config = {
         },
       ],
       roleControlContractAddress: contractsAddresses.roles,
+      upgradeControlAddress: contractsAddresses.upgradeControl,
+    },
+  },
+  ethereumCLRegistry: {
+    name: 'EthereumCLRegistry',
+    address: contractsAddresses.ethereumCLRegistry,
+    description: 'Smart contract to manage ethereum CL registry',
+    data: {
       upgradeControlAddress: contractsAddresses.upgradeControl,
     },
   },

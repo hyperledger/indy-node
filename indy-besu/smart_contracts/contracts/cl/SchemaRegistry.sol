@@ -22,6 +22,7 @@ contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable, CLReg
      * Mapping Schema ID to its Schema Details and Metadata.
      */
     mapping(string id => SchemaWithMetadata schemaWithMetadata) private _schemas;
+    mapping(bytes32 id => bool exists) private _schemasAsEvent;
 
     /**
      * Checks the uniqueness of the Schema ID
@@ -57,6 +58,14 @@ contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable, CLReg
         _schemas[schema.id].metadata.created = block.timestamp;
 
         emit SchemaCreated(schema.id, msg.sender);
+    }
+
+    /// @inheritdoc SchemaRegistryInterface
+    function createSchemaAsJson(string calldata id, string calldata schema) public virtual {
+        bytes32 schemaId = keccak256(abi.encodePacked(id));
+        if (_schemasAsEvent[schemaId] == true) revert SchemaAlreadyExist(id);
+        _schemasAsEvent[schemaId] = true;
+        emit SchemaStringCreated(schemaId, schema);
     }
 
     /// @inheritdoc SchemaRegistryInterface

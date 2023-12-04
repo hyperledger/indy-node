@@ -7,6 +7,7 @@ import {
   UpgradeControl,
 } from '../../contracts-ts'
 import { Account, AccountInfo } from '../../utils'
+import { EthereumCLRegistry } from '../../contracts-ts/EthereumCLRegistry'
 
 export class Actor {
   public account: Account
@@ -16,6 +17,7 @@ export class Actor {
   public schemaRegistry!: SchemaRegistry
   public credentialDefinitionRegistry!: CredentialDefinitionRegistry
   public upgradeControl!: UpgradeControl
+  public ethereumCLRegistry!: EthereumCLRegistry
 
   constructor(accountInfo?: AccountInfo) {
     this.account = accountInfo ? new Account(accountInfo) : new Account()
@@ -30,6 +32,7 @@ export class Actor {
       CredentialDefinitionRegistry.defaultAddress,
     )
     this.upgradeControl = await new UpgradeControl(this.account).getInstance(UpgradeControl.defaultAddress)
+    this.ethereumCLRegistry = await new EthereumCLRegistry(this.account).getInstance(EthereumCLRegistry.defaultAddress)
     return this
   }
 

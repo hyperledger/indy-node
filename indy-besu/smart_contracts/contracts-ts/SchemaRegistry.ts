@@ -13,7 +13,16 @@ export class SchemaRegistry extends Contract {
 
   public async createSchema(data: Schema) {
     const tx = await this.instance.createSchema(data)
-    return tx.wait()
+    const result = await tx.wait()
+    console.log(result)
+    return result
+  }
+
+  public async createSchemaAsJson(data: Schema) {
+    const tx = await this.instance.createSchemaAsJson(data.id, JSON.stringify(data))
+    const result = await tx.wait()
+    console.log(result)
+    return result
   }
 
   public async resolveSchema(id: string): Promise<SchemaWithMetadataStruct> {

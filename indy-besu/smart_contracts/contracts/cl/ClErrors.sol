@@ -71,3 +71,9 @@ error CredentialDefinitionNotFound(string id);
  * @param owner DID owner account address.
  */
 error SenderIsNotIssuerDidOwner(address sender, address owner);
+
+/**
+ * @notice Error that occurs when trying to create an already existing resource (Schema or Crdential Definition).
+ * @param id resource ID.
+ */
+error ResourceAlreadyExist(string id);

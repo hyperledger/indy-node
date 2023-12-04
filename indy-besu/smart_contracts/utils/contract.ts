@@ -7,7 +7,7 @@ export class Contract {
 
     protected readonly name: string
     protected readonly signer?: Signer
-    protected instance: any
+    public instance: any
 
     constructor(name: string, sender?: any) {
         this.name = name

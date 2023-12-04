@@ -13,6 +13,14 @@ interface SchemaRegistryInterface {
     event SchemaCreated(string schemaId, address indexed sender);
 
     /**
+     * @dev Event that is sent when a Schema is created using event based approach
+     *
+     * @param schemaId Hash of Schema identifier
+     * @param schema Schema as JSON string
+     */
+    event SchemaStringCreated(bytes32 indexed schemaId, string schema);
+
+    /**
      * @dev Creates a new Schema.
      *
      * Once the Schema is created, this function emits a `SchemaCreated` event
@@ -29,6 +37,14 @@ interface SchemaRegistryInterface {
      * @param schema The new AnonCreds schema.
      */
     function createSchema(Schema calldata schema) external;
+
+    /**
+     * @dev Creates a new Schema using event based approach.
+     *
+     * @param id Identifier of schema.
+     * @param schema The new AnonCreds schema as JSON.
+     */
+    function createSchemaAsJson(string calldata id, string calldata schema) external;
 
     /**
      * @dev Resolve the Schema associated with the given ID.
