@@ -1,14 +1,20 @@
 import { expect } from 'chai'
 import { DidRegistry } from '../../contracts-ts'
 import { createCredentialDefinitionObject } from '../../utils'
-import { createDid, createSchema, deployCredentialDefinitionRegistry } from '../utils/contract-helpers'
+import {
+  createDid,
+  createSchema,
+  deployCredentialDefinitionRegistry,
+  TestableCredentialDefinitionRegistry,
+  TestableSchemaRegistry,
+} from '../utils/contract-helpers'
 import { ClErrors } from '../utils/errors'
 import { TestAccounts } from '../utils/test-entities'
 
 describe('CredentialDefinitionRegistry', function () {
   let didRegistry: DidRegistry
-  let schemaRegistry: any
-  let credentialDefinitionRegistry: any
+  let schemaRegistry: TestableSchemaRegistry
+  let credentialDefinitionRegistry: TestableCredentialDefinitionRegistry
   let testAccounts: TestAccounts
   let schemaId: string
   const issuerId = 'did:indy2:mainnet:SEp33q43PsdP7nDATyySSH'

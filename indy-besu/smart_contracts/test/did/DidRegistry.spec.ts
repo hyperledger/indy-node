@@ -1,13 +1,13 @@
 import { expect } from 'chai'
-import { VerificationMethod } from '../../contracts-ts/DidRegistry'
+import { VerificationMethod } from '../../contracts-ts/types/Did'
 import { createBaseDidDocument } from '../../utils/entity-factories'
-import { deployDidRegistry } from '../utils/contract-helpers'
+import { deployDidRegistry, TestableDidRegistry } from '../utils/contract-helpers'
 import { DidRegex, DidValidator } from '../utils/contract-helpers'
 import { DidError } from '../utils/errors'
 import { TestAccounts } from '../utils/test-entities'
 
 describe('DIDContract', function () {
-  let didRegistry: any
+  let didRegistry: TestableDidRegistry
   let didValidator: DidValidator
   let didRegex: DidRegex
   let testAccounts: TestAccounts

@@ -20,13 +20,13 @@ contract UniversalDidResolver is UniversalDidResolverInterface, ControlledUpgrad
     EthereumDIDRegistry internal _ethereumDIDRegistry;
 
     function initialize(
-        address upgradeControlAddress,
+        address ethereumDIDRegistryAddress,
         address didRegistryddress,
-        address ethereumDIDRegistryAddress
+        address upgradeControlAddress
     ) public reinitializer(1) {
-        _initializeUpgradeControl(upgradeControlAddress);
-        _didRegistry = DidRegistryInterface(didRegistryddress);
         _ethereumDIDRegistry = EthereumDIDRegistry(ethereumDIDRegistryAddress);
+        _didRegistry = DidRegistryInterface(didRegistryddress);
+        _initializeUpgradeControl(upgradeControlAddress);
     }
 
     /// @inheritdoc UniversalDidResolverInterface
@@ -51,6 +51,31 @@ contract UniversalDidResolver is UniversalDidResolverInterface, ControlledUpgrad
 
     function _extractIdentityFromDidEthr(string memory id) internal view returns (address) {
         (, , StrSlice suffix) = id.toSlice().rsplitOnce(_DID_DELIMETER.toSlice());
-        return address(bytes20(bytes(suffix.toString())));
+        return _hexToAddress(suffix.toString());
+    }
+
+    function _hexToAddress(string memory hexString) internal pure returns (address) {
+        bytes memory bytesArray = new bytes(20);
+        for (uint256 i = 0; i < 20; i++) {
+            uint8 byteValue = uint8(_hexCharToByte(hexString, 2 * i) * 16 + _hexCharToByte(hexString, 2 * i + 1));
+            bytesArray[i] = bytes1(byteValue);
+        }
+        return address(bytes20(bytesArray));
+    }
+
+    function _hexCharToByte(string memory s, uint256 index) internal pure returns (uint8) {
+        bytes1 hexChar = bytes(s)[index];
+        if (hexChar >= 0x30 && hexChar <= 0x39) {
+            // ascii 0-9
+            return uint8(hexChar) - 0x30;
+        } else if (hexChar >= 0x61 && hexChar <= 0x66) {
+            // ascii a-f
+            return uint8(hexChar) - 0x57;
+        } else if (hexChar >= 0x41 && hexChar <= 0x46) {
+            // ascii A-F
+            return uint8(hexChar) - 0x37;
+        } else {
+            revert("Invalid hexadecimal character.");
+        }
     }
 }
