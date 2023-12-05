@@ -1,16 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { DidNotFound } from "../did/DidErrors.sol";
-import { DidRegistryInterface } from "../did/DidRegistry.sol";
-import { DidDocumentStorage } from "../did/DidTypes.sol";
+import { UniversalDidResolverInterface } from "../did/UniversalDidResolverInterface.sol";
 import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
-import { Errors } from "../utils/Errors.sol";
 
 import { CredentialDefinition, CredentialDefinitionWithMetadata } from "./CredentialDefinitionTypes.sol";
 import { CredentialDefinitionRegistryInterface } from "./CredentialDefinitionRegistryInterface.sol";
 import { CredentialDefinitionValidator } from "./CredentialDefinitionValidator.sol";
-import { CredentialDefinitionAlreadyExist, CredentialDefinitionNotFound, IssuerHasBeenDeactivated, IssuerNotFound, SenderIsNotIssuerDidOwner } from "./ClErrors.sol";
+import { CredentialDefinitionAlreadyExist, CredentialDefinitionNotFound } from "./ClErrors.sol";
 import { CLRegistry } from "./CLRegistry.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
@@ -54,11 +51,11 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
     }
 
     function initialize(
-        address didRegistryAddress,
+        address issuerValidatorAddress,
         address schemaRegistryAddress,
         address upgradeControlAddress
     ) public reinitializer(1) {
-        _didRegistry = DidRegistryInterface(didRegistryAddress);
+        _didResolver = UniversalDidResolverInterface(issuerValidatorAddress);
         _schemaRegistry = SchemaRegistryInterface(schemaRegistryAddress);
         _initializeUpgradeControl(upgradeControlAddress);
     }

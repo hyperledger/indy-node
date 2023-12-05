@@ -2,6 +2,11 @@
 pragma solidity ^0.8.20;
 
 /**
+ * @dev Error that occurs when the operation is not supported or cannot be performed.
+ */
+error UnsupportedOperation(string operation, string description);
+
+/**
  * @title Errors
  * @dev A library that provides utility functions for error handling.
  */

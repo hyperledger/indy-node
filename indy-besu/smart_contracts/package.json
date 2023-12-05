@@ -22,7 +22,7 @@
     "demo/upgrade": "yarn run-on-besu demos/upgrade-control.ts",
     "genesis/generate": "ts-node scripts/genesis/generate.ts",
     "postinstall": "cd ../../ && husky install indy-besu/smart_contracts/.husky",
-    "solc-compile":  "solc -o compiled-contracts --optimize --bin-runtime  --evm-version=constantinople  @dk1a=$(pwd)/node_modules/@dk1a @openzeppelin=$(pwd)/node_modules/@openzeppelin  contracts/**/*.sol node_modules/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol"
+    "solc-compile": "solc -o compiled-contracts --optimize --bin-runtime  --evm-version=constantinople  @dk1a=$(pwd)/node_modules/@dk1a @openzeppelin=$(pwd)/node_modules/@openzeppelin  contracts/**/*.sol node_modules/@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol"
   },
   "license": "Apache-2.0",
   "dependencies": {
@@ -36,6 +36,7 @@
     "@openzeppelin/contracts": "^5.0.0",
     "async-promise-pool": "^1.0.6",
     "ethers": "6.8.0",
+    "ethr-did-registry": "^1.2.0",
     "fs-extra": "^10.0.0",
     "hardhat-gas-reporter": "^1.0.8",
     "prettier-plugin-solidity": "^1.1.3",
