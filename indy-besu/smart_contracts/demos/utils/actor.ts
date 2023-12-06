@@ -41,6 +41,10 @@ export class Actor {
     return this.account.did
   }
 
+  public get didEthr() {
+    return this.account.didEthr
+  }
+
   public get didDocument() {
     return this.account.didDocument
   }
