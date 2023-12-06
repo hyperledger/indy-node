@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { DidNotFound } from "../did/DidErrors.sol";
+import { DidNotFound, IncorrectDid } from "../did/DidErrors.sol";
 import { DidMetadata } from "../did/DidTypes.sol";
 import { UniversalDidResolverInterface } from "../did/UniversalDidResolverInterface.sol";
 import { Errors } from "../utils/Errors.sol";
-import { IssuerHasBeenDeactivated, IssuerNotFound, SenderIsNotIssuerDidOwner } from "./ClErrors.sol";
+import { InvalidIssuerId, IssuerHasBeenDeactivated, IssuerNotFound, SenderIsNotIssuerDidOwner } from "./ClErrors.sol";
 
 contract CLRegistry {
     /**
@@ -24,9 +24,8 @@ contract CLRegistry {
             }
             if (metadata.deactivated) revert IssuerHasBeenDeactivated(id);
         } catch (bytes memory reason) {
-            if (Errors.equals(reason, DidNotFound.selector)) {
-                revert IssuerNotFound(id);
-            }
+            if (Errors.equals(reason, DidNotFound.selector)) revert IssuerNotFound(id);
+            if (Errors.equals(reason, IncorrectDid.selector)) revert InvalidIssuerId(id);
 
             Errors.rethrow(reason);
         }

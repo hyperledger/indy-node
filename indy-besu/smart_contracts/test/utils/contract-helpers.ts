@@ -71,19 +71,21 @@ export async function deployUniversalDidResolver() {
 }
 
 export async function deploySchemaRegistry() {
-  const { didRegistry, testAccounts } = await deployDidRegistry()
-  const schemaRegistry = await new TestableSchemaRegistry().deployProxy({ params: [didRegistry.address, ZERO_ADDRESS] })
+  const { universalDidReolver, didRegistry, testAccounts } = await deployUniversalDidResolver()
+  const schemaRegistry = await new TestableSchemaRegistry().deployProxy({
+    params: [universalDidReolver.address, ZERO_ADDRESS],
+  })
 
-  return { didRegistry, schemaRegistry, testAccounts }
+  return { universalDidReolver, didRegistry, schemaRegistry, testAccounts }
 }
 
 export async function deployCredentialDefinitionRegistry() {
-  const { didRegistry, schemaRegistry, testAccounts } = await deploySchemaRegistry()
+  const { universalDidReolver, didRegistry, schemaRegistry, testAccounts } = await deploySchemaRegistry()
   const credentialDefinitionRegistry = await new TestableCredentialDefinitionRegistry().deployProxy({
-    params: [didRegistry.address, schemaRegistry.address, ZERO_ADDRESS],
+    params: [universalDidReolver.address, schemaRegistry.address, ZERO_ADDRESS],
   })
 
-  return { credentialDefinitionRegistry, didRegistry, schemaRegistry, testAccounts }
+  return { credentialDefinitionRegistry, universalDidReolver, didRegistry, schemaRegistry, testAccounts }
 }
 
 export async function createDid(didRegistry: DidRegistry, did: string) {

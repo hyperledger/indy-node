@@ -6,6 +6,7 @@ export namespace ClErrors {
   export const FieldRequired = 'FieldRequired'
   export const IssuerNotFound = 'IssuerNotFound'
   export const IssuerHasBeenDeactivated = 'IssuerHasBeenDeactivated'
+  export const InvalidIssuerId = 'InvalidIssuerId'
   export const SenderIsNotIssuerDidOwner = 'SenderIsNotIssuerDidOwner'
 
   // Schema errors

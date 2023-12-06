@@ -63,10 +63,10 @@ contract UniversalDidResolver is UniversalDidResolverInterface, ControlledUpgrad
 
         bytes memory bytesArray = new bytes(20);
         for (uint256 i = 0; i < 20; i++) {
-            (uint8 firstByte, bool firstByteValid) = hexCharToByte(hexString, 2 * i);
+            (uint8 firstByte, bool firstByteValid) = _hexCharToByte(hexString, 2 * i);
             if (!firstByteValid) return address(0);
 
-            (uint8 secondByte, bool secondByteValid) = hexCharToByte(hexString, 2 * i + 1);
+            (uint8 secondByte, bool secondByteValid) = _hexCharToByte(hexString, 2 * i + 1);
             if (!secondByteValid) return address(0);
 
             bytesArray[i] = bytes1(firstByte * 16 + secondByte);
@@ -74,7 +74,7 @@ contract UniversalDidResolver is UniversalDidResolverInterface, ControlledUpgrad
         return address(bytes20(bytesArray));
     }
 
-    function hexCharToByte(string memory s, uint256 index) internal pure returns (uint8, bool) {
+    function _hexCharToByte(string memory s, uint256 index) internal pure returns (uint8, bool) {
         bytes1 hexChar = bytes(s)[index];
         if (hexChar >= 0x30 && hexChar <= 0x39) {
             // ascii 0-9

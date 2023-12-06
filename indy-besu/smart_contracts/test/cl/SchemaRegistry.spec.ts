@@ -119,4 +119,35 @@ describe('SchemaRegistry', function () {
         .withArgs(testAccounts.trustee2.account.address, testAccounts.trustee.account.address)
     })
   })
+
+  describe('Add/Resolve Schema with did:ethr Issuer', function () {
+    it('Should create and resolve Schema', async function () {
+      const ethrIssuerId = `did:ethr:${testAccounts.trustee.account.address.substring(2)}`
+
+      const schema = createSchemaObject({ issuerId: ethrIssuerId })
+
+      await schemaRegistry.createSchema(schema)
+      const result = await schemaRegistry.resolveSchema(schema.id)
+
+      expect(result.schema).to.be.deep.equal(schema)
+    })
+
+    it('Should fail if Schema is being created with not owned Issuer DID', async function () {
+      const ethrIssuerId = `did:ethr:${testAccounts.trustee2.account.address.substring(2)}`
+
+      const schema = createSchemaObject({ issuerId: ethrIssuerId })
+
+      await expect(schemaRegistry.createSchema(schema))
+        .to.be.revertedWithCustomError(schemaRegistry.baseInstance, ClErrors.SenderIsNotIssuerDidOwner)
+        .withArgs(testAccounts.trustee.account.address, testAccounts.trustee2.account.address)
+    })
+
+    it('Should fail if Schema is being created with invalid Issuer ID', async function () {
+      const schema = createSchemaObject({ issuerId: 'did:ethr:ab$ddfgh354345' })
+
+      await expect(schemaRegistry.createSchema(schema))
+        .to.be.revertedWithCustomError(schemaRegistry.baseInstance, ClErrors.InvalidIssuerId)
+        .withArgs(schema.issuerId)
+    })
+  })
 })
