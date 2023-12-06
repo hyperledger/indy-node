@@ -6,6 +6,7 @@ import { EthereumDIDRegistry } from "ethr-did-registry/contracts/EthereumDIDRegi
 
 import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
 import { UnsupportedOperation } from "../utils/Errors.sol";
+import { IncorrectDid } from "./DidErrors.sol";
 import { DidRegistryInterface } from "./DidRegistryInterface.sol";
 import { DidDocument, DidMetadata } from "./DidTypes.sol";
 import { UniversalDidResolverInterface } from "./UniversalDidResolverInterface.sol";
@@ -42,6 +43,9 @@ contract UniversalDidResolver is UniversalDidResolverInterface, ControlledUpgrad
     function resolveMetadata(string memory id) public view override returns (DidMetadata memory metadata) {
         if (id.toSlice().startsWith(_ETHR_DID_PREFIX.toSlice())) {
             address identity = _extractIdentityFromDidEthr(id);
+
+            if (identity == address(0)) revert IncorrectDid(id);
+
             address identityOwner = _ethereumDIDRegistry.identityOwner(identity);
             return DidMetadata(identityOwner, 0, 0, false);
         } else {
@@ -55,27 +59,34 @@ contract UniversalDidResolver is UniversalDidResolverInterface, ControlledUpgrad
     }
 
     function _hexToAddress(string memory hexString) internal pure returns (address) {
+        if (bytes(hexString).length != 40) return address(0);
+
         bytes memory bytesArray = new bytes(20);
         for (uint256 i = 0; i < 20; i++) {
-            uint8 byteValue = uint8(_hexCharToByte(hexString, 2 * i) * 16 + _hexCharToByte(hexString, 2 * i + 1));
-            bytesArray[i] = bytes1(byteValue);
+            (uint8 firstByte, bool firstByteValid) = hexCharToByte(hexString, 2 * i);
+            if (!firstByteValid) return address(0);
+
+            (uint8 secondByte, bool secondByteValid) = hexCharToByte(hexString, 2 * i + 1);
+            if (!secondByteValid) return address(0);
+
+            bytesArray[i] = bytes1(firstByte * 16 + secondByte);
         }
         return address(bytes20(bytesArray));
     }
 
-    function _hexCharToByte(string memory s, uint256 index) internal pure returns (uint8) {
+    function hexCharToByte(string memory s, uint256 index) internal pure returns (uint8, bool) {
         bytes1 hexChar = bytes(s)[index];
         if (hexChar >= 0x30 && hexChar <= 0x39) {
             // ascii 0-9
-            return uint8(hexChar) - 0x30;
+            return (uint8(hexChar) - 0x30, true);
         } else if (hexChar >= 0x61 && hexChar <= 0x66) {
             // ascii a-f
-            return uint8(hexChar) - 0x57;
+            return (uint8(hexChar) - 0x57, true);
         } else if (hexChar >= 0x41 && hexChar <= 0x46) {
             // ascii A-F
-            return uint8(hexChar) - 0x37;
+            return (uint8(hexChar) - 0x37, true);
         } else {
-            revert("Invalid hexadecimal character.");
+            return (0, false);
         }
     }
 }

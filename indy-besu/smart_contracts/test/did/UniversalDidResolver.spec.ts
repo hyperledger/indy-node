@@ -1,13 +1,13 @@
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
-import { UniversalDidResolver } from '../../contracts-ts'
 import { createBaseDidDocument } from '../../utils'
-import { deployUniversalDidResolver, EthereumDIDRegistry } from '../utils/contract-helpers'
+import { deployUniversalDidResolver, TestableUniversalDidResolver } from '../utils/contract-helpers'
+import { DidError } from '../utils/errors'
 import { TestAccounts } from '../utils/test-entities'
 
 describe('UniversalDidResolver', function () {
   const indy2DidDocument = createBaseDidDocument('did:indy2:testnet:SEp33q43PsdP7nDATyySSH')
-  let universalDidReolver: UniversalDidResolver
+  let universalDidReolver: TestableUniversalDidResolver
   let testAccounts: TestAccounts
 
   async function deployUniversalDidResolverFixture() {
@@ -17,7 +17,7 @@ describe('UniversalDidResolver', function () {
       testAccounts: testAccountsInit,
     } = await deployUniversalDidResolver()
 
-    didRegistryInit.connect(testAccounts.trustee.account)
+    didRegistryInit.connect(testAccountsInit.trustee.account)
     await didRegistryInit.createDid(indy2DidDocument)
 
     return { universalDidReolverInit, testAccountsInit }
@@ -59,6 +59,14 @@ describe('UniversalDidResolver', function () {
         creator: testAccounts.trustee.account.address,
         deactivated: false,
       })
+    })
+
+    it('Should fail if an incorrect DID method-specific-id is provided', async function () {
+      const incorrectDid = 'did:ethr:ab$ddfgh354345'
+
+      await expect(universalDidReolver.resolveMetadata(incorrectDid))
+        .revertedWithCustomError(universalDidReolver.baseInstance, DidError.IncorrectDid)
+        .withArgs(incorrectDid)
     })
   })
 })

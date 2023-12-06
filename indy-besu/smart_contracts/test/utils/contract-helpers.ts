@@ -40,6 +40,7 @@ export class TestableCredentialDefinitionRegistry extends testableContractMixin(
 export class TestableRoleControl extends testableContractMixin(RoleControl) {}
 export class TestableValidatorControl extends testableContractMixin(ValidatorControl) {}
 export class TestableUpgradeControl extends testableContractMixin(UpgradeControl) {}
+export class TestableUniversalDidResolver extends testableContractMixin(UniversalDidResolver) {}
 
 export async function deployRoleControl() {
   const roleControl = await new RoleControl().deployProxy({ params: [ZERO_ADDRESS] })
@@ -62,7 +63,7 @@ export async function deployUniversalDidResolver() {
   const { didRegistry, testAccounts } = await deployDidRegistry()
   const ethereumDIDRegistry = await new EthereumDIDRegistry().deploy()
 
-  const universalDidReolver = await new UniversalDidResolver().deployProxy({
+  const universalDidReolver = await new TestableUniversalDidResolver().deployProxy({
     params: [ethereumDIDRegistry.address, didRegistry.address, ZERO_ADDRESS],
   })
 
