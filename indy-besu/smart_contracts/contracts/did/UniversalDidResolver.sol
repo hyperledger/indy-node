@@ -21,13 +21,13 @@ contract UniversalDidResolver is UniversalDidResolverInterface, ControlledUpgrad
     EthereumDIDRegistry internal _ethereumDIDRegistry;
 
     function initialize(
-        address ethereumDIDRegistryAddress,
+        address upgradeControlAddress,
         address didRegistryddress,
-        address upgradeControlAddress
+        address ethereumDIDRegistryAddress
     ) public reinitializer(1) {
-        _ethereumDIDRegistry = EthereumDIDRegistry(ethereumDIDRegistryAddress);
-        _didRegistry = DidRegistryInterface(didRegistryddress);
         _initializeUpgradeControl(upgradeControlAddress);
+        _didRegistry = DidRegistryInterface(didRegistryddress);
+        _ethereumDIDRegistry = EthereumDIDRegistry(ethereumDIDRegistryAddress);
     }
 
     /// @inheritdoc UniversalDidResolverInterface

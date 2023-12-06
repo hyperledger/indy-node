@@ -26,7 +26,7 @@ export class DidRegistry extends Contract {
   public async resolveDid(id: string): Promise<DidDocumentStorage> {
     const didDocumentStorage = await this.instance.resolveDid(id)
     return {
-      document: mapDidDocument(didDocumentStorage.didDocument),
+      document: mapDidDocument(didDocumentStorage.document),
       metadata: mapDidMetadata(didDocumentStorage.metadata),
     }
   }

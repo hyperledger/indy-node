@@ -51,13 +51,13 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
     }
 
     function initialize(
-        address issuerValidatorAddress,
-        address schemaRegistryAddress,
-        address upgradeControlAddress
+        address upgradeControlAddress,
+        address didResolverAddress,
+        address schemaRegistryAddress
     ) public reinitializer(1) {
-        _didResolver = UniversalDidResolverInterface(issuerValidatorAddress);
-        _schemaRegistry = SchemaRegistryInterface(schemaRegistryAddress);
         _initializeUpgradeControl(upgradeControlAddress);
+        _didResolver = UniversalDidResolverInterface(didResolverAddress);
+        _schemaRegistry = SchemaRegistryInterface(schemaRegistryAddress);
     }
 
     /// @inheritdoc CredentialDefinitionRegistryInterface

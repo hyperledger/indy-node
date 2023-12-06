@@ -9,7 +9,7 @@
 | parameter          | value                                                           |
 |--------------------|-----------------------------------------------------------------|
 | id                 | “did:” method-name “:” namespace “:” method-specific-id         |
-| method-name        | “indy2”                                                         |
+| method-name        | “indy2”, “indy”, “sov”, “ethr”                                  |
 | namespace          | “testnet”/"mainnet"                                             |
 | indy-id            | <issuer_did>/anoncreds/v0/SCHEMA/<schema_name>/<schema_version> |
 
@@ -136,7 +136,7 @@ Contract name: **SchemaRegistry**
 | parameter          | value                                                   |
 |--------------------|---------------------------------------------------------|
 | id                 | “did:” method-name “:” namespace “:” method-specific-id |
-| method-name        | “indy2”                                                 |
+| method-name        | “indy2”, “indy”, “sov”, “ethr”                          |
 | namespace          | “testnet”/"mainnet"                                     |
 | indy-id            | <issuer_did>/anoncreds/v0/CLAIM_DEF/<schema_id>/<name>  |
 

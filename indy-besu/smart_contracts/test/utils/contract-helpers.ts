@@ -64,7 +64,7 @@ export async function deployUniversalDidResolver() {
   const ethereumDIDRegistry = await new EthereumDIDRegistry().deploy()
 
   const universalDidReolver = await new TestableUniversalDidResolver().deployProxy({
-    params: [ethereumDIDRegistry.address, didRegistry.address, ZERO_ADDRESS],
+    params: [ZERO_ADDRESS, didRegistry.address, ethereumDIDRegistry.address],
   })
 
   return { universalDidReolver, ethereumDIDRegistry, didRegistry, testAccounts }
@@ -73,7 +73,7 @@ export async function deployUniversalDidResolver() {
 export async function deploySchemaRegistry() {
   const { universalDidReolver, didRegistry, testAccounts } = await deployUniversalDidResolver()
   const schemaRegistry = await new TestableSchemaRegistry().deployProxy({
-    params: [universalDidReolver.address, ZERO_ADDRESS],
+    params: [ZERO_ADDRESS, universalDidReolver.address],
   })
 
   return { universalDidReolver, didRegistry, schemaRegistry, testAccounts }
@@ -82,7 +82,7 @@ export async function deploySchemaRegistry() {
 export async function deployCredentialDefinitionRegistry() {
   const { universalDidReolver, didRegistry, schemaRegistry, testAccounts } = await deploySchemaRegistry()
   const credentialDefinitionRegistry = await new TestableCredentialDefinitionRegistry().deployProxy({
-    params: [universalDidReolver.address, schemaRegistry.address, ZERO_ADDRESS],
+    params: [ZERO_ADDRESS, universalDidReolver.address, schemaRegistry.address],
   })
 
   return { credentialDefinitionRegistry, universalDidReolver, didRegistry, schemaRegistry, testAccounts }

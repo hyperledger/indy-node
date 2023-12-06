@@ -36,7 +36,7 @@ Example:
 | parameter          | value                                                   |
 |--------------------|---------------------------------------------------------|
 | did                | “did:” method-name “:” namespace “:” method-specific-id |
-| method-name        | "indy2"                                                 |
+| method-name        | “indy2”, “indy”, “sov”                                  |
 | namespace          | “testnet”/"mainnet"                                     |
 | method-specific-id | indy-id                                                 |
 | indy-id            | Base58(Truncate_msb(16(SHA256(publicKey))))             |

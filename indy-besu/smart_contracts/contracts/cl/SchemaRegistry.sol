@@ -36,9 +36,9 @@ contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable, CLReg
         _;
     }
 
-    function initialize(address didRegistryAddress, address upgradeControlAddress) public reinitializer(1) {
-        _didResolver = UniversalDidResolverInterface(didRegistryAddress);
+    function initialize(address upgradeControlAddress, address didResolverAddress) public reinitializer(1) {
         _initializeUpgradeControl(upgradeControlAddress);
+        _didResolver = UniversalDidResolverInterface(didResolverAddress);
     }
 
     /// @inheritdoc SchemaRegistryInterface

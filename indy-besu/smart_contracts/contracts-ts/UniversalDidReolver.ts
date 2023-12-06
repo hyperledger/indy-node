@@ -2,7 +2,7 @@ import { Contract } from '../utils'
 import { DidDocument, DidMetadata, mapDidDocument, mapDidMetadata } from './types'
 
 export class UniversalDidResolver extends Contract {
-  public static readonly defaultAddress = '0x0000000000000000000000000000000000003030'
+  public static readonly defaultAddress = '0x000000000000000000000000000000000019999'
 
   constructor(sender?: any) {
     super(UniversalDidResolver.name, sender)

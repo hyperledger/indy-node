@@ -4,8 +4,10 @@ import {
   DidRegexConfig,
   DidsConfig,
   DidValidatorConfig,
+  EthereumDidRegistryConfig,
   RolesConfig,
   SchemasConfig,
+  UniversalDidResolverConfig,
   ValidatorsConfig,
 } from './contracts'
 import { UpgradeControlConfig } from './contracts/upgradeControl'
@@ -20,8 +22,10 @@ export interface Config {
   didValidator: DidValidatorConfig
   didRegistry: DidsConfig
   didRegex: DidRegexConfig
+  ethereumDidRegistry: EthereumDidRegistryConfig
   roleControl: RolesConfig
   schemaRegistry: SchemasConfig
+  universalDidResolver: UniversalDidResolverConfig
   upgradeControl: UpgradeControlConfig
   validatorControl: ValidatorsConfig
 }
@@ -36,6 +40,8 @@ const contractsAddresses = {
   validators: '0x0000000000000000000000000000000000007777',
   accountControl: '0x0000000000000000000000000000000000008888',
   upgradeControl: '0x0000000000000000000000000000000000009999',
+  universalDidResolver: '0x000000000000000000000000000000000019999',
+  ethereumDIDRegistry: '0x0000000000000000000000000000000000018888',
 }
 
 export const config: Config = {
@@ -54,7 +60,7 @@ export const config: Config = {
     description: 'Smart contract to manage credential definitions',
     data: {
       credentialDefinitions: [],
-      didRegistryAddress: contractsAddresses.didRegistry,
+      universalDidResolverAddress: contractsAddresses.universalDidResolver,
       schemaRegistryAddress: contractsAddresses.schemas,
       upgradeControlAddress: contractsAddresses.upgradeControl,
     },
@@ -79,6 +85,11 @@ export const config: Config = {
       dids: [],
       upgradeControlAddress: contractsAddresses.upgradeControl,
     },
+  },
+  ethereumDidRegistry: {
+    name: 'EthereumDidRegistry',
+    address: contractsAddresses.ethereumDIDRegistry,
+    description: 'Ethereum registry for ERC-1056 ethr did methods',
   },
   roleControl: {
     name: 'RoleControl',
@@ -121,6 +132,16 @@ export const config: Config = {
     description: 'Smart contract to manage schemas',
     data: {
       schemas: [],
+      universalDidResolverAddress: contractsAddresses.universalDidResolver,
+      upgradeControlAddress: contractsAddresses.upgradeControl,
+    },
+  },
+  universalDidResolver: {
+    name: 'UniversalDidResolver',
+    address: contractsAddresses.universalDidResolver,
+    description: 'Smart contract to resolve DIDs from various DID registries',
+    data: {
+      etheriumDidRegistryAddress: contractsAddresses.ethereumDIDRegistry,
       didRegistryAddress: contractsAddresses.didRegistry,
       upgradeControlAddress: contractsAddresses.upgradeControl,
     },

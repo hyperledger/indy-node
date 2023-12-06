@@ -6,8 +6,10 @@ import {
   didRegex,
   didRegistry,
   didValidator,
+  ethereumDidRegistry,
   roleControl,
   schemaRegistry,
+  universalDidResolver,
   upgradeControl,
   validatorControl,
 } from './contracts'
@@ -21,6 +23,8 @@ function main() {
     ...didRegex(),
     ...didValidator(),
     ...didRegistry(),
+    ...ethereumDidRegistry(),
+    ...universalDidResolver(),
     ...schemaRegistry(),
     ...credentialDefinitionRegistry(),
   }
