@@ -1,6 +1,7 @@
 export * from './AccountControl'
 export * from './CredentialDefinitionRegistry'
 export * from './DidRegistry'
+export * from './EthereumDIDRegistry'
 export * from './RoleControl'
 export * from './SchemaRegistry'
 export * from './UniversalDidReolver'

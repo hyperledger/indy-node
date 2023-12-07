@@ -5,6 +5,7 @@ import {
   CredentialDefinitionRegistry,
   ValidatorControl,
   UpgradeControl,
+  EthereumDIDRegistry,
 } from '../../contracts-ts'
 import { Account, AccountInfo } from '../../utils'
 
@@ -13,6 +14,7 @@ export class Actor {
   public roleControl!: RoleControl
   public validatorControl!: ValidatorControl
   public didRegistry!: DidRegistry
+  public ethereumDIDRegistry!: EthereumDIDRegistry
   public schemaRegistry!: SchemaRegistry
   public credentialDefinitionRegistry!: CredentialDefinitionRegistry
   public upgradeControl!: UpgradeControl
@@ -25,6 +27,9 @@ export class Actor {
     this.roleControl = await new RoleControl(this.account).getInstance(RoleControl.defaultAddress)
     this.validatorControl = await new ValidatorControl(this.account).getInstance(ValidatorControl.defaultAddress)
     this.didRegistry = await new DidRegistry(this.account).getInstance(DidRegistry.defaultAddress)
+    this.ethereumDIDRegistry = await new EthereumDIDRegistry(this.account).getInstance(
+      EthereumDIDRegistry.defaultAddress,
+    )
     this.schemaRegistry = await new SchemaRegistry(this.account).getInstance(SchemaRegistry.defaultAddress)
     this.credentialDefinitionRegistry = await new CredentialDefinitionRegistry(this.account).getInstance(
       CredentialDefinitionRegistry.defaultAddress,

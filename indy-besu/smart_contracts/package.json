@@ -18,7 +18,7 @@
     "demo/roles": "yarn run-on-besu demos/role-control.ts",
     "demo/validators": "yarn run-on-besu demos/validator-control.ts",
     "demo/flow": "yarn run-on-besu demos/flow.ts",
-    "demo/cl-with-did-ethr": "yarn run-on-besu demos/cl-with-did-ethr.ts",
+    "demo/flow-with-did-ethr": "yarn run-on-besu demos/flow-with-did-ethr.ts",
     "demo/account": "yarn run-on-besu demos/account-control.ts",
     "demo/upgrade": "yarn run-on-besu demos/upgrade-control.ts",
     "genesis/generate": "ts-node scripts/genesis/generate.ts",
