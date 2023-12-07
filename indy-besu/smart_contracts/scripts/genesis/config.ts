@@ -87,7 +87,7 @@ export const config: Config = {
     },
   },
   ethereumDidRegistry: {
-    name: 'EthereumDidRegistry',
+    name: 'UpgradableEthereumDidRegistry',
     address: contractsAddresses.ethereumDIDRegistry,
     description: 'Ethereum registry for ERC-1056 ethr did methods',
   },
