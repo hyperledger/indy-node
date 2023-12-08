@@ -1,6 +1,6 @@
 import {
   RoleControl,
-  DidRegistry,
+  IndyDidRegistry,
   SchemaRegistry,
   CredentialDefinitionRegistry,
   ValidatorControl,
@@ -13,7 +13,7 @@ export class Actor {
   public account: Account
   public roleControl!: RoleControl
   public validatorControl!: ValidatorControl
-  public didRegistry!: DidRegistry
+  public didRegistry!: IndyDidRegistry
   public ethereumDIDRegistry!: EthereumDIDRegistry
   public schemaRegistry!: SchemaRegistry
   public credentialDefinitionRegistry!: CredentialDefinitionRegistry
@@ -26,7 +26,7 @@ export class Actor {
   public async init() {
     this.roleControl = await new RoleControl(this.account).getInstance(RoleControl.defaultAddress)
     this.validatorControl = await new ValidatorControl(this.account).getInstance(ValidatorControl.defaultAddress)
-    this.didRegistry = await new DidRegistry(this.account).getInstance(DidRegistry.defaultAddress)
+    this.didRegistry = await new IndyDidRegistry(this.account).getInstance(IndyDidRegistry.defaultAddress)
     this.ethereumDIDRegistry = await new EthereumDIDRegistry(this.account).getInstance(
       EthereumDIDRegistry.defaultAddress,
     )

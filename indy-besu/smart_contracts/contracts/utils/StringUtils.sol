@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
 using { toSlice } for string;
 
@@ -18,7 +18,7 @@ library StringUtils {
      * @dev Checks if two strings are equal.
      * @param str First string to compare.
      * @param other Second string to compare.
-     * @return bool True if strings are equal, false otherwise.
+     * @return True if strings are equal, false otherwise.
      */
     function equals(string memory str, string memory other) internal pure returns (bool) {
         return str.toSlice().eq(other.toSlice());
@@ -27,7 +27,7 @@ library StringUtils {
     /**
      * @dev Checks if a string is empty.
      * @param str String to check.
-     * @return bool True if the string is empty, false otherwise.
+     * @return Returns `true` if the string is empty, `false` otherwise.
      */
     function isEmpty(string memory str) internal pure returns (bool) {
         return length(str) == 0;
@@ -36,12 +36,17 @@ library StringUtils {
     /**
      * @dev Returns the length of a string.
      * @param str String to check.
-     * @return uint256 Length of the string.
+     * @return Length of the string.
      */
     function length(string memory str) internal pure returns (uint256) {
         return bytes(str).length;
     }
 
+    /**
+     * @dev Check if a given string has a hex prefix
+     * @param str String to check.
+     * @return Returns `true` if strings has a hex prefix, `false` otherwise.
+     */
     function hasHexPrefix(string memory str) internal pure returns (bool) {
         return str.toSlice().startsWith(_HEX_PREFIX.toSlice());
     }
@@ -49,19 +54,24 @@ library StringUtils {
     /**
      * @dev Converts a hexadecimal string to bytes.
      * @param hexString The hexadecimal string to be converted.
-     * @return The bytes represented by the hexadecimal string.
+     * @return The bytes represented by the hexadecimal string, or the zero bytes if the hex is incorrect.
      */
     function hexToBytes(string memory hexString) internal view returns (bytes memory) {
-        hexString = hexString.toSlice().stripPrefix(_HEX_PREFIX.toSlice()).toString();
+        StrSlice hexStringSlice = hexString.toSlice();
+        StrSlice hexPrefixSlice = _HEX_PREFIX.toSlice();
+
+        // Check and remove hex prefix
+        if (!hexStringSlice.startsWith(_HEX_PREFIX.toSlice())) return "";
+        hexString = hexStringSlice.stripPrefix(hexPrefixSlice).toString();
 
         bytes memory hexStringBytes = bytes(hexString);
         bytes memory resultBytes = new bytes(hexStringBytes.length / 2);
         for (uint256 i = 0; i < resultBytes.length; i++) {
             (uint8 firstByte, bool firstByteValid) = _hexCharToByte(hexStringBytes[2 * i]);
-            if (!firstByteValid) return bytes(_HEX_PREFIX);
+            if (!firstByteValid) return "";
 
             (uint8 secondByte, bool secondByteValid) = _hexCharToByte(hexStringBytes[2 * i + 1]);
-            if (!secondByteValid) return bytes(_HEX_PREFIX);
+            if (!secondByteValid) return "";
 
             resultBytes[i] = bytes1(firstByte * 16 + secondByte);
         }

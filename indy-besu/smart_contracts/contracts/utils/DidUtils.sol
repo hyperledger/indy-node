@@ -51,8 +51,12 @@ library DidUtils {
         return parsedDid;
     }
 
+    /**
+     * @dev Converts a given Ethereum identifier to an Ethereum address.
+     * @param identifier The Ethereum identifier to be converted.
+     * @return The Ethereum address derived from the identifier, or the zero address if the identifier is incorrect.
+     */
     function convertEthereumIdentifierToAddress(string memory identifier) internal view returns (address) {
-        if (!StringUtils.hasHexPrefix(identifier)) return address(0);
         if (!(StringUtils.length(identifier) != _ADDRESS_HEX_STRING_LENGTH)) return address(0);
 
         bytes memory identifierBytes = StringUtils.hexToBytes(identifier);
@@ -60,10 +64,20 @@ library DidUtils {
         return address(uint160(bytes20(identifierBytes)));
     }
 
+    /**
+     * @dev Checks if a given method string corresponds to the Ethereum method identifier.
+     * @param method The method string to check.
+     * @return Returns `true` if the method string matches the Ethereum method identifier, `false` otherwise.
+     */
     function isEthereumMethod(string memory method) internal pure returns (bool) {
         return method.toSlice().eq(DID_ETHR_METHOD.toSlice());
     }
 
+    /**
+     * @dev Checks if a given method string corresponds to any of the Indy method identifiers.
+     * @param method The method string to check.
+     * @return Returns `true` if the method string matches any of the Indy method identifiers, `false` otherwise.
+     */
     function isIndyMethod(string memory method) internal pure returns (bool) {
         StrSlice methodSlice = method.toSlice();
         return

@@ -71,7 +71,7 @@ export const config: Config = {
     name: 'IndyDidRegistry',
     address: contractsAddresses.didRegistry,
     description: 'Smart contract to manage DIDs',
-    libraries: { 'contracts/did/DidValidator.sol:DidValidator': contractsAddresses.didValidator },
+    libraries: { 'contracts/did/IndyDidValidator.sol:IndyDidValidator': contractsAddresses.didValidator },
     data: {
       dids: [],
       upgradeControlAddress: contractsAddresses.upgradeControl,

@@ -36,7 +36,7 @@ export class Account {
     }
 
     public get didEthr() {
-        return `did:ethr:${this.address.substring(2)}`
+        return `did:ethr:${this.address}`
     }
 
     public get didDocument() {
