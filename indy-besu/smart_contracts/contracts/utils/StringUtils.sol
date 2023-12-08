@@ -6,12 +6,13 @@ import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 using { toSlice } for string;
 
 library StringUtils {
-    bytes1 internal constant _ASCII_0 = 0x30;
-    bytes1 internal constant _ASCII_9 = 0x39;
-    bytes1 internal constant _ASCII_CAPITAL_A = 0x41;
-    bytes1 internal constant _ASCII_CAPITAL_F = 0x46;
-    bytes1 internal constant _ASCII_SMALL_A = 0x61;
-    bytes1 internal constant _ASCII_SMALL_F = 0x66;
+    bytes1 private constant _ASCII_0 = 0x30;
+    bytes1 private constant _ASCII_9 = 0x39;
+    bytes1 private constant _ASCII_CAPITAL_A = 0x41;
+    bytes1 private constant _ASCII_CAPITAL_F = 0x46;
+    bytes1 private constant _ASCII_SMALL_A = 0x61;
+    bytes1 private constant _ASCII_SMALL_F = 0x66;
+    string private constant _HEX_PREFIX = "0x";
 
     /**
      * @dev Checks if two strings are equal.
@@ -41,32 +42,36 @@ library StringUtils {
         return bytes(str).length;
     }
 
+    function hasHexPrefix(string memory str) internal pure returns (bool) {
+        return str.toSlice().startsWith(_HEX_PREFIX.toSlice());
+    }
+
     /**
-     * @dev Converts a hexadecimal string to an address.
+     * @dev Converts a hexadecimal string to bytes.
      * @param hexString The hexadecimal string to be converted.
-     * @return The address represented by the hexadecimal string.
+     * @return The bytes represented by the hexadecimal string.
      */
-    function hexToAddress(string memory hexString) internal pure returns (address) {
-        if (bytes(hexString).length != 40) return address(0);
+    function hexToBytes(string memory hexString) internal view returns (bytes memory) {
+        hexString = hexString.toSlice().stripPrefix(_HEX_PREFIX.toSlice()).toString();
 
-        bytes memory bytesArray = new bytes(20);
-        for (uint256 i = 0; i < 20; i++) {
-            (uint8 firstByte, bool firstByteValid) = _hexCharToByte(hexString, 2 * i);
-            if (!firstByteValid) return address(0);
+        bytes memory hexStringBytes = bytes(hexString);
+        bytes memory resultBytes = new bytes(hexStringBytes.length / 2);
+        for (uint256 i = 0; i < resultBytes.length; i++) {
+            (uint8 firstByte, bool firstByteValid) = _hexCharToByte(hexStringBytes[2 * i]);
+            if (!firstByteValid) return bytes(_HEX_PREFIX);
 
-            (uint8 secondByte, bool secondByteValid) = _hexCharToByte(hexString, 2 * i + 1);
-            if (!secondByteValid) return address(0);
+            (uint8 secondByte, bool secondByteValid) = _hexCharToByte(hexStringBytes[2 * i + 1]);
+            if (!secondByteValid) return bytes(_HEX_PREFIX);
 
-            bytesArray[i] = bytes1(firstByte * 16 + secondByte);
+            resultBytes[i] = bytes1(firstByte * 16 + secondByte);
         }
-        return address(bytes20(bytesArray));
+        return resultBytes;
     }
 
     /**
      * Converts a single hexadecimal character to a byte
      */
-    function _hexCharToByte(string memory str, uint256 index) private pure returns (uint8, bool) {
-        bytes1 hexChar = bytes(str)[index];
+    function _hexCharToByte(bytes1 hexChar) private pure returns (uint8, bool) {
         if (hexChar >= _ASCII_0 && hexChar <= _ASCII_9) {
             return (uint8(hexChar) - uint8(_ASCII_0), true);
         } else if (hexChar >= _ASCII_CAPITAL_A && hexChar <= _ASCII_CAPITAL_F) {

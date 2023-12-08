@@ -51,9 +51,7 @@ describe('UniversalDidResolver', function () {
 
   describe('Resolve did:ethr', function () {
     it('Should resolve DID metadata', async function () {
-      const metadata = await universalDidReolver.resolveMetadata(
-        `did:ethr:${testAccounts.trustee.account.address.substring(2)}`,
-      )
+      const metadata = await universalDidReolver.resolveMetadata(`did:ethr:${testAccounts.trustee.account.address}`)
 
       expect(metadata).to.contain({
         creator: testAccounts.trustee.account.address,

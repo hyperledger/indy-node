@@ -122,7 +122,7 @@ describe('SchemaRegistry', function () {
 
   describe('Add/Resolve Schema with did:ethr Issuer', function () {
     it('Should create and resolve Schema', async function () {
-      const ethrIssuerId = `did:ethr:${testAccounts.trustee.account.address.substring(2)}`
+      const ethrIssuerId = `did:ethr:${testAccounts.trustee.account.address}`
 
       const schema = createSchemaObject({ issuerId: ethrIssuerId })
 
@@ -133,7 +133,7 @@ describe('SchemaRegistry', function () {
     })
 
     it('Should fail if Schema is being created with not owned Issuer DID', async function () {
-      const ethrIssuerId = `did:ethr:${testAccounts.trustee2.account.address.substring(2)}`
+      const ethrIssuerId = `did:ethr:${testAccounts.trustee2.account.address}`
 
       const schema = createSchemaObject({ issuerId: ethrIssuerId })
 

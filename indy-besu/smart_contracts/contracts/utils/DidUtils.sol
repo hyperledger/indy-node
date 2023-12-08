@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { IncorrectDid } from "../did/DidErrors.sol";
 import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { IncorrectDid } from "../did/DidErrors.sol";
+import { StringUtils } from "./StringUtils.sol";
 
 string constant DID_ETHR_METHOD = "ethr";
 string constant DID_INDY_METHOD = "indy";
@@ -19,6 +20,7 @@ using { toSlice } for string;
 library DidUtils {
     string private constant _DID_PREFIX = "did";
     string private constant _DID_DELIMETER = ":";
+    uint16 private constant _ADDRESS_HEX_STRING_LENGTH = 22;
 
     /**
      * @dev Parses a DID string and returns its components.
@@ -31,7 +33,7 @@ library DidUtils {
         StrSlice component;
         bool found;
 
-        // Check and extract 'did' prefix.
+        // Extract and check 'did' prefix.
         (found, component, didSlice) = didSlice.splitOnce(delimeterSlice);
         if (!found || !component.eq(_DID_PREFIX.toSlice())) revert IncorrectDid(did);
 
@@ -47,6 +49,15 @@ library DidUtils {
         parsedDid.identifier = component.toString();
 
         return parsedDid;
+    }
+
+    function convertEthereumIdentifierToAddress(string memory identifier) internal view returns (address) {
+        if (!StringUtils.hasHexPrefix(identifier)) return address(0);
+        if (!(StringUtils.length(identifier) != _ADDRESS_HEX_STRING_LENGTH)) return address(0);
+
+        bytes memory identifierBytes = StringUtils.hexToBytes(identifier);
+
+        return address(uint160(bytes20(identifierBytes)));
     }
 
     function isEthereumMethod(string memory method) internal pure returns (bool) {

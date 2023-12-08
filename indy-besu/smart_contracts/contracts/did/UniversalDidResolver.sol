@@ -4,14 +4,11 @@ pragma solidity ^0.8.20;
 import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
 import { UnsupportedOperation } from "../utils/Errors.sol";
 import { DidUtils, ParsedDid } from "../utils/DidUtils.sol";
-import { StringUtils } from "../utils/StringUtils.sol";
 import { IncorrectDid } from "./DidErrors.sol";
 import { IndyDidRegistryInterface } from "./IndyDidRegistryInterface.sol";
 import { EthereumExtDidRegistry } from "./EthereumExtDidRegistry.sol";
 import { DidDocument, DidMetadata } from "./DidTypes.sol";
 import { UniversalDidResolverInterface } from "./UniversalDidResolverInterface.sol";
-
-using StringUtils for string;
 
 contract UniversalDidResolver is UniversalDidResolverInterface, ControlledUpgradeable {
     IndyDidRegistryInterface internal _indyDidRegistry;
@@ -46,7 +43,7 @@ contract UniversalDidResolver is UniversalDidResolverInterface, ControlledUpgrad
         ParsedDid memory parsedDid = DidUtils.parseDid(id);
 
         if (DidUtils.isEthereumMethod(parsedDid.method)) {
-            address identity = parsedDid.identifier.hexToAddress();
+            address identity = DidUtils.convertEthereumIdentifierToAddress(parsedDid.identifier);
 
             if (identity == address(0)) revert IncorrectDid(id);
 

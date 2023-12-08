@@ -162,7 +162,7 @@ describe('CredentialDefinitionRegistry', function () {
 
   describe('Add/Resolve Credential Definition with did:ethr Issuer', function () {
     it('Should create and resolve Credential Definition', async function () {
-      const ethrIssuerId = `did:ethr:${testAccounts.trustee.account.address.substring(2)}`
+      const ethrIssuerId = `did:ethr:${testAccounts.trustee.account.address}`
       const credDef = createCredentialDefinitionObject({ issuerId: ethrIssuerId, schemaId })
 
       await credentialDefinitionRegistry.createCredentialDefinition(credDef)
@@ -172,7 +172,7 @@ describe('CredentialDefinitionRegistry', function () {
     })
 
     it('Should fail if Credential Definition is being created with not owned Issuer DID', async function () {
-      const ethrIssuerId = `did:ethr:${testAccounts.trustee2.account.address.substring(2)}`
+      const ethrIssuerId = `did:ethr:${testAccounts.trustee2.account.address}`
       const credDef = createCredentialDefinitionObject({ issuerId: ethrIssuerId, schemaId })
 
       await expect(credentialDefinitionRegistry.createCredentialDefinition(credDef))
