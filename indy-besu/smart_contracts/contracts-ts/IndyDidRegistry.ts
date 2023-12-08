@@ -1,11 +1,11 @@
 import { Contract } from '../utils/contract'
 import { DidDocument, DidDocumentStorage, mapDidDocument, mapDidMetadata } from './types'
 
-export class DidRegistry extends Contract {
+export class IndyDidRegistry extends Contract {
   public static readonly defaultAddress = '0x0000000000000000000000000000000000003333'
 
   constructor(sender?: any) {
-    super(DidRegistry.name, sender)
+    super(IndyDidRegistry.name, sender)
   }
 
   public async createDid(didDocument: DidDocument) {

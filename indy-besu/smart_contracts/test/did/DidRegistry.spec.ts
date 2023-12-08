@@ -1,28 +1,25 @@
 import { expect } from 'chai'
 import { VerificationMethod } from '../../contracts-ts/types/Did'
 import { createBaseDidDocument } from '../../utils/entity-factories'
-import { deployDidRegistry, TestableDidRegistry } from '../utils/contract-helpers'
-import { DidRegex, DidValidator } from '../utils/contract-helpers'
+import { deployIndyDidRegistry, TestableIndyDidRegistry } from '../utils/contract-helpers'
+import { IndyDidValidator } from '../utils/contract-helpers'
 import { DidError } from '../utils/errors'
 import { TestAccounts } from '../utils/test-entities'
 
 describe('DIDContract', function () {
-  let didRegistry: TestableDidRegistry
-  let didValidator: DidValidator
-  let didRegex: DidRegex
+  let didRegistry: TestableIndyDidRegistry
+  let didValidator: IndyDidValidator
   let testAccounts: TestAccounts
 
   beforeEach(async function () {
     const {
-      didRegistry: didRegistryInit,
-      didValidator: didValidatorInit,
-      didRegex: didRegexInit,
+      indyDidRegistry: didRegistryInit,
+      indyDidValidator: didValidatorInit,
       testAccounts: testAccountsInit,
-    } = await deployDidRegistry()
+    } = await deployIndyDidRegistry()
 
     didRegistry = didRegistryInit
     didValidator = didValidatorInit
-    didRegex = didRegexInit
     testAccounts = testAccountsInit
 
     didRegistry.connect(testAccounts.trustee.account)

@@ -13,12 +13,12 @@ describe('UniversalDidResolver', function () {
   async function deployUniversalDidResolverFixture() {
     const {
       universalDidReolver: universalDidReolverInit,
-      didRegistry: didRegistryInit,
+      indyDidRegistry,
       testAccounts: testAccountsInit,
     } = await deployUniversalDidResolver()
 
-    didRegistryInit.connect(testAccountsInit.trustee.account)
-    await didRegistryInit.createDid(indy2DidDocument)
+    indyDidRegistry.connect(testAccountsInit.trustee.account)
+    await indyDidRegistry.createDid(indy2DidDocument)
 
     return { universalDidReolverInit, testAccountsInit }
   }

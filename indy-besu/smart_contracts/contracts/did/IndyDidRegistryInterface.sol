@@ -6,7 +6,7 @@ import { DidDocument, DidDocumentStorage } from "./DidTypes.sol";
 /**
  * @dev The interface that defines functions for managing DID documents.
  */
-interface DidRegistryInterface {
+interface IndyDidRegistryInterface {
     /**
      * @dev Event that is sent when a DID Document is created.
      * @param did Created DID.

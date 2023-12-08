@@ -10,10 +10,8 @@ import { CredentialDefinitionValidator } from "./CredentialDefinitionValidator.s
 import { CredentialDefinitionAlreadyExist, CredentialDefinitionNotFound } from "./ClErrors.sol";
 import { CLRegistry } from "./CLRegistry.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
-import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
 using CredentialDefinitionValidator for CredentialDefinition;
-using { toSlice } for string;
 
 contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, ControlledUpgradeable, CLRegistry {
     /**

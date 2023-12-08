@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { StringUtils } from "../utils/StringUtils.sol";
 import { FieldRequired, InvalidSchemaId } from "./ClErrors.sol";
 import { Schema } from "./SchemaTypes.sol";
 
-using { toSlice } for string;
+using StringUtils for string;
 
 library SchemaValidator {
     string private constant _DELIMITER = "/";
@@ -23,21 +23,21 @@ library SchemaValidator {
             self.version
         );
 
-        if (!schemaId.toSlice().eq(self.id.toSlice())) revert InvalidSchemaId(self.id);
+        if (!schemaId.equals(self.id)) revert InvalidSchemaId(self.id);
     }
 
     /**
      * @dev Validates that the Schema name is provided
      */
     function requireName(Schema memory self) internal pure {
-        if (self.name.toSlice().isEmpty()) revert FieldRequired("name");
+        if (self.name.isEmpty()) revert FieldRequired("name");
     }
 
     /**
      * @dev Validates that the Schema version is provided
      */
     function requireVersion(Schema memory self) internal pure {
-        if (self.version.toSlice().isEmpty()) revert FieldRequired("version");
+        if (self.version.isEmpty()) revert FieldRequired("version");
     }
 
     /**

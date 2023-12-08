@@ -1,10 +1,9 @@
 import {
   AccountControlConfig,
   CredentialDefinitionsConfig,
-  DidRegexConfig,
-  DidsConfig,
-  DidValidatorConfig,
   EthereumDidRegistryConfig,
+  IndyDidRegistryConfig,
+  IndyDidValidatorConfig,
   RolesConfig,
   SchemasConfig,
   UniversalDidResolverConfig,
@@ -19,9 +18,8 @@ export const outFile = 'ContractsGenesis.json'
 export interface Config {
   accountControl: AccountControlConfig
   credentialDefinitionRegistry: CredentialDefinitionsConfig
-  didValidator: DidValidatorConfig
-  didRegistry: DidsConfig
-  didRegex: DidRegexConfig
+  indyDidValidator: IndyDidValidatorConfig
+  indyDidRegistry: IndyDidRegistryConfig
   ethereumDidRegistry: EthereumDidRegistryConfig
   roleControl: RolesConfig
   schemaRegistry: SchemasConfig
@@ -31,7 +29,6 @@ export interface Config {
 }
 
 const contractsAddresses = {
-  didRegex: '0x0000000000000000000000000000000000001111',
   didValidator: '0x0000000000000000000000000000000000002222',
   didRegistry: '0x0000000000000000000000000000000000003333',
   credentialDefinitionRegistry: '0x0000000000000000000000000000000000004444',
@@ -65,19 +62,13 @@ export const config: Config = {
       upgradeControlAddress: contractsAddresses.upgradeControl,
     },
   },
-  didRegex: {
-    name: 'DidRegex',
-    address: contractsAddresses.didRegex,
-    description: 'Regex library to validate DID syntax',
-  },
-  didValidator: {
-    name: 'DidValidator',
+  indyDidValidator: {
+    name: 'IndyDidValidator',
     address: contractsAddresses.didValidator,
     description: 'Library to validate DID',
-    libraries: { 'contracts/did/DidRegex.sol:DidRegex': contractsAddresses.didRegex },
   },
-  didRegistry: {
-    name: 'DidRegistry',
+  indyDidRegistry: {
+    name: 'IndyDidRegistry',
     address: contractsAddresses.didRegistry,
     description: 'Smart contract to manage DIDs',
     libraries: { 'contracts/did/DidValidator.sol:DidValidator': contractsAddresses.didValidator },
@@ -87,7 +78,7 @@ export const config: Config = {
     },
   },
   ethereumDidRegistry: {
-    name: 'UpgradableEthereumDidRegistry',
+    name: 'EthereumExtDidRegistry',
     address: contractsAddresses.ethereumDIDRegistry,
     description: 'Ethereum registry for ERC-1056 ethr did methods',
   },

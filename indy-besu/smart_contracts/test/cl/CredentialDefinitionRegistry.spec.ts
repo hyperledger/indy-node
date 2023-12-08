@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { DidRegistry } from '../../contracts-ts'
+import { IndyDidRegistry } from '../../contracts-ts'
 import { createCredentialDefinitionObject } from '../../utils'
 import {
   createDid,
@@ -12,7 +12,7 @@ import { ClErrors } from '../utils/errors'
 import { TestAccounts } from '../utils/test-entities'
 
 describe('CredentialDefinitionRegistry', function () {
-  let didRegistry: DidRegistry
+  let didRegistry: IndyDidRegistry
   let schemaRegistry: TestableSchemaRegistry
   let credentialDefinitionRegistry: TestableCredentialDefinitionRegistry
   let testAccounts: TestAccounts
@@ -21,7 +21,7 @@ describe('CredentialDefinitionRegistry', function () {
 
   beforeEach(async function () {
     const {
-      didRegistry: didRegistryInit,
+      indyDidRegistry: didRegistryInit,
       schemaRegistry: schemaRegistryInit,
       credentialDefinitionRegistry: credentialDefinitionRegistryInit,
       testAccounts: testAccountsInit,

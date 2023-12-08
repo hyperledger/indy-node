@@ -1,19 +1,19 @@
 import { expect } from 'chai'
-import { DidRegistry, SchemaRegistry } from '../../contracts-ts'
+import { IndyDidRegistry, SchemaRegistry } from '../../contracts-ts'
 import { createSchemaObject } from '../../utils'
 import { createDid, deploySchemaRegistry, TestableSchemaRegistry } from '../utils/contract-helpers'
 import { ClErrors } from '../utils/errors'
 import { TestAccounts } from '../utils/test-entities'
 
 describe('SchemaRegistry', function () {
-  let didRegistry: DidRegistry
+  let didRegistry: IndyDidRegistry
   let schemaRegistry: TestableSchemaRegistry
   let testAccounts: TestAccounts
   const issuerId = 'did:indy2:mainnet:SEp33q43PsdP7nDATyySSH'
 
   beforeEach(async function () {
     const {
-      didRegistry: didRegistryInit,
+      indyDidRegistry: didRegistryInit,
       schemaRegistry: schemaRegistryInit,
       testAccounts: testAccountsInit,
     } = await deploySchemaRegistry()

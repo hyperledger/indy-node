@@ -4,11 +4,11 @@ pragma solidity ^0.8.20;
 import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
 
 import { DidAlreadyExist, DidHasBeenDeactivated, DidNotFound, SenderIsNotCreator } from "./DidErrors.sol";
-import { DidRegistryInterface } from "./DidRegistryInterface.sol";
+import { IndyDidRegistryInterface } from "./IndyDidRegistryInterface.sol";
 import { DidDocument, DidDocumentStorage } from "./DidTypes.sol";
-import { DidValidator } from "./DidValidator.sol";
+import { IndyDidValidator } from "./IndyDidValidator.sol";
 
-contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
+contract IndyDidRegistry is IndyDidRegistryInterface, ControlledUpgradeable {
     /**
      * @dev Mapping DID to its corresponding DID Document.
      */
@@ -51,10 +51,10 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
         _initializeUpgradeControl(upgradeControlAddress);
     }
 
-    /// @inheritdoc DidRegistryInterface
+    /// @inheritdoc IndyDidRegistryInterface
     function createDid(DidDocument calldata document) public _didNotExist(document.id) {
-        DidValidator.validateDid(document.id);
-        DidValidator.validateVerificationKey(document);
+        IndyDidValidator.validateDid(document.id);
+        IndyDidValidator.validateVerificationKey(document);
 
         _dids[document.id].document = document;
         _dids[document.id].metadata.creator = msg.sender;
@@ -64,11 +64,11 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
         emit DIDCreated(document.id);
     }
 
-    /// @inheritdoc DidRegistryInterface
+    /// @inheritdoc IndyDidRegistryInterface
     function updateDid(
         DidDocument calldata document
     ) public _didExist(document.id) _didIsActive(document.id) _senderIsCreator(document.id) {
-        DidValidator.validateVerificationKey(document);
+        IndyDidValidator.validateVerificationKey(document);
 
         _dids[document.id].document = document;
         _dids[document.id].metadata.updated = block.timestamp;
@@ -76,14 +76,14 @@ contract DidRegistry is DidRegistryInterface, ControlledUpgradeable {
         emit DIDUpdated(document.id);
     }
 
-    /// @inheritdoc DidRegistryInterface
+    /// @inheritdoc IndyDidRegistryInterface
     function deactivateDid(string calldata id) public _didExist(id) _didIsActive(id) _senderIsCreator(id) {
         _dids[id].metadata.deactivated = true;
 
         emit DIDDeactivated(id);
     }
 
-    /// @inheritdoc DidRegistryInterface
+    /// @inheritdoc IndyDidRegistryInterface
     function resolveDid(
         string calldata id
     ) public view virtual _didExist(id) returns (DidDocumentStorage memory didDocumentStorage) {

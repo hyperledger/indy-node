@@ -1,6 +1,6 @@
 import {
   CredentialDefinitionRegistry,
-  DidRegistry,
+  IndyDidRegistry,
   RoleControl,
   SchemaRegistry,
   UniversalDidResolver,
@@ -16,15 +16,9 @@ export class EthereumDIDRegistry extends testableContractMixin(Contract) {
   }
 }
 
-export class DidRegex extends testableContractMixin(Contract) {
+export class IndyDidValidator extends testableContractMixin(Contract) {
   constructor() {
-    super(DidRegex.name)
-  }
-}
-
-export class DidValidator extends testableContractMixin(Contract) {
-  constructor() {
-    super(DidValidator.name)
+    super(IndyDidValidator.name)
   }
 }
 
@@ -34,7 +28,7 @@ export class UpgradablePrototype extends testableContractMixin(Contract) {
   }
 }
 
-export class TestableDidRegistry extends testableContractMixin(DidRegistry) {}
+export class TestableIndyDidRegistry extends testableContractMixin(IndyDidRegistry) {}
 export class TestableSchemaRegistry extends testableContractMixin(SchemaRegistry) {}
 export class TestableCredentialDefinitionRegistry extends testableContractMixin(CredentialDefinitionRegistry) {}
 export class TestableRoleControl extends testableContractMixin(RoleControl) {}
@@ -49,46 +43,48 @@ export async function deployRoleControl() {
   return { roleControl, testAccounts }
 }
 
-export async function deployDidRegistry() {
+export async function deployIndyDidRegistry() {
   const { testAccounts } = await deployRoleControl()
 
-  const didRegex = await new DidRegex().deploy()
-  const didValidator = await new DidValidator().deploy({ libraries: [didRegex] })
-  const didRegistry = await new TestableDidRegistry().deployProxy({ params: [ZERO_ADDRESS], libraries: [didValidator] })
+  const indyDidValidator = await new IndyDidValidator().deploy()
+  const indyDidRegistry = await new TestableIndyDidRegistry().deployProxy({
+    params: [ZERO_ADDRESS],
+    libraries: [indyDidValidator],
+  })
 
-  return { didRegistry, didValidator, didRegex, testAccounts }
+  return { indyDidRegistry, indyDidValidator, testAccounts }
 }
 
 export async function deployUniversalDidResolver() {
-  const { didRegistry, testAccounts } = await deployDidRegistry()
+  const { indyDidRegistry, testAccounts } = await deployIndyDidRegistry()
   const ethereumDIDRegistry = await new EthereumDIDRegistry().deploy()
 
   const universalDidReolver = await new TestableUniversalDidResolver().deployProxy({
-    params: [ZERO_ADDRESS, didRegistry.address, ethereumDIDRegistry.address],
+    params: [ZERO_ADDRESS, indyDidRegistry.address, ethereumDIDRegistry.address],
   })
 
-  return { universalDidReolver, ethereumDIDRegistry, didRegistry, testAccounts }
+  return { universalDidReolver, ethereumDIDRegistry, indyDidRegistry, testAccounts }
 }
 
 export async function deploySchemaRegistry() {
-  const { universalDidReolver, didRegistry, testAccounts } = await deployUniversalDidResolver()
+  const { universalDidReolver, indyDidRegistry, testAccounts } = await deployUniversalDidResolver()
   const schemaRegistry = await new TestableSchemaRegistry().deployProxy({
     params: [ZERO_ADDRESS, universalDidReolver.address],
   })
 
-  return { universalDidReolver, didRegistry, schemaRegistry, testAccounts }
+  return { universalDidReolver, indyDidRegistry, schemaRegistry, testAccounts }
 }
 
 export async function deployCredentialDefinitionRegistry() {
-  const { universalDidReolver, didRegistry, schemaRegistry, testAccounts } = await deploySchemaRegistry()
+  const { universalDidReolver, indyDidRegistry, schemaRegistry, testAccounts } = await deploySchemaRegistry()
   const credentialDefinitionRegistry = await new TestableCredentialDefinitionRegistry().deployProxy({
     params: [ZERO_ADDRESS, universalDidReolver.address, schemaRegistry.address],
   })
 
-  return { credentialDefinitionRegistry, universalDidReolver, didRegistry, schemaRegistry, testAccounts }
+  return { credentialDefinitionRegistry, universalDidReolver, indyDidRegistry, schemaRegistry, testAccounts }
 }
 
-export async function createDid(didRegistry: DidRegistry, did: string) {
+export async function createDid(didRegistry: IndyDidRegistry, did: string) {
   const didDocument = createBaseDidDocument(did)
   await didRegistry.createDid(didDocument)
   return didDocument

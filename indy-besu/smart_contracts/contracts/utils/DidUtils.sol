@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: Apache-2.0
+pragma solidity ^0.8.20;
+
+import { IncorrectDid } from "../did/DidErrors.sol";
+import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+
+string constant DID_ETHR_METHOD = "ethr";
+string constant DID_INDY_METHOD = "indy";
+string constant DID_INDY_2_METHOD = "indy2";
+string constant DID_SOV_METHOD = "sov";
+
+struct ParsedDid {
+    string method;
+    string identifier;
+}
+
+using { toSlice } for string;
+
+library DidUtils {
+    string private constant _DID_PREFIX = "did";
+    string private constant _DID_DELIMETER = ":";
+
+    /**
+     * @dev Parses a DID string and returns its components.
+     * @param did The DID string to be parsed.
+     * @return ParsedDid A struct containing the method and identifier of the DID.
+     */
+    function parseDid(string memory did) internal view returns (ParsedDid memory) {
+        StrSlice didSlice = did.toSlice();
+        StrSlice delimeterSlice = _DID_DELIMETER.toSlice();
+        StrSlice component;
+        bool found;
+
+        // Check and extract 'did' prefix.
+        (found, component, didSlice) = didSlice.splitOnce(delimeterSlice);
+        if (!found || !component.eq(_DID_PREFIX.toSlice())) revert IncorrectDid(did);
+
+        // Extract the DID method.
+        (found, component, didSlice) = didSlice.splitOnce(delimeterSlice);
+        if (!found) revert IncorrectDid(did);
+
+        ParsedDid memory parsedDid;
+        parsedDid.method = component.toString();
+
+        // Extract the DID identifier.
+        (, , component) = didSlice.rsplitOnce(_DID_DELIMETER.toSlice());
+        parsedDid.identifier = component.toString();
+
+        return parsedDid;
+    }
+
+    function isEthereumMethod(string memory method) internal pure returns (bool) {
+        return method.toSlice().eq(DID_ETHR_METHOD.toSlice());
+    }
+
+    function isIndyMethod(string memory method) internal pure returns (bool) {
+        StrSlice methodSlice = method.toSlice();
+        return
+            methodSlice.eq(DID_INDY_METHOD.toSlice()) ||
+            methodSlice.eq(DID_INDY_2_METHOD.toSlice()) ||
+            methodSlice.eq(DID_SOV_METHOD.toSlice());
+    }
+}

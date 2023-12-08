@@ -1,6 +1,6 @@
 export * from './AccountControl'
 export * from './CredentialDefinitionRegistry'
-export * from './DidRegistry'
+export * from './IndyDidRegistry'
 export * from './EthereumDIDRegistry'
 export * from './RoleControl'
 export * from './SchemaRegistry'
