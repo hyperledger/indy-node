@@ -19,7 +19,7 @@ pub use contracts::{
         },
     },
     did::{
-        did_registry::DidRegistry,
+        did_registry::IndyDidRegistry,
         types::{
             did_doc::{DidDocument, VerificationKey, VerificationKeyType, DID},
             did_doc_builder::DidDocumentBuilder,
@@ -70,7 +70,7 @@ mod tests {
             // write
             let did_doc = did_doc(None);
             let transaction =
-                DidRegistry::build_create_did_transaction(&client, &TRUSTEE_ACC, &did_doc).unwrap();
+                IndyDidRegistry::build_create_did_transaction(&client, &TRUSTEE_ACC, &did_doc).unwrap();
             let signed_transaction = client.sign_transaction(&transaction).await.unwrap();
             let block_hash = client
                 .submit_transaction(&signed_transaction)
@@ -83,9 +83,9 @@ mod tests {
 
             // read
             let transaction =
-                DidRegistry::build_resolve_did_transaction(&client, &did_doc.id).unwrap();
+                IndyDidRegistry::build_resolve_did_transaction(&client, &did_doc.id).unwrap();
             let result = client.submit_transaction(&transaction).await.unwrap();
-            let resolved_did_doc = DidRegistry::parse_resolve_did_result(&client, &result).unwrap();
+            let resolved_did_doc = IndyDidRegistry::parse_resolve_did_result(&client, &result).unwrap();
             assert_eq!(did_doc, resolved_did_doc);
 
             Ok(())
@@ -97,12 +97,12 @@ mod tests {
 
             // write
             let did_doc = did_doc(None);
-            let _receipt = DidRegistry::create_did(&client, &TRUSTEE_ACC, &did_doc)
+            let _receipt = IndyDidRegistry::create_did(&client, &TRUSTEE_ACC, &did_doc)
                 .await
                 .unwrap();
 
             // read
-            let resolved_did_doc = DidRegistry::resolve_did(&client, &did_doc.id)
+            let resolved_did_doc = IndyDidRegistry::resolve_did(&client, &did_doc.id)
                 .await
                 .unwrap();
             assert_eq!(did_doc, resolved_did_doc);
@@ -116,11 +116,11 @@ mod tests {
             let second_client = create_client(TRUSTEE2_PRIVATE_KEY).await;
 
             let did_doc = did_doc(None);
-            let _receipt = DidRegistry::create_did(&first_client, &TRUSTEE_ACC, &did_doc)
+            let _receipt = IndyDidRegistry::create_did(&first_client, &TRUSTEE_ACC, &did_doc)
                 .await
                 .unwrap();
 
-            let receipt = DidRegistry::deactivate_did(&second_client, &TRUSTEE2_ACC, &did_doc.id)
+            let receipt = IndyDidRegistry::deactivate_did(&second_client, &TRUSTEE2_ACC, &did_doc.id)
                 .await
                 .unwrap();
             println!("Receipt: {}", receipt);
@@ -134,19 +134,19 @@ mod tests {
             let second_client = create_client(TRUSTEE2_PRIVATE_KEY).await;
             let mut did_doc = did_doc(None);
 
-            let _receipt = DidRegistry::create_did(&first_client, &TRUSTEE_ACC, &did_doc)
+            let _receipt = IndyDidRegistry::create_did(&first_client, &TRUSTEE_ACC, &did_doc)
                 .await
                 .unwrap();
 
             let old_context = did_doc.context;
             did_doc.context = StringOrVector::String("https://www.w3.org/ns/did/v2".to_string());
 
-            let receipt = DidRegistry::update_did(&second_client, &TRUSTEE2_ACC, &did_doc)
+            let receipt = IndyDidRegistry::update_did(&second_client, &TRUSTEE2_ACC, &did_doc)
                 .await
                 .unwrap();
             println!("Receipt: {}", receipt);
 
-            let not_updated_did_doc = DidRegistry::resolve_did(&first_client, &did_doc.id)
+            let not_updated_did_doc = IndyDidRegistry::resolve_did(&first_client, &did_doc.id)
                 .await
                 .unwrap();
 
@@ -265,7 +265,7 @@ mod tests {
 
             // create DID Document
             let did_doc = create_did(&client).await;
-            DidRegistry::resolve_did(&client, &did_doc.id)
+            IndyDidRegistry::resolve_did(&client, &did_doc.id)
                 .await
                 .unwrap();
 
