@@ -683,7 +683,8 @@ pub mod test {
             init_env_logger();
             let client = client(None);
             let transaction =
-                IndyDidRegistry::build_resolve_did_transaction(&client, &DID::new(ISSUER_ID)).unwrap();
+                IndyDidRegistry::build_resolve_did_transaction(&client, &DID::new(ISSUER_ID))
+                    .unwrap();
             let expected_transaction = Transaction {
                 type_: TransactionType::Read,
                 from: None,

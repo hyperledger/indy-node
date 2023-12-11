@@ -13,6 +13,7 @@ library StringUtils {
     bytes1 private constant _ASCII_SMALL_A = 0x61;
     bytes1 private constant _ASCII_SMALL_F = 0x66;
     string private constant _HEX_PREFIX = "0x";
+    bytes private constant _ZERO_BYTES = "";
 
     /**
      * @dev Checks if two strings are equal.
@@ -61,17 +62,17 @@ library StringUtils {
         StrSlice hexPrefixSlice = _HEX_PREFIX.toSlice();
 
         // Check and remove hex prefix
-        if (!hexStringSlice.startsWith(_HEX_PREFIX.toSlice())) return "";
+        if (!hexStringSlice.startsWith(_HEX_PREFIX.toSlice())) return _ZERO_BYTES;
         hexString = hexStringSlice.stripPrefix(hexPrefixSlice).toString();
 
         bytes memory hexStringBytes = bytes(hexString);
         bytes memory resultBytes = new bytes(hexStringBytes.length / 2);
         for (uint256 i = 0; i < resultBytes.length; i++) {
             (uint8 firstByte, bool firstByteValid) = _hexCharToByte(hexStringBytes[2 * i]);
-            if (!firstByteValid) return "";
+            if (!firstByteValid) return _ZERO_BYTES;
 
             (uint8 secondByte, bool secondByteValid) = _hexCharToByte(hexStringBytes[2 * i + 1]);
-            if (!secondByteValid) return "";
+            if (!secondByteValid) return _ZERO_BYTES;
 
             resultBytes[i] = bytes1(firstByte * 16 + secondByte);
         }

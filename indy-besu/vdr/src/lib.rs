@@ -70,7 +70,8 @@ mod tests {
             // write
             let did_doc = did_doc(None);
             let transaction =
-                IndyDidRegistry::build_create_did_transaction(&client, &TRUSTEE_ACC, &did_doc).unwrap();
+                IndyDidRegistry::build_create_did_transaction(&client, &TRUSTEE_ACC, &did_doc)
+                    .unwrap();
             let signed_transaction = client.sign_transaction(&transaction).await.unwrap();
             let block_hash = client
                 .submit_transaction(&signed_transaction)
@@ -85,7 +86,8 @@ mod tests {
             let transaction =
                 IndyDidRegistry::build_resolve_did_transaction(&client, &did_doc.id).unwrap();
             let result = client.submit_transaction(&transaction).await.unwrap();
-            let resolved_did_doc = IndyDidRegistry::parse_resolve_did_result(&client, &result).unwrap();
+            let resolved_did_doc =
+                IndyDidRegistry::parse_resolve_did_result(&client, &result).unwrap();
             assert_eq!(did_doc, resolved_did_doc);
 
             Ok(())
@@ -120,9 +122,10 @@ mod tests {
                 .await
                 .unwrap();
 
-            let receipt = IndyDidRegistry::deactivate_did(&second_client, &TRUSTEE2_ACC, &did_doc.id)
-                .await
-                .unwrap();
+            let receipt =
+                IndyDidRegistry::deactivate_did(&second_client, &TRUSTEE2_ACC, &did_doc.id)
+                    .await
+                    .unwrap();
             println!("Receipt: {}", receipt);
 
             Ok(())
