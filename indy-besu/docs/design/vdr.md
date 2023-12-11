@@ -224,7 +224,7 @@ struct BuildTxnOptions {}
 ```
 
 ```rust
-/// Prepare transaction executing `DidRegistry.createDid` smart contract method to create a new DID on the Ledger
+/// Prepare transaction executing `IndyDidRegistry.createDid` smart contract method to create a new DID on the Ledger
 ///
 /// #Params
 ///  param: client: LedgerClient - Ledger client
@@ -247,7 +247,7 @@ fn indy_vdr_build_create_did_transaction(
 ##### Single step contract execution
 
 ```rust
-/// Single step function executing DidRegistry.createDid smart contract method to publish a new DID Document
+/// Single step function executing `IndyDidRegistry.createDid` smart contract method to publish a new DID Document
 ///
 /// #Params
 ///  param: client: LedgerClient - Ledger client
@@ -270,7 +270,7 @@ fn indy_vdr_create_did(
 ##### Request builder
 
 ```rust
-/// Prepare transaction executing `DidRegistry.updateDid` smart contract method to update an existing DID Document
+/// Prepare transaction executing `IndyDidRegistry.updateDid` smart contract method to update an existing DID Document
 ///
 /// #Params
 ///  param: client: LedgerClient - Ledger client
@@ -291,7 +291,7 @@ fn indy_vdr_build_update_did_transaction(
 ##### Single step contract execution
 
 ```rust
-/// Single step function executing DidRegistry.updateDid smart contract method to publish DID Document
+/// Single step function executing `IndyDidRegistry.updateDid smart` contract method to publish DID Document
 ///
 /// #Params
 ///  param: client: LedgerClient - Ledger client
@@ -314,7 +314,7 @@ fn indy_vdr_update_did(
 ##### Request builder
 
 ```rust
-/// Prepare transaction executing `DidRegistry.deactivateDid` smart contract method to deactivate an existing DID
+/// Prepare transaction executing `IndyDidRegistry.deactivateDid` smart contract method to deactivate an existing DID
 ///
 /// #Params
 ///  param: client: LedgerClient - Ledger client
@@ -335,7 +335,7 @@ fn indy_vdr_build_deactivate_did_transaction(
 ##### Single step contract execution
 
 ```rust
-/// Single step function executing DidRegistry.deactivateDid smart contract method to publish DID Document
+/// Single step function executing `IndyDidRegistry.deactivateDid` smart contract method to publish DID Document
 ///
 /// #Params
 ///  param: client: LedgerClient - Ledger client
@@ -358,7 +358,7 @@ fn indy_vdr_deactivate_did(
 ##### Request builder
 
 ```rust
-/// Prepare transaction executing `DidRegistry.resolveDid` smart contract method to resolve a DID
+/// Prepare transaction executing `IndyDidRegistry.resolveDid` smart contract method to resolve a DID
 ///
 /// #Params
 ///  param: client: Ledger - client (Ethereum client - for example web3::Http)
@@ -375,7 +375,7 @@ fn indy_vdr_build_resolve_did_transaction(
 ```
 
 ```rust
-/// Parse response for of `DidRegistry.resolveDid` smart contract 
+/// Parse response for of `IndyDidRegistry.resolveDid` smart contract 
 ///
 /// #Params
 ///  param: client: Ledger - client (Ethereum client - for example web3::Http)
@@ -392,7 +392,7 @@ fn indy_vdr_parse_resolve_did_response(
 ##### Single step contract execution
 
 ```rust
-/// Single step function executing DidRegistry.resolveDid smart contract method to resolve DID Document with metadata
+/// Single step function executing `IndyDidRegistry.resolveDid` smart contract method to resolve DID Document with metadata
 ///
 /// #Params
 ///  param: client - Ledger  client (Ethereum client - for example web3::Http)
@@ -409,7 +409,7 @@ fn indy_vdr_resolve_did(
 ```
 
 ```rust
-/// Single step function executing dereferencing DID-URL and DidRegistry.resolveDid smart contract method to resolve DID Document with metadata
+/// Single step function executing dereferencing DID-URL and `IndyDidRegistry.resolveDid` smart contract method to resolve DID Document with metadata
 ///
 /// #Params
 ///  param: client - Ledger  client (Ethereum client - for example web3::Http)

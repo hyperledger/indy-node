@@ -6,7 +6,7 @@ import { DidDocument, DidDocumentStorage } from "./DidTypes.sol";
 /**
  * @dev The interface that defines functions for managing DID documents.
  */
-interface DidRegistryInterface {
+interface IndyDidRegistryInterface {
     /**
      * @dev Event that is sent when a DID Document is created.
      * @param did Created DID.
@@ -71,5 +71,5 @@ interface DidRegistryInterface {
      * @param id The DID to be resolved.
      * @return didDocumentStorage The resolved DID document associated with provided DID.
      */
-    function resolveDid(string calldata id) external returns (DidDocumentStorage memory didDocumentStorage);
+    function resolveDid(string calldata id) external view returns (DidDocumentStorage memory didDocumentStorage);
 }

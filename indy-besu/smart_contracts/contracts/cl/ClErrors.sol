@@ -14,6 +14,12 @@ error FieldRequired(string name);
 error IssuerNotFound(string id);
 
 /**
+ * @notice Error that occurs when the provided issuer ID is invalid.
+ * @param id Issuer ID.
+ */
+error InvalidIssuerId(string id);
+
+/**
  * @notice Error that occurs when attempting to perform an operation on a deactivated issuer.
  * @param id Issuer ID.
  */

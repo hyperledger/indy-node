@@ -35,6 +35,10 @@ export class Account {
         return did
     }
 
+    public get didEthr() {
+        return `did:ethr:${this.address}`
+    }
+
     public get didDocument() {
         return createBaseDidDocument(this.did)
     }

@@ -1,21 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { DidNotFound } from "../did/DidErrors.sol";
-import { DidRegistryInterface } from "../did/DidRegistry.sol";
-import { DidDocumentStorage } from "../did/DidTypes.sol";
+import { UniversalDidResolverInterface } from "../did/UniversalDidResolverInterface.sol";
 import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
-import { Errors } from "../utils/Errors.sol";
 
-import { IssuerHasBeenDeactivated, IssuerNotFound, SchemaAlreadyExist, SchemaNotFound, SenderIsNotIssuerDidOwner } from "./ClErrors.sol";
+import { SchemaAlreadyExist, SchemaNotFound } from "./ClErrors.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
 import { Schema, SchemaWithMetadata } from "./SchemaTypes.sol";
 import { SchemaValidator } from "./SchemaValidator.sol";
 import { CLRegistry } from "./CLRegistry.sol";
-import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
 using SchemaValidator for Schema;
-using { toSlice } for string;
 
 contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable, CLRegistry {
     /**
@@ -39,9 +34,9 @@ contract SchemaRegistry is SchemaRegistryInterface, ControlledUpgradeable, CLReg
         _;
     }
 
-    function initialize(address didRegistryAddress, address upgradeControlAddress) public reinitializer(1) {
-        _didRegistry = DidRegistryInterface(didRegistryAddress);
+    function initialize(address upgradeControlAddress, address didResolverAddress) public reinitializer(1) {
         _initializeUpgradeControl(upgradeControlAddress);
+        _didResolver = UniversalDidResolverInterface(didResolverAddress);
     }
 
     /// @inheritdoc SchemaRegistryInterface

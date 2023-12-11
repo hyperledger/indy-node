@@ -1,23 +1,24 @@
 import {
   CredentialDefinitionRegistry,
-  DidRegistry,
+  IndyDidRegistry,
   RoleControl,
   SchemaRegistry,
+  UniversalDidResolver,
   UpgradeControl,
   ValidatorControl,
 } from '../../contracts-ts'
 import { Contract, createBaseDidDocument, createSchemaObject } from '../../utils'
 import { getTestAccounts, ZERO_ADDRESS } from './test-entities'
 
-export class DidRegex extends testableContractMixin(Contract) {
+export class EthereumDIDRegistry extends testableContractMixin(Contract) {
   constructor() {
-    super(DidRegex.name)
+    super(EthereumDIDRegistry.name)
   }
 }
 
-export class DidValidator extends testableContractMixin(Contract) {
+export class IndyDidValidator extends testableContractMixin(Contract) {
   constructor() {
-    super(DidValidator.name)
+    super(IndyDidValidator.name)
   }
 }
 
@@ -27,12 +28,13 @@ export class UpgradablePrototype extends testableContractMixin(Contract) {
   }
 }
 
-export const TestableDidRegistry = testableContractMixin(DidRegistry)
-export const TestableSchemaRegistry = testableContractMixin(SchemaRegistry)
-export const TestableCredentialDefinitionRegistry = testableContractMixin(CredentialDefinitionRegistry)
-export const TestableRoleControl = testableContractMixin(RoleControl)
-export const TestableValidatorControl = testableContractMixin(ValidatorControl)
-export const TestableUpgradeControl = testableContractMixin(UpgradeControl)
+export class TestableIndyDidRegistry extends testableContractMixin(IndyDidRegistry) {}
+export class TestableSchemaRegistry extends testableContractMixin(SchemaRegistry) {}
+export class TestableCredentialDefinitionRegistry extends testableContractMixin(CredentialDefinitionRegistry) {}
+export class TestableRoleControl extends testableContractMixin(RoleControl) {}
+export class TestableValidatorControl extends testableContractMixin(ValidatorControl) {}
+export class TestableUpgradeControl extends testableContractMixin(UpgradeControl) {}
+export class TestableUniversalDidResolver extends testableContractMixin(UniversalDidResolver) {}
 
 export async function deployRoleControl() {
   const roleControl = await new RoleControl().deployProxy({ params: [ZERO_ADDRESS] })
@@ -41,33 +43,48 @@ export async function deployRoleControl() {
   return { roleControl, testAccounts }
 }
 
-export async function deployDidRegistry() {
+export async function deployIndyDidRegistry() {
   const { testAccounts } = await deployRoleControl()
 
-  const didRegex = await new DidRegex().deploy()
-  const didValidator = await new DidValidator().deploy({ libraries: [didRegex] })
-  const didRegistry = await new TestableDidRegistry().deployProxy({ params: [ZERO_ADDRESS], libraries: [didValidator] })
+  const indyDidValidator = await new IndyDidValidator().deploy()
+  const indyDidRegistry = await new TestableIndyDidRegistry().deployProxy({
+    params: [ZERO_ADDRESS],
+    libraries: [indyDidValidator],
+  })
 
-  return { didRegistry, didValidator, didRegex, testAccounts }
+  return { indyDidRegistry, indyDidValidator, testAccounts }
+}
+
+export async function deployUniversalDidResolver() {
+  const { indyDidRegistry, testAccounts } = await deployIndyDidRegistry()
+  const ethereumDIDRegistry = await new EthereumDIDRegistry().deploy()
+
+  const universalDidReolver = await new TestableUniversalDidResolver().deployProxy({
+    params: [ZERO_ADDRESS, indyDidRegistry.address, ethereumDIDRegistry.address],
+  })
+
+  return { universalDidReolver, ethereumDIDRegistry, indyDidRegistry, testAccounts }
 }
 
 export async function deploySchemaRegistry() {
-  const { didRegistry, testAccounts } = await deployDidRegistry()
-  const schemaRegistry = await new TestableSchemaRegistry().deployProxy({ params: [didRegistry.address, ZERO_ADDRESS] })
+  const { universalDidReolver, indyDidRegistry, testAccounts } = await deployUniversalDidResolver()
+  const schemaRegistry = await new TestableSchemaRegistry().deployProxy({
+    params: [ZERO_ADDRESS, universalDidReolver.address],
+  })
 
-  return { didRegistry, schemaRegistry, testAccounts }
+  return { universalDidReolver, indyDidRegistry, schemaRegistry, testAccounts }
 }
 
 export async function deployCredentialDefinitionRegistry() {
-  const { didRegistry, schemaRegistry, testAccounts } = await deploySchemaRegistry()
+  const { universalDidReolver, indyDidRegistry, schemaRegistry, testAccounts } = await deploySchemaRegistry()
   const credentialDefinitionRegistry = await new TestableCredentialDefinitionRegistry().deployProxy({
-    params: [didRegistry.address, schemaRegistry.address, ZERO_ADDRESS],
+    params: [ZERO_ADDRESS, universalDidReolver.address, schemaRegistry.address],
   })
 
-  return { credentialDefinitionRegistry, didRegistry, schemaRegistry, testAccounts }
+  return { credentialDefinitionRegistry, universalDidReolver, indyDidRegistry, schemaRegistry, testAccounts }
 }
 
-export async function createDid(didRegistry: DidRegistry, did: string) {
+export async function createDid(didRegistry: IndyDidRegistry, did: string) {
   const didDocument = createBaseDidDocument(did)
   await didRegistry.createDid(didDocument)
   return didDocument

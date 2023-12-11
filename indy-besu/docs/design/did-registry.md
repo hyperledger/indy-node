@@ -132,7 +132,7 @@ Each DID Document MUST have a metadata section when a representation is produced
 
 ## Transactions (Smart Contract's methods)
 
-Contract name: **DidRegistry** 
+Contract name: **IndyDidRegistry** 
 
 ### Create DID
 
@@ -143,13 +143,13 @@ Contract name: **DidRegistry**
     * Valid DID Document must be provided
   * Format:
       ```
-      DidRegistry.createDid(
+      IndyDidRegistry.createDid(
         didDoc DidDoc
       )
       ```
   * Example:
       ```
-      DidRegistry.createDid(
+      IndyDidRegistry.createDid(
         didDoc: {
           id:"did:indy2:testnet:SEp33q43PsdP7nDATyySSH",
           verificationMethod: [
@@ -180,13 +180,13 @@ Contract name: **DidRegistry**
     * Sender must be DID creator
   * Format:
       ```
-      DidRegistry.updateDid(
+      IndyDidRegistry.updateDid(
         didDoc DidDoc
       )
       ```
   * Example:
       ```
-      DidRegistry.updatedDid(
+      IndyDidRegistry.updatedDid(
         didDoc: {
           id:"did:indy2:testnet:SEp33q43PsdP7nDATyySSH",
           verificationMethod: [
@@ -217,13 +217,13 @@ Contract name: **DidRegistry**
     * Sender must be DID creator
   * Format:
       ```
-      DidRegistry.deactivateDid( 
+      IndyDidRegistry.deactivateDid( 
         string did
       )
       ```
   * Example:
       ```
-      DidRegistry.deactivateDid(
+      IndyDidRegistry.deactivateDid(
         "did:indy2:testnet:SEp33q43PsdP7nDATyySSH"
       )
       ```
@@ -238,13 +238,13 @@ Contract name: **DidRegistry**
     * DID must exist
   * Format:
       ```
-      DidRegistry.resolveDid(
+      IndyDidRegistry.resolveDid(
         string id,
       ) returns (DidDocumentStorage)
       ```
   * Example:
       ```
-      DidRegistry.resolveDid(
+      IndyDidRegistry.resolveDid(
         "did:indy2:testnet:SEp33q43PsdP7nDATyySSH"
       )
       ```

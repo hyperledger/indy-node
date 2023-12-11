@@ -1,20 +1,25 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { StrSlice, toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
+import { StringUtils } from "../utils/StringUtils.sol";
+import { DidUtils, ParsedDid } from "../utils/DidUtils.sol";
 import { AuthenticationKeyNotFound, AuthenticationKeyRequired, IncorrectDid } from "./DidErrors.sol";
 import { IncorrectDid } from "./DidErrors.sol";
-import { DidRegex } from "./DidRegex.sol";
 import { DidDocument, VerificationMethod } from "./DidTypes.sol";
 
-using { toSlice } for string;
+using StringUtils for string;
 
-library DidValidator {
+library IndyDidValidator {
     /**
      * @dev Validates the DID syntax
      */
-    function validateDid(string memory did) public pure {
-        if (!DidRegex.matches(did)) revert IncorrectDid(did);
+    function validateDid(string memory did) public view {
+        ParsedDid memory parsedDid = DidUtils.parseDid(did);
+
+        if (!DidUtils.isIndyMethod(parsedDid.method)) revert IncorrectDid(did);
+
+        uint256 identifierLength = parsedDid.identifier.length();
+        if (identifierLength != 21 && identifierLength != 22) revert IncorrectDid(parsedDid.identifier);
     }
 
     /**
@@ -24,7 +29,7 @@ library DidValidator {
         if (didDocument.authentication.length == 0) revert AuthenticationKeyRequired(didDocument.id);
 
         for (uint256 i = 0; i < didDocument.authentication.length; i++) {
-            if (!didDocument.authentication[i].verificationMethod.id.toSlice().isEmpty()) {
+            if (!didDocument.authentication[i].verificationMethod.id.isEmpty()) {
                 continue;
             }
 
@@ -35,10 +40,8 @@ library DidValidator {
     }
 
     function _contains(VerificationMethod[] memory methods, string memory methodId) private pure returns (bool) {
-        StrSlice methodIdSlice = methodId.toSlice();
-
         for (uint256 i; i < methods.length; i++) {
-            if (methods[i].id.toSlice().eq(methodIdSlice)) {
+            if (methods[i].id.equals(methodId)) {
                 return true;
             }
         }

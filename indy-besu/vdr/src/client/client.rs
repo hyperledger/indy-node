@@ -155,7 +155,7 @@ pub mod test {
     pub const NODE_ADDRESS: &str = "http://127.0.0.1:8545";
     pub const CONTRACTS_SPEC_BASE_PATH: &str = "../smart_contracts/artifacts/contracts/";
     pub const DID_REGISTRY_ADDRESS: &str = "0x0000000000000000000000000000000000003333";
-    pub const DID_REGISTRY_SPEC_PATH: &str = "did/DidRegistry.sol/DidRegistry.json";
+    pub const DID_REGISTRY_SPEC_PATH: &str = "did/IndyDidRegistry.sol/IndyDidRegistry.json";
     pub const SCHEMA_REGISTRY_ADDRESS: &str = "0x0000000000000000000000000000000000005555";
     pub const SCHEMA_REGISTRY_SPEC_PATH: &str = "cl/SchemaRegistry.sol/SchemaRegistry.json";
     pub const CRED_DEF_REGISTRY_ADDRESS: &str = "0x0000000000000000000000000000000000004444";

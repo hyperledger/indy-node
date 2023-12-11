@@ -1,22 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.20;
 
-import { DidNotFound } from "../did/DidErrors.sol";
-import { DidRegistryInterface } from "../did/DidRegistry.sol";
-import { DidDocumentStorage } from "../did/DidTypes.sol";
+import { UniversalDidResolverInterface } from "../did/UniversalDidResolverInterface.sol";
 import { ControlledUpgradeable } from "../upgrade/ControlledUpgradeable.sol";
-import { Errors } from "../utils/Errors.sol";
 
 import { CredentialDefinition, CredentialDefinitionWithMetadata } from "./CredentialDefinitionTypes.sol";
 import { CredentialDefinitionRegistryInterface } from "./CredentialDefinitionRegistryInterface.sol";
 import { CredentialDefinitionValidator } from "./CredentialDefinitionValidator.sol";
-import { CredentialDefinitionAlreadyExist, CredentialDefinitionNotFound, IssuerHasBeenDeactivated, IssuerNotFound, SenderIsNotIssuerDidOwner } from "./ClErrors.sol";
+import { CredentialDefinitionAlreadyExist, CredentialDefinitionNotFound } from "./ClErrors.sol";
 import { CLRegistry } from "./CLRegistry.sol";
 import { SchemaRegistryInterface } from "./SchemaRegistryInterface.sol";
-import { toSlice } from "@dk1a/solidity-stringutils/src/StrSlice.sol";
 
 using CredentialDefinitionValidator for CredentialDefinition;
-using { toSlice } for string;
 
 contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, ControlledUpgradeable, CLRegistry {
     /**
@@ -54,13 +49,13 @@ contract CredentialDefinitionRegistry is CredentialDefinitionRegistryInterface, 
     }
 
     function initialize(
-        address didRegistryAddress,
-        address schemaRegistryAddress,
-        address upgradeControlAddress
+        address upgradeControlAddress,
+        address didResolverAddress,
+        address schemaRegistryAddress
     ) public reinitializer(1) {
-        _didRegistry = DidRegistryInterface(didRegistryAddress);
-        _schemaRegistry = SchemaRegistryInterface(schemaRegistryAddress);
         _initializeUpgradeControl(upgradeControlAddress);
+        _didResolver = UniversalDidResolverInterface(didResolverAddress);
+        _schemaRegistry = SchemaRegistryInterface(schemaRegistryAddress);
     }
 
     /// @inheritdoc CredentialDefinitionRegistryInterface

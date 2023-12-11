@@ -188,12 +188,12 @@ Contract name: **transactionAllowed**
 
 ### DID Document management
 
-| Contract      | Method                         | Required Role               | Action Description              |
-|---------------|--------------------------------|-----------------------------|---------------------------------|
-| DidRegistry   | createDid                      | Trustee, Endorser, Steward  | Create a new DID Document       |
-| DidRegistry   | updateDid                      | DID owner                   | Update DID an existing Document |
-| DidRegistry   | deactivateDid                  | DID owner                   | Deactivate an existing DID      |
-| DidRegistry   | resolveDid                     | any                         | Resolve DID Document for a DID  |
+| Contract          | Method                         | Required Role               | Action Description              |
+|-------------------|--------------------------------|-----------------------------|---------------------------------|
+| IndyDidRegistry   | createDid                      | Trustee, Endorser, Steward  | Create a new DID Document       |
+| IndyDidRegistry   | updateDid                      | DID owner                   | Update DID an existing Document |
+| IndyDidRegistry   | deactivateDid                  | DID owner                   | Deactivate an existing DID      |
+| IndyDidRegistry   | resolveDid                     | any                         | Resolve DID Document for a DID  |
 
 ### CL Registry management
 

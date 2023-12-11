@@ -1,21 +1,27 @@
 import { expect } from 'chai'
-import { DidRegistry } from '../../contracts-ts'
+import { IndyDidRegistry } from '../../contracts-ts'
 import { createCredentialDefinitionObject } from '../../utils'
-import { createDid, createSchema, deployCredentialDefinitionRegistry } from '../utils/contract-helpers'
+import {
+  createDid,
+  createSchema,
+  deployCredentialDefinitionRegistry,
+  TestableCredentialDefinitionRegistry,
+  TestableSchemaRegistry,
+} from '../utils/contract-helpers'
 import { ClErrors } from '../utils/errors'
 import { TestAccounts } from '../utils/test-entities'
 
 describe('CredentialDefinitionRegistry', function () {
-  let didRegistry: DidRegistry
-  let schemaRegistry: any
-  let credentialDefinitionRegistry: any
+  let didRegistry: IndyDidRegistry
+  let schemaRegistry: TestableSchemaRegistry
+  let credentialDefinitionRegistry: TestableCredentialDefinitionRegistry
   let testAccounts: TestAccounts
   let schemaId: string
   const issuerId = 'did:indy2:mainnet:SEp33q43PsdP7nDATyySSH'
 
   beforeEach(async function () {
     const {
-      didRegistry: didRegistryInit,
+      indyDidRegistry: didRegistryInit,
       schemaRegistry: schemaRegistryInit,
       credentialDefinitionRegistry: credentialDefinitionRegistryInit,
       testAccounts: testAccountsInit,
@@ -152,5 +158,34 @@ describe('CredentialDefinitionRegistry', function () {
     //     )
     //     .withArgs(credDef.id)
     // })
+  })
+
+  describe('Add/Resolve Credential Definition with did:ethr Issuer', function () {
+    it('Should create and resolve Credential Definition', async function () {
+      const ethrIssuerId = `did:ethr:${testAccounts.trustee.account.address}`
+      const credDef = createCredentialDefinitionObject({ issuerId: ethrIssuerId, schemaId })
+
+      await credentialDefinitionRegistry.createCredentialDefinition(credDef)
+      const result = await credentialDefinitionRegistry.resolveCredentialDefinition(credDef.id)
+
+      expect(result.credDef).to.be.deep.equal(credDef)
+    })
+
+    it('Should fail if Credential Definition is being created with not owned Issuer DID', async function () {
+      const ethrIssuerId = `did:ethr:${testAccounts.trustee2.account.address}`
+      const credDef = createCredentialDefinitionObject({ issuerId: ethrIssuerId, schemaId })
+
+      await expect(credentialDefinitionRegistry.createCredentialDefinition(credDef))
+        .to.be.revertedWithCustomError(credentialDefinitionRegistry.baseInstance, ClErrors.SenderIsNotIssuerDidOwner)
+        .withArgs(testAccounts.trustee.account.address, testAccounts.trustee2.account.address)
+    })
+
+    it('Should fail if Credential Definition is being created with invalid Issuer ID', async function () {
+      const credDef = createCredentialDefinitionObject({ issuerId: 'did:ethr:ab$ddfgh354345', schemaId })
+
+      await expect(credentialDefinitionRegistry.createCredentialDefinition(credDef))
+        .to.be.revertedWithCustomError(schemaRegistry.baseInstance, ClErrors.InvalidIssuerId)
+        .withArgs(credDef.issuerId)
+    })
   })
 })

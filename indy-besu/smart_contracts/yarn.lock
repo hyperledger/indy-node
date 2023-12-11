@@ -2964,6 +2964,11 @@ ethjs-util@0.1.6, ethjs-util@^0.1.6:
     is-hex-prefixed "1.0.0"
     strip-hex-prefix "1.0.0"
 
+ethr-did-registry@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/ethr-did-registry/-/ethr-did-registry-1.2.0.tgz#7140b3f3a8358c24689c6223f1dffeff37ae88b2"
+  integrity sha512-KmqvyQbJHoY8WGtYV5V33s7Ypl2KnH5N8pCYfldNt0yJsz1z2xHVKVXXavUhaRsCMqy0pUwRMJHpqlY3eSi2mQ==
+
 eventemitter3@4.0.4:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.4.tgz#b5463ace635a083d018bdc7c917b4c5f10a85384"
