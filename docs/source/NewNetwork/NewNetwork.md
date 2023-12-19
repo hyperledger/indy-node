@@ -21,7 +21,7 @@
 
    Initial Trustees (3 preferred) must create and submit a Trustee DID and Verkey so that the domain genesis file can be built.
 
-   Each trustee has to [instal the `indy-cli`](./CLIInstall.md) and [create a Trustee DID](./CreateDID.md).
+   Each trustee has to [install the `indy-cli`](./CLIInstall.md) and [create a Trustee DID](./CreateDID.md).
 
    Once the Trustees have created their DID and Verkey give the Trustees access to a spreadsheet like [this one](https://docs.google.com/spreadsheets/d/1LDduIeZp7pansd9deXeVSqGgdf0VdAHNMc7xYli3QAY/edit#gid=0) and have them fill out their own row of the Trustees sheet.  The completed sheet will be used to generate the genesis transaction files for the network.   
 
@@ -30,7 +30,7 @@
 
    A Steward is an organization responsible for running a Node on the Network
 
-   Exactly 4 “Genesis” Stewards are needed to establish the network, more Stewards can be added later.
+  Exactly 4 “Genesis” Stewards are required to establish the network, but at least 7 are recommended for a production network that you expect to last for a long time. More Stewards can be added later.
 
    Each Genesis Steward’s node information will be included in the Genesis Pool file, so they should be willing to install and maintain a Node on the new Network for an extended period of time.
 
@@ -40,7 +40,7 @@
       1. Determine a name for the new network and have the stewards substitute it in the appropriate places in the guide, such as when setting the network name and creating the directory when creating the keys for the node.
       1. They all need to stop at the normal place ([3.5. Add Node to a Pool](../installation-and-configuration.md#3.5.-Add-Node-to-a-Pool)) as instructed in the guide as the steps that follow differ when creating a new network.  The following sections of this guide describe the steps required to start the new network.
 
-   Once the Stewards have created their DID and Verkey, and performed the initial setup of they node, give the Stewards access to a spreadsheet like [this one](https://docs.google.com/spreadsheets/d/1LDduIeZp7pansd9deXeVSqGgdf0VdAHNMc7xYli3QAY/edit#gid=0) and have them fill out their own row of the Stewards sheet.  The completed sheet will be used to generate the genesis transaction files for the network.   
+   Once the Stewards have created their DID and Verkey, and performed the initial setup of their node, give the Stewards access to a spreadsheet like [this one](https://docs.google.com/spreadsheets/d/1LDduIeZp7pansd9deXeVSqGgdf0VdAHNMc7xYli3QAY/edit#gid=0) and have them fill out their own row of the Stewards sheet.  The completed sheet will be used to generate the genesis transaction files for the network.   
 
 ## IV. Create and Distribute genesis transaction files
 
