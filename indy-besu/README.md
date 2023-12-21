@@ -1,8 +1,21 @@
-# Indy ledger
+**This is not an official Indy Ledger code yet, but an experimental proof of concept (PoC). The goal is to prove a possibility to use Indy Besu as a foundation for Indy Ledger and show how it can be done.
+The code and PoC may be moved to a separate Indy repository later for further development.**
 
+# Indy Besu ledger
+
+## Plan for making this code official 
+Proposed by @TelegramSam in #1826 
+>- Work is created in new repositories
+>    - I understand a previous conversation decided to put the work in indy-node. I think this decision should be changed.
+>    - This will help the work move faster with less community bottlenecks.
+>- Related work should be clearly labeled as experimental or research
+>    - This includes a did method definition, for example
+>- Advance the project so that we are able to test the properties of the project, including speed, scale, bandwidth, processor load, and energy use.
+>- Delay commitment to the new approach until we reach sufficient confirmation of approach validity.
+  
 ## Goals and ideas
 
-* Provide a replacement for [Hyperledger Indy](https://www.hyperledger.org/projects/hyperledger-indy) ecosystem that provides support for verifiable credentials:
+*  Prove a possibility of replacement for [Hyperledger Indy](https://www.hyperledger.org/projects/hyperledger-indy) ecosystem that provides support for verifiable credentials:
   * Components to replace:
     * Distributed ledger: [Indy Node](https://github.com/hyperledger/indy-node) and [Indy Plenum](https://github.com/hyperledger/indy-plenum)
     * Client library: [Indy SDK](https://github.com/hyperledger/indy-sdk/tree/main)
