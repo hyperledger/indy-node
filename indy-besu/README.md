@@ -5,13 +5,13 @@ The code and PoC may be moved to a separate Indy repository later for further de
 
 ## Plan for making this code official 
 Proposed by @TelegramSam in #1826 
-- Work is created in new repositories
-    - I understand a previous conversation decided to put the work in indy-node. I think this decision should be changed.
-    - This will help the work move faster with less community bottlenecks.
-- Related work should be clearly labeled as experimental or research
-    - This includes a did method definition, for example
-- Advance the project so that we are able to test the properties of the project, including speed, scale, bandwidth, processor load, and energy use.
-- Delay commitment to the new approach until we reach sufficient confirmation of approach validity.
+>- Work is created in new repositories
+>    - I understand a previous conversation decided to put the work in indy-node. I think this decision should be changed.
+>    - This will help the work move faster with less community bottlenecks.
+>- Related work should be clearly labeled as experimental or research
+>    - This includes a did method definition, for example
+>- Advance the project so that we are able to test the properties of the project, including speed, scale, bandwidth, processor load, and energy use.
+>- Delay commitment to the new approach until we reach sufficient confirmation of approach validity.
   
 ## Goals and ideas
 
