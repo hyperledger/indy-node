@@ -1,0 +1,9 @@
+#!/bin/bash
+
+CONTRACTS_DIR="indy-besu/smart_contracts"
+
+# Change to the smart contracts directory
+cd "$CONTRACTS_DIR" || exit
+
+# Run yarn compile to compile new smart contracts
+yarn compile

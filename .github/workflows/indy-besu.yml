@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  pull_request:
+    paths: "indy-besu/**"
+
+  workflow_dispatch:
+
+jobs:
+  lint-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.x"
+      - name: Install dependencies
+        run: yarn install
+        working-directory: indy-besu/smart_contracts
+      - name: Lint
+        run: yarn lint-check
+        working-directory: indy-besu/smart_contracts
+
+  test-contracts:
+    needs: lint-contracts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.x"
+      - name: Install dependencies
+        run: yarn install
+        working-directory: indy-besu/smart_contracts
+      - name: Unit tests
+        run: yarn test
+        working-directory: indy-besu/smart_contracts
+      - name: Run localnet
+        run: ./network/scripts/run.sh && sleep 40
+        working-directory: indy-besu
+      - name: Demos
+        run: yarn demos
+        working-directory: indy-besu/smart_contracts
+
+  lint-vdr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install latest rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Lint
+        run: cargo fmt --check
+        working-directory: indy-besu/vdr
+
+  store-artifacts:
+    needs: lint-vdr
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.x"
+      - name: Install dependencies
+        run: yarn add hardhat
+        working-directory: indy-besu/smart_contracts
+      - name: Compile smart contracts
+        run: yarn compile
+        working-directory: indy-besu/smart_contracts
+      - name: Archive contract artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: smart-contracts-artifacts
+          path: indy-besu/smart_contracts/artifacts/**
+          retention-days: 3
+
+  test-vdr:
+    needs: store-artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install latest rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Download contract artifcats
+        uses: actions/download-artifact@v3
+        with:
+          name: smart-contracts-artifacts
+          path: indy-besu/smart_contracts/artifacts
+      - name: Run localnet
+        run: ./network/scripts/run.sh && sleep 40
+        working-directory: indy-besu
+      - name: Test
+        run: cargo test --features=ledger_test -- --test-threads=1
+        working-directory: indy-besu/vdr

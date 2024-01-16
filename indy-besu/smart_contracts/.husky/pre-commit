@@ -1,0 +1,21 @@
+#!/bin/bash
+
+CONTRACTS_DIR="indy-besu/smart_contracts"
+
+# Check if git status has any changes in the smart contracts directory
+if git status --porcelain | grep -q "$CONTRACTS_DIR"; then
+  . "$(dirname -- "$0")/_/husky.sh"
+
+  # Change to the smart contracts directory
+  cd "$CONTRACTS_DIR" || exit
+  
+  # Run yarn lint and yarn format, and if they succeed, add the changes to git
+  if yarn lint && yarn format; then
+    git add .
+  else
+    echo "Linting or formatting failed, please fix the issues and try again." >&2
+    exit 1
+  fi
+else
+  echo "No changes detected in $CONTRACTS_DIR"
+fi
