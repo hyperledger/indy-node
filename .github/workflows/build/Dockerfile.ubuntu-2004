@@ -26,13 +26,13 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61 &&
 # Plenum
 #  - https://github.com/hyperledger/indy-plenum/issues/1546
 #  - Needed to pick up rocksdb=5.8.8
-RUN echo "deb  https://hyperledger.jfrog.io/artifactory/indy focal dev rc main"  >> /etc/apt/sources.list && \
+RUN echo "deb  https://hyperledger.jfrog.io/artifactory/indy focal dev rc stable"  >> /etc/apt/sources.list && \
     echo "deb http://security.ubuntu.com/ubuntu bionic-security main"  >> /etc/apt/sources.list && \
     echo "deb https://repo.sovrin.org/deb bionic master" >> /etc/apt/sources.list && \
     echo "deb https://repo.sovrin.org/sdk/deb bionic master" >> /etc/apt/sources.list
 
-RUN apt-get update -y && apt-get install -y rubygems python3-pip && apt-get -y autoremove && rm -rf /var/lib/apt/lists/* 
+RUN apt-get update -y && apt-get install -y rubygems python3-pip && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
 # install fpm
-RUN gem install --no-document rake 
+RUN gem install --no-document rake
 RUN gem install --no-document fpm -v 1.14.2
