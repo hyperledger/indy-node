@@ -23,7 +23,7 @@ jobs:
       distribution: ${{ steps.workflow-setup.outputs.distribution }}
     steps:
       - name: checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: get-release-info
         id: get-release-info
         uses: hyperledger/indy-shared-gha/.github/actions/get-release-info@v1
