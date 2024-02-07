@@ -56,9 +56,11 @@ jobs:
                        liblz4-dev
 
           pip install packaging \
+                      wheel \
                       importlib_metadata==3.10.1 \
-                      Cython==0.29.36 \
-                      indy-plenum==1.13.1 \
+                      Cython==0.29.36
+
+          pip install indy-plenum==1.13.1 \
                       pyzmq==22.3.0
 
       - name: Prepare package and set version
