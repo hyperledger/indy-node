@@ -26,7 +26,7 @@ jobs:
       publish: ${{ steps.setup.outputs.publish }}
     steps:
       - name: checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup
         id: setup
         uses: hyperledger/indy-shared-gha/.github/actions/workflow-setup@v1

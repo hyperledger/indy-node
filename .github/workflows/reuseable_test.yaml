@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # ===============================================
       # Caching cannot be used.
@@ -38,7 +38,7 @@ jobs:
       #    for the plenum install.
       # -----------------------------------------------
       # - name: Cache pip
-      #   uses: actions/cache@v3
+      #   uses: actions/cache@v4
       #   with:
       #     # pip cache on the node-build image is not in the default location.
       #     # path: ~/.cache/pip
@@ -47,7 +47,7 @@ jobs:
       #     restore-keys: |
       #       ${{ runner.os }}-indy-node-pip-
       - name: Download node deb
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: indy_node-deb
 
@@ -80,7 +80,7 @@ jobs:
 
       - name: Publish Test Report
         if: success() || failure()
-        uses: scacap/action-surefire-report@v1.0.7
+        uses: scacap/action-surefire-report@v1
         continue-on-error: true
         with:
           check_name: Indy Node ${{ matrix.module }} Test Report for slice ${{ matrix.slice }}/${{ strategy.job-total }}
@@ -90,7 +90,7 @@ jobs:
       - name: Upload Detailed Test Failure Results
         # The test runner only emits the detailed test results if the tests fail.
         if: (steps.node-test.outcome == 'failure') && failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: detailed-test-result-slice-${{ matrix.slice }}
           path: test-result-node-${{ matrix.slice }}.txt

@@ -8,7 +8,7 @@ jobs:
   update-setup:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Update indy-plenum to ${{ github.event.client_payload.pyVersion }}
         run: |
           sed -i "s/\(indy-plenum==\)[^ ]*/\1${{ github.event.client_payload.pyVersion }},/g" setup.py

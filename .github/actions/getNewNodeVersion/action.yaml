@@ -8,16 +8,16 @@ inputs:
     default: "true"
 
 outputs:
-  nodeVersion: 
+  nodeVersion:
     description: "The new Version. (Bumped Patch by 1)"
     value: ${{ steps.versions.outputs.nodeVersion }}
 
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: '3.8'
     - name: Get Versions
@@ -28,7 +28,7 @@ runs:
         minor=$(python3 -c "from indy_node import load_version; patch = load_version().parts[1]; print('' if patch is None else patch)")
         patch=$(python3 -c "from indy_node import load_version; patch = load_version().parts[2]; patch+=1; print('' if patch is None else patch)")
         if  [[ "${{ inputs.isRC }}" == "true" ]]; then
-          export nodeVersion="${major}.${minor}.${patch}rc1" 
+          export nodeVersion="${major}.${minor}.${patch}rc1"
         else
           export nodeVersion="${major}.${minor}.${patch}"
         fi
