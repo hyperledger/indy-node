@@ -2,13 +2,7 @@
 
 #### Branches
 
-At the moment work is being done so that `ubuntu-20.04-upgrade` becomes the new master/main branch.
-The old `master` will be moved to `ubuntu16` branch.
-The documentation for the old "legacy" process will reside in that branch.
-
-- `master` | `ubuntu-20.04` branches contains the latest changes. All PRs usually need to be sent to `master` | `ubuntu-20.04-upgrade`.
-   
-
+The `main` branch contains the current line of development supporting Ubuntu 20.04
 
 #### Pull Requests
 
@@ -34,7 +28,6 @@ The documentation for the old "legacy" process will reside in that branch.
     - Install flake8: `pip install flake8`
     - Run validation on the root folder of the project: `flake8 .`
 
-
 ## Continuous Delivery
 
 - CD part of the pipeline is defined in `.github/workflows/tag.yaml`, `.github/workflows/releasepr.yaml`, and `.github/workflows/publishRelease.yaml` file.
@@ -43,33 +36,20 @@ The documentation for the old "legacy" process will reside in that branch.
 #### Builds
 
 What artifacts are produced after each push
-- to `master` branch:
-    - all artifacts include developmental release segment `devN` in their version.
-    - indy-plenum:
-        - indy-plenum in [pypi](https://pypi.python.org/pypi/indy-plenum)
-        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial master-latest`](https://repo.sovrin.org/lib/apt/xenial/master-latest/)
-    - indy-node:
-        - indy-node in [pypi](https://pypi.python.org/pypi/indy-node)
-        - indy-node deb package in [`https://repo.sovrin.org/deb xenial master-latest`](https://repo.sovrin.org/lib/apt/xenial/master-latest/)
-        - indy-node deb package in [`https://repo.sovrin.org/deb xenial master`](https://repo.sovrin.org/lib/apt/xenial/master/) (copied from `master-latest`)
-        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial master`](https://repo.sovrin.org/lib/apt/xenial/master/) (copied from `master-latest`)
-- to `ubuntu-20.04-upgrade` branch:
+- to `main` branch:
     - all artifacts include developmental release segment `devN` in their version, where `N` is a unix timestamp.
     - indy-plenum:
         - indy-plenum in [pypi](https://pypi.python.org/pypi/indy-plenum)
-        - indy-plenum deb package in [`https://hyperledger.jfrog.io/artifactory/indy`](https://hyperledger.jfrog.io/artifactory/indy)
+        - indy-plenum deb package in [`https://hyperledger.jfrog.io/artifactory/indy focal dev`](https://hyperledger.jfrog.io/ui/native/indy/pool/focal/dev/i/indy-plenum/)
     - indy-node:
         - indy-node in [pypi](https://pypi.python.org/pypi/indy-node)
-        - indy-node deb package in [`https://hyperledger.jfrog.io/artifactory/indy`](https://hyperledger.jfrog.io/artifactory/indy)
-
+        - indy-node deb package in [`https://hyperledger.jfrog.io/artifactory/indy focal dev`](https://hyperledger.jfrog.io/ui/native/indy/pool/focal/dev/i/indy-node/)
 
 Use cases for artifacts
 - PyPI artifacts can be used for development experiments, but not intended to be used for production.
 - Using deb packages is recommended way to be used for a test/production pool on Ubuntu.
-    - indy-node deb package from [`https://repo.sovrin.org/deb xenial stable`](https://repo.sovrin.org/lib/apt/xenial/stable/)
-    is one and the only official stable release that can be used for production (stable version).
-    - indy-node deb package from [`https://repo.sovrin.org/deb xenial master`](https://repo.sovrin.org/lib/apt/xenial/master/)
-    contains the latest changes (from master branch). It's not guaranteed that that this code is stable enough.
+    - The deb packages from [`https://hyperledger.jfrog.io/artifactory/indy focal stable`](https://hyperledger.jfrog.io/ui/native/indy/pool/focal/stable/) are the only official stable releases that can be used for production (stable version).
+    - The deb packages from [`https://hyperledger.jfrog.io/artifactory/indy focal dev`](https://hyperledger.jfrog.io/ui/native/indy/pool/focal/dev/) contain the latest changes (from `main` branch). They are not guaranteed to be stable.
 
 #### Packaging
 
@@ -80,29 +60,24 @@ Use cases for artifacts
 ##### Build scripts
 
 We use [fpm](https://github.com/jordansissel/fpm) for packaging python code into deb packages. Build scripts are placed in `build-scripts` folders:
-- https://github.com/hyperledger/indy-node/blob/master/build-scripts
-- https://github.com/hyperledger/indy-plenum/blob/master/build-scripts
+- https://github.com/hyperledger/indy-node/blob/main/build-scripts
+- https://github.com/hyperledger/indy-plenum/blob/main/build-scripts
 
 We also pack some 3rd parties dependencies which are not presented in canonical ubuntu repositories:
-- https://github.com/hyperledger/indy-node/tree/ubuntu-20.04-upgrade/build-scripts/ubuntu-2004/build-3rd-parties.sh
-- https://github.com/hyperledger/indy-plenum/tree/ubuntu-20.04-upgrade/build-scripts//ubuntu-2004/build-3rd-parties.sh
+- https://github.com/hyperledger/indy-node/tree/main/build-scripts/ubuntu-2004/build-3rd-parties.sh
+- https://github.com/hyperledger/indy-plenum/tree/main/build-scripts//ubuntu-2004/build-3rd-parties.sh
 
 Each `build-scripts` folder includes `Readme.md`. Please check them for more details.
 
 #### Versioning
 
 - Please note, that we are using versioning that satisfies [PEP 440](https://www.python.org/dev/peps/pep-0440) with release segment as `MAJOR.MINOR.PATCH` that satisfies [SemVer](https://semver.org/) as well.
-- Version is set in the code (see [\_\_version\_\_.json](https://github.com/hyperledger/indy-node/blob/master/indy_node/__version__.json)).
-- Version is bumped for new releases / hotfixes either manually or using [bump_version.sh](https://github.com/hyperledger/indy-node/blob/master/indy_node/bump_version.sh) script. The latter is preferred.
+- Version is set in the code (see [\_\_version\_\_.json](https://github.com/hyperledger/indy-node/blob/main/indy_node/__version__.json)).
+- Version is bumped for new releases / hotfixes either manually or using [bump_version.sh](https://github.com/hyperledger/indy-node/blob/main/indy_node/bump_version.sh) script. The latter is preferred.
 - During development phase version includes developmental segment `devN`, where `N` is a unix timestamp at buildtime.
 - During release preparation phase (release / hotfix workflows) version includes pre-release segment `rcN`, where `N>=1` and set in the source code by developers.
-- Each dependency (including indy-plenum) has a strict version (see [setup.py](https://github.com/hyperledger/indy-node/blob/master/setup.py))
+- Each dependency (including indy-plenum) has a strict version (see [setup.py](https://github.com/hyperledger/indy-node/blob/main/setup.py))
 - If you install indy-node (either from pypi, or from deb package), the specified in setup.py version of indy-plenum is installed.
-- Master and Stable share the same versioning scheme.
-- Differences in master and stable code:
-    - `setup.py`: different versions of indy-plenum dependency
-    - different versions in migrations scripts
-
 
 ## Release workflow
 It starts with setting a tag in the form of `setRelease-v<Major>.<Minor>.<Patch>[-rc<Num>]`.
@@ -113,7 +88,7 @@ It starts with setting a tag in the form of `setRelease-v<Major>.<Minor>.<Patch>
 #### 1. Release Candidate and Release Preparation
 
 1. [**Maintainer**]
-    - Create `setRelease-vX.Y.Z` tag on desired branch (most of the time it would be `master|ubuntu20.04-upgrade`).
+    - Create `setRelease-vX.Y.Z` tag on desired branch (most of the time it would be `main`).
 2. [**GHA `tag.yaml`**]
     - Bumps version
     - creates PR with the updated Version
@@ -140,6 +115,6 @@ It starts with setting a tag in the form of `setRelease-v<Major>.<Minor>.<Patch>
 ### Hotfix Release
 
 Hotfix release is quite similar except the following difference:
-  - hotfix branches named `hotfix-X.Y.Z` created from last Release commit;
-  - `master` usually is not merged since hotfixes (as a rule) should include only fixes for stable code.
+  - hotfix branches named `hotfix-X.Y.Z` created from last Release commit/tag;
+  - `main` usually is not merged since hotfixes (as a rule) should include only fixes for released code.
   - `setRelease`-Tag created on Hotfix branch.
