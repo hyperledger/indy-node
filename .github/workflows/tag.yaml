@@ -37,26 +37,30 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.8'
+
       - name: Install deps for version change
         run: |
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61
-          sudo add-apt-repository 'deb  https://hyperledger.jfrog.io/artifactory/indy focal dev'
+          sudo add-apt-repository 'deb  https://hyperledger.jfrog.io/artifactory/indy focal stable'
           sudo apt-get update -y && sudo apt-get install -y \
                        rocksdb=5.8.8 \
                        libgflags-dev \
                        libsnappy-dev \
                        zlib1g-dev \
                        libbz2-dev \
-                       liblz4-dev \
-                       libgflags-dev
+                       liblz4-dev
+
           pip install packaging \
                       importlib_metadata==3.10.1 \
-                      indy-plenum==1.13.1.rc3 \
+                      Cython==0.29.36 \
+                      indy-plenum==1.13.1 \
                       pyzmq==22.3.0
+
       - name: Prepare package and set version
         run: |
           ./bump_version.sh ${{ needs.taginfos.outputs.VERSION }}
