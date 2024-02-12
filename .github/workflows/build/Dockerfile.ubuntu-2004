@@ -34,5 +34,4 @@ RUN echo "deb  https://hyperledger.jfrog.io/artifactory/indy focal dev rc stable
 RUN apt-get update -y && apt-get install -y rubygems python3-pip && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
 # install fpm
-RUN gem install --no-document rake
-RUN gem install --no-document fpm -v 1.14.2
+RUN gem install --no-document rake dotenv:2.8.1 fpm:1.14.2

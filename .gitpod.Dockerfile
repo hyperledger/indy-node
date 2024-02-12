@@ -29,7 +29,7 @@ RUN sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE
 RUN sudo add-apt-repository 'deb  https://hyperledger.jfrog.io/artifactory/indy focal dev' && \
     sudo add-apt-repository 'deb http://security.ubuntu.com/ubuntu bionic-security main' && \
     sudo add-apt-repository 'deb https://repo.sovrin.org/deb bionic master'  && \
-    sudo add-apt-repository 'deb https://repo.sovrin.org/sdk/deb bionic master' 
+    sudo add-apt-repository 'deb https://repo.sovrin.org/sdk/deb bionic master'
 
 
 
@@ -68,5 +68,4 @@ RUN pip3 install -U \
 
 
 # install fpm
-RUN sudo gem install --no-document rake 
-RUN sudo gem install --no-document fpm -v 1.14.2
+RUN sudo gem install --no-document rake dotenv:2.8.1 fpm:1.14.2
