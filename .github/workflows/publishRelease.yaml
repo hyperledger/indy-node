@@ -94,7 +94,7 @@ jobs:
           zip -r artifacts/indy_node-python.zip artifacts/indy_node-python
           zip -r artifacts/third-party-dependencies.zip artifacts/third-party-dependencies
       - name: Generate Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.release-infos.outputs.VERSIONTAG }}
           files: |
