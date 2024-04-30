@@ -1,0 +1,6 @@
+# change setting for all wheels
+.:
+  maintainer_name: "Hyperledger"
+  maintainer_email: "hyperledger-indy@lists.hyperledger.org"
+  extended_desc: "Hyperledger package for indy-plenum"
+  version_template: "{upstream_version}"
