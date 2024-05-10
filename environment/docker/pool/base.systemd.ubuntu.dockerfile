@@ -1,1 +1,1 @@
-FROM solita/ubuntu-systemd:16.04
+FROM solita/ubuntu-systemd:18.04
