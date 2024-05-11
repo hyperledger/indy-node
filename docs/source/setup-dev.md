@@ -18,7 +18,7 @@ The scripts are in [dev-setup](https://github.com/hyperledger/indy-node/tree/mas
 
 **Note**: As of now, we provide scripts for Ubuntu only. It's not guaranteed that the code is working on Windows.
 
-- One needs Python 3.5 to work with the code
+- One needs Python 3.8 to work with the code
 - We recommend using Python virtual environment for development
 - We use pytest for unit and integration testing
 - There are some dependencies that must be installed before being able to run the code
@@ -64,7 +64,7 @@ create a virtualenv to work in
 
 ### Setup Python
 
-One needs Python 3.5 to work with the code. You can use `dev-setup/ubuntu/setup_dev_python.sh` script for quick installation of Python 3.5, pip
+One needs Python 3.8 to work with the code. You can use `dev-setup/ubuntu/setup_dev_python.sh` script for quick installation of Python 3.8, pip
 and virtual environment on Ubuntu, or follow the detailed instructions below.
 
 
@@ -82,7 +82,7 @@ Run ```sudo yum install python3.5```
 
 ##### Mac
 
-1. Go to [python.org](https://www.python.org) and from the "Downloads" menu, download the Python 3.5.0 package (python-3.5.0-macosx10.6.pkg) or later.
+1. Go to [python.org](https://www.python.org) and from the "Downloads" menu, download the Python 3.8.0 package or later.
 
 2. Open the downloaded file to install it.
 
