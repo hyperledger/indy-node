@@ -33,12 +33,12 @@ jobs:
         uses: actions/checkout@v4
       - name: get-release-info
         id: get-release-info
-        uses: hyperledger/indy-shared-gha/.github/actions/get-release-info@v1
+        uses: hyperledger/indy-shared-gha/.github/actions/get-release-info@v2
         with:
           versionString: "${{ github.event.head_commit.message }}"
       - name: workflow-setup
         id: workflow-setup
-        uses: hyperledger/indy-shared-gha/.github/actions/workflow-setup@v1
+        uses: hyperledger/indy-shared-gha/.github/actions/workflow-setup@v2
 
   createRelease:
     name: Create Release
@@ -50,7 +50,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Node deb Artifacts from Github Action Artifacts
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: releasepr.yaml
@@ -58,7 +58,7 @@ jobs:
           name: indy_node-deb
           path: artifacts/indy_node-deb
       - name: Download Node python Artifacts from Github Action Artifacts
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: releasepr.yaml
@@ -66,7 +66,7 @@ jobs:
           name: indy_node-python
           path: artifacts/indy_node-python
       - name: Download Node third party dependency Artifacts from Github Action Artifacts
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: releasepr.yaml
@@ -110,7 +110,7 @@ jobs:
     name: Publish Artifacts
     needs: [release-infos, createRelease]
     if: needs.release-infos.outputs.isVersionBump == 'true' && needs.release-infos.outputs.publish == 'true'
-    uses: hyperledger/indy-shared-gha/.github/workflows/publish_artifacts.yaml@v1
+    uses: hyperledger/indy-shared-gha/.github/workflows/publish_artifacts.yaml@v2
     with:
       COMPONENT: ${{ needs.release-infos.outputs.component }}
       UBUNTU_VERSION: ${{ needs.release-infos.outputs.UBUNTU_VERSION }}
@@ -123,7 +123,7 @@ jobs:
   convertPyVersion:
     name: "Convert to python version flavour"
     needs: [release-infos, publish_artifacts]
-    uses: hyperledger/indy-shared-gha/.github/workflows/pyVersionConversion.yaml@v1
+    uses: hyperledger/indy-shared-gha/.github/workflows/pyVersionConversion.yaml@v2
     with:
       VERSIONTAG: ${{ needs.release-infos.outputs.VERSIONTAG }}
 
