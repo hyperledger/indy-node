@@ -6,7 +6,7 @@ GENERAL_CONFIG_DIR="/etc/indy"
 GENERAL_DATA_DIR="/var/lib/indy"
 GENERAL_LOG_DIR="/var/log/indy"
 
-INSTALL_DIR='/usr/local/lib/python3.8/dist-packages'
+INSTALL_DIR='/usr/local/lib/python3.10/dist-packages'
 
 NOFILES_SOFT_LIMIT=65536
 NOFILES_HARD_LIMIT=131072
