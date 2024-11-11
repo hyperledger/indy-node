@@ -11,7 +11,7 @@ As a transaction author, I need my transactions to be written to the ledger pres
  - It should not be possible to endorse a transaction without explicitly specifying the Endorser.
 
 ## Proposed workflow
-1. Transaction Author builds a new request (`indy_build_xxx_reqeust`).
+1. Transaction Author builds a new request (`indy_build_xxx_request`).
 1. If no endorser is needed for a transaction (for example, the transaction author is an endorser, or auth rules are configured in a way that transaction author can send requests in permissionless mode), then the author signs and submits the transaction.
 1. Otherwise the author chooses an Endorser and adds Endorser's DID into the request calling `indy_append_request_endorser`. 
 1. Transaction author signs the request (`indy_multi_sign_request` or `indy_sign_request`) with the added endorser field (output of `indy_append_request_endorser`).
