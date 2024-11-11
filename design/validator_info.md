@@ -11,7 +11,7 @@ the user who has a read access to the \<node name\>_info.json file from the node
 This file is updated by node once a minute and contains following information:
 ```
 {
-    "did": "Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv", # node's identidier
+    "did": "Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv", # node's identifier
     "response-version": "0.0.1", # 0.0.1 for now
     "timestamp": 1519711338, # current time 
     "verkey": "33nHHYKnqmtGAVfZZGoP8hpeExeH45Fo8cKmd5mcnKYk7XgWNBxkkKJ", # node's verkey
@@ -52,7 +52,7 @@ This file is updated by node once a minute and contains following information:
             "read-transactions": 0.0
         },
         
-        "uptime": 300 # uptaime
+        "uptime": 300 # uptime
     },
     
     "software": { # packets' versions
