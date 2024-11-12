@@ -32,7 +32,7 @@ Anoncreds protocol links:
     1. CredDef Issuer needs to be able to create multiple CredDefs by the same issuer DID.
     1. CredDef Issuer needs to be able to create multiple CredDefs for the same Schema by the same issuer DID.
     1. We need to keep reputation for CredDef's Issuer DID.
-1. Creation of Revocation Registry (Def and Enteries):
+1. Creation of Revocation Registry (Def and Entries):
     1. RevocReg Issuer may not be the same as Schema Author and CredDef issuer. 
     1. RevocReg Issuer needs to be able to create multiple RevocRegs for the same issuer DID.
     1. RevocReg Issuer needs to be able to create multiple RevocReg for the same CredDef by the same issuer DID.
@@ -267,7 +267,7 @@ reference to the CredDef, plus some revocation registry specific data.
     * `maxCredNum` (int): maximum number of credentials the Registry can serve.
     * `publicKeys` (json): Registry's public key.        
     * `tailsHash` (string): hash of tails.
-    * `tailsLocaiton` (string): location of tails file. 
+    * `tailsLocation` (string): location of tails file. 
  
 
 #### Restrictions
@@ -461,7 +461,7 @@ Reply:
 ```
 Notes:
 * accum_to and accum_from it's a transactions from ledger "as-is", 
-like reply for for GET_REVOC_REG query.
+like reply for GET_REVOC_REG query.
 * general STATE_PROOF in reply is:
   * STATE_PROOF for "to" accum value if "from" was found.
   * STATE_PROOF for REG_ENTRY transaction if "from" was not found or not presented in request

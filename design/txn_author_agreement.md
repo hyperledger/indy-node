@@ -213,7 +213,7 @@ pub extern fn indy_build_get_txn_author_agreement_request(command_handle: Comman
 ///
 /// #Params
 /// request_json - original request
-/// text and version - (optional) raw data about TAA from ledger. These parameters should be passed together. These parameters are required if digest parameter is ommited.
+/// text and version - (optional) raw data about TAA from ledger. These parameters should be passed together. These parameters are required if digest parameter is omitted.
 /// digest - (optional) hash on text and version. This parameter is required if text and version parameters are ommited.
 /// acc_mech_type - mechanism how user has accepted the TAA
 /// time_of_acceptance - UTC timestamp when user has accepted the TAA
