@@ -29,16 +29,16 @@ jobs:
         uses: actions/checkout@v4
       - name: setup
         id: setup
-        uses: hyperledger/indy-shared-gha/.github/actions/workflow-setup@v1
+        uses: hyperledger/indy-shared-gha/.github/actions/workflow-setup@v2
 
   lint:
     name: Lint
-    uses: hyperledger/indy-shared-gha/.github/workflows/lint.yaml@v1
+    uses: hyperledger/indy-shared-gha/.github/workflows/lint.yaml@v2
 
   build-image:
     name: Create Builder Image
     needs: [workflow-setup, lint]
-    uses: hyperledger/indy-shared-gha/.github/workflows/buildimage.yaml@v1
+    uses: hyperledger/indy-shared-gha/.github/workflows/buildimage.yaml@v2
     with:
       CACHE_KEY_BUILD: ${{ needs.workflow-setup.outputs.CACHE_KEY_BUILD }}
       DOCKER_IMAGE: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build
@@ -47,7 +47,7 @@ jobs:
   build_packages:
     name: Build Packages
     needs: [workflow-setup, build-image]
-    uses: hyperledger/indy-shared-gha/.github/workflows/buildpackages.yaml@v1
+    uses: hyperledger/indy-shared-gha/.github/workflows/buildpackages.yaml@v2
     with:
       DOCKER_IMAGE: ghcr.io/${{ needs.workflow-setup.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
       UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
@@ -67,7 +67,7 @@ jobs:
     name: Publish Artifacts
     needs: [workflow-setup, indy_node_tests]
     if: needs.workflow-setup.outputs.publish == 'true'
-    uses: hyperledger/indy-shared-gha/.github/workflows/publish_artifacts.yaml@v1
+    uses: hyperledger/indy-shared-gha/.github/workflows/publish_artifacts.yaml@v2
     with:
       COMPONENT: 'dev'
       UBUNTU_VERSION: ${{ needs.workflow-setup.outputs.UBUNTU_VERSION }}
