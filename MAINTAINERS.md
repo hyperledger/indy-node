@@ -1,42 +1,91 @@
-## About This File
+# Maintainers
 
-You can find out who's contributed recently just by looking at GitHub's
-[contributors list](../../graphs/contributors). But there are a few more
-things you ought to know about who maintains this code, and how they do it:
+## Maintainer Scopes, GitHub Roles and GitHub Teams
 
-1. Make sure you read our [contributor guidelines](http://bit.ly/2ugd0bq)
-so you understand how we work and how to collaborate effectively.
-This includes instructions about pull request and code review protocols,
-and it explains what we mean by calling someone a "maintainer" in this
-file.
+The Maintainers of this repo, defined as GitHub users with escalated privileges
+in the repo, are managed in the Hyperledger "governance" repo's [access control file](https://github.com/hyperledger/governance/blob/main/access-control.yaml). Consult that to see:
 
-2. Be aware that individual folders in the project may have more
-specific maintainers; if you see another `MAINTAINERS.md` in a subfolder,
-that governs the tree below it.
+- What teams have escalated privileges to this repository.
+- What GitHub roles those teams have in the repository.
+- Who are the members of each of those teams.
 
-3. A lot of interactions with maintainers take place on [Jira](https://jira.hyperledger.org/projects/INDY).
-You'll need [Linux Foundation credentials](https://identity.linuxfoundation.org) to
-comment there; creating them is self-service. The project name you want, once in
-jira, is "INDY".
+The actions covered below for [becoming](#becoming-a-maintainer) and [removing](#removing-maintainers) are made manifest through PRs to that file.
 
-4. The other important communication mechanism to know about is Rocket.Chat.
-Again, you use your Linux Foundation credentials. Most of the team hangs out
-there during their work day; look for `#indy`, `#indy-sdk`, `#indy-pr-review`,
-and so forth.
+## The Duties of a Maintainer
 
-## Who To Contact
+Maintainers are expected to perform the following duties for this repository. The duties are listed in more or less priority order:
 
-For ordinary questions, we suggest you contact [active contributors](../../graphs/contributors)
-generically, on rocket.chat `#indy`. If that doesn't get someone's attention,
-feel free to contact the contributors individually.
+- Review, respond, and act on any security vulnerabilities reported against the repository.
+- Review, provide feedback on, and merge or reject GitHub Pull Requests from
+  Contributors.
+- Review, triage, comment on, and close GitHub Issues
+  submitted by Contributors.
+- When appropriate, lead/facilitate architectural discussions in the community.
+- When appropriate, lead/facilitate the creation of a product roadmap.
+- Create, clarify, and label issues to be worked on by Contributors.
+- Ensure that there is a well defined (and ideally automated) product test and
+  release pipeline, including the publication of release artifacts.
+- When appropriate, execute the product release process.
+- Maintain the repository CONTRIBUTING.md file and getting started documents to
+  give guidance and encouragement to those wanting to contribute to the product, and those wanting to become maintainers.
+- Contribute to the product via GitHub Pull Requests.
+- Monitor requests from the Hyperledger Technical Oversight Committee about the
+contents and management of Hyperledger repositories, such as branch handling,
+required files in repositories and so on.
+- Contribute to the Hyperledger Project's Quarterly Report.
 
-Maintainers are busy and delegate many decisions to other trusted
-contributors. However, it is appropriate to contact them if you have a
-complex design decision or a controversial PR.
+## Becoming a Maintainer
 
-## Maintainers
+This community welcomes contributions. Interested contributors are encouraged to
+progress to become maintainers. To become a maintainer the following steps
+occur, roughly in order.
 
-* Alex - maintainer and scrum team lead. geo=western Russia; github, rocket.chat, jira=ashcherbakov
-* Doug - maintainer. geo=Utah, USA; github=glowkey; rocket.chat, jira=DouglasWightman
-* Lovesh - maintainer and founder of codebase, often involved in advanced research
-  instead of day-to-day scrum. geo=India; github; jira=lovesh; rocket.chat=LoveshHarchandani
+- The proposed maintainer establishes their reputation in the community,
+  including authoring five (5) significant merged pull requests, and expresses
+  an interest in becoming a maintainer for the repository.
+- An issue is created to add the proposed maintainer to the list of active maintainers.
+- The issue is authored by an existing maintainer or has a comment on the PR from an existing maintainer supporting the proposal.
+- The issue is authored by the proposed maintainer or has a comment on the issue from the proposed maintainer confirming their interest in being a maintainer.
+  - The issue or comment from the proposed maintainer must include their
+    willingness to be a long-term (more than 6 month) maintainer.
+- Once the issue and necessary comments have been received, an approval timeframe begins.
+- The issue **MUST** be communicated on all appropriate communication channels, including relevant community calls, chat channels and mailing lists. Comments of support from the community are welcome.
+- The issue is approved and the proposed maintainer becomes a maintainer if either:
+  - Two weeks have passed since at least three (3) Maintainer issue approvals have been recorded, OR
+  - An absolute majority of maintainers have approved the issue.
+- If the issue does not get the requisite approvals, it may be closed.
+- Once the add maintainer issue has been approved, the necessary updates to the GitHub Teams are made via a PR to the Hyperledger "governance" repo's [access control file](https://github.com/hyperledger/governance/blob/main/access-control.yaml).
+
+## Removing Maintainers
+
+Being a maintainer is not a status symbol or a title to be carried
+indefinitely. It will occasionally be necessary and appropriate to move a
+maintainer to emeritus status. This can occur in the following situations:
+
+- Resignation of a maintainer.
+- Violation of the Code of Conduct warranting removal.
+- Inactivity.
+  - A general measure of inactivity will be no commits or code review comments
+    for one reporting quarter. This will not be strictly enforced if
+    the maintainer expresses a reasonable intent to continue contributing.
+  - Reasonable exceptions to inactivity will be granted for known long term
+    leave such as parental leave and medical leave.
+- Other circumstances at the discretion of the other Maintainers.
+
+The process to move a maintainer from active to emeritus status is comparable to the process for adding a maintainer, outlined above. In the case of voluntary
+resignation, the Pull Request can be merged following a maintainer issue approval. If the removal is for any other reason, the following steps **SHOULD** be followed:
+
+- An issue is created to move the maintainer to the list of emeritus maintainers.
+- The issue is authored by, or has a comment supporting the proposal from, an existing maintainer or Hyperledger GitHub organization administrator.
+- Once the issue and necessary comments have been received, the approval timeframe begins.
+- The issue **MAY** be communicated on appropriate communication channels, including relevant community calls, chat channels and mailing lists.
+- The issue is approved and the maintainer transitions to maintainer emeritus if:
+  - The issue is approved by the maintainer to be transitioned, OR
+  - Two weeks have passed since at least three (3) Maintainer issue approvals have been recorded, OR
+  - An absolute majority of maintainers have approved the issue.
+- If the issue does not get the requisite approvals, it may be closed.
+- Once the remove maintainer issue has been approved, the necessary updates to the GitHub Teams are made via a PR to the Hyperledger "governance" repo's [access control file](https://github.com/hyperledger/governance/blob/main/access-control.yaml).
+
+Returning to active status from emeritus status uses the same steps as adding a
+new maintainer. Note that the emeritus maintainer already has the 5 required
+significant changes as there is no contribution time horizon for those.
