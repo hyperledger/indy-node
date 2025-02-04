@@ -4,9 +4,9 @@
     "name": "Ubuntu",
     "build": {
         "dockerfile": "Dockerfile",
-        // Update 'VARIANT' to pick an Ubuntu version: hirsute, focal, bionic
+        // Update 'VARIANT' to pick an Ubuntu version: jammy, hirsute, focal, bionic
         // Use hirsute or bionic on local arm64/Apple Silicon.
-        "args": { "VARIANT": "focal" }
+        "args": { "VARIANT": "jammy" }
     },
 
     "customizations": {
