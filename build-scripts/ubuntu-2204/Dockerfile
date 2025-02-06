@@ -17,13 +17,13 @@ RUN apt update -y && apt install -y \
 # --------------------------------------------------------------------------------------------------------
 # Hyperledger
 RUN gpg --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61 && \
-    gpg --export 9692C00E657DDE61 > /etc/apt/trusted.gpg.d/hyperledger.gpg
+    gpg --export 9692C00E657DDE61 > /etc/apt/keyrings/hyperledger.gpg
 # ========================================================================================================
 
 # Plenum
 #  - https://github.com/hyperledger/indy-plenum/issues/1546
 #  - Needed to pick up rocksdb=5.8.8
-RUN echo "deb [signed-by=/etc/apt/trusted.gpg.d/hyperledger.gpg] https://hyperledger.jfrog.io/artifactory/indy jammy dev" > /etc/apt/sources.list.d/hyperledger.list
+RUN echo "deb [signed-by=/etc/apt/keyrings/hyperledger.gpg] https://hyperledger.jfrog.io/artifactory/indy jammy dev rc stable" > /etc/apt/sources.list.d/hyperledger.list
 
 RUN apt update -y && apt install -y \
     # Python
