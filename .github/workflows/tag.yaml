@@ -33,7 +33,7 @@ jobs:
   bump_version:
     name: Bump Version Number
     needs: taginfos
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.8'
+          python-version: '3.10'
 
       - name: Install deps for version change
         run: |

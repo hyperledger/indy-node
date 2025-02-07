@@ -16,7 +16,12 @@ cd "${TMP_DIR}/build-scripts/ubuntu-2204"
 ./prepare-package.sh "${TMP_DIR}" indy_node "${VERSION}" debian-packages
 
 echo "Fetching the indy-plenum version from setup.py and converting it to deb format ..."
-plenumDebVersion=$(grep -oP "indy-plenum==\d+.\d+.\d+((-|.)?(rc|dev)\d+)?" ${TMP_DIR}/setup.py | grep -oP "\d+.\d+.\d+((-|.)?(rc|dev)\d+)?" | sed 's/\./\~/3')
+# Converts Versions defined in the following forms to their equivalent dep version format:
+# 1.14.0.rc0 ==> 1.14.0~rc0
+# 1.14.0-rc0 ==> 1.14.0~rc0
+# 1.14.0.dev0654678970 ==> 1.14.0~dev0654678970
+# 1.14.0-dev0654678970 ==> 1.14.0~dev0654678970
+plenumDebVersion=$(grep -oP "indy-plenum==\d+.\d+.\d+((-|.)?(rc|dev)\d+)?" ${TMP_DIR}/setup.py | grep -oP "\d+.\d+.\d+((-|.)?(rc|dev)\d+)?" | sed 's/\./\~/3' | sed 's/\-/\~/1')
 echo "plenumDebVersion: ${plenumDebVersion}"
 
 sed -i "s/{package_name}/${PACKAGE_NAME}/" "prerm"

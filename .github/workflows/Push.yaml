@@ -4,11 +4,16 @@ on:
     branches:
       - main
       - test-automation-integration
+      - ubuntu-22.04
     paths:
       - '**.py'
       - '.github/**'
       - 'build-scripts/**'
       - 'bump_version.sh'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   workflow-setup:

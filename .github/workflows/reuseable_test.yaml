@@ -13,7 +13,7 @@ on:
 jobs:
   indy_node_tests:
     name: Sliced Module Tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     # Fix for scacap/action-surefire-report out of memory error:
     # - https://github.com/ScaCap/action-surefire-report/issues/17
     env:
