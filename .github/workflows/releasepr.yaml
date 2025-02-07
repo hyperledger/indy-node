@@ -5,6 +5,7 @@ on:
     paths:
       - '!**'
       - "indy_node/__version__.json"
+  workflow_dispatch:
 
 jobs:
   release-infos:

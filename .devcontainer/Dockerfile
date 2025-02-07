@@ -1,7 +1,7 @@
-# See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.205.2/containers/ubuntu/.devcontainer/base.Dockerfile
+# See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/main/containers/ubuntu/.devcontainer/base.Dockerfile
 
-# [Choice] Ubuntu version (use hirsuite or bionic on local arm64/Apple Silicon): hirsute, focal, bionic
-ARG VARIANT="focal"
+# [Choice] Ubuntu version (use ubuntu-22.04 or ubuntu-18.04 on local arm64/Apple Silicon): ubuntu-22.04, ubuntu-20.04, ubuntu-18.04
+ARG VARIANT="ubuntu-22.04"
 FROM mcr.microsoft.com/vscode/devcontainers/base:${VARIANT}
 
 RUN apt-get update -y && apt-get install -y \
@@ -16,23 +16,19 @@ RUN apt-get update -y && apt-get install -y \
     jq
 
 # ========================================================================================================
-# Update repository signing keys
+# Get repository signing keys
 # --------------------------------------------------------------------------------------------------------
 # Hyperledger
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61 && \
-    # Sovrin
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88
+RUN gpg --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61 && \
+    gpg --export 9692C00E657DDE61 > /etc/apt/keyrings/hyperledger.gpg
 # ========================================================================================================
 
 # Plenum
 #  - https://github.com/hyperledger/indy-plenum/issues/1546
 #  - Needed to pick up rocksdb=5.8.8
-RUN echo "deb  https://hyperledger.jfrog.io/artifactory/indy focal dev"  >> /etc/apt/sources.list && \
-    echo "deb http://security.ubuntu.com/ubuntu bionic-security main"  >> /etc/apt/sources.list && \
-    echo "deb https://repo.sovrin.org/deb bionic master" >> /etc/apt/sources.list && \
-    echo "deb https://repo.sovrin.org/sdk/deb bionic master" >> /etc/apt/sources.list
+RUN echo "deb [signed-by=/etc/apt/keyrings/hyperledger.gpg] https://hyperledger.jfrog.io/artifactory/indy jammy dev rc" > /etc/apt/sources.list.d/hyperledger.list
 
-RUN apt-get update -y && apt-get install -y \
+RUN apt update -y && apt install -y \
     # Python
     python3-pip \
     python3-nacl \
@@ -53,22 +49,19 @@ RUN apt-get update -y && apt-get install -y \
     gcc \
     make \
     # Indy Node and Plenum
-    libssl1.0.0 \
-    ursa=0.3.2-1 \
-    # Indy SDK
-    libindy=1.15.0~1625-bionic \
-    # Need to move libursa.so to parent dir
-    && mv /usr/lib/ursa/* /usr/lib && rm -rf /usr/lib/ursa
+    # Indy SDK is not used anymore
+    #libindy \
+    libssl3 
 
 RUN pip3 install -U \
     # Required by setup.py
-    setuptools==50.3.2 \
-    'pyzmq==22.3.0' \
+    setuptools==75.8.0 \
+    pyzmq==26.2.1 \
     Cython==0.29.36
 
-
 # install fpm
-RUN gem install --no-document rake dotenv:2.8.1 fpm:1.14.2
+RUN gem install --no-document rake dotenv:2.8.1 fpm:1.15.0 && \
+    pip3 install Cython==0.29.36
 
-RUN apt-get -y autoremove \
+RUN apt -y autoremove \
     && rm -rf /var/lib/apt/lists/*
