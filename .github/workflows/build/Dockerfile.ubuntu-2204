@@ -3,7 +3,7 @@ FROM ubuntu:22.04
 ARG uid=1000
 ARG user=indy
 
-RUN apt-get update -y && apt-get install -y \
+RUN apt update -y && apt install -y \
     # common stuff
     git \
     wget \
@@ -15,7 +15,7 @@ RUN apt-get update -y && apt-get install -y \
     jq
 
 # ========================================================================================================
-# Update repository signing keys
+# Get repository signing keys
 # --------------------------------------------------------------------------------------------------------
 # Hyperledger
 RUN gpg --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61 && \

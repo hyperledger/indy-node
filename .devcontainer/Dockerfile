@@ -20,13 +20,13 @@ RUN apt-get update -y && apt-get install -y \
 # --------------------------------------------------------------------------------------------------------
 # Hyperledger
 RUN gpg --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61 && \
-    gpg --export 9692C00E657DDE61 > /etc/apt/trusted.gpg.d/hyperledger.gpg
+    gpg --export 9692C00E657DDE61 > /etc/apt/keyrings/hyperledger.gpg
 # ========================================================================================================
 
 # Plenum
 #  - https://github.com/hyperledger/indy-plenum/issues/1546
 #  - Needed to pick up rocksdb=5.8.8
-RUN echo "deb [signed-by=/etc/apt/trusted.gpg.d/hyperledger.gpg] https://hyperledger.jfrog.io/artifactory/indy jammy dev rc" > /etc/apt/sources.list.d/hyperledger.list
+RUN echo "deb [signed-by=/etc/apt/keyrings/hyperledger.gpg] https://hyperledger.jfrog.io/artifactory/indy jammy dev rc" > /etc/apt/sources.list.d/hyperledger.list
 
 RUN apt update -y && apt install -y \
     # Python
@@ -60,7 +60,8 @@ RUN pip3 install -U \
     Cython==0.29.36
 
 # install fpm
-RUN gem install --no-document rake dotenv:2.8.1 fpm:1.14.2
+RUN gem install --no-document rake dotenv:2.8.1 fpm:1.15.0 && \
+    pip3 install Cython==0.29.36
 
 RUN apt -y autoremove \
     && rm -rf /var/lib/apt/lists/*

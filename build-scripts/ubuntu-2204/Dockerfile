@@ -13,7 +13,7 @@ RUN apt update -y && apt install -y \
     apt-utils
 
 # ========================================================================================================
-# Update repository signing keys
+# Get repository signing keys
 # --------------------------------------------------------------------------------------------------------
 # Hyperledger
 RUN gpg --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61 && \
@@ -62,7 +62,8 @@ RUN pip3 install -U \
     pyzmq==26.2.1
 
 # install fpm
-RUN gem install --no-document rake dotenv:2.8.1 fpm:1.14.2
+RUN gem install --no-document rake dotenv:2.8.1 fpm:1.15.0 && \
+    pip3 install Cython==0.29.36
 
 RUN apt -y autoremove \
     && rm -rf /var/lib/apt/lists/*
