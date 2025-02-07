@@ -33,4 +33,5 @@ RUN echo "deb [signed-by=/etc/apt/keyrings/hyperledger.gpg] https://hyperledger.
 RUN apt update -y && apt install -y rubygems python3-pip && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
 # install fpm
-RUN gem install --no-document rake dotenv:2.8.1 fpm:1.15.0
+RUN gem install --no-document rake dotenv:2.8.1 fpm:1.15.0 && \
+    pip3 install Cython==0.29.36

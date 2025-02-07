@@ -25,15 +25,16 @@ bash -ex $GENERATE_MANIFEST_SCRIPT
 cat $module_name/__manifest__.json
 
 if [ "$distro_packages" = "debian-packages" ]; then
+  # Only used for the deb package builds, NOT for the PyPi package builds.
   echo -e "\n\nPrepares indy-node debian package version"
   sed -i -r "s~indy-node==([0-9\.]+[0-9])(\.)?([a-z]+)~indy-node==\1\~\3~" setup.py
 
-  # Update the package names to match the names that are available on the os.
-  echo -e "\nAdapt the dependencies for the Canonical archive"
-  sed -i "s~timeout-decorator~python3-timeout-decorator~" setup.py
-  sed -i "s~distro~python3-distro~" setup.py
+  # Update the package names to match the versions that are pre-installed on the os.
+  echo -e "\nAdapting the dependencies for the Canonical archive"
+  sed -i "s~timeout-decorator>=0.5.0~python3-timeout-decorator==0.5.0-1~" setup.py
+  sed -i "s~distro==1.7.0~python3-distro==1.7.0-1~" setup.py
   sed -i "s~importlib-metadata=~python3-importlib-metadata=~" setup.py
-  
+
   echo "Preparing config files"
   GENERAL_CONFIG_DIR="\/etc\/indy"
   REPO_GENERAL_CONFIG_DIR="indy_node/general_config"
