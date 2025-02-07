@@ -36,7 +36,12 @@ RUN echo "deb https://hyperledger.jfrog.io/artifactory/indy jammy dev rc"  >> /e
     echo "deb https://repo.sovrin.org/deb bionic master" >> /etc/apt/sources.list && \
     echo "deb https://repo.sovrin.org/sdk/deb bionic master" >> /etc/apt/sources.list
 
-RUN apt-get update -y && apt-get install -y rubygems python3-pip && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get install -y \
+    rubygems \
+    python3-pip && \
+    apt-get -y autoremove && \
+    rm -rf /var/lib/apt/lists/*
 
 # install fpm
-RUN gem install --no-document rake dotenv:2.8.1 fpm:1.15.0
+RUN gem install --no-document rake dotenv:2.8.1 fpm:1.15.0 && \
+    pip3 install Cython==0.29.36
