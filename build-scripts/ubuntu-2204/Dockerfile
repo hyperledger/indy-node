@@ -59,7 +59,7 @@ RUN apt update -y && apt install -y \
 RUN pip3 install -U \
     # Required by setup.py
     setuptools==75.8.0 \
-    pyzmq==26.2.1
+    pyzmq==22.3.0
 
 # install fpm
 RUN gem install --no-document rake dotenv:2.8.1 fpm:1.15.0 && \
