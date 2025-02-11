@@ -71,7 +71,7 @@ If you haven't done so already, please visit the main resource for all things "I
 
 ## Technical Overview of Indy Blockchain
 - Refer to our documentation site at `indy.readthedocs.io` for the most current documentation and walkthroughs
-  - [indy.readthedocs.io/projects/plenum](https://indy.readthedocs.io/projects/plenum/en/latest/index.html)
+  - [indy.readthedocs.io/projects/plenum](https://hyperledger-indy.readthedocs.io/projects/plenum/en/latest/index.html)
   - [indy.readthedocs.io/projects/node](https://hyperledger-indy.readthedocs.io/projects/node/en/latest/index.html)
 - Please visit [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/main.md).
 - More documentation can be found in [indy-plenum-docs](https://github.com/hyperledger/indy-plenum/blob/master/docs)
