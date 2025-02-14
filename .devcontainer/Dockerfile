@@ -72,6 +72,10 @@ RUN pip3 install -U \
     pyzmq==22.3.0 \
     Cython==0.29.36
 
+RUN pip3 uninstall -y ioflo || true
+
+RUN pip3 install --no-cache-dir git+https://github.com/ioflo/ioflo.git
+
 # install fpm
 RUN gem install --no-document rake dotenv:2.8.1 fpm:1.15.0 && \
     pip3 install Cython==0.29.36
