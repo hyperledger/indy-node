@@ -3,10 +3,7 @@ from contextlib import contextmanager
 
 import base58
 from indy.did import replace_keys_start, replace_keys_apply
-from indy.ledger import (
-    build_attrib_request, build_get_attrib_request,
-    build_get_auth_rule_request, build_auth_rule_request,
-    build_auth_rules_request)
+from indy_vdr import ledger
 from libnacl import randombytes
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
@@ -105,20 +102,18 @@ def sdk_send_and_check_req_json(
     resp = sdk_get_and_check_replies(looper, [req])
     return resp
 
-
 def sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrib,
                                 dest=None, xhash=None, enc=None):
     _, s_did = sdk_wallet_handle
     t_did = dest or s_did
     attrib_req = looper.loop.run_until_complete(
-        build_attrib_request(s_did, t_did, xhash, attrib, enc))
+        ledger.build_attrib_request(s_did, t_did, xhash, attrib, enc))
     return sdk_send_and_check_req_json(looper, sdk_pool_handle, sdk_wallet_handle, attrib_req)
-
 
 def sdk_get_attribute_and_check(looper, sdk_pool_handle, submitter_wallet, target_did, attrib_name):
     _, submitter_did = submitter_wallet
     req = looper.loop.run_until_complete(
-        build_get_attrib_request(submitter_did, target_did, attrib_name, None, None))
+        ledger.build_get_attrib_request(submitter_did, target_did, attrib_name, None, None, None, None))
     return sdk_send_and_check_req_json(looper, sdk_pool_handle, submitter_wallet, req)
 
 
@@ -136,7 +131,7 @@ def build_auth_rule_request_json(
     auth_action, auth_type, field, constraint, old_value=None, new_value=None
 ):
     return looper.loop.run_until_complete(
-        build_auth_rule_request(
+        ledger.build_auth_rule_request(
             submitter_did=submitter_did,
             txn_type=auth_type,
             action=auth_action,
@@ -157,7 +152,7 @@ def build_get_auth_rule_request_json(
     new_value=None
 ):
     return looper.loop.run_until_complete(
-        build_get_auth_rule_request(
+        ledger.build_get_auth_rule_request(
             submitter_did=submitter_did,
             txn_type=auth_type,
             action=auth_action,
@@ -173,7 +168,7 @@ def sdk_send_and_check_auth_rule_request(
     auth_action, auth_type, field, constraint, old_value=None, new_value=None,
     no_wait=False
 ):
-    req_json = build_auth_rule_request_json(
+    req_json = ledger.build_auth_rule_request_json(
         looper, sdk_wallet[1],
         auth_action=auth_action,
         auth_type=auth_type,
@@ -196,7 +191,7 @@ def sdk_send_and_check_auth_rules_request(looper, sdk_pool_handle,
                  generate_auth_rule(EDIT_PREFIX, NYM,
                                     ROLE, ENDORSER, TRUSTEE)]
     req_json = looper.loop.run_until_complete(
-        build_auth_rules_request(submitter_did=sdk_wallet[1], data=json.dumps(rules)))
+        ledger.build_auth_rules_request(submitter_did=sdk_wallet[1], data=json.dumps(rules)))
     return sdk_send_and_check_req_json(
         looper, sdk_pool_handle, sdk_wallet, req_json, no_wait=no_wait
     )
@@ -210,7 +205,7 @@ def sdk_send_and_check_get_auth_rule_request(
     old_value=None,
     new_value=None
 ):
-    req_json = build_get_auth_rule_request_json(
+    req_json = ledger.build_get_auth_rule_request_json(
         looper, sdk_wallet[1],
         auth_type=auth_type,
         auth_action=auth_action,

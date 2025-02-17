@@ -1,6 +1,6 @@
 import json
 
-from indy.ledger import build_attrib_request
+from indy_vdr import ledger
 from indy_node.test.api.helper import validate_write_reply, validate_attrib_txn
 from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req
 from hashlib import sha256
@@ -8,7 +8,7 @@ from hashlib import sha256
 
 def execute_attrib_txn(looper, sdk_pool_handle, sdk_wallet_steward, xhash, raw, enc):
     _, identifier = sdk_wallet_steward
-    request = looper.loop.run_until_complete(build_attrib_request(identifier, identifier, xhash, raw, enc))
+    request = looper.loop.run_until_complete(ledger.build_attrib_request(identifier, identifier, xhash, raw, enc))
     return sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, request))[1]
 
 
