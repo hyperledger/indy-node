@@ -1,9 +1,7 @@
-import json
 import time
 
-from indy import blob_storage
-from indy.anoncreds import issuer_create_and_store_revoc_reg
-from indy.ledger import build_revoc_reg_def_request, build_revoc_reg_entry_request
+from indy_node.test.utils import create_and_store_revoc_reg
+from indy_vdr import ledger
 
 from plenum.common.types import f
 
@@ -40,35 +38,29 @@ def get_revoc_reg_entry_id(submitter_did, def_revoc_id):
     entry_revoc_id = ':'.join([submitter_did, domain.MARKER_REVOC_REG_ENTRY, def_revoc_id])
     return entry_revoc_id
 
-
+# create_and_store_revoc_reg does not seem to store tails in blob storage is this
+# taken care of in the wallet_hanlde insert now?
 def create_revoc_reg(looper, wallet_handle, submitter_did, tag, cred_def_id,
                      issuance):
-    tails_writer_config = json.dumps({'base_dir': 'tails', 'uri_pattern': ''})
-    tails_writer = looper.loop.run_until_complete(blob_storage.open_writer(
-        'default', tails_writer_config))
     _, revoc_reg_def_json, revoc_reg_entry_json = \
-        looper.loop.run_until_complete(issuer_create_and_store_revoc_reg(
+        looper.loop.run_until_complete(create_and_store_revoc_reg(
             wallet_handle, submitter_did, "CL_ACCUM", tag, cred_def_id,
-            json.dumps({"max_cred_num": 5, "issuance_type": issuance}),
-            tails_writer))
+            max_cred_num= 5, issuance_type= issuance))
     return looper.loop.run_until_complete(
-        build_revoc_reg_def_request(submitter_did, revoc_reg_def_json))
+        ledger.build_revoc_reg_def_request(submitter_did, revoc_reg_def_json))
 
-
+# Removed tail writer from blob storage does this need to be added using a different
+# method or it's taken care of in wallet handle?
 def create_revoc_reg_entry(looper, wallet_handle, submitter_did, tag, cred_def_id,
                            issuance):
-    tails_writer_config = json.dumps({'base_dir': 'tails', 'uri_pattern': ''})
-    tails_writer = looper.loop.run_until_complete(blob_storage.open_writer(
-        'default', tails_writer_config))
     revoc_reg_def_id, revoc_reg_def_json, revoc_reg_entry_json = \
-        looper.loop.run_until_complete(issuer_create_and_store_revoc_reg(
+        looper.loop.run_until_complete(create_and_store_revoc_reg(
             wallet_handle, submitter_did, "CL_ACCUM", tag, cred_def_id,
-            json.dumps({"max_cred_num": 5, "issuance_type": issuance}),
-            tails_writer))
+            max_cred_num= 5, issuance_type= issuance))
     revoc_reg_def = looper.loop.run_until_complete(
-        build_revoc_reg_def_request(submitter_did, revoc_reg_def_json))
+        ledger.build_revoc_reg_def_request(submitter_did, revoc_reg_def_json))
     entry_revoc_request = looper.loop.run_until_complete(
-        build_revoc_reg_entry_request(
+        ledger.build_revoc_reg_entry_request(
             submitter_did, revoc_reg_def_id, "CL_ACCUM", revoc_reg_entry_json))
 
     return revoc_reg_def, entry_revoc_request

@@ -1,7 +1,8 @@
 import json
 
 import pytest
-from indy.ledger import build_attrib_request, sign_request
+from indy_vdr import ledger
+from indy_node.test.utils import sign_request
 
 from indy_common.types import Request
 from plenum.common.request import Request as PRequest
@@ -16,7 +17,7 @@ def req_json(looper, sdk_wallet_steward):
     wallet_handle, identifier = sdk_wallet_steward
     raw = json.dumps({'answer': 42})
     return looper.loop.run_until_complete(
-        build_attrib_request(identifier, identifier, raw=raw, xhash=None, enc=None))
+        ledger.build_attrib_request(identifier, identifier, raw=raw, xhash=None, enc=None))
 
 
 @pytest.fixture(scope="module")

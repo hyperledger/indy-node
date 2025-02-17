@@ -2,8 +2,8 @@ import json
 import random
 
 import base58
-from indy.anoncreds import issuer_create_schema
-from indy.ledger import build_schema_request
+from indy_node.test.utils import create_schema
+from indy_vdr import ledger
 
 from indy_common.constants import RS_ID, RS_TYPE, RS_NAME, RS_VERSION, RS_CONTENT
 from plenum.common.constants import TXN_TYPE
@@ -203,19 +203,19 @@ def validate_rich_schema_txn(txn, txn_type):
 
 # Misc utility
 
-
+# sdk_wallet_client must be the wallet_handle
 def sdk_build_schema_request(looper, sdk_wallet_client,
                              attributes=[], name="", version=""):
     _, identifier = sdk_wallet_client
 
     _, schema_json = looper.loop.run_until_complete(
-        issuer_create_schema(
+        create_schema(sdk_wallet_client,
             identifier, name,
             version, json.dumps(attributes)
         ))
 
     return looper.loop.run_until_complete(
-        build_schema_request(identifier, schema_json)
+        ledger.build_schema_request(identifier, schema_json)
     )
 
 
@@ -265,11 +265,11 @@ def sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_client, multi_attribute
     _, identifier = sdk_wallet_client
     if multi_attribute:
         _, schema_json = looper.loop.run_until_complete(
-            issuer_create_schema(identifier, name, version, json.dumps(multi_attribute)))
+            create_schema(sdk_wallet_client, identifier, name, version, json.dumps(multi_attribute)))
     else:
         _, schema_json = looper.loop.run_until_complete(
-            issuer_create_schema(identifier, "name", "1.0", json.dumps(["first", "last"])))
-    request = looper.loop.run_until_complete(build_schema_request(identifier, schema_json))
+            create_schema(sdk_wallet_client, identifier, "name", "1.0", json.dumps(["first", "last"])))
+    request = looper.loop.run_until_complete(ledger.build_schema_request(identifier, schema_json))
     return schema_json, \
            sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, request))[1]
 
