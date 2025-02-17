@@ -26,24 +26,24 @@ jobs:
         uses: actions/checkout@v4
       - name: get-release-info
         id: get-release-info
-        uses: hyperledger/indy-shared-gha/.github/actions/get-release-info@v1
+        uses: hyperledger/indy-shared-gha/.github/actions/get-release-info@v2
         with:
           versionString: "${{ github.event.pull_request.body }}"
       - name: workflow-setup
         id: workflow-setup
-        uses: hyperledger/indy-shared-gha/.github/actions/workflow-setup@v1
+        uses: hyperledger/indy-shared-gha/.github/actions/workflow-setup@v2
 
   lint:
     name: Lint
     needs: [release-infos]
     if: needs.release-infos.outputs.isVersionBump == 'true'
-    uses: hyperledger/indy-shared-gha/.github/workflows/lint.yaml@v1
+    uses: hyperledger/indy-shared-gha/.github/workflows/lint.yaml@v2
 
   build-docker-image:
     name: Create Builder Image
     needs: [release-infos, lint]
     if: needs.release-infos.outputs.isVersionBump == 'true'
-    uses: hyperledger/indy-shared-gha/.github/workflows/buildimage.yaml@v1
+    uses: hyperledger/indy-shared-gha/.github/workflows/buildimage.yaml@v2
     with:
       CACHE_KEY_BUILD: ${{ needs.release-infos.outputs.CACHE_KEY_BUILD }}
       DOCKER_IMAGE: ghcr.io/${{ needs.release-infos.outputs.GITHUB_REPOSITORY_NAME }}/node-build
@@ -53,7 +53,7 @@ jobs:
     name: Build Packages
     needs: [release-infos, build-docker-image]
     if: needs.release-infos.outputs.isVersionBump == 'true'
-    uses: hyperledger/indy-shared-gha/.github/workflows/buildpackages.yaml@v1
+    uses: hyperledger/indy-shared-gha/.github/workflows/buildpackages.yaml@v2
     with:
       DOCKER_IMAGE: ghcr.io/${{ needs.release-infos.outputs.GITHUB_REPOSITORY_NAME }}/node-build:${{ needs.release-infos.outputs.UBUNTU_VERSION }}
       UBUNTU_VERSION: ${{ needs.release-infos.outputs.UBUNTU_VERSION }}
