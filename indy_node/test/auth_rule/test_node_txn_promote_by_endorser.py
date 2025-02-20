@@ -18,7 +18,7 @@ def test_node_txn_promote_by_endorser(txnPoolNodeSet,
     validators_before = get_pool_validator_count(txnPoolNodeSet)
 
     new_end_did, new_end_verkey = looper.loop.run_until_complete(
-        did.create_and_store_my_did(sdk_wallet_trustee[0], "{}"))
+        did.create_and_store_did(sdk_wallet_trustee[0], "{}"))
 
     # Step 1. Demote node using default auth rule
     demote_node(looper, sdk_wallet_trustee, sdk_pool_handle, txnPoolNodeSet[-1])

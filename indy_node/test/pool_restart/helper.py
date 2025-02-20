@@ -1,9 +1,9 @@
 import asyncio
 import json
 import socket
-from indy.did import create_and_store_my_did
-from indy.error import ErrorCode
-from indy.ledger import build_pool_restart_request
+from indy_node.test.utils import create_and_store_did
+from indy_vdr.error import VdrError
+from indy_vdr import ledger
 
 from plenum.common.util import randomString
 from plenum.test.helper import sdk_get_replies, sdk_check_reply
@@ -81,12 +81,12 @@ def sdk_send_restart(looper, trusty_wallet, sdk_pool_handle,
     # waiting for replies
     return sdk_get_and_check_multiply_replies(looper, request_couple)
 
-
+# this will probably not return the right type of error since the sdk_get_replies is probably from indy-sdk
 def sdk_get_and_check_multiply_replies(looper, request_couple):
     rets = []
     for req_res in sdk_get_replies(looper, [request_couple, ]):
         req, responses = req_res
-        if not isinstance(responses, ErrorCode) and "op" not in responses:
+        if not isinstance(responses, VdrError) and "op" not in responses:
             for node_resp in responses.values():
                 sdk_check_reply((req, json.loads(node_resp)))
         else:
@@ -99,8 +99,8 @@ async def prepare_restart_request(wallet, named_seed, action="start",
                                   restart_time="0"):
     wh, submitter_did = wallet
     (named_did, named_verkey) = \
-        await create_and_store_my_did(wh, json.dumps({'seed': named_seed}))
-    restart_request = await build_pool_restart_request(submitter_did,
+        await create_and_store_did(wh, json.dumps({'seed': named_seed}))
+    restart_request = await ledger.build_pool_restart_request(submitter_did,
                                                        action,
                                                        restart_time)
     return restart_request, named_did

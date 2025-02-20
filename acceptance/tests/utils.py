@@ -80,7 +80,7 @@ async def attrib_helper(pool_handle, wallet_handle, submitter_did, target_did, x
 
 
 async def schema_helper(pool_handle, wallet_handle, submitter_did, schema_name, schema_version, schema_attrs):
-    schema_id, schema_json = await anoncreds.issuer_create_schema(submitter_did, schema_name, schema_version,
+    schema_id, schema_json = await create_schema(submitter_did, schema_name, schema_version,
                                                                   schema_attrs)
     req = await ledger.build_schema_request(submitter_did, schema_json)
     res = await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, req)

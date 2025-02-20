@@ -14,7 +14,7 @@ from plenum.test.node_catchup.helper import waitNodeDataEquality, ensure_all_nod
 
 from plenum.common.keygen_utils import init_bls_keys
 
-from indy.ledger import build_pool_upgrade_request
+from indy_vdr import ledger
 from plenum.common.constants import DATA, VERSION, FORCE
 from plenum.common.txn_util import get_type, get_payload_data, get_from
 from plenum.common.util import randomString, hexToFriendly
@@ -60,7 +60,7 @@ def sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
 
 def get_req_from_update(looper, did, nup):
     req = looper.loop.run_until_complete(
-        build_pool_upgrade_request(did, nup['name'], nup['version'], nup['action'], nup['sha256'],
+        ledger.build_pool_upgrade_request(did, nup['name'], nup['version'], nup['action'], nup['sha256'],
                                    nup['timeout'],
                                    json.dumps(nup['schedule']) if 'schedule' in nup else None,
                                    nup['justification'] if 'justification' in nup else 'null',

@@ -1,6 +1,7 @@
 import json
 
-from indy.ledger import build_nym_request, sign_request, submit_request
+from indy_node.test.utils import sign_request, submit_request
+from indy_vdr import ledger
 
 from indy_common.state import domain
 from indy_node.test.helper import start_stopped_node, createHalfKeyIdentifierAndAbbrevVerkey
@@ -26,7 +27,7 @@ def test_idr_cache_update_after_catchup(txnPoolNodeSet,
     looper.removeProdable(node_to_disconnect)
 
     idr, verkey = createHalfKeyIdentifierAndAbbrevVerkey()
-    request = looper.loop.run_until_complete(build_nym_request(identifier, idr, verkey, None, None))
+    request = looper.loop.run_until_complete(ledger.build_nym_request(identifier, idr, verkey, None, None))
     req_signed = looper.loop.run_until_complete(sign_request(wallet_handle, identifier, request))
     result = json.loads(looper.loop.run_until_complete(submit_request(sdk_pool_handle, req_signed)))
 

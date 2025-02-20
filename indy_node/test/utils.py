@@ -13,7 +13,6 @@ from inspect import isawaitable
 import random
 import itertools
 import functools
-import testinfra
 import json
 from json import JSONDecodeError
 import hashlib
@@ -101,3 +100,70 @@ async def sign_request(wallet_handle, submitter_did, req):
         raise Exception(f"Key for DID {submitter_did} is empty")
     req.set_signature(key.sign_message(req.signature_input))
     return req
+
+
+
+def parse_get_schema_response(response):
+    schema_seqno = response.get("seqNo")
+    schema_name = response["data"]["name"]
+    schema_version = response["data"]["version"]
+    schema_id = f"{response['dest']}:2:{schema_name}:{schema_version}"
+    return schema_id, {
+        "ver": "1.0",
+        "id": schema_id,
+        "name": schema_name,
+        "version": schema_version,
+        "attrNames": response["data"]["attr_names"],
+        "seqNo": schema_seqno,
+    }
+    
+async def create_and_store_did(wallet_handle, seed=None):
+    keypair, did, verkey = key_helper(seed=seed)
+    await key_insert_helper(wallet_handle, keypair, did, verkey)
+    return did, verkey
+
+def key_helper(seed=None):
+    alg = KeyAlg.ED25519
+    if seed:
+        keypair = Key.from_secret_bytes(alg, seed)
+    else:
+        keypair = Key.generate(alg)
+    verkey_bytes = keypair.get_public_bytes()
+    verkey = base58.b58encode(verkey_bytes).decode("ascii")
+    did = base58.b58encode(verkey_bytes[:16]).decode("ascii")
+    return keypair, did, verkey
+
+async def key_insert_helper(wallet_handle, keypair, did, verkey):
+    try:
+        await wallet_handle.insert_key(verkey, keypair, metadata=json.dumps({}))
+    except AskarError as err:
+        if err.code == AskarErrorCode.DUPLICATE:
+            pass
+        else:
+            raise err
+    item = await wallet_handle.fetch("did", did, for_update=True)
+    if item:
+        did_info = item.value_json
+        if did_info.get("verkey") != verkey:
+            raise Exception("DID already present in wallet")
+        did_info["metadata"] = {}
+        await wallet_handle.replace("did", did, value_json=did_info, tags=item.tags)
+    else:
+        await wallet_handle.insert("did", did,
+                                   value_json={
+                                       "did": did,
+                                       "method": "sov",
+                                       "verkey": verkey,
+                                       "verkey_type": "ed25519",
+                                       "metadata": {},
+                                   },
+                                   tags={
+                                       "method": "sov",
+                                       "verkey": verkey,
+                                       "verkey_type": "ed25519",
+                                   },
+        )
+
+async def submit_request(pool_handle, req):
+    request_result = await pool_handle.sumbit_request(req)
+    return request_result

@@ -21,9 +21,9 @@ class RGPoolNewDemotedNode(RequestGenerator):
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
         self._node_alias = random_string(7)
-        self._node_did, node_ver = await did.create_and_store_my_did(wallet_handle,
+        self._node_did, node_ver = await did.create_and_store_did(wallet_handle,
                                                                      json.dumps({'seed': random_string(32)}))
-        self._steward_did, verk = await did.create_and_store_my_did(wallet_handle,
+        self._steward_did, verk = await did.create_and_store_did(wallet_handle,
                                                                     json.dumps({'seed': random_string(32)}))
 
         nym_req = await ledger.build_nym_request(submitter_did, self._steward_did, verk, None, "STEWARD")

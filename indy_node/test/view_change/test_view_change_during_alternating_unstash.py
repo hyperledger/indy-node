@@ -3,7 +3,7 @@ from collections import namedtuple
 from typing import Iterable
 
 import pytest
-from indy.ledger import build_pool_config_request, build_nym_request
+from indy_vdr import ledger
 
 from plenum.common.messages.node_messages import PrePrepare, Prepare, Commit
 from plenum.common.request import Request
@@ -93,13 +93,13 @@ def test_view_change_during_alternating_unstash(looper, txnPoolNodeSet, sdk_pool
 def sdk_gen_domain_request(looper, sdk_wallet):
     _, did = sdk_wallet
     target_did = SimpleSigner(seed=random_string(32).encode()).identifier
-    req = looper.loop.run_until_complete(build_nym_request(did, target_did, None, None, None))
+    req = looper.loop.run_until_complete(ledger.build_nym_request(did, target_did, None, None, None))
     return Request(**json.loads(req))
 
 
 def sdk_gen_config_request(looper, sdk_wallet):
     _, did = sdk_wallet
-    req = looper.loop.run_until_complete(build_pool_config_request(did, True, False))
+    req = looper.loop.run_until_complete(ledger.build_pool_config_request(did, True, False))
     return Request(**json.loads(req))
 
 

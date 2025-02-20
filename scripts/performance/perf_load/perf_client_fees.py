@@ -41,7 +41,7 @@ class LoadClientFees(LoadClient):
                     wallet_handle, test_did, payment_method, json.dumps(set_fees))
                 for d in trustee_dids:
                     fees_req = await ledger.multi_sign_request(wallet_handle, d, fees_req)
-                fees_resp = await ledger.submit_request(pool_handle, fees_req)
+                fees_resp = await submit_request(pool_handle, fees_req)
                 ensure_is_reply(fees_resp)
 
             get_fees_req = await payment.build_get_txn_fees_req(wallet_handle, test_did, payment_method)
@@ -117,7 +117,7 @@ class LoadClientFees(LoadClient):
         addr, fees_req = await self._add_fees(wallet_h, did, req)
         if fees_req is None:
             return None
-        req = await ledger.sign_request(wallet_h, did, fees_req)
+        req = await sign_request(wallet_h, did, fees_req)
         if addr is not None:
             self._req_addrs[req] = addr
         return req
@@ -153,7 +153,7 @@ class LoadClientFees(LoadClient):
 
     async def ledger_submit(self, pool_h, req):
         try:
-            resp = await ledger.submit_request(pool_h, req)
+            resp = await submit_request(pool_h, req)
         except Exception as ex:
             resp = ex
         await self._parse_fees_resp(req, resp)
@@ -183,7 +183,7 @@ class LoadClientFees(LoadClient):
             mint_req, _ = await payment.build_mint_req(self._wallet_handle, self._test_did, json.dumps(outputs), None)
             mint_req = await self.append_taa_acceptance(mint_req)
             mint_req = await self.multisig_req(mint_req)
-            mint_resp = await ledger.submit_request(self._pool_handle, mint_req)
+            mint_resp = await submit_request(self._pool_handle, mint_req)
             ensure_is_reply(mint_resp)
 
     async def _get_payment_sources(self, pmnt_addr):

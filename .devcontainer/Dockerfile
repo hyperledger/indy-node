@@ -63,8 +63,11 @@ RUN apt update -y && apt install -y \
     make \
     # Indy Node and Plenum
     # Indy SDK is not used anymore
-    #libindy \
-    libssl3 
+    # libindy \
+    ursa=0.3.2-1 \
+    libssl3 \
+    # Need to move libursa.so to parent dir
+    && mv /usr/lib/ursa/* /usr/lib && rm -rf /usr/lib/ursa
 
 RUN pip3 install -U \
     # Required by setup.py

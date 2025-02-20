@@ -45,7 +45,7 @@ class RGDefinition(RGGetDefinition):
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
         await super().on_pool_create(pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs)
         self._wallet_handle = wallet_handle
-        _, self._default_schema_json = await anoncreds.issuer_create_schema(
+        _, self._default_schema_json = await create_schema(
             submitter_did, random_string(32), "1.0", json.dumps(["name", "age", "sex", "height"]))
         schema_request = await ledger.build_schema_request(submitter_did, self._default_schema_json)
         schema_request = await self._append_taa_acceptance(schema_request)

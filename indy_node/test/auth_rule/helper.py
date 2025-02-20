@@ -47,7 +47,7 @@ def generate_auth_rule_operation(auth_action=ADD_PREFIX, auth_type=NYM,
 def create_verkey_did(looper, wh):
     seed = randomString(32)
     return looper.loop.run_until_complete(
-        create_and_store_my_did(wh, json.dumps({'seed': seed})))
+        create_and_store_did(wh, json.dumps({'seed': seed})))
 
 
 def sdk_send_and_check_auth_rule_request(

@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from indy.ledger import build_acceptance_mechanisms_request
+from indy_vdr.ledger import build_acceptance_mechanisms_request
 
 from plenum.test.helper import sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request

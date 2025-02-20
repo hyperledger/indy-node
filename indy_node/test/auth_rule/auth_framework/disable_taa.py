@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from indy.ledger import build_acceptance_mechanisms_request
+from indy_vdr import ledger
 
 from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER
@@ -29,7 +29,7 @@ class TAADisableTest(AuthTest):
         self.send_taa()
 
     def taa_aml_request(self):
-        return self.looper.loop.run_until_complete(build_acceptance_mechanisms_request(
+        return self.looper.loop.run_until_complete(ledger.build_acceptance_mechanisms_request(
             self.trustee_wallet[1],
             json.dumps({
                 'Nice way': 'very good way to accept agreement'}),

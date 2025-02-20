@@ -3,7 +3,8 @@ import json
 
 from enum import Enum, unique
 
-from indy.did import create_and_store_my_did, key_for_local_did
+from indy.did import key_for_local_did
+from indy_node.test.utils import create_and_store_did
 
 from plenum.common.constants import (
     TRUSTEE, STEWARD, NYM, TXN_TYPE, TARGET_NYM, VERKEY, ROLE,
@@ -117,7 +118,7 @@ def poolTxnData(looper, poolTxnData, trustee):
 
         if verkey:
             (sdk_did, sdk_verkey) = looper.loop.run_until_complete(
-                create_and_store_my_did(
+                create_and_store_did(
                     trustee.wallet_handle,
                     json.dumps({'seed': data['seeds'][did_name]}))
             )

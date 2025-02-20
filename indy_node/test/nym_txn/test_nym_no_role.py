@@ -1,5 +1,5 @@
 import pytest
-from indy import did
+from indy_node.test.utils import create_and_store_did
 
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.constants import TRUSTEE_STRING
@@ -13,7 +13,7 @@ def test_new_DID_cannot_update_another_DID(looper,
                                            sdk_wallet_handle):
     """Create trustee"""
     trustee_did, trustee_verkey = looper.loop.run_until_complete(
-        did.create_and_store_my_did(sdk_wallet_trustee[0], "{}"))
+        create_and_store_did(sdk_wallet_trustee[0], "{}"))
 
     """Add trustee to ledger"""
     sdk_add_new_nym(looper, sdk_pool_handle,
@@ -21,7 +21,7 @@ def test_new_DID_cannot_update_another_DID(looper,
 
     """new DID (no role)"""
     new_no_role_did, new_no_role_verkey = looper.loop.run_until_complete(
-        did.create_and_store_my_did(sdk_wallet_trustee[0], "{}"))
+        create_and_store_did(sdk_wallet_trustee[0], "{}"))
 
     """Adding new DID (no role) to ledger"""
     sdk_add_new_nym(looper, sdk_pool_handle,

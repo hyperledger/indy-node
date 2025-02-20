@@ -3,7 +3,7 @@ import time
 import time
 
 import pytest
-from indy.ledger import build_get_revoc_reg_def_request, build_get_revoc_reg_request, build_get_revoc_reg_delta_request
+from indy_vdr import ledger
 
 from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_actions import ADD_PREFIX
@@ -345,7 +345,7 @@ def test_state_proof_returned_for_get_revoc_reg_def(looper,
                                                     send_revoc_reg_def):
     revoc_reg_def_data = send_revoc_reg_def[0]['operation']
 
-    req = looper.loop.run_until_complete(build_get_revoc_reg_def_request(
+    req = looper.loop.run_until_complete(ledger.build_get_revoc_reg_def_request(
         sdk_wallet_client[1], get_revoc_reg_def_id(sdk_wallet_steward[1], send_revoc_reg_def[0])))
     rep = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, req)])
     result = rep[0][1]['result']
@@ -370,7 +370,7 @@ def test_state_proof_returned_for_get_revoc_reg_entry(looper,
     revoc_reg_entry_data = send_revoc_reg_entry[1][0]['operation']
 
     timestamp = int(time.time())
-    req = looper.loop.run_until_complete(build_get_revoc_reg_request(
+    req = looper.loop.run_until_complete(ledger.build_get_revoc_reg_request(
         sdk_wallet_client[1], get_revoc_reg_def_id(sdk_wallet_steward[1], revoc_reg_def[0]), timestamp))
     rep = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, req)])
     result = rep[0][1]['result']
@@ -390,7 +390,7 @@ def test_state_proof_returned_for_get_revoc_reg_entry(looper,
 
 def check_get_delta(looper, sdk_wallet_client, sdk_wallet_steward, revoc_reg_def, timestamp_fr, timestamp_to,
                     sdk_pool_handle, revoc_reg_entry_data, check_data=True):
-    req = looper.loop.run_until_complete(build_get_revoc_reg_delta_request(
+    req = looper.loop.run_until_complete(ledger.build_get_revoc_reg_delta_request(
         sdk_wallet_client[1], get_revoc_reg_def_id(sdk_wallet_steward[1], revoc_reg_def[0]), timestamp_fr,
         timestamp_to))
     rep = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, req)])
