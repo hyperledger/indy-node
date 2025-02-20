@@ -1,5 +1,5 @@
 import pytest
-from indy import did
+from indy_node.test.utils import create_and_store_did
 
 from indy_common.constants import NETWORK_MONITOR
 from indy_node.test.validator_info.helper import sdk_get_validator_info
@@ -16,9 +16,9 @@ def test_network_monitor_suspension_by_another_steward(looper,
                                                        sdk_wallet_handle,
                                                        with_verkey):
     new_steward_did, new_steward_verkey = looper.loop.run_until_complete(
-        did.create_and_store_my_did(sdk_wallet_trustee[0], "{}"))
+        create_and_store_did(sdk_wallet_trustee[0], "{}"))
     new_network_monitor_did, new_network_monitor_verkey = looper.loop.run_until_complete(
-        did.create_and_store_my_did(sdk_wallet_steward[0], "{}"))
+        create_and_store_did(sdk_wallet_steward[0], "{}"))
 
     """Adding new steward"""
     sdk_add_new_nym(looper, sdk_pool_handle,
@@ -57,7 +57,7 @@ def test_network_monitor_suspension_by_itself(looper,
                                               sdk_wallet_handle,
                                               with_verkey):
     new_network_monitor_did, new_network_monitor_verkey = looper.loop.run_until_complete(
-        did.create_and_store_my_did(sdk_wallet_steward[0], "{}"))
+        create_and_store_did(sdk_wallet_steward[0], "{}"))
 
     """Adding NETWORK_MONITOR role by steward"""
     op = {'type': '1',

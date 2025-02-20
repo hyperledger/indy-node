@@ -28,7 +28,8 @@ with open(metadata['__file__'], 'r') as f:
 BASE_DIR = os.path.join(os.path.expanduser("~"), ".indy")
 
 tests_require = ['attrs>=20.3.0', 'pytest>=6.2.2', 'pytest-xdist>=2.2.1', 'pytest-forked>=1.3.0',
-                 'python3-indy==1.16.0.post236', 'pytest-asyncio>=0.14.0']
+                 'pytest-asyncio>=0.14.0', 'python3-indy==1.16.0.post236',
+                 'indy_vdr==0.4.2', 'aries-askar==0.4.3', 'indy-credx==1.1.1']
 
 setup(
     name=metadata['__title__'],
@@ -55,14 +56,21 @@ setup(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
 
-    install_requires=['indy-plenum==1.14.0-rc0',
+    install_requires=[# Changed the import path for the plenum package to point to indy-plenum fork on AdamBurdett Repo for parallel dev change back to regular version once PR is complete
+                       'indy-plenum @ git+https://github.com/burdettadam/indy-plenum.git@feature/indy-vdr-upgrade#egg=indy-plenum',
+                    #'indy-plenum==1.14.0-rc0',
                     # importlib-metadata needs to be pinned to 3.10.1 because from v4.0.0 the package
                     # name ends in python3-importlib-metadata_0.0.0_amd64.deb
                     # see also build-scripts/ubuntu-2004/build-3rd-parties.sh
                     # https://github.com/hyperledger/indy-plenum/blob/eac38674252b539216be2c40bb13e53c5b70dad2/build-scripts/ubuntu-2004/build-3rd-parties.sh#L104-L106
+                      'indy_vdr==0.4.2', 
+                      'aries-askar==0.4.3', 
+                      'indy-credx==1.1.1',
+                      'python3-indy==1.16.0.post236',
                       'importlib-metadata==3.10.1',
                       'timeout-decorator>=0.5.0',
                       'distro==1.7.0'],
+    
     setup_requires=['pytest-runner'],
     extras_require={
         'tests': tests_require

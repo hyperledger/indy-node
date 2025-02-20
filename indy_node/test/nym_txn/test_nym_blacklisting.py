@@ -1,6 +1,6 @@
 import pytest
-from indy import did
 
+from indy_node.test.utils import create_and_store_did
 from indy_common.constants import ENDORSER_STRING
 from plenum.common.constants import TRUSTEE_STRING, STEWARD_STRING
 from plenum.common.exceptions import RequestRejectedException
@@ -14,9 +14,9 @@ def test_steward_suspension_by_another_trustee(looper,
                                                sdk_wallet_handle,
                                                with_verkey):
     new_trustee_did, new_trustee_verkey = looper.loop.run_until_complete(
-        did.create_and_store_my_did(sdk_wallet_trustee[0], "{}"))
+        create_and_store_did(sdk_wallet_trustee[0], "{}"))
     new_steward_did, new_steward_verkey = looper.loop.run_until_complete(
-        did.create_and_store_my_did(sdk_wallet_trustee[0], "{}"))
+        create_and_store_did(sdk_wallet_trustee[0], "{}"))
 
     """Adding new steward"""
     sdk_add_new_nym(looper, sdk_pool_handle,
@@ -45,11 +45,11 @@ def test_steward_cannot_create_endorsers_after_demote(looper,
                                                           sdk_wallet_trustee,
                                                           sdk_wallet_handle):
     new_steward_did, new_steward_verkey = looper.loop.run_until_complete(
-        did.create_and_store_my_did(sdk_wallet_trustee[0], "{}"))
+        create_and_store_did(sdk_wallet_trustee[0], "{}"))
     new_ta_did, new_ta_verkey = looper.loop.run_until_complete(
-        did.create_and_store_my_did(sdk_wallet_trustee[0], "{}"))
+        create_and_store_did(sdk_wallet_trustee[0], "{}"))
     new_ta_2_did, new_ta_2_verkey = looper.loop.run_until_complete(
-        did.create_and_store_my_did(sdk_wallet_trustee[0], "{}"))
+        create_and_store_did(sdk_wallet_trustee[0], "{}"))
 
     """Adding new steward"""
     sdk_add_new_nym(looper, sdk_pool_handle,

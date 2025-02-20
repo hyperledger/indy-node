@@ -1,8 +1,9 @@
 import json
 import pytest
 
-from indy.did import create_and_store_my_did, replace_keys_start, replace_keys_apply
-from indy.ledger import build_get_nym_request
+from indy.did import replace_keys_start, replace_keys_apply
+from indy_node.test.utils import create_and_store_did
+from indy_vdr import ledger
 from indy_common.constants import ENDORSER_STRING
 from indy_node.test.helper import sdk_add_attribute_and_check
 from plenum.common.exceptions import RequestRejectedException
@@ -29,7 +30,7 @@ def set_verkey(looper, sdk_pool_handle, sdk_wallet_sender, dest, verkey):
 def endorser_did_verkey(looper, sdk_wallet_client):
     wh, _ = sdk_wallet_client
     named_did, verkey = looper.loop.run_until_complete(
-        create_and_store_my_did(wh, json.dumps({'seed': ENDORSER_SEED})))
+        create_and_store_did(wh, json.dumps({'seed': ENDORSER_SEED})))
     return named_did, verkey
 
 
@@ -49,14 +50,14 @@ def test_send_same_nyms_only_first_gets_written(
     wh, _ = sdk_wallet
     seed = randomString(32)
     did, verkey = looper.loop.run_until_complete(
-        create_and_store_my_did(wh, json.dumps({'seed': seed})))
+        create_and_store_did(wh, json.dumps({'seed': seed})))
 
     # request 1
     _, did1 = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet, dest=did, verkey=verkey)
 
     seed = randomString(32)
     _, verkey = looper.loop.run_until_complete(
-        create_and_store_my_did(wh, json.dumps({'seed': seed})))
+        create_and_store_did(wh, json.dumps({'seed': seed})))
     # request 2
     with pytest.raises(RequestRejectedException) as e:
         _, did2 = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet, dest=did, verkey=verkey)
@@ -65,7 +66,7 @@ def test_send_same_nyms_only_first_gets_written(
 
 def get_nym(looper, sdk_pool_handle, sdk_wallet_steward, t_did):
     _, s_did = sdk_wallet_steward
-    get_nym_req = looper.loop.run_until_complete(build_get_nym_request(s_did, t_did))
+    get_nym_req = looper.loop.run_until_complete(ledger.build_get_nym_request(s_did, t_did))
     req = sdk_sign_and_send_prepared_request(looper, sdk_wallet_steward,
                                              sdk_pool_handle, get_nym_req)
     return sdk_get_and_check_replies(looper, [req])

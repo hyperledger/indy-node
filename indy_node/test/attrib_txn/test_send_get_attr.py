@@ -4,7 +4,7 @@ from random import randint
 import time
 from typing import Optional
 
-from indy.ledger import build_get_attrib_request
+from indy_vdr import ledger
 from libnacl.secret import SecretBox
 from plenum.common.exceptions import RequestNackedException
 from plenum.test.helper import sdk_get_and_check_replies
@@ -76,7 +76,7 @@ def test_send_get_attr_fails_for_nonexistent_uuid_dest(
         looper, sdk_pool_handle, sdk_wallet_trustee, send_raw_attrib):
     _, submitter_did = sdk_wallet_trustee
     req = looper.loop.run_until_complete(
-        build_get_attrib_request(submitter_did, submitter_did, attrib_name, None, None))
+        ledger.build_get_attrib_request(submitter_did, submitter_did, attrib_name, None, None, None, None))
     req = modify_field(req, submitter_did[:-10], 'operation', 'dest')
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
                                                         sdk_pool_handle, req)

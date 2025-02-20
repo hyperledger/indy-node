@@ -4,7 +4,7 @@ from binascii import hexlify
 from hashlib import sha256
 
 import pytest
-from indy.did import create_and_store_my_did
+from indy_node.test.utils import create_and_store_did 
 from libnacl import randombytes
 from libnacl.secret import SecretBox
 
@@ -25,7 +25,7 @@ def testSendAttribFailsForNotExistingDest(
         looper, sdk_pool_handle, sdk_wallet_trustee):
     wh, _ = sdk_wallet_trustee
     seed = randomString(32)
-    did, _ = looper.loop.run_until_complete(create_and_store_my_did(
+    did, _ = looper.loop.run_until_complete(create_and_store_did(
         wh, json.dumps({'seed': seed})))
 
     parameters = json.dumps({'name': 'Alice'})

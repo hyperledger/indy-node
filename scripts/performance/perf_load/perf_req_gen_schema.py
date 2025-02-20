@@ -11,7 +11,7 @@ class RGSchema(RequestGenerator):
     _req_types = ["101", "107"]
 
     async def _gen_req(self, submit_did, req_data):
-        _, schema_json = await anoncreds.issuer_create_schema(submit_did, req_data,
+        _, schema_json = await create_schema(submit_did, req_data,
                                                               "1.0", json.dumps(["name", "age", "sex", "height"]))
         schema_request = await ledger.build_schema_request(submit_did, schema_json)
         return schema_request

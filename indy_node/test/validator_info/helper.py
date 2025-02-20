@@ -1,7 +1,7 @@
 import json
 
-from indy.did import create_and_store_my_did
-from indy.ledger import build_get_validator_info_request
+from indy_node.test.utils import create_and_store_did
+from indy_vdr import ledger
 
 from indy_node.test.pool_restart.helper import sdk_get_and_check_multiply_replies
 from plenum.common.util import randomString
@@ -25,6 +25,6 @@ def sdk_get_validator_info(looper, steward_wallet, sdk_pool_handle, seed=None):
 async def prepare_validator_info_request(wallet, named_seed):
     wh, submitter_did = wallet
     (named_did, named_verkey) = \
-        await create_and_store_my_did(wh, json.dumps({'seed': named_seed}))
-    restart_request = await build_get_validator_info_request(submitter_did)
+        await create_and_store_did(wh, json.dumps({'seed': named_seed}))
+    restart_request = await ledger.build_get_validator_info_request(submitter_did)
     return restart_request, named_did

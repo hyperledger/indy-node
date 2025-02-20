@@ -1,9 +1,8 @@
 import json
 
 import pytest
-from indy.anoncreds import issuer_create_schema, issuer_create_and_store_credential_def
-from indy.ledger import build_attrib_request, sign_request, build_schema_request, build_cred_def_request, \
-    build_nym_request, build_get_schema_request, parse_get_schema_response
+from indy_node.test.utils import create_schema, create_and_store_cred_def, sign_request, parse_get_schema_response
+from indy_vdr import ledger
 
 from indy_node.test.helper import createHalfKeyIdentifierAndAbbrevVerkey
 from indy_common.types import Request
@@ -31,11 +30,11 @@ def req(request, looper, sdk_pool_handle, sdk_wallet_steward):
     if request.param == "ATTRIB":
         raw = json.dumps({'answer': 42})
         request_json = looper.loop.run_until_complete(
-            build_attrib_request(identifier, identifier, raw=raw, xhash=None, enc=None))
+            ledger.build_attrib_request(identifier, identifier, raw=raw, xhash=None, enc=None))
     elif request.param == "SCHEMA":
         _, schema_json = looper.loop.run_until_complete(
-            issuer_create_schema(identifier, "name", "1.0", json.dumps(["first", "last"])))
-        request_json = looper.loop.run_until_complete(build_schema_request(identifier, schema_json))
+            create_schema(identifier, "name", "1.0", json.dumps(["first", "last"])))
+        request_json = looper.loop.run_until_complete(ledger.build_schema_request(identifier, schema_json))
     elif request.param == "RS_SCHEMA":
         rs_schema = {'@id': "fakeId234e", '@type': "0od"}
         request_json = build_rs_schema_request(identifier, rs_schema, "ISO18023_Drivers_License", "1.1")
@@ -43,16 +42,16 @@ def req(request, looper, sdk_pool_handle, sdk_wallet_steward):
         schema_json, _ = sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_steward)
         schema_id = json.loads(schema_json)['id']
 
-        request = looper.loop.run_until_complete(build_get_schema_request(identifier, schema_id))
+        request = looper.loop.run_until_complete(ledger.build_get_schema_request(identifier, schema_id))
         reply = sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, request))[1]
         _, schema_json = looper.loop.run_until_complete(parse_get_schema_response(json.dumps(reply)))
 
-        _, definition_json = looper.loop.run_until_complete(issuer_create_and_store_credential_def(
+        _, definition_json = looper.loop.run_until_complete(create_and_store_cred_def(
             wallet_handle, identifier, schema_json, "some_tag", "CL", json.dumps({"support_revocation": True})))
-        request_json = looper.loop.run_until_complete(build_cred_def_request(identifier, definition_json))
+        request_json = looper.loop.run_until_complete(ledger.build_cred_def_request(identifier, definition_json))
     elif request.param == "NYM":
         idr, verkey = createHalfKeyIdentifierAndAbbrevVerkey()
-        request_json = looper.loop.run_until_complete(build_nym_request(identifier, idr, verkey, None, None))
+        request_json = looper.loop.run_until_complete(ledger.build_nym_request(identifier, idr, verkey, None, None))
 
     req_signed = looper.loop.run_until_complete(sign_request(wallet_handle, identifier, request_json))
     return Request(**json.loads(req_signed))

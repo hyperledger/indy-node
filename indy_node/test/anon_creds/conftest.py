@@ -2,11 +2,11 @@ import pytest
 import time
 import json
 
-from indy.anoncreds import issuer_create_and_store_credential_def
-from indy.ledger import build_cred_def_request
+from indy_vdr import ledger
 
 from indy_common.state.domain import make_state_path_for_claim_def
 from indy_node.test.anon_creds.helper import get_cred_def_id, create_revoc_reg, create_revoc_reg_entry
+from indy_node.test.utils import create_and_store_cred_def
 from plenum.common.util import randomString
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, ISSUED, \
     REVOKED, PREV_ACCUM, ACCUM, REVOC_REG_DEF, ISSUANCE_BY_DEFAULT, \
@@ -27,7 +27,10 @@ from indy_node.test.schema.test_send_get_schema import send_schema_req
 CRED_DEF_VERSION = '1.0'
 SCHEMA_VERSION = '1.0'
 
-
+# Is sdk_wallet_handle same as wallet handle?
+# Is sdk wallet_steward a issuer/submitter did?
+# is the schema the same with vdr upgrade as with the sdk?
+# Is tag here a string?
 @pytest.fixture(scope="module")
 def claim_def(looper, sdk_wallet_handle, sdk_wallet_steward, send_schema_req):
     schema = json.loads(send_schema_req[0])
@@ -36,10 +39,10 @@ def claim_def(looper, sdk_wallet_handle, sdk_wallet_steward, send_schema_req):
     schema['seqNo'] = schema_seq_no
 
     definition_id, definition_json = \
-        looper.loop.run_until_complete(issuer_create_and_store_credential_def(
+        looper.loop.run_until_complete(create_and_store_cred_def(
             sdk_wallet_handle, sdk_wallet_steward[1], json.dumps(schema),
-            tag, "CL", json.dumps({"support_revocation": True})))
-    cred_def = looper.loop.run_until_complete(build_cred_def_request(sdk_wallet_steward[1], definition_json))
+            tag, "CL", True))
+    cred_def = looper.loop.run_until_complete(ledger.build_cred_def_request(sdk_wallet_steward[1], definition_json))
     return json.loads(cred_def)['operation']
 
 

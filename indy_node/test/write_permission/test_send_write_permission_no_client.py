@@ -14,8 +14,8 @@ from indy_node.test.anon_creds.conftest import build_revoc_def_by_default
 from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
 from indy_node.test.schema.test_send_get_schema import send_schema_req
 
-from indy.anoncreds import issuer_create_schema
-from indy.ledger import build_schema_request
+from indy_node.test.utils import create_schema
+from indy import ledger
 
 
 def test_client_cant_send_nym(looper,
@@ -58,15 +58,15 @@ def test_client_cant_send_schema(looper,
     # Endorser can create schema
     _, identifier = sdk_wallet_endorser
     _, schema_json = looper.loop.run_until_complete(
-        issuer_create_schema(identifier, "another_name", "2.0", json.dumps(["first", "last"])))
-    request = looper.loop.run_until_complete(build_schema_request(identifier, schema_json))
+        create_schema(identifier, "another_name", "2.0", json.dumps(["first", "last"])))
+    request = looper.loop.run_until_complete(ledger.build_schema_request(identifier, schema_json))
     sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_endorser, request)])
 
     # Client cant create schema
     _, identifier = sdk_wallet_client
     _, schema_json = looper.loop.run_until_complete(
-        issuer_create_schema(identifier, "another_name", "2.0", json.dumps(["first", "last"])))
-    request = looper.loop.run_until_complete(build_schema_request(identifier, schema_json))
+        create_schema(identifier, "another_name", "2.0", json.dumps(["first", "last"])))
+    request = looper.loop.run_until_complete(ledger.build_schema_request(identifier, schema_json))
     sdk_get_bad_response(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, request)],
                          RequestRejectedException, 'Rule for this action is')
 

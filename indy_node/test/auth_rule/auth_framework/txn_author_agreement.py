@@ -1,7 +1,7 @@
 import pytest
 import json
 
-from indy.ledger import build_acceptance_mechanisms_request
+from indy_vdr import ledger
 
 from plenum.common.util import randomString
 
@@ -73,7 +73,7 @@ class TxnAuthorAgreementTest(AuthTest):
         )
 
     def taa_aml_request(self):
-        return self.looper.loop.run_until_complete(build_acceptance_mechanisms_request(
+        return self.looper.loop.run_until_complete(ledger.build_acceptance_mechanisms_request(
             self.trustee_wallet[1],
             json.dumps({
                 'Nice way': 'very good way to accept agreement'}),

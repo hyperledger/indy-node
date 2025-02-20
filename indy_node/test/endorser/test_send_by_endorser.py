@@ -1,8 +1,9 @@
 import json
 
 import pytest
-from indy.did import create_and_store_my_did
-from indy.ledger import build_nym_request
+
+from indy_node.test.utils import create_and_store_did
+from indy_vdr import ledger
 
 from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER
@@ -110,10 +111,10 @@ def test_endorser_required_when_multi_sig_with_off_ledger_signature(looper, txnP
 
     new_did, verkey = \
         looper.loop.run_until_complete(
-            create_and_store_my_did(sdk_wallet_client[0], json.dumps({'seed': randomString(32)})))
+            create_and_store_did(sdk_wallet_client[0], json.dumps({'seed': randomString(32)})))
     sdk_wallet_new_client = (sdk_wallet_client[0], new_did)
     nym_request = looper.loop.run_until_complete(
-        build_nym_request(new_did, new_did, verkey, None, IDENTITY_OWNER))
+        ledger.build_nym_request(new_did, new_did, verkey, None, IDENTITY_OWNER))
 
     # can not send without Endorser
     with pytest.raises(RequestRejectedException,

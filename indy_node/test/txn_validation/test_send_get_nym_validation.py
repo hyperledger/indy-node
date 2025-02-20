@@ -1,7 +1,7 @@
 from binascii import hexlify
 import pytest
 
-from indy.ledger import build_get_nym_request
+from indy_vdr import ledger
 from indy_common.constants import ENDORSER_STRING
 from indy_node.test.helper import check_str_is_base58_compatible, modify_field, \
     createUuidIdentifier, createHalfKeyIdentifierAndAbbrevVerkey, createCryptonym
@@ -56,7 +56,7 @@ def testSendGetNymFailsIfDestIsPassedInHexFormat(
     sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trustee, dest=uuidIdentifier, verkey=abbrevVerkey)
 
     _, s_did = sdk_wallet_trustee
-    get_nym_req = looper.loop.run_until_complete(build_get_nym_request(s_did, uuidIdentifier))
+    get_nym_req = looper.loop.run_until_complete(ledger.build_get_nym_request(s_did, uuidIdentifier))
     get_nym_req = modify_field(get_nym_req, hexEncodedUuidIdentifier, IDENTIFIER)
     req = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
                                              sdk_pool_handle, get_nym_req)
@@ -70,7 +70,7 @@ def testSendGetNymFailsIfDestIsInvalid(
     uuidIdentifier = createUuidIdentifier()
     invalidIdentifier = uuidIdentifier[:-4]
     _, s_did = sdk_wallet_trustee
-    get_nym_req = looper.loop.run_until_complete(build_get_nym_request(s_did, uuidIdentifier))
+    get_nym_req = looper.loop.run_until_complete(ledger.build_get_nym_request(s_did, uuidIdentifier))
     get_nym_req = modify_field(get_nym_req, invalidIdentifier, IDENTIFIER)
     req = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
                                              sdk_pool_handle, get_nym_req)
@@ -83,7 +83,7 @@ def testSendGetNymHasInvalidSyntaxIfDestIsEmpty(
         looper, sdk_pool_handle, sdk_wallet_trustee):
     uuidIdentifier = createUuidIdentifier()
     _, s_did = sdk_wallet_trustee
-    get_nym_req = looper.loop.run_until_complete(build_get_nym_request(s_did, uuidIdentifier))
+    get_nym_req = looper.loop.run_until_complete(ledger.build_get_nym_request(s_did, uuidIdentifier))
     get_nym_req = modify_field(get_nym_req, '', IDENTIFIER)
     req = sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
                                              sdk_pool_handle, get_nym_req)

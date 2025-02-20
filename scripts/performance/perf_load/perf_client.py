@@ -77,10 +77,10 @@ class LoadClient:
         return await did.create_and_store_my_did(wallet_h, cfg)
 
     async def ledger_sign_req(self, wallet_h, did, req):
-        return await ledger.sign_request(wallet_h, did, req)
+        return await sign_request(wallet_h, did, req)
 
     async def ledger_submit(self, pool_h, req):
-        return await ledger.submit_request(pool_h, req)
+        return await submit_request(pool_h, req)
 
     async def pool_close_pool(self, pool_h):
         await pool.close_pool_ledger(pool_h)
