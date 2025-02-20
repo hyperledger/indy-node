@@ -89,8 +89,8 @@ Indy Node repo consists of the following parts:
     - Some scripts that can be run for installed Node (in particular, scripts to start Nodes, generate keys, prepare test Network, etc.)
 - doc
     - A folder with documentation
-- dev-setup
-    - A folder with scripts helping to configure development environment (python, dependencies, projects, virtual environment)
+- .devcontainer
+    - A folder with scripts helping to configure a development environment. Please refer to the official [DevContainer documentation](https://containers.dev/) for more information.
 
 ## Dependent Projects
 
