@@ -8,14 +8,14 @@ Example:
 ```
 0_3_100_to_0_3_101.py
 ```
-If several upgrades were skipped and you migrate from A to D, when B and C are available several migration script will be applied. Scipts to apply are picked by the following predicate:
+If several upgrades were skipped and you migrate from A to D, when B and C are available several migration script will be applied. Scripts to apply are picked by the following predicate:
 ```
 (script's first version >= a version we're migrating from) and (script's second version <= a version we're migrating to)
 ```
 
 Example:
 ```
-Available scipts:
+Available scripts:
 0_3_100_to_0_3_101
 0_3_101_to_0_3_102
 0_3_104_to_0_3_106
@@ -24,7 +24,7 @@ Available scipts:
 
 We are migrating from 0.3.100 to 0.3.110
 
-Sctipts to apply:
+Scripts to apply:
 0_3_100_to_0_3_101
 0_3_101_to_0_3_102
 0_3_104_to_0_3_106
