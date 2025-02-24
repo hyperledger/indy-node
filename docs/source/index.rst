@@ -22,7 +22,7 @@ Welcome to Hyperledger Indy Node's documentation!
    ci-cd.md
    indy-file-structure-guideline.md
    write-code-guideline.md
-   setup-dev.md
+
 
 
 
