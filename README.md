@@ -90,7 +90,8 @@ Indy Node repo consists of the following parts:
 - doc
     - A folder with documentation
 - .devcontainer
-    - A folder with scripts helping to configure a development environment. Please refer to the official [DevContainer documentation](https://containers.dev/) for more information.
+    - A folder with scripts helping to configure a [development environment](#how-to-start-working-with-the-code). Please refer to the official [DevContainer documentation](https://containers.dev/) for more information.
+
 
 ## Dependent Projects
 
